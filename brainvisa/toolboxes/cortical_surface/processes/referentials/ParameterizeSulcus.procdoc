@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+  <d name="fr" length="3">
+    <xhtml name="short">Brique TRES expérimentale. L'objectif est de paramétrer (définir un système de coordonnées) un sillon.</xhtml>
+    <d name="parameters" length="8">
+      <xhtml name="texture_param2"/>
+      <xhtml name="texture_param1"/>
+      <xhtml name="graph"/>
+      <xhtml name="dilation"/>
+      <xhtml name="mri"/>
+      <xhtml name="label_attributes"/>
+      <xhtml name="sulcus_mesh"/>
+      <xhtml name="label_values"/>
+    </d>
+    <xhtml name="long">Brique TRES expérimentale. L'objectif est de paramétrer (définir un système de coordonnées sur) un sillon. Ce sillon peut-être identifié par nom ou label dans un graphe. En sortie on obtient un maillage du sillon, et deux textures de coordonnées.</xhtml>
+  </d>
+  <d name="en" length="3">
+    <xhtml name="short">This process is VERY experimental. It aims at parameterising a sulcus.</xhtml>
+    <d name="parameters" length="8">
+      <xhtml name="texture_param2">2nd parameter texture</xhtml>
+      <xhtml name="texture_param1">1rst parameter texture</xhtml>
+      <xhtml name="graph">Input graph</xhtml>
+      <xhtml name="dilation"/>
+      <xhtml name="mri">subject's T1 MRI</xhtml>
+      <xhtml name="label_attributes">The sulcus can be identified by name or label</xhtml>
+      <xhtml name="sulcus_mesh">output mesh</xhtml>
+      <xhtml name="label_values">value of the name/label to extract the sulcus</xhtml>
+    </d>
+    <xhtml name="long">This process is VERY experimental. It aims at parameterising a sulcus. The sulcus is identified by name or label in a graph. 
+The output of the process is the sulcus mesh and two textures, one for each parameter.</xhtml>
+  </d>
+</minf>
