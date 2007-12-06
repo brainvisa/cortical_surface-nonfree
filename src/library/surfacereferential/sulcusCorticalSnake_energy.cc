@@ -1,8 +1,8 @@
 
-#include <aims/surfacereferential/corticalConstraints.h>
-#include <aims/surfacereferential/corticalTools.h>
+#include <cortical_surface/surfacereferential/corticalConstraints.h>
+#include <cortical_surface/surfacereferential/corticalTools.h>
 #include <aims/distancemap/meshdistance_d.h>
-#include <aims/surfacereferential/sulcusCorticalSnake_energy.h>
+#include <cortical_surface/surfacereferential/sulcusCorticalSnake_energy.h>
 
 using namespace aims;
 using namespace aims::meshdistance;

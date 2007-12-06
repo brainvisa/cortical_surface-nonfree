@@ -1,4 +1,4 @@
-#include <aims/surfacereferential/corticalReferential.h>
+#include <cortical_surface/surfacereferential/corticalReferential.h>
 
 #include <aims/mesh/curv.h>
 #include <aims/mesh/surfaceOperation.h>

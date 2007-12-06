@@ -9,9 +9,9 @@
 #include <aims/def/path.h>
 #include <cartobase/stream/fileutil.h>
 
-#include <aims/mesh/isoLine.h>
+#include <cortical_surface/mesh/isoLine.h>
 
-#include <aims/surfacereferential/corticalReferential.h>
+#include <cortical_surface/surfacereferential/corticalReferential.h>
 
 using namespace aims;
 using namespace carto;

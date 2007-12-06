@@ -9,7 +9,7 @@
 #include <aims/def/path.h>
 #include <cartobase/stream/fileutil.h>
 
-#include <aims/surfacereferential/corticalTools.h>
+#include <cortical_surface/surfacereferential/corticalTools.h>
 
 using namespace aims;
 using namespace carto;

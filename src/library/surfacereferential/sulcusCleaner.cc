@@ -20,9 +20,9 @@
 #include <aims/distancemap/meshdistance_d.h>
 #include <aims/distancemap/meshmorphomat_d.h>
 
-#include <aims/surfacereferential/corticalTools.h>
-#include <aims/surfacereferential/corticalConstraints.h>
-#include <aims/surfacereferential/sulcusCleaner.h>
+#include <cortical_surface/surfacereferential/corticalTools.h>
+#include <cortical_surface/surfacereferential/corticalConstraints.h>
+#include <cortical_surface/surfacereferential/sulcusCleaner.h>
 
 namespace aims
 {

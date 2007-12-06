@@ -6,7 +6,7 @@
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
 #include <aims/mesh/surfaceOperation.h>
-#include <aims/surfacereferential/sulcusCorticalSnake_energy.h>
+#include <cortical_surface/surfacereferential/sulcusCorticalSnake_energy.h>
 
 namespace aims
 {

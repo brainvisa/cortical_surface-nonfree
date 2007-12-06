@@ -11,7 +11,7 @@
 #include <aims/io/writer.h>
 #include <aims/scalespace/meshDiffuse.h>
 
-#include <aims/surfacereferential/corticalTools.h>
+#include <cortical_surface/surfacereferential/corticalTools.h>
 
 namespace aims
 {

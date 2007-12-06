@@ -13,7 +13,7 @@
 #include <aims/getopt/getopt2.h>
 #include <aims/utility/utility_g.h>
 #include <aims/mesh/mesh_g.h>
-#include <aims/mesh/isoLine.h>
+#include <cortical_surface/mesh/isoLine.h>
 #include <aims/io/io_g.h>
 #include <aims/mesh/surfaceOperation.h>
 #include <aims/mesh/surfacegen.h>

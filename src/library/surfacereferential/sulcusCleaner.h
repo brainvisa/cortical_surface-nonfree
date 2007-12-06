@@ -18,8 +18,8 @@
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
 
-#include <aims/surfacereferential/corticalTools.h>
-#include <aims/surfacereferential/corticalConstraints.h>
+#include <cortical_surface/surfacereferential/corticalTools.h>
+#include <cortical_surface/surfacereferential/corticalConstraints.h>
 
 namespace aims
 {

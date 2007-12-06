@@ -8,8 +8,8 @@
 #include <aims/mesh/texture.h>
 #include <string.h>
 
-#include <aims/mesh/isoLine.h>
-//#include <aims/surfacereferential/autoConstraints.h>
+#include <cortical_surface/mesh/isoLine.h>
+//#include <cortical_surface/surfacereferential/autoConstraints.h>
 
 using namespace aims;
 using namespace std;/*

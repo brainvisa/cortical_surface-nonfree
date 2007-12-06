@@ -9,8 +9,8 @@
  */
 
 
-#include <aims/surfacereferential/corticalTools.h>
-#include <aims/surfacereferential/corticalConstraints.h>
+#include <cortical_surface/surfacereferential/corticalTools.h>
+#include <cortical_surface/surfacereferential/corticalConstraints.h>
 
 using namespace aims;
 using namespace std;

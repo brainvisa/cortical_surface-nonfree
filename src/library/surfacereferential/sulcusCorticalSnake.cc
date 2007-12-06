@@ -2,13 +2,13 @@
 #include <aims/mesh/geometric.h>
 #include <aims/mesh/texture.h>
 #include <aims/bucket/bucket.h>
-#include <aims/surfacereferential/corticalTools.h>
+#include <cortical_surface/surfacereferential/corticalTools.h>
 #include <aims/distancemap/meshdistance.h>
 #include <graph/graph/graph.h>
 #include <float.h>
 
-#include <aims/surfacereferential/sulcusCorticalSnake.h>
-#include <aims/surfacereferential/sulcusCorticalSnake_energy.h>
+#include <cortical_surface/surfacereferential/sulcusCorticalSnake.h>
+#include <cortical_surface/surfacereferential/sulcusCorticalSnake_energy.h>
 
 using namespace aims;
 using namespace aims::meshdistance;

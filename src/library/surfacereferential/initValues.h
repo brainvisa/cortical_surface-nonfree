@@ -3,7 +3,7 @@
 #include <aims/mesh/texture.h>
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
-#include <aims/mesh/isoLine.h>
+#include <cortical_surface/mesh/isoLine.h>
 #include <aims/getopt/getopt.h>
 #include <aims/utility/utility_g.h>
 #include <aims/mesh/mesh_g.h>

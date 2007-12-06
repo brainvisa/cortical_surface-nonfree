@@ -8,7 +8,7 @@
 #include <aims/def/path.h>
 #include <cartobase/stream/fileutil.h>
 
-#include <aims/surfacereferential/sulcusCleaner.h>
+#include <cortical_surface/surfacereferential/sulcusCleaner.h>
 
 using namespace aims;
 using namespace carto;

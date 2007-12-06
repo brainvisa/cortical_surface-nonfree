@@ -5,7 +5,7 @@
 #include <aims/mesh/surfacegen.h>
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
-#include <aims/mesh/isoLine.h>
+#include <cortical_surface/mesh/isoLine.h>
 
 using namespace aims;
 

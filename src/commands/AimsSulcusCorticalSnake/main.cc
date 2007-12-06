@@ -22,7 +22,7 @@
 #include <aims/def/path.h>
 #include <cartobase/stream/fileutil.h>
 
-#include <aims/surfacereferential/sulcusCorticalSnake.h>
+#include <cortical_surface/surfacereferential/sulcusCorticalSnake.h>
 
 using namespace aims;
 using namespace carto;

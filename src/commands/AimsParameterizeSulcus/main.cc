@@ -25,7 +25,7 @@
 #include <aims/distancemap/meshmorphomat_d.h>
 #include <aims/connectivity/meshcc_d.h>
 #include <aims/morphology/morphology_g.h>
-#include <aims/surfacereferential/shortestPath.h>
+#include <cortical_surface/surfacereferential/shortestPath.h>
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
 #include <aims/getopt/getopt2.h>
