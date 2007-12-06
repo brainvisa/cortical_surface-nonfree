@@ -1,0 +1,54 @@
+
+
+#-----------------------------------------------------------------------------
+class CppComponent_cortical_surface( GenericMakerComponent ):
+  _name = 'cortical_surface_cpp'
+
+  def __init__( self, opts ):
+    options[ 'cortical_surface_cpp' ] = options[ 'cortical_surface' ]
+    GenericMakerComponent.__init__( self, options[ 'cortical_surface' ] )
+
+
+  def dependencies( self ):
+    return [ 'aimsalgo' ]
+
+  def name( self ):
+    return 'cortical_surface'
+
+  def _libraries( self ):
+    return [ 'cortical_surface' ]
+
+  def makeDocumentation( self ):
+    print 'cortical_surface_cpp doc'
+    print self.doDoxygen()
+    GenericMakerComponent.makeDocumentation( self )
+    print 'cortical_surface_cpp doc done'
+
+  def templateConfigurationFiles( self ):
+    return [ os.path.join( self.sourceDir(), i ) for i in
+             ( 'config-cpp-command.template', 
+               'config-cpp-library.template', 
+               'config-cpp-plugin.template' ) ]
+
+
+
+#-----------------------------------------------------------------------------
+class Component_cortical_surface( GenericMakerComponent ):
+  _name = 'cortical_surface'
+
+  def dependencies( self ):
+    return [ CppComponent_cortical_surface ]
+
+
+  def templateConfigurationFiles( self ):
+    []
+
+
+  def configureCompilation( self ):
+    pass
+
+  def build( self, instances ):
+    pass
+
+  def makeDoxygenDocumentation( self ):
+    pass
