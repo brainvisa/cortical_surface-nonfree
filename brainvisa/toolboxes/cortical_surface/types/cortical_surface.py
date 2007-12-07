@@ -80,3 +80,4 @@ FileType( 'Functional texture', 'Texture' )
 
 FileType( 'Cortical thickness', 'Texture' )
 
+FileType( 'Surface Label Translation', 'Label Translation' )
