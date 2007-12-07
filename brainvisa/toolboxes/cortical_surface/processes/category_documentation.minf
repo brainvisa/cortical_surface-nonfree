@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<minf version="1.0">
+
+<xhtml name="en">
+  <h1>Analysis of cortical surface</h1>
+  
+  <p>
+You should find here the processes dedicated to analysis of the cortical surface geometry (parcellation in gyri, primal sketch of mean curvature). These processes are not supported yet...
+  </p>
+
+</xhtml>
+
+<xhtml name="fr">
+  <h1>Analyse de la surface corticale</h1>
+  
+  <p>
+Vous devriez trouver ici tous les traitements dédiés à l'analyse de la surface corticale (parcellisation en gyri, "primal sketch" de la courbure moyenne. Ces processus ne sont pas encore supportés.
+  </p>
+
+</xhtml>
+
+</minf>
