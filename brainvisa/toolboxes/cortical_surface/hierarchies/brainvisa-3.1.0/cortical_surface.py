@@ -70,11 +70,3 @@ insert('{protocol}/{subject}/t1mri/{acquisition}/{analysis}/folds/{graph_version
     "<subject>_Lwhite_gyri_<sulci_recognition_session>", SetType( 'Gyri White Volume' ), SetWeakAttr( 'side', 'left' ),
     "<subject>_Rwhite_gyri_<sulci_recognition_session>", SetType( 'Gyri White Volume' ), SetWeakAttr( 'side', 'right' )
     )
-
-## plus de repertoire graphe, voir ou mettre les elements suivants : 
-graph_content = (
-  
-    ## utilise par connectomist/morphometry/StriatumParametrisation -> Renaud 
-    "<subject>_boundingbox_points",SetType('Bounding Box Points'),
-)
-
