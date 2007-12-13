@@ -9,9 +9,9 @@ userLevel = 2
 
 signature = Signature(
     'Side', Choice("Right"),
+    'mri_corrected', ReadDiskItem( 'T1 MRI Bias Corrected', 'GIS image' ),
     'transformation_input',ReadDiskItem( 'Transform Raw T1 MRI to Talairach-AC/PC-Anatomist',
     'Transformation matrix' ),
-    'mri_corrected', ReadDiskItem( 'T1 MRI Bias Corrected', 'GIS image' ),
     'right_pole_template',ReadDiskItem( 'Right Cingular Pole Template' , shfjGlobals.anatomistVolumeFormats),
     'talairach_to_subject',WriteDiskItem( 'Talairach To Subject Transformation', 'Transformation matrix' ),
     'subject_to_template',WriteDiskItem( 'Subject To Template Transformation', 'Transformation matrix' ),
@@ -21,8 +21,7 @@ signature = Signature(
 
 def initialization( self ):
 #    self.linkParameters( 'left_cingular_pole','left_white_mesh')
-    self.linkParameters( 'mri_corrected','transformation_input')
-    self.linkParameters( 'output_template','mri_corrected')
+    self.linkParameters( 'transformation_input','mri_corrected')
     self.linkParameters( 'subject_to_template','mri_corrected')
     self.linkParameters( 'talairach_to_subject','mri_corrected')
     self.linkParameters( 'output_template','mri_corrected')

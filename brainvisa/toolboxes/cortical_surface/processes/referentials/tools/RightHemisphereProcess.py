@@ -23,6 +23,8 @@ def initialization( self ):
     eNode.addChild( 'CorticalSurfaceParcellationRight',
                     ProcessExecutionNode( 'ParcellationRight', optional = 1 ) )
 
+    eNode.addLink( 'ChangeTemplateReferentialRight.mri_corrected', 'Rgraph' )
+
     eNode.addLink( 'ConstraintProjectionRight.Rgraph', 'Rgraph' )
     
     eNode.addLink( 'ChangeTemplateReferentialRight.transformation_input', 'Rgraph' )

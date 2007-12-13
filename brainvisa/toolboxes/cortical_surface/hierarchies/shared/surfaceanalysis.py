@@ -1,7 +1,7 @@
 
 include( 'base' )
 
-insert( 'nomenclature', 'surfaceanalysis',
+insert( 'nomenclature','surfaceanalysis',
   SetContent(
     'constraint_correspondance', SetType( 'Constraint coordinates values' ),
     'surfaceReferential', SetType( 'Surface Label Translation' ),
