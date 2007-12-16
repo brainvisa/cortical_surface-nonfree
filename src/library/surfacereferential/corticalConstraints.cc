@@ -450,6 +450,7 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 		if( (texture[0].item(i) == valeur)  && (tex_result[0].item(i)==0) )
 		{
 			val++;
+			cout<<"Valeur="<<valeur<<endl;
 			recurs_proc(i, texture, tex_result, neigh, val);
 		}
 		
@@ -1224,11 +1225,13 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 	
 	//identification des composantes connexes
 //         cout<<"EConstraints: Connected parts Id"<<endl;
+	int ct=0;
 	for(int i=0; i<size; i++)
 	{
 		if( (origine[0].item(i) != 0)  && (texture[0].item(i)==0) )
 		{
 			val++;
+// 			cout<<"Valeur="<<val<<" avec texture="<<origine[0].item(i)<<endl;
 			recurs_proc(i, origine, tex_result, neigh, val);
 			for(int i=0; i<size; i++)
 			{
@@ -1236,7 +1239,6 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 					texture[0].item(i)=tex_result[0].item(i);
 			}
 		}
-		
 	}
 // 	Writer<Texture1d> ws2res("result.tex");
 // 	ws2res.write(tex_result);
@@ -1348,17 +1350,16 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 			pairs_temp.push_back(ext1);
 			pairs_temp.push_back(ext2);
 			std::cout<<"Push "<<ext1<<" et "<<ext2<<std::endl;
+			meridian_pairs.push_back(pairs_temp);
 		}
 		
 // 		Writer<Texture1d> ws2y("or.tex");
 // 		ws2y.write(tex_path_temp);
-		meridian_parts.push_back(vect_temp);
-		meridian_pairs.push_back(pairs_temp);
 		
 	}
 
 	//****Rep?rage des extr?mit?s des morceaux****
-//         cout<<"reperage des extremites et taille de meridian_pairs:"<<meridian_pairs.size()<<endl;
+//          cout<<"reperage des extremites et taille de meridian_pairs:"<<meridian_pairs.size()<<endl;
 
 	for(unsigned i=0; i<meridian_pairs.size(); i++)
 	{
@@ -1373,7 +1374,8 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 //	result_pairs[0].item(0)=50;
 // 	Writer<Texture1d> ws2e("ext.tex");
 // 	ws2e.write(result_pairs);
-// 	
+	// 	
+// 	cout<<"Top 1"<<endl;
 	for(unsigned i=0; i<meridian_parts.size(); i++)
 	{
 		for(unsigned j=0; j<meridian_parts[i].size(); j++)
@@ -1381,6 +1383,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 			result_link[0].item(meridian_parts[i][j]) = flag;
 		}
 	}
+// 	cout<<"Top 2"<<endl;
 /*	Writer<Texture1d> wTp2parts("meridian_parts.tex");
 	wTp2parts.write(result_link);*/
 	TimeTexture<float> dist_remp(1,size);
@@ -1391,36 +1394,53 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 	init_texture_single(distance_pole_insula_entier);
 	
 	for(int i=0; i<size; i++)
+	{
 		if(i==nord)
 			dist_remp[0].item(i)=10;
 		else
 			dist_remp[0].item(i)=0;
+	}
 
+// 	cout<<"Top 3"<<endl;
 
 	distance_poles[0]=MeshDistance( mesh[0], dist_remp[0],true);
 
+// 	cout<<"Top 4"<<endl;
 	TimeTexture<float> yeah(1,size);
 	init_texture_single(yeah);
 	int cpty=1;
+// 	cout<<"meridian_pairs.size()="<<meridian_pairs.size()<<endl;
+/*	for(unsigned i=0; i<meridian_pairs.size(); i++)
+	{
+		cout<<"meridian_pairs["<<i<<"][0]"<<meridian_pairs[i][0]<<endl;
+		cout<<"meridian_pairs["<<i<<"][1]"<<meridian_pairs[i][1]<<endl;
+	}*/
 	for(unsigned i=0; i<meridian_pairs.size(); i++)
 	{
-			//L'element [0] doit �re le plus proche du pole sur la carte de distance
-
-			if( distance_poles[0].item( meridian_pairs[i][0])  > distance_poles[0].item( meridian_pairs[i][1] ) )
-			{
-				int pt= meridian_pairs[i][1];
-				meridian_pairs[i][1]=meridian_pairs[i][0];
-				meridian_pairs[i][0]=pt;
-
-			}
-			else {}
-			yeah[0].item(meridian_pairs[i][0])=cpty++;
-			yeah[0].item(meridian_pairs[i][1])=cpty++; 
+// 		cout<<"iter="<<i<<endl;
+		
+// 		cout<<"avant Test: [0]="<<distance_poles[0].item( meridian_pairs[i][0])<<" et [1]="<<distance_poles[0].item( meridian_pairs[i][1] )<<endl;
+		//L'element [0] doit �re le plus proche du pole sur la carte de distance
+		if( distance_poles[0].item( meridian_pairs[i][0])  > distance_poles[0].item( meridian_pairs[i][1] ) )
+		{
+			int pt= meridian_pairs[i][1];
+			cout<<"pt="<<pt<<endl;
+			meridian_pairs[i][1]=meridian_pairs[i][0];
+			meridian_pairs[i][0]=pt;
+		}
+		else {}
+		
+// 		cout<<"meridian_pairs["<<i<<"][0]"<<meridian_pairs[i][0]<<endl;
+// 		cout<<"meridian_pairs["<<i<<"][1]"<<meridian_pairs[i][1]<<endl;
+		yeah[0].item(meridian_pairs[i][0])=cpty++;
+		yeah[0].item(meridian_pairs[i][1])=cpty++; 
 
 	}
 // 	Writer<Texture1d> wTp2yeah("yeah.tex");
 // 	wTp2yeah.write(yeah);
 	
+// 
+// 	cout<<"Top 5"<<endl;
 	std::vector< std::vector< int > > mark = meridian_pairs;
 	int tab[mark.size()];
 	
@@ -1446,6 +1466,8 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 	else
 		carte[0].item(k)=0;
 	
+
+// 	cout<<"Top 6"<<endl;
 	for(unsigned int i=0; i<mark.size(); i++)
 	{
 		float top;
@@ -1485,6 +1507,8 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 		}
 	}
 	
+
+// 	cout<<"Top 7"<<endl;
 	for(int i=0; i<size; i++)
 	{
 		finish[0].item(i) = result_link[0].item(i);
@@ -1511,6 +1535,8 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 			tex_meridian_pairs[0].item(meridian_pairs[i][j])=cmp++;
 	}
 	
+
+// 	cout<<"Top 8"<<endl;
 // 	Writer<Texture1d> wTptyeahzf("tex_mark.tex");
 // 	wTptyeahzf.write(tex_mark);
 // 	
@@ -1550,6 +1576,8 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 // 	Writer<Texture1d> wTptyeahzz("dist_liaison_nord.tex");
 // 	wTptyeahzz.write(finish);
 	
+
+// 	cout<<"Top 9"<<endl;
 	fflush(stdout);
 	
  	for(unsigned int i=0; i<mark.size()-1; i++)
@@ -1566,12 +1594,16 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
  /*	Writer<Texture1d> wTptyeahee("dist_liaison_suite.tex");
  	wTptyeahee.write(finish);*/
 	
+
+// 	cout<<"Top 10"<<endl;
 	findNearNeigh(mark[mark.size()-1][1], sud, finish, flag, mesh, neigh);
 	for(int i=0; i<size; i++)
 	{
 		dist_temp[cp].item(i)=finish[0].item(i);
 	}
 	
+
+// 	cout<<"Top 11"<<endl;
 
 //  	Writer<Texture1d> wTptyerahee("construction_mer_origin.tex");
 //  	wTptyerahee.write(dist_temp);
