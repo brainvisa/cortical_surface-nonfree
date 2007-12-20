@@ -1101,7 +1101,10 @@ TimeTexture<float> aims::origin_meridian(TimeTexture<float> & tex, int nord, int
 	{
 
 		if(tex[0].item(i) == 360)
+		{
 			pieces_meridian[0].item(i) = 360;
+// 			cout<<"PIECEMERIDIAN"<<endl;
+		}
 		else
 			pieces_meridian[0].item(i) = 0;
 
@@ -1125,7 +1128,21 @@ TimeTexture<float> aims::origin_meridian(TimeTexture<float> & tex, int nord, int
         cout<<"MeridianLink"<<endl;
 	meridianLink( pieces_meridian, constraint_meridian, 360, sud, nord, neigh, mesh, poles);//, constraint_meridian );
 
+	
 	cout<<"Fin MeridianLink"<<endl;
+	
+// 	Writer<Texture1d> wT3ff("pieces_meridian.tex");
+// 	wT3ff.write(pieces_meridian);
+	
+// 	Writer<Texture1d> wT3ffd("constraint_meridian.tex");
+// 	wT3ffd.write(constraint_meridian);
+	
+	for(int i=0; i<size; i++)
+	{
+		if( constraint_meridian[0].item(i)!=0 || pieces_meridian[0].item(i)!=0 )
+			constraint_meridian[0].item(i)=360;
+	}
+	
 	std::set<uint>::const_iterator itneigh;
 	
 	int cptVois=0;
@@ -1151,8 +1168,8 @@ TimeTexture<float> aims::origin_meridian(TimeTexture<float> & tex, int nord, int
 			}
 		}
 	}
-/* 	Writer<Texture1d> wT3f("mer_fermeture.tex");
-  	wT3f.write(constraint_meridian);*/
+//  	Writer<Texture1d> wT3f("mer_fermeture.tex");
+//   	wT3f.write(constraint_meridian);
 	
 	std::cout<<"Debut graph"<<std::endl;
 	GraphPath gr;
@@ -1160,8 +1177,8 @@ TimeTexture<float> aims::origin_meridian(TimeTexture<float> & tex, int nord, int
 
 	std::cout<<"Fin graph"<<std::endl;
 	
-/*	Writer<Texture1d> wT3h("test_long_thin.tex");
-	wT3h.write(thin);*/
+// 	Writer<Texture1d> wT3h("test_long_thin.tex");
+// 	wT3h.write(thin);
 	
 	//Fabriquer le vecteur du meridien d'origine
 	//vect_side_meridian=buildOriginVector( thin, nord, sud, neigh );
@@ -2107,5 +2124,6 @@ TimeTexture<float> aims::defineSidesPoles( TimeTexture<float> & sides, TimeTextu
 	return sides;
 	
 }
+
 
 

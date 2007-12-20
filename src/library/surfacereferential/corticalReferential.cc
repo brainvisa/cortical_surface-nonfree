@@ -270,6 +270,9 @@ void CorticalReferential::longitudePropagation()
 	std::cout<<"Origin Meridian.............."<<std::endl;
 	constraint_long_side=origin_meridian(constraint_long_cleaned, nord, sud, neigh, mesh, poles );
 	
+// 	Writer<Texture1d> sideB("sides_origine.tex");
+// 	sideB.write(constraint_long_side);
+
 	
 //***A VIRER
 /*	Writer<Texture1d> wT3mtt("meridien_long_side_avant.tex");
@@ -327,6 +330,10 @@ void CorticalReferential::longitudePropagation()
 		constraint_long_side_temp[0].item(i)=constraint_long_side[0].item(i);
 		
 	}
+	
+// 	Writer<Texture1d> sideWss("sides.tex");
+// 	sideWss.write(constraint_long_side_temp);
+
 
 	constraint_long_side = defineSides( constraint_long_side_temp, constraint_long_cleaned, mesh, neigh);
 
@@ -341,9 +348,6 @@ void CorticalReferential::longitudePropagation()
 				constraint_long_side[0].item(i)=2;
 	}
 
-
-// 	Writer<Texture1d> sideWss("sides.tex");
-// 	sideWss.write(constraint_long_side);
 
 	te[0].item(nord)=50;
 	te[0].item(sud)=100;
@@ -427,8 +431,11 @@ void CorticalReferential::longitudePropagation()
 	
 	std::cout<<"Point insula="<<Save_Point_Insula<<std::endl;
 	
-/*	Writer<Texture1d> wT3c("test_long_cleaned_log_test_flex.tex");
-	wT3c.write(constraint_long_cleaned);*/
+// 	Writer<Texture1d> wT3c("test_long_cleaned_log_test_flex.tex");
+// 	wT3c.write(constraint_long_cleaned);
+	
+// 	Writer<Texture1d> wT3cs("test_long_side.tex");
+// 	wT3cs.write(constraint_long_side);
 	
 	//Diffusion de la longitude
 	std::cout<<"Diffusion....................";
@@ -749,8 +756,8 @@ void CorticalReferential::longitudePropagation()
 	}
 	
 	std::cout<<"ind="<<ind_bord_insula<<" - Save_Point_Insula="<<Save_Point_Insula<<std::endl;
-	if(ind_bord_insula==0)
-		std::cout<<"PROBLEM!!!!"<<std::endl;
+/*	if(ind_bord_insula==0)
+		std::cout<<"PROBLEM!!!!"<<std::endl;*/
 	
 	//Test
 	if(Save_Point_Insula==-1)
@@ -1704,7 +1711,7 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 /*	Writer< Texture1d > wTiricp("initLong.tex");
 	wTiricp.write(init);*/
 	
-	TimeTexture<float> diff_multi(1000,size);
+// 	TimeTexture<float> diff_multi(1000,size);
 	std::map<unsigned, std::set< std::pair<unsigned,float> > >  weightLapl1;
 	
 	weightLapl1=weightLapl;
@@ -1805,7 +1812,7 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 
 	float max=10;
 	int iter=0;
-// 	int cpt_multi=0;
+	int cpt_multi=0;
 	//for (int iter=0; iter< t; ++iter)
 	do
 	{
