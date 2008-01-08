@@ -19,8 +19,8 @@ signature = Signature(
 
 def initialization( self ):
     self.linkParameters( 'right_pole', 'right_white_mesh' )
-    self.findValue( 'right_pole_template', {} )
-    self.setOptional('right_pole_template')
+    #self.findValue( 'right_pole_template', {} )
+    #self.setOptional('right_pole_template')
      
 def execution( self, context ):
     a = anatomist.Anatomist()
@@ -28,3 +28,4 @@ def execution( self, context ):
     vol = a.loadObject( self.right_pole_template.fullPath() )
     fusion = a.fusionObjects( [mesh, vol], method='Fusion3DMethod' )
     fusion.exportTexture(filename=self.right_pole.fullPath())
+

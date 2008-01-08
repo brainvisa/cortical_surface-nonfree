@@ -33,8 +33,6 @@ def initialization( self ):
     
     eNode.addLink(  'CingularPoleRight.right_white_mesh','ConstraintProjectionRight.Rgraph' )
     
-    eNode.addLink(  'CingularPoleRight.right_pole_template','ConstraintCleanerRight.right_cingular_pole' )
-    
     eNode.addLink(  'CorticalSurfaceParameterizationRight.right_white_mesh','ConstraintProjectionRight.Rgraph' )
     
     eNode.addLink(  'CorticalSurfaceParameterizationRight.right_cingular_pole', 'CingularPoleRight.right_pole')
