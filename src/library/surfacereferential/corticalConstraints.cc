@@ -521,7 +521,7 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 			{
 				path_temp=0;
 				
-				GraphPath gr;
+				GraphPath<float> gr;
 				tex_path=gr.process(tex_result,mesh,value,tab[j],tab[k]);
 				//delete &gr;
 				
@@ -542,7 +542,7 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 		//on recupere le plus court chemin
 		if(path_max!=0)
 		{
-			GraphPath gr1;
+			GraphPath<float> gr1;
 			tex_path_temp=gr1.process(tex_result,mesh,value,ext1,ext2);
 			//delete &gr1;
 		}
@@ -671,7 +671,7 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 //				Writer< Texture1d > wrtr("test_pcc.tex");
 //				wrtr.write(tex_result);
 //				cout<<"PCC..."<<endl;
-// 			GraphPath gr;
+// 			GraphPath<float> gr;
 // 			tex_path=gr.process(tex_single_cc,mesh,valeur,vect_extr[j].first,vect_extr[k].first);
 /*			for(int x=0; x<size;x++)
 			{
@@ -901,9 +901,9 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 	//PCC entre les 2 points les plus eloignes
 	if(path_max!=0)
 	{
-//		GraphPath gr1;
+//		GraphPath<float> gr1;
 //		cout<<"longest pcc"<<endl;
-		GraphPath gr;
+		GraphPath<float> gr;
 		tex_path_temp=gr.process(tex_single_cc,mesh,valeur,ext1,ext2);
 		//delete &gr;
 	}
@@ -922,7 +922,7 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 	
 	
 	//2° passe pour virer les boucles à la con
-	GraphPath grt;
+	GraphPath<float> grt;
 	tex_path_temp=grt.process(result,mesh,valeur,ext1,ext2);
 	
 	//if(valeur==71 || valeur==67 || valeur==43 )
@@ -940,7 +940,7 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 	//return(result);
 	
 	
-// 		GraphPath gr;
+// 		GraphPath<float> gr;
 // 		
 // 		//On passe un coup de PCC pour reperer les extremites les plus eloignees
 //              cout<<"PCC constraints"<<endl;
@@ -979,7 +979,7 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 // 		//on recupere le plus long des pcc
 // 		if(path_max!=0)
 // 		{
-// // 			GraphPath gr1;
+// // 			GraphPath<float> gr1;
 // 			tex_path_temp=gr.process(tex_result,mesh,value,ext1,ext2);
 // 		}
 // 		
@@ -1172,7 +1172,7 @@ TimeTexture<float> aims::origin_meridian(TimeTexture<float> & tex, int nord, int
 //   	wT3f.write(constraint_meridian);
 	
 	std::cout<<"Debut graph"<<std::endl;
-	GraphPath gr;
+	GraphPath<float> gr;
 	thin=gr.process(constraint_meridian, mesh, 360, nord, sud);
 
 	std::cout<<"Fin graph"<<std::endl;
@@ -1315,7 +1315,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 		}
 		
 		
-		GraphPath gr;
+		GraphPath<float> gr;
 		
 		//On passe un coup de PCC pour reperer les extremites les plus eloignees
 		int path_max=0;
@@ -1349,7 +1349,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 		//on recupere le plus long des pcc
 		if(path_max!=0)
 		{
-// 			GraphPath gr1;
+// 			GraphPath<float> gr1;
 			tex_path_temp=gr.process(tex_result,mesh,value,ext1,ext2);
 		}
 		
@@ -1891,7 +1891,7 @@ TimeTexture<float> aims::originNeighbourgs(TimeTexture<float> originMeridian, in
 // 	Writer<Texture1d> wsb("bothSides.tex");
 // 	wsb.write(bothSides);
 	
-	GraphPath gr;
+	GraphPath<float> gr;
 	
 	//repere le premier cote par un pcc
 	side1=gr.process(bothSides, mesh, 1, nord_temp, sud_temp);

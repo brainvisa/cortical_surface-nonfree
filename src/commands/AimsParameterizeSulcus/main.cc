@@ -44,6 +44,10 @@ using namespace std;
 #define POLE_N 500
 #define POLE_S 600
 
+// SEE THE COMMENTS IN FRENCH AT THE END FOR DETAILS OF THE ALGORITHM.
+// BUILDING OF THE CONSTRAINTS (POLES, TOP AND BOTTOM RIDGES) IS QUITE 
+// A HEAVY TEDIOUS, BUT ROBUST, MACHINERY.
+
 int main( int argc, const char** argv )
 {
   try
@@ -127,8 +131,7 @@ int main( int argc, const char** argv )
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
       cout << "Detecting top and bottom ridges" << endl;
-
-          // !!!!!! RAJOUTER LA PRISE EN COMPTE DE LA RESOLUTION DE L'IMAGE !!!!!!!!
+      
       for (i=0; i<ns; i++)
       {
           texPole[0].item(i)=short(0);
@@ -138,7 +141,6 @@ int main( int argc, const char** argv )
           x=int(floor(vert[0]/dx));
           y=int(floor(vert[1]/dy));
           z=int(floor(vert[2]/dz));
-	  //cout << "(" << vert[0] << "," << vert[1]<< "," << vert[2] << ") -> (" << x << "," << y << "," << z<< ")" << endl;
           if (  (hull(x,y,z)!=0) || (hull(x,y,z+1)!=0) || (hull(x,y+1,z)!=0) || (hull(x,y+1,z+1)!=0)
              || (hull(x+1,y,z)!=0) || (hull(x+1,y,z+1)!=0) || (hull(x+1,y+1,z)!=0) || (hull(x+1,y+1,z+1)!=0) )
           {
@@ -173,7 +175,7 @@ int main( int argc, const char** argv )
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // removing branches and triangles from skeletons using a graph shortest path algorithm
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-     GraphPath shortest;
+     GraphPath<float> shortest;
      TimeTexture<short> topRidge(1,ns), botRidge(1,ns);
      TimeTexture<float> tmpTop(1, ns), tmpBot(1,ns), tmpRB(1,ns), tmpRT(1,ns);
           // quick convert
@@ -255,6 +257,7 @@ int main( int argc, const char** argv )
      uint cand1, cand2, tmp1, tmp2;
      float length, lengthmax=0.0;
      uint its, itn, ibs, ibn;
+     
      for (topIt=topCand.begin(); topIt!=topCand.end(); ++topIt)
      {
           tmp1=(*topIt);
@@ -299,6 +302,7 @@ int main( int argc, const char** argv )
           }
      }
      lengthmax=0.0;
+     
      for (botIt=botCand.begin(); botIt!=botCand.end(); ++botIt)
      {
           tmp1=(*botIt);
@@ -350,9 +354,11 @@ int main( int argc, const char** argv )
      Point3df vert;
 
 
-     GraphPath shortest2;
+     GraphPath<float> shortest2;
+          
      tmpRT=shortest2.process(tmpTop, surface, RIDGE_TOP, itn, its);
      tmpRB=shortest2.process(tmpBot, surface, RIDGE_BOT, ibn, ibs);
+          
           //quick convertBack
      for (i=0; i<ns; i++)
      {
@@ -375,6 +381,7 @@ int main( int argc, const char** argv )
      vert=surface.vertex()[ibs]; xsb=vert[0]; ysb=vert[1]; zsb=vert[2];
      xn=(xnt+xnb)/2.0; yn=(ynt+ynb)/2.0; zn=(znt+znb)/2.0;
      xs=(xst+xsb)/2.0; ys=(yst+ysb)/2.0; zs=(zst+zsb)/2.0;
+     
      for (i=0; i<ns; i++)
      {
           vert=surface.vertex()[i];
@@ -397,6 +404,8 @@ int main( int argc, const char** argv )
 	else if (poleDilation[0].item(i)==POLE_S)
 	    sud.insert(i);
     }
+        
+    // looking for two points in the pole dilations that are the furthest away from eachother.
     std::set<uint>::iterator nordIt, sudIt;
     uint pS, pN;
     float d, dP=0;
@@ -413,13 +422,83 @@ int main( int argc, const char** argv )
 	}
     for (i=0; i<ns; i++)
     {
-	if (i==pS)
-	    poleDilation[0].item(i)=POLE_S;
-	else if (i==pN)
-	    poleDilation[0].item(i)=POLE_N;
-	else
-	    poleDilation[0].item(i)=0;
+          if (i==pS)
+	          poleDilation[0].item(i)=POLE_S;
+	     else if (i==pN)
+	          poleDilation[0].item(i)=POLE_N;
+	     else
+	          poleDilation[0].item(i)=0;
     }
+
+     
+     GraphPath<short> shortest3;
+     TimeTexture<short> tmpNord(1, ns), tmpSud(1, ns), ptmpS(1, ns), ptmpN(1, ns), diltmpN(1, ns), diltmpS(1, ns);
+     
+     for (i=0; i<ns; i++)
+          if (i==pS)
+          {
+               ptmpS[0].item(i)=1;
+               ptmpN[0].item(i)=0;
+          }
+          else if (i==pN)
+          {
+               ptmpS[0].item(i)=0;
+               ptmpN[0].item(i)=1;
+          }
+          else
+          {
+               ptmpS[0].item(i)=0;
+               ptmpN[0].item(i)=0;
+          }
+     diltmpN[0]=MeshDilation<short>( surface[0], ptmpN[0], short(0), -1, 5.0, true);
+     diltmpS[0]=MeshDilation<short>( surface[0], ptmpS[0], short(0), -1, 5.0, true);
+      
+     tmpNord=shortest3.process(diltmpN, surface, 1 , int(itn), int(pN));
+     tmpSud=shortest3.process(diltmpS, surface, 1 , int(its), int(pS));
+     
+     for (i=0; i<ns; i++)
+     {
+          if ((tmpNord[0].item(i)!=0) || (tmpSud[0].item(i)!=0))
+               topRidge[0].item(i)=RIDGE_TOP;
+     }
+
+     topDilation[0]=MeshDilation<short>( surface[0], topRidge[0], short(0), -1, 10.0, true);
+     topClosing[0]=MeshErosion<short>( surface[0], topDilation[0], short(0), -1, 9.0, true);
+
+//      cout << "writing texture topClosing.tex : " << flush;
+//      Writer<TimeTexture<short> >  topClosingW( "topClosing.tex" );
+//      topClosingW.write( topClosing );
+//      cout << "done " << endl;
+     
+     topLine[0]=MeshSkeletization<short> ( surface[0], topClosing[0], short(RIDGE_TOP), short(0), neighbourso );
+     topLine[0].item(pS)=RIDGE_TOP;
+     topLine[0].item(pN)=RIDGE_TOP;
+     
+     list<unsigned> neighN=neighbourso[pN], neighS=neighbourso[pS];
+     list<unsigned>::iterator itN=neighN.begin(), itS=neighS.begin();
+     int flag=0;
+     for (; itN!=neighN.end(); ++itN)
+          if ((topLine[0].item(*itN) == RIDGE_TOP) && (*itN != pN))
+               flag=1;
+     if (flag==0)
+          cout << "North pole disconnected" << endl;
+     else cout << "North pole connected OK" << endl;
+     flag=0;
+     for (; itS!=neighS.end(); ++itS)
+          if ((topLine[0].item(*itS) == RIDGE_TOP) && (*itS != pS))
+               flag=1;
+     if (flag==0)
+          cout << "South pole disconnected" << endl;
+     else cout << "South pole connected OK" << endl;
+     
+//      cout << "writing texture topLine.tex : " << flush;
+//      Writer<TimeTexture<short> >  topLineW( "topLine.tex" );
+//      topLineW.write( topLine );
+//      cout << "done " << endl;
+
+     topRidge=shortest3.process(topLine, surface, RIDGE_TOP , int(pS), int(pN));
+     topRidge[0].item(pS)=0;
+     topRidge[0].item(pN)=0;
   
      cout << "Generating constraints" << endl;
 
@@ -458,33 +537,33 @@ int main( int argc, const char** argv )
                 coord_y[0].item(i)=50.0;
                 topR.insert(i);
            }
-           else if (botRidge[0].item(i)>0)
-           {
+          else if (botRidge[0].item(i)>0)
+          {
                 dist[0].item(i)=0;
                 coord_x[0].item(i)=100.0;
                 coord_y[0].item(i)=50.0;
                 botR.insert(i);
-           }
-           else
-           {
+          }
+          else
+          {
                 dist[0].item(i)=0;
                 coord_x[0].item(i)=50.0;
                 coord_y[0].item(i)=50.0;
-           }
-      }
+          }
+     }
 
-      cout << "writing texture topRidge.tex : " << flush;
-      Writer<TimeTexture<short> >  topRidgeW( "topRidge.tex" );
-      topRidgeW.write( topRidge );
-      cout << "done " << endl;
-      cout << "writing texture bottomRidge.tex : " << flush;
-      Writer<TimeTexture<short> >  botRidgeW( "bottomRidge.tex" );
-      botRidgeW.write( botRidge );
-      cout << "done " << endl;
-      cout << "writing texture poles.tex : " << flush;
-      Writer<TimeTexture<short> >  polesW( "poles.tex" );
-      polesW.write( poleDilation );
-      cout << "done " << endl;
+//      cout << "writing texture topRidge.tex : " << flush;
+//      Writer<TimeTexture<short> >  topRidgeW( "topRidge.tex" );
+//      topRidgeW.write( topRidge );
+//      cout << "done " << endl;
+//       cout << "writing texture bottomRidge.tex : " << flush;
+//       Writer<TimeTexture<short> >  botRidgeW( "bottomRidge.tex" );
+//       botRidgeW.write( botRidge );
+//       cout << "done " << endl;
+//      cout << "writing texture poles.tex : " << flush;
+//      Writer<TimeTexture<short> >  polesW( "poles.tex" );
+//      polesW.write( poleDilation );
+//      cout << "done " << endl;
 
 
       //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -591,15 +670,11 @@ int main( int argc, const char** argv )
 
 
      split[0]=AimsMeshLabelConnectedComponent<short>( surface[0], sides[0], 9, 0);
+
      unsigned nbSides=AimsMeshLabelNbConnectedComponent<short>( surface[0], sides[0], 10 );
      if (nbSides < 2)
      {
           cerr << "Finding " << nbSides << " sides to the principal meridian (should be 2). Exiting ..." << endl;
-          cout << "writing texture split " << endl;
-          Writer<TimeTexture<short> >  splitW( "split.tex" );
-          splitW.write( split);
-          cout << "done " << endl;
-
           exit(1);
      }
      else if (nbSides > 2)
@@ -646,7 +721,7 @@ int main( int argc, const char** argv )
      std::vector<Point3df> vertV=surface[0].vertex();
 
      FILE *laplF;
-     laplF=fopen("laplacienX.txt", "w");
+//      laplF=fopen("laplacienX.txt", "w");
 
      while (flagOut<1)
      {
@@ -701,7 +776,7 @@ int main( int argc, const char** argv )
                 coord_x[0].item(*trIt)=0;
            for ( ; brIt!=botR.end() ; ++brIt)
                 coord_x[0].item(*brIt)=100;
-           fprintf(laplF, "%.6f\n", Lmean);
+/*           fprintf(laplF, "%.6f\n", Lmean);*/
            iteration++;
            if ((iteration%200) == 0)
            {
@@ -715,7 +790,7 @@ int main( int argc, const char** argv )
                 LmeanP=Lmean;
            }
      }
-     fclose(laplF);
+/*     fclose(laplF);*/
       cout << "\nDiffusion of x coordinate stopped after " << iteration << " iterations" << endl;
 
       cout << "writing texture " << texFile_x << " : " << flush;
@@ -739,4 +814,43 @@ int main( int argc, const char** argv )
   return 1;
 }
 
+/* QUELQUES DETAILS SUR L'USINE A GAZ
 
+Top et Bottom ridges :
+----------------------
+
+- intersection buckets/maillage
+- => textures texBot et texHull à valeurs 0 ou RIDGE_TOP/RIDGE_BOT
+
+- dilatation des deux textures => topDilation/botDilation
+- fermeture des deux textures => topClosing/botClosing
+
+- squelettisation => topLine/botLine
+
+- enlève les branches avec un plus court chemin :
+     - sélection start/end points avec le "plus long plus court chemin"
+     => ibn/ibs et itn/its
+     - plus court chemin itn->its ou ibn->ibs en restant sur la valeur RIDGE_TOP ou RIDGE_BOT
+
+=> textures topRidge et botRIdge
+
+
+poles : 
+-------
+
+- 2 points calculés comme le milieu de [itn, ibn] et [its, ibs] => on prend les 2 points du maillage les plus près de ca => poleN et poleS
+- texture de poles à valeurs POLE_N et POLE_S sur les deux points : texPole
+- dilatation de texPole => poleDilation et deux listes de points, nord et sud. 
+- le couple de points de pole et sud les plus éloignés sont les poles définitifs et poleDIlation ne contient plus qu'eux. 
+
+
+finalisation du méridien 0/360 :
+------------------------------
+
+- On relie le topRidge aux poles
+- On ferme le résultat
+- Pour chacun on refait suqlette puis le plus court chemin d'un pole à l'autre.
+
+
+
+*/

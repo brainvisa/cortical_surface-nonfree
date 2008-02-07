@@ -46,7 +46,7 @@ struct _chemin
      CHEMIN *suivant;
 };
 
-class GraphPath
+template<typename Val> class GraphPath
 {
 
      public:
@@ -58,19 +58,19 @@ class GraphPath
      NOEUD * trouve_noeud(const GRAPHE *graphe, int nom);
      NOEUD * ajoute_noeud(GRAPHE *graphe, const int nom);
      void ajoute_arc(NOEUD *depart, const NOEUD *arrivee, const int cout);
-     GRAPHE * lecture_graphe(TimeTexture<float> & tex, AimsSurfaceTriangle & initmesh, float value);
+     GRAPHE * lecture_graphe(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value);
      void copie_chemin(const CHEMIN *chemin);
      void traite_chemin(const CHEMIN *chemin);
      void tous_chemins(const GRAPHE *graphe, NOEUD *depart,const NOEUD *arrivee, CHEMIN *chemin, const int cout);
-     TimeTexture<float> imprime_plus_court(int size, float value);
-     TimeTexture<float> process(TimeTexture<float> & tex, AimsSurfaceTriangle & initmesh, float value, int dep, int arr);
-     float getLongueur(TimeTexture<float> & tex, AimsSurfaceTriangle & initmesh, float value, int dep, int arr);
+     TimeTexture<Val> imprime_plus_court(int size, Val value);
+     TimeTexture<Val> process(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr);
+     float getLongueur(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr);
 
 };
 
 /* Fabrique un nouveau noeud */
-inline
-NOEUD * GraphPath::nouveau_noeud(const int nom)
+template<typename Val>
+NOEUD * GraphPath<Val>::nouveau_noeud(const int nom)
 {
      NOEUD *noeud= (NOEUD *) malloc(sizeof(NOEUD));
      if (noeud != NULL)
@@ -85,8 +85,8 @@ NOEUD * GraphPath::nouveau_noeud(const int nom)
 }
 
 /* Insere un noeud dans la liste de noeuds du graphe */
-inline
-NOEUD * GraphPath::insere_noeud(GRAPHE *graphe, NOEUD *noeud)
+template<typename Val>
+NOEUD * GraphPath<Val>::insere_noeud(GRAPHE *graphe, NOEUD *noeud)
 {
      /* Insertion */
      noeud->suivant= graphe->noeuds;
@@ -94,8 +94,8 @@ NOEUD * GraphPath::insere_noeud(GRAPHE *graphe, NOEUD *noeud)
      return noeud;
 }
 
-inline
-NOEUD * GraphPath::trouve_noeud(const GRAPHE *graphe, const int nom)
+template<typename Val>
+NOEUD * GraphPath<Val>::trouve_noeud(const GRAPHE *graphe, const int nom)
 {
      NOEUD *noeud;
 
@@ -108,8 +108,8 @@ NOEUD * GraphPath::trouve_noeud(const GRAPHE *graphe, const int nom)
 
 /* Cherche si un noeud d'apres son nom, en creee un nouveau s'il
 n'existe pas */
-inline
-NOEUD * GraphPath::ajoute_noeud(GRAPHE *graphe, const int nom)
+template<typename Val>
+NOEUD * GraphPath<Val>::ajoute_noeud(GRAPHE *graphe, const int nom)
 {
      NOEUD *noeud= trouve_noeud(graphe, nom);
 
@@ -126,8 +126,8 @@ NOEUD * GraphPath::ajoute_noeud(GRAPHE *graphe, const int nom)
      return noeud;
 }
 
-inline
-void GraphPath::ajoute_arc(NOEUD *depart, const NOEUD *arrivee, const int cout)
+template<typename Val>
+void GraphPath<Val>::ajoute_arc(NOEUD *depart, const NOEUD *arrivee, const int cout)
 {
      ARC *arc= (ARC *) malloc(sizeof(ARC));
      if (arc != NULL)
@@ -140,8 +140,8 @@ void GraphPath::ajoute_arc(NOEUD *depart, const NOEUD *arrivee, const int cout)
      }
 }
 
-inline
-GRAPHE * GraphPath::lecture_graphe(TimeTexture<float> & tex, AimsSurfaceTriangle & initmesh, float value)
+template<typename Val>
+GRAPHE * GraphPath<Val>::lecture_graphe(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value)
 {
      GRAPHE *graphe= (GRAPHE *) malloc(sizeof(GRAPHE));
 
@@ -186,8 +186,8 @@ GRAPHE * GraphPath::lecture_graphe(TimeTexture<float> & tex, AimsSurfaceTriangle
 CHEMIN *plus_court= NULL;
 int longueur= 0;
 
-inline
-void GraphPath::copie_chemin(const CHEMIN *chemin)
+template<typename Val>
+void GraphPath<Val>::copie_chemin(const CHEMIN *chemin)
 {
      longueur= 0;
      while (chemin)
@@ -199,15 +199,15 @@ void GraphPath::copie_chemin(const CHEMIN *chemin)
      }
 }
 
-inline
-void GraphPath::traite_chemin(const CHEMIN *chemin)
+template<typename Val>
+void GraphPath<Val>::traite_chemin(const CHEMIN *chemin)
 {
      if (longueur == 0 || chemin->cout < plus_court->cout)
           copie_chemin(chemin);
 }
 
-inline
-void GraphPath::tous_chemins(const GRAPHE *graphe, NOEUD *depart,
+template<typename Val>
+void GraphPath<Val>::tous_chemins(const GRAPHE *graphe, NOEUD *depart,
      const NOEUD *arrivee, CHEMIN *chemin, const int cout)
 {
      CHEMIN etape;
@@ -238,12 +238,12 @@ void GraphPath::tous_chemins(const GRAPHE *graphe, NOEUD *depart,
      }
 }
 
-inline
-TimeTexture<float> GraphPath::imprime_plus_court(int size, float value)
+template<typename Val>
+TimeTexture<Val> GraphPath<Val>::imprime_plus_court(int size, Val value)
 {
      int index;
      //std::cout<<"ImprimePlusCourt et size="<<size<<std::endl;
-     TimeTexture<float> result(1,size);
+     TimeTexture<Val> result(1,size);
      for(int i=0; i<size; i++)
           result[0].item(i)=0;
 
@@ -257,19 +257,19 @@ TimeTexture<float> GraphPath::imprime_plus_court(int size, float value)
 
           result[0].item( plus_court[index].noeud->nom )=value;
      }
-     //std::cout<<"voilà"<<std::endl;
+     //std::cout<<"voilï¿½"<<std::endl;
      return result;
 }
 
-inline
-TimeTexture<float> GraphPath::process(TimeTexture<float> & tex, AimsSurfaceTriangle & initmesh, float value, int dep, int arr)
+template<typename Val>
+TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr)
 {
-     TimeTexture<float> texFinal;
+     TimeTexture<Val> texFinal;
      GRAPHE *graphe= lecture_graphe(tex, initmesh, value);
      NOEUD *depart, *arrivee;
      plus_court= (CHEMIN *) calloc(graphe->n_noeuds, sizeof(CHEMIN));
 
-     // added by Olivier, must be discussed with Cédric
+     // added by Olivier, must be discussed with Cï¿½dric
      longueur= 0;
 
      depart= trouve_noeud(graphe, dep);
@@ -281,7 +281,7 @@ TimeTexture<float> GraphPath::process(TimeTexture<float> & tex, AimsSurfaceTrian
      texFinal=imprime_plus_court(tex[0].nItem(), value);
      //std::cout<<"OK8"<<std::endl;
 
-// commented by Olivier, must discuss it with Cédric
+// commented by Olivier, must discuss it with Cï¿½dric
 //   longueur= 0;
 // modified by Olivier
      delete plus_court;
@@ -289,7 +289,7 @@ TimeTexture<float> GraphPath::process(TimeTexture<float> & tex, AimsSurfaceTrian
      return texFinal;
 }
 
-inline float GraphPath::getLongueur(TimeTexture<float> & tex, AimsSurfaceTriangle & initmesh, float value, int dep, int arr)
+template<typename Val> float GraphPath<Val>::getLongueur(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr)
 {
      process(tex, initmesh, value, dep, arr);
      return(longueur);

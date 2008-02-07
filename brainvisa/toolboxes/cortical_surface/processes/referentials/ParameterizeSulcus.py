@@ -121,6 +121,7 @@ def execution( self, context ):
                  '--smoothIt', '20' ]
 
      apply( context.system, dilating )
+
      apply( context.system, meshing )
 
      test=self.sulcus_mesh.fullName()
