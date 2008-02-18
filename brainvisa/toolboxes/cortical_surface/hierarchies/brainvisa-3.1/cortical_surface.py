@@ -1,7 +1,7 @@
 include( 'base' )
 
 insert( '{protocol}/{subject}',
-  'surface', SetWeakAttr( 'category', 'surface coordinates'), SetContent(
+  'surface', SetContent(
     '<subject>_Lhippo', SetType( 'Left hippocampus pole texture' ), SetWeakAttr( 'side', 'left' ),
     '<subject>_Rhippo', SetType( 'Right hippocampus pole texture' ), SetWeakAttr( 'side', 'right' ),
     '<subject>_L_poles', SetType( 'Left poles texture' ), SetWeakAttr( 'side', 'left' ),

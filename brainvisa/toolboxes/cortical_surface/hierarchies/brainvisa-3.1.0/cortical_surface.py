@@ -2,7 +2,7 @@ include( 'base' )
 include( 'sulci' )
 
 insert( '{protocol}/{subject}',
-  'surface', SetWeakAttr( 'category', 'surface coordinates'), SetContent(
+  'surface', SetContent(
       ## que mettre dans les niveaux aquisition et analysis?
     '<subject>_Lhippo', SetType( 'Left hippocampus pole texture' ), SetWeakAttr( 'side', 'left' ),
     '<subject>_Rhippo', SetType( 'Right hippocampus pole texture' ), SetWeakAttr( 'side', 'right' ),
