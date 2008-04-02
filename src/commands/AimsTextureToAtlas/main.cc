@@ -10,6 +10,7 @@
 #include <string.h>
 
 using namespace aims;
+using namespace carto;
 using namespace std;
 
 
@@ -29,23 +30,33 @@ int main(int argc, const char **argv) //int argc, const char **argv)
      float px=0, py=0;
 
      AimsApplication     app( argc, argv, "Create an isoline mesh (tube) for a textured mesh");
-
-     app.addOption( adressMesh, "-i", "input mesh");
-     app.alias( "--inputMesh", "-i" );
-     app.addOption( adressTexIn, "-t", "input texture (float)");
-     app.alias( "--inputTex", "-t" );
-     app.addOption( adressTexOut, "-o", "output texture");
-     app.alias( "--outputTex", "-o" );
-     app.addOption( adressAtlas, "-a", "atlas mesh");
-     app.alias( "--atlasMesh", "-a" );
-     app.addOption( adressIx, "-ix", "mesh x-coordinate texture");
-     app.addOption( adressIy, "-iy", "mesh y-coordinate texture");
-     app.addOption( adressAx, "-ax", "atlas x-coordinate texture");
-     app.addOption( adressAy, "-ay", "atlas y-coordinate texture");
-     app.addOption( px, "-px", "x-coord period (none=0)", 0);
-     app.addOption( py, "-py", "y-coord period (none=0)", 0);
-
-     app.initialize();
+     try
+     {
+      app.addOption( adressMesh, "-i", "input mesh");
+      app.alias( "--inputMesh", "-i" );
+      app.addOption( adressTexIn, "-t", "input texture (float)");
+      app.alias( "--inputTex", "-t" );
+      app.addOption( adressTexOut, "-o", "output texture");
+      app.alias( "--outputTex", "-o" );
+      app.addOption( adressAtlas, "-a", "atlas mesh");
+      app.alias( "--atlasMesh", "-a" );
+      app.addOption( adressIx, "-ix", "mesh x-coordinate texture");
+      app.addOption( adressIy, "-iy", "mesh y-coordinate texture");
+      app.addOption( adressAx, "-ax", "atlas x-coordinate texture");
+      app.addOption( adressAy, "-ay", "atlas y-coordinate texture");
+      app.addOption( px, "-px", "x-coord period (none=0)", 0);
+      app.addOption( py, "-py", "y-coord period (none=0)", 0);
+  
+      app.initialize();
+     }
+     catch( user_interruption &)
+     {
+       return EXIT_FAILURE;
+     }
+     catch( ... )
+     {
+       throw;
+     }
 
      std::cout << "Reading all mesh and textures" << endl;
      AimsSurfaceTriangle mesh, atlas;

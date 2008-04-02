@@ -18,5 +18,5 @@ PSUBDIRS += \
   AimsPlotOnSphericalAtlas \
   AimsSulcusCorticalSnake  \
   AimsTextureToAtlas \
-
+  surfTexActivationSimulation \
 

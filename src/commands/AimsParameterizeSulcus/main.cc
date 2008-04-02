@@ -804,9 +804,9 @@ int main( int argc, const char** argv )
       return( 0 );
     }
 
-/*  catch( user_interruption & )
+  catch( user_interruption & )
     {
-    }*/
+    }
   catch( exception & e )
     {
       cerr << e.what() << endl;

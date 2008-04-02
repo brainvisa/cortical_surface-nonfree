@@ -59,7 +59,7 @@ def volumemesh( values, process ):
 
 def initialization( self ):
       self.linkParameters('kernels', 'white_mesh')
-      self.linkParameters('projection_texture', ['white_mesh','functional_volumes'] ,volumemesh)
+      self.linkParameters('projection_texture', 'white_mesh')
 
 def execution( self, context ):
       i=0

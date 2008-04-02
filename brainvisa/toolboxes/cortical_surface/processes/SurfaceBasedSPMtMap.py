@@ -143,7 +143,7 @@ def get_hrf(TR, longueur):
    dxA = dxA*TR
    dxB = N.arange(1,longueur+1,1)
    dxB = dxB*TR
-   print dxA
+   #print dxA
    
    A = gammapdf(dxA, tp1)
    B = gammapdf(dxB, tp2)
@@ -198,32 +198,49 @@ def execution( self, context ):
   tab = tab.reshape(nb_nodes,nb_scans)
   
   (TR,t_type,t_time) = streamFile(str(self.protocol_text))
-
+  print t_type
+  print t_time
+  print TR
   nb_cond = int(N.max(t_type))
   maxtime = int(N.max(t_time))
   lentype = len(t_type)
+  print lentype
+  print str(len(t_time))
   
   hrf = get_hrf(0.1, 250)
+  print 'hrf'
+  print hrf
+  print ' '
   reg = N.zeros((nb_cond+1)*nb_scans, float)
   reg = reg.reshape(nb_scans, (nb_cond+1))
   
   for i in range(0,nb_cond):
      prereg = creer_prereg(i,maxtime, 250, t_type, t_time)
      hrf_aux = N.convolve(prereg,hrf)
+     print 'prereg'
+     print prereg
+     print 'hrf_aux'
+     print int(len(hrf_aux))
+     print 'cond' + str(i)
      for j in range(0,nb_scans):
+         print str(j) + ' ' +str(int(j*TR))
+         print str(float(hrf_aux[int(j*TR)]))
          reg[j,i] = float(hrf_aux[int(j*TR)]) 
    
   reg[:,nb_cond] = baseline
 
-  B, nVB, s2, dof = G.KF_fit(tab, reg, axis=1)
-
+  #B, nVB, s2, dof = G.KF_fit(tab, reg, axis=1)
+  model = G.glm(tab, reg, axis=1)
+  model.fit(method='kalman.ar1') ## default is 'ols'
   c = N.zeros(int(nb_cond+1))
   j=0
   for i in string.split(str(self.contraste)):
     c[j] = int(i)
     j=j+1
 
-  cB, VcB, t = G.t_contrast(c, B, nVB, s2, axis=1 )
+  tcon = model.contrast(c) ## recognizes a t contrast
+  t, p, z = tcon.test(zscore=True)
+  #cB, VcB, t = G.t_contrast(c, B, nVB, s2, axis=1 )
   
   writer = aims.Writer()
   textur = aims.TimeTexture_FLOAT()

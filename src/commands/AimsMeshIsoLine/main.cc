@@ -12,6 +12,7 @@
 //#include <cortical_surface/surfacereferential/autoConstraints.h>
 
 using namespace aims;
+using namespace carto;
 using namespace std;/*
 BEGIN_USAGE(usage)
   "-------------------------------------------------------------------------",
@@ -46,7 +47,8 @@ int main(int argc, const char **argv) //int argc, const char **argv)
 	TimeTexture<float> texOriginal;
 
 	AimsApplication     app( argc, argv, "Create an isoline mesh (tube) for a textured mesh");
-
+        try
+        {
 	app.addOption( adressMesh, "-i", "input mesh");
 	app.alias( "--inputMesh", "-i" );
 	app.addOption( adressTex, "-t", "input texture (TimeTexture<float>)");
@@ -68,4 +70,14 @@ int main(int argc, const char **argv) //int argc, const char **argv)
 
 	Writer<AimsSurfaceTriangle> wm(adressOutput);
 	wm.write(meshResult);
+        return EXIT_SUCCESS;
+        }
+        catch( user_interruption & )
+        {
+        }
+        catch( ... )
+        {
+          throw;
+        }
+        return EXIT_FAILURE;
 }
