@@ -113,4 +113,18 @@ def execution( self, context ):
     '-f4x', f4[0], '-f4y', f4[1], '-f4z', f4[2], '-f4t', f4[3],
     '-f5x', f5[0], '-f5y', f5[1], '-f5z', f5[2], '-f5t', f5[3]]
   apply( context.system, process )
-      
+  reader = aims.Reader()
+  object = reader.read( str(self.output) )
+  print 'file:', object
+  h = object.header()
+  h['noise']=str(self.noise)
+  h['location']=str(self.location)
+  h['lissage']=str(self.lissage)
+  h['intensity']=str(self.intensity)
+  h['focus1']=str(f1[0]) + ' ' + str(f1[1]) + ' '  + str(f1[2]) + ' ' + str(f1[3])
+  h['focus2']=str(f2[0]) + ' ' + str(f2[1]) + ' '  + str(f2[2]) + ' ' + str(f2[3])
+  h['focus3']=str(f3[0]) + ' ' + str(f3[1]) + ' '  + str(f3[2]) + ' ' + str(f3[3])
+  h['focus4']=str(f4[0]) + ' ' + str(f4[1]) + ' '  + str(f4[2]) + ' ' + str(f4[3])
+  h['focus5']=str(f5[0]) + ' ' + str(f5[1]) + ' '  + str(f5[2]) + ' ' + str(f5[3])
+  writer = aims.Writer()
+  writer.write(object, str(self.output))
