@@ -556,10 +556,10 @@ int main( int argc, const char** argv )
 //      Writer<TimeTexture<short> >  topRidgeW( "topRidge.tex" );
 //      topRidgeW.write( topRidge );
 //      cout << "done " << endl;
-//       cout << "writing texture bottomRidge.tex : " << flush;
-//       Writer<TimeTexture<short> >  botRidgeW( "bottomRidge.tex" );
-//       botRidgeW.write( botRidge );
-//       cout << "done " << endl;
+//      cout << "writing texture bottomRidge.tex : " << flush;
+//      Writer<TimeTexture<short> >  botRidgeW( "bottomRidge.tex" );
+//      botRidgeW.write( botRidge );
+//      cout << "done " << endl;
 //      cout << "writing texture poles.tex : " << flush;
 //      Writer<TimeTexture<short> >  polesW( "poles.tex" );
 //      polesW.write( poleDilation );

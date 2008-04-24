@@ -639,8 +639,8 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 	
 		//On passe un coup de PCC pour reperer les extremites les plus eloignees
 	
-	int path_max=0;
-	int path_temp=0;
+	float path_max=0;
+	float path_temp=0;
 	int ext1=0, ext2=0;
 	TimeTexture<float> tex_path(1,size);
 	TimeTexture<float> tex_path_temp(1,size);

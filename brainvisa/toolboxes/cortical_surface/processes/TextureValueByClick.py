@@ -33,7 +33,8 @@
 # knowledge of the CeCILL license version 2 and that you accept its terms.
 
 from neuroProcesses import *
-import shfjGlobals     
+import shfjGlobals
+from math import *
 
 name = 'Texture Value By Click'
 userLevel = 2
@@ -49,8 +50,7 @@ def initialization( self ):
 
 def execution( self, context ):
   from soma import aims
-  from math import *
-  import sys,os,string 
+  import sys,os,string
   point = []
   point = self.point
   reader = aims.Reader()

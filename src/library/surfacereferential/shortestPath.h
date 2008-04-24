@@ -50,8 +50,8 @@ template<typename Val> class GraphPath
 {
 
      public:
-          GraphPath()
-          {}
+     
+     GraphPath() {plus_court=NULL; longueur =0;}
 
      NOEUD * nouveau_noeud(const int nom);
      NOEUD * insere_noeud(GRAPHE *graphe, NOEUD *noeud);
@@ -65,7 +65,12 @@ template<typename Val> class GraphPath
      TimeTexture<Val> imprime_plus_court(int size, Val value);
      TimeTexture<Val> process(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr);
      float getLongueur(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr);
-
+     TimeTexture<Val> cleanPath(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh);
+     
+     protected:
+     
+     CHEMIN *plus_court;
+     int longueur;
 };
 
 /* Fabrique un nouveau noeud */
@@ -183,8 +188,8 @@ GRAPHE * GraphPath<Val>::lecture_graphe(TimeTexture<Val> & tex, AimsSurfaceTrian
      return graphe;
 }
 
-CHEMIN *plus_court= NULL;
-int longueur= 0;
+
+// GLOBAL VARIABLE (!!!!!!) WAS THERE
 
 template<typename Val>
 void GraphPath<Val>::copie_chemin(const CHEMIN *chemin)
@@ -264,28 +269,26 @@ TimeTexture<Val> GraphPath<Val>::imprime_plus_court(int size, Val value)
 template<typename Val>
 TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr)
 {
-     TimeTexture<Val> texFinal;
+     TimeTexture<Val> texDirty, texFinal;
      GRAPHE *graphe= lecture_graphe(tex, initmesh, value);
      NOEUD *depart, *arrivee;
      plus_court= (CHEMIN *) calloc(graphe->n_noeuds, sizeof(CHEMIN));
 
-     // added by Olivier, must be discussed with C�dric
      longueur= 0;
 
      depart= trouve_noeud(graphe, dep);
      arrivee= trouve_noeud(graphe, arr);
-     //std::cout<<"Depart="<<dep<<" et arrivee="<<arr<<std::endl;
      tous_chemins(graphe, depart, arrivee, NULL, 0);
 
-     //std::cout<<"OK7"<<std::endl;
-     texFinal=imprime_plus_court(tex[0].nItem(), value);
-     //std::cout<<"OK8"<<std::endl;
+     texDirty=imprime_plus_court(tex[0].nItem(), value);
 
-// commented by Olivier, must discuss it with C�dric
-//   longueur= 0;
-// modified by Olivier
      delete plus_court;
-
+     
+     texFinal=cleanPath(texDirty, initmesh);  // hack to solve a bug (Olivier)
+//      // Shortest path sometimes include triangles. I have not programmed this and I cannot
+//      // find the problem so I decided to work around it with a postprocessing of the texture
+//      // obviously this is a dirty hack;
+// 
      return texFinal;
 }
 
@@ -295,6 +298,88 @@ template<typename Val> float GraphPath<Val>::getLongueur(TimeTexture<Val> & tex,
      return(longueur);
 }
 
+
+template<typename Val> TimeTexture<Val> GraphPath<Val>::cleanPath(TimeTexture<Val> & path, AimsSurfaceTriangle & initmesh)
+{
+
+     uint i, j; 
+     uint ns=path[0].nItem();
+     TimeTexture<Val> newPath(1, ns);
+     std::vector<std::set<uint> > neigh;
+     std::set<uint> setPath;
+     std::set<uint> remove;
+     std::map<uint, int> nbIn;
+     neigh = SurfaceManip::surfaceNeighbours( initmesh );
+     std::set<uint> listN, listN2;
+     std::set<uint>::iterator itN, itN2; 
+     
+     
+//      std::cout << "DEBUG : Start cleaning" << std::endl;
+
+     for (i=0; i<ns; i++)
+          newPath[0].item(i)=path[0].item(i);
+          
+//      std::cout << "DEBUG : step1" << std::endl;
+
+     for (i=0; i<ns; i++)
+     {
+          if (path[0].item(i)!=0)
+          {
+               setPath.insert(i);
+               listN=neigh[i];
+               itN=listN.begin();
+               int countN=0;
+               for ( ; itN!=listN.end(); ++itN)
+               {
+                    if (path[0].item(*itN)!=0)
+                         countN++;
+               }
+               nbIn[i]=countN;
+          }
+     }
+     
+//      std::cout << "DEBUG : step2" << std::endl;
+
+     std::set<uint>::iterator setN=setPath.begin();
+     for ( ; setN!=setPath.end(); ++setN)
+     {
+          i=*setN;
+          if (nbIn[i]==3)
+          {
+               listN=neigh[i];
+               itN=listN.begin();
+               for ( ; itN!=listN.end(); ++itN)
+               {
+                    j=*itN;
+                    if ((nbIn.find(j)!=nbIn.end()) && (nbIn[j]==3))
+                    {
+                         listN2=neigh[j];
+                         itN2=listN2.begin();
+                         for ( ; itN2!=listN2.end(); ++itN2)
+                         {
+                              if ((nbIn.find(*itN2)!=nbIn.end()) && (nbIn[*itN2]==2) && (listN.find(*itN2)!=listN.end()))
+                                   remove.insert(*itN2);
+                         }
+                    }
+               }
+          }
+     }
+     
+//      std::cout << "DEBUG : step3" << std::endl;
+
+     std::set<uint>::iterator removeIt;
+     for (removeIt=remove.begin(); removeIt!=remove.end(); ++removeIt)
+     {
+          newPath[0].item(*removeIt)=(Val) 0;
+     }
+     
+//      std::cout << "DEBUG : writing cleaning results" << std::endl;
+//      Writer<TimeTexture<Val> >  tex1W( "/home/olivier/beforeClean.tex" );
+//      tex1W.write( path );
+//      Writer<TimeTexture<Val> >  tex2W( "/home/olivier/afterClean.tex" );
+//      tex2W.write( newPath );     
+     return newPath;
+}
 
 
 }
