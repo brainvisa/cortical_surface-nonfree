@@ -62,7 +62,7 @@ int main( int argc, const char** argv )
      vector<set<uint> >  neigh = SurfaceManip::surfaceNeighbours(surface);
      
      uint i, nVert=surface.vertex().size();
-     TimeTexture<float> texOut(1, nVert);
+     TimeTexture<short> texOut(1, nVert);
      vector<Point3df>  vert=surface.vertex();
 
      cout << "computing normals" << endl;
@@ -92,15 +92,38 @@ int main( int argc, const char** argv )
           n=n/n.norm();
           vp=vectProduct(gradLat, gradLon); 
           sign=vp.dot(n);
-//           if (sign>0)
-//                texOut[0].item(i)=1;
-//           else if (sign<0)
-//                texOut[0].item(i)=-1;
-//           else
-//                texOut[0].item(i)=0;
-          texOut[0].item(i)=sign;
+          if (sign>0)
+               texOut[0].item(i)=1;
+          else if (sign<0)
+               texOut[0].item(i)=-1;
+          else
+               texOut[0].item(i)=0;
+/*          texOut[0].item(i)=sign;*/
      }
-     Writer<TimeTexture<float> > texOutW( fileOut );
+
+     cout << "Postprocessing check" << endl;
+     for (i=0; i<nVert; i++)
+     {
+          set<uint> v=neigh[i];
+          set<uint>::iterator vIt=v.begin();
+          uint j, count=0;          
+          for ( ; vIt!=v.end(); ++vIt)
+          {
+               j=*vIt;
+               if (texOut[0].item(i) == texOut[0].item(j))
+                    count++;
+          }
+          if (count==0)
+          {
+               if (texOut[0].item(i) == 1)
+                    texOut[0].item(i) = -1;
+               else if (texOut[0].item(i) == -1)
+                    texOut[0].item(i) = 1;
+          }
+     }
+     cout << "OK. Writing texture " << fileOut << endl;
+
+     Writer<TimeTexture<short> > texOutW( fileOut );
      texOutW << texOut ;
      return EXIT_SUCCESS;
   }
