@@ -30,6 +30,12 @@ class CppComponent_cortical_surface( GenericMakerComponent ):
                'config-cpp-library.template', 
                'config-cpp-plugin.template' ) ]
 
+  def filesToPack( self ):
+    # avoid packaging twice...
+    return []
+
+  def packageDocs( self ):
+    pass
 
 
 #-----------------------------------------------------------------------------

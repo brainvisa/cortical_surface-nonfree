@@ -60,6 +60,7 @@ def initialization( self ):
 
 def execution( self, context ):
      sulcusIm=context.temporary( 'GIS image' )
+     closedIm=context.temporary( 'GIS image' )
      hullIm=context.temporary(  'GIS image' )
      bottomIm=context.temporary(  'GIS image' )
      simplesurf=context.temporary( 'GIS image' )
@@ -106,21 +107,29 @@ def execution( self, context ):
                          label_attributes = self.label_attributes,
                          label_values = self.label_values,
                          node_edge_types='All' )
+
      dilating = [ 'AimsDilation',
                  '-i', sulcusIm.fullPath(),
                  '-o', dilatedIm.fullPath(),
                  '-e', self.dilation ]
 
+     apply( context.system, dilating )
+
+     closing = [ 'AimsClosing',
+                 '-i', dilatedIm.fullPath(),
+                 '-o', closedIm.fullPath(),
+                 '-r', 2 ]
+
+     apply( context.system, closing )
+
      context.write('Remeshing sulcus')
 
      meshing = [ 'AimsMesh',
-                 '-i', dilatedIm.fullPath(),
+                 '-i', closedIm.fullPath(),
                  '-o', self.sulcus_mesh.fullPath(),
                  '-l', '32767',
                  '--smooth',
                  '--smoothIt', '20' ]
-
-     apply( context.system, dilating )
 
      apply( context.system, meshing )
 

@@ -80,8 +80,9 @@ int main( int argc, const char** argv )
           for ( ; vIt!=v.end(); ++vIt)
           {
                j=*vIt;
-               glat=texLat[0].item(j)-texLat[0].item(i);
-               glon=texLon[0].item(j)-texLon[0].item(i);
+               Point3df dist=vert[j]-vert[i];
+               glat=(texLat[0].item(j)-texLat[0].item(i))/dist.norm();
+               glon=(texLon[0].item(j)-texLon[0].item(i))/dist.norm();
                if (glat>latM) {latM=glat; jlat=j;}
                if (glon>lonM) {lonM=glon; jlon=j;}
           }

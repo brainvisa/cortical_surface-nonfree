@@ -158,12 +158,20 @@ int main( int argc, const char** argv )
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // dilation of ridges
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      topDilation[0]=MeshDilation<short>( surface[0], texHull[0], short(0), -1, 6.0, true);
+      topDilation[0]=MeshDilation<short>( surface[0], texHull[0], short(0), -1, 6.0, true); 
       botDilation[0]=MeshDilation<short>( surface[0], texBot[0], short(0), -1, 6.0, true);
-      topClosing[0]=MeshErosion<short>( surface[0], topDilation[0], short(0), -1, 6.0, true);
+      topClosing[0]=MeshErosion<short>( surface[0], topDilation[0], short(0), -1, 6.0, true);// was 6.0
       botClosing[0]=MeshErosion<short>( surface[0], botDilation[0], short(0), -1, 6.0, true);
 
-
+//       cout << "writing texture botDilation : " << flush;
+//      Writer<TimeTexture<short> >  botDilationW( "botDilation.tex" );
+//      botDilationW.write( botDilation );
+//      cout << "done " << endl;
+//       cout << "writing texture botClose : " << flush;
+//      Writer<TimeTexture<short> >  botCloseW( "botClose.tex" );
+//      botCloseW.write( botClosing );
+//      cout << "done " << endl;
+     
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // skeletization/thinnning of ridges
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -172,9 +180,16 @@ int main( int argc, const char** argv )
       topLine[0]=MeshSkeletization<short> ( surface[0], topClosing[0], short(RIDGE_TOP), short(0), neighbourso );
       botLine[0]=MeshSkeletization<short> ( surface[0], botClosing[0], short(RIDGE_BOT), short(0), neighbourso );
 
+//       cout << "writing texture botLine : " << flush;
+//      Writer<TimeTexture<short> >  botLineW( "botLine.tex" );
+//      botLineW.write( botLine );
+//      cout << "done " << endl;
+
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // removing branches and triangles from skeletons using a graph shortest path algorithm
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+     cout << "\t Removing branches" << endl;
      GraphPath<float> shortest;
      TimeTexture<short> topRidge(1,ns), botRidge(1,ns);
      TimeTexture<float> tmpTop(1, ns), tmpBot(1,ns), tmpRB(1,ns), tmpRT(1,ns);
@@ -249,6 +264,7 @@ int main( int argc, const char** argv )
           }
      }
 
+     cout << "\t OK, about to chose end points" << endl;
      // the choice of the start/end points is done amongst the candidates.
      // for each pair of points the shortest path within the skezleton is
      // computed. The pair having the longest of the shortest path is the one
@@ -358,6 +374,23 @@ int main( int argc, const char** argv )
           
      tmpRT=shortest2.process(tmpTop, surface, RIDGE_TOP, itn, its);
      tmpRB=shortest2.process(tmpBot, surface, RIDGE_BOT, ibn, ibs);
+
+//      cout << "writing texture tmpRT : " << flush;
+//      Writer<TimeTexture<float> >  tmpRTW( "tmpRT.tex" );
+//      tmpRTW.write( tmpRT );
+//      cout << "done " << endl;
+//      cout << "writing texture tmpTop : " << flush;
+//      Writer<TimeTexture<float> >  tmpTopW( "tmpTop.tex" );
+//      tmpTopW.write( tmpTop );
+//      cout << "done " << endl;
+//      cout << "writing texture tmpRB : " << flush;
+//      Writer<TimeTexture<float> >  tmpRBW( "tmpRB.tex" );
+//      tmpRBW.write( tmpRB );
+//      cout << "done " << endl;
+//      cout << "writing texture tmpBot : " << flush;
+//      Writer<TimeTexture<float> >  tmpBotW( "tmpBot.tex" );
+//      tmpBotW.write( tmpBot );
+//      cout << "done " << endl;
           
           //quick convertBack
      for (i=0; i<ns; i++)
@@ -366,6 +399,7 @@ int main( int argc, const char** argv )
           botRidge[0].item(i)=int(floor(tmpRB[0].item(i) + 0.5));
      }
 
+     cout << "Computation of pole seeds" << endl;
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // computation of pole seeds
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -396,6 +430,7 @@ int main( int argc, const char** argv )
 
      poleDilation[0]=MeshDilation<short>( surface[0], texPole[0], short(0), -1, 5.0, true);
 
+cout << "\t Pole dilation done" << endl;
     std::set<uint> nord, sud;
     for (i=0; i<ns; i++)
     {
@@ -452,9 +487,18 @@ int main( int argc, const char** argv )
           }
      diltmpN[0]=MeshDilation<short>( surface[0], ptmpN[0], short(0), -1, 5.0, true);
      diltmpS[0]=MeshDilation<short>( surface[0], ptmpS[0], short(0), -1, 5.0, true);
-      
+
+//       cout << "\t Starting shortest path" << endl;
+
+//       Writer<TimeTexture<short> > tmpW1("diltmpN.tex");
+//       Writer<TimeTexture<short> > tmpW2("diltmpS.tex");
+//       tmpW1.write(diltmpN);
+//       tmpW2.write(diltmpS);
      tmpNord=shortest3.process(diltmpN, surface, 1 , int(itn), int(pN));
+/*      cout << "North : done" << endl;*/
      tmpSud=shortest3.process(diltmpS, surface, 1 , int(its), int(pS));
+/*      cout << "South : done" << endl;*/
+/*     cout << "OK" << endl;*/
      
      for (i=0; i<ns; i++)
      {
@@ -506,6 +550,8 @@ int main( int argc, const char** argv )
      TimeTexture<float> init(1,ns), dist(1,ns);
      TimeTexture<short> poleCC(1,ns), topCC, botCC;
 
+
+     cout << "Building constraints sets" << endl;
 
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // Building the two sets of constraints
@@ -667,11 +713,24 @@ int main( int argc, const char** argv )
       }
 
       // splitting 'sides' in two separate components
-
-
+      
+//      cout << "Writing Top Ridge" << endl;
+//      Writer<TimeTexture<short> > topridgeW("topridge.tex");
+//      topridgeW.write(topRidge);
+//      cout << "Done" << endl;
+//      cout << "Writing Sides" << endl;
+//      Writer<TimeTexture<short> > sideW("sides.tex");
+//      sideW.write(sides);
+//      cout << "Done" << endl;
+     cout << "splitting ... " << flush;
      split[0]=AimsMeshLabelConnectedComponent<short>( surface[0], sides[0], 9, 0);
+     cout << "OK" << endl;
 
+
+     cout << "Getting nb connected components : " << flush;
      unsigned nbSides=AimsMeshLabelNbConnectedComponent<short>( surface[0], sides[0], 10 );
+     cout << "found " << nbSides << endl;
+     
      if (nbSides < 2)
      {
           cerr << "Finding " << nbSides << " sides to the principal meridian (should be 2). Exiting ..." << endl;
