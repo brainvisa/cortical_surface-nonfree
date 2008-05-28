@@ -240,6 +240,7 @@ void GraphPath<Val>::tous_chemins(const GRAPHE *graphe, NOEUD *depart,
           }
 
           depart->marque= 0;
+/*          std::cout << "+" << std::flush;*/
      }
 }
 
@@ -276,19 +277,48 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
 
      longueur= 0;
 
+     // special case that generates a bug : the two points are neighbors
+
+     std::vector<std::set<uint> > neigh;
+     std::set<uint> depNeigh;
+     neigh = SurfaceManip::surfaceNeighbours( initmesh );
+     depNeigh=neigh[dep];
+     if (depNeigh.find(arr) != depNeigh.end())
+     {
+/*          std::cout << "\t\t\t Shortest::process -> neighbors !!!!" << std::endl;*/
+          uint ns=tex[0].nItem();
+          texFinal=TimeTexture<Val>(1, ns);
+          for (uint i=0; i<ns; i++)
+          {
+               if ((i==arr) || (i==dep))
+                    texFinal[0].item(i)=(Val) 1;
+               else
+                    texFinal[0].item(i)=(Val) 0;
+          }
+     }
+     else
+     {
      depart= trouve_noeud(graphe, dep);
      arrivee= trouve_noeud(graphe, arr);
+/*     std::cout << "\t\t\t Shortest::process -> Tous chemins" << std::endl;*/
      tous_chemins(graphe, depart, arrivee, NULL, 0);
+    
+//      std::cout << "\t\t\t Shortest::process -> Imprime plus court" << std::endl;
 
      texDirty=imprime_plus_court(tex[0].nItem(), value);
 
+//      std::cout << "\t\t\t Shortest::process -> Clean" << std::endl;
+
      delete plus_court;
-     
      texFinal=cleanPath(texDirty, initmesh);  // hack to solve a bug (Olivier)
 //      // Shortest path sometimes include triangles. I have not programmed this and I cannot
 //      // find the problem so I decided to work around it with a postprocessing of the texture
 //      // obviously this is a dirty hack;
-// 
+//
+
+/*     std::cout << "\t\t\t Shortest::process -> OK" << std::endl;*/
+     }
+
      return texFinal;
 }
 

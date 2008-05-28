@@ -26,6 +26,7 @@
 #include <aims/connectivity/meshcc_d.h>
 #include <aims/morphology/morphology_g.h>
 #include <cortical_surface/surfacereferential/shortestPath.h>
+#include <cortical_surface/mesh/linkPath.h>
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
 #include <aims/getopt/getopt2.h>
@@ -127,7 +128,7 @@ int main( int argc, const char** argv )
                          topLine(1,ns), botLine(1,ns);
 
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-     // computing intersection of mesh with bottom and hull image for selction of "ridges"
+     // computing intersection of mesh with bottom and hull image for selection of "ridges"
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
       cout << "Detecting top and bottom ridges" << endl;
@@ -163,13 +164,13 @@ int main( int argc, const char** argv )
       topClosing[0]=MeshErosion<short>( surface[0], topDilation[0], short(0), -1, 6.0, true);// was 6.0
       botClosing[0]=MeshErosion<short>( surface[0], botDilation[0], short(0), -1, 6.0, true);
 
-//       cout << "writing texture botDilation : " << flush;
-//      Writer<TimeTexture<short> >  botDilationW( "botDilation.tex" );
-//      botDilationW.write( botDilation );
+//      cout << "writing texture botClosing : " << flush;
+//      Writer<TimeTexture<short> >  botClosingW( "botClosing.tex" );
+//      botClosingW.write( botClosing );
 //      cout << "done " << endl;
-//       cout << "writing texture botClose : " << flush;
-//      Writer<TimeTexture<short> >  botCloseW( "botClose.tex" );
-//      botCloseW.write( botClosing );
+//      cout << "writing texture topClosing : " << flush;
+//      Writer<TimeTexture<short> >  topClosingW( "topClosing.tex" );
+//      topClosingW.write( topClosing );
 //      cout << "done " << endl;
      
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -180,9 +181,12 @@ int main( int argc, const char** argv )
       topLine[0]=MeshSkeletization<short> ( surface[0], topClosing[0], short(RIDGE_TOP), short(0), neighbourso );
       botLine[0]=MeshSkeletization<short> ( surface[0], botClosing[0], short(RIDGE_BOT), short(0), neighbourso );
 
-//       cout << "writing texture botLine : " << flush;
+//      cout << "writing texture botLine : " << flush;
 //      Writer<TimeTexture<short> >  botLineW( "botLine.tex" );
 //      botLineW.write( botLine );
+//      cout << "writing texture topLine : " << flush;
+//      Writer<TimeTexture<short> >  topLineW( "topLine.tex" );
+//      topLineW.write( topLine );
 //      cout << "done " << endl;
 
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -363,9 +367,7 @@ int main( int argc, const char** argv )
      }
 
      float zf;
-//     , ztn=10000, zbn=10000, zts=-10000, zbs=-10000;
      float yf;
-//     , ytn=10000, ybn=10000, yts=-10000, ybs=-10000;
      float xf;
      Point3df vert;
 
@@ -374,35 +376,35 @@ int main( int argc, const char** argv )
           
      tmpRT=shortest2.process(tmpTop, surface, RIDGE_TOP, itn, its);
      tmpRB=shortest2.process(tmpBot, surface, RIDGE_BOT, ibn, ibs);
-
-//      cout << "writing texture tmpRT : " << flush;
-//      Writer<TimeTexture<float> >  tmpRTW( "tmpRT.tex" );
-//      tmpRTW.write( tmpRT );
-//      cout << "done " << endl;
-//      cout << "writing texture tmpTop : " << flush;
-//      Writer<TimeTexture<float> >  tmpTopW( "tmpTop.tex" );
-//      tmpTopW.write( tmpTop );
-//      cout << "done " << endl;
-//      cout << "writing texture tmpRB : " << flush;
-//      Writer<TimeTexture<float> >  tmpRBW( "tmpRB.tex" );
-//      tmpRBW.write( tmpRB );
-//      cout << "done " << endl;
-//      cout << "writing texture tmpBot : " << flush;
-//      Writer<TimeTexture<float> >  tmpBotW( "tmpBot.tex" );
-//      tmpBotW.write( tmpBot );
-//      cout << "done " << endl;
           
           //quick convertBack
      for (i=0; i<ns; i++)
      {
-          topRidge[0].item(i)=int(floor(tmpRT[0].item(i) + 0.5));
-          botRidge[0].item(i)=int(floor(tmpRB[0].item(i) + 0.5));
+          int val;
+          if (int(floor(tmpRT[0].item(i) + 0.5))!=0) val=RIDGE_TOP;
+          else val=0;
+          topRidge[0].item(i)=val;
+          if (int(floor(tmpRB[0].item(i) + 0.5))!=0) val=RIDGE_BOT;
+          else val=0;
+          botRidge[0].item(i)=val;
      }
+     
+//      cout << "writing texture topRidge : " << flush;
+//      Writer<TimeTexture<short> >  topRidgeW( "topRidge.tex" );
+//      topRidgeW.write( topRidge );
+//      cout << "done " << endl;
+//      cout << "writing texture botRidge : " << flush;
+//      Writer<TimeTexture<short> >  botRidgeW( "botRidge.tex" );
+//      botRidgeW.write( botRidge );
+//      cout << "done " << endl;
+     
 
-     cout << "Computation of pole seeds" << endl;
+
+
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // computation of pole seeds
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     cout << "Computation of pole seeds" << endl;
      float xnt, xnb, xst, xsb, xn, xs;
      float ynt, ynb, yst, ysb, yn, ys;
      float znt, znb, zst, zsb, zn, zs;
@@ -430,45 +432,56 @@ int main( int argc, const char** argv )
 
      poleDilation[0]=MeshDilation<short>( surface[0], texPole[0], short(0), -1, 5.0, true);
 
-cout << "\t Pole dilation done" << endl;
-    std::set<uint> nord, sud;
-    for (i=0; i<ns; i++)
-    {
-	if (poleDilation[0].item(i)==POLE_N)
-	    nord.insert(i);
-	else if (poleDilation[0].item(i)==POLE_S)
-	    sud.insert(i);
-    }
+     cout << "\t Pole dilation done" << endl;
+     std::set<uint> nord, sud;
+     for (i=0; i<ns; i++)
+     {
+	     if (poleDilation[0].item(i)==POLE_N)
+	          nord.insert(i);
+	     else if (poleDilation[0].item(i)==POLE_S)
+	          sud.insert(i);
+     }
+     
         
-    // looking for two points in the pole dilations that are the furthest away from eachother.
-    std::set<uint>::iterator nordIt, sudIt;
-    uint pS, pN;
-    float d, dP=0;
-    Point3df vS, vN;
-    for (sudIt=sud.begin(); sudIt!=sud.end(); ++sudIt)
-	for (nordIt=nord.begin(); nordIt!=nord.end(); ++nordIt)
-	{
-	    vS=surface.vertex()[*sudIt];
-	    vN=surface.vertex()[*nordIt];
-	    d=sqrt( (vS[0]-vN[0])*(vS[0]-vN[0]) + 
-		    (vS[1]-vN[1])*(vS[1]-vN[1]) +
-		    (vS[2]-vN[2])*(vS[2]-vN[2]) ); 
-	    if (d>dP) {dP=d; pS=*sudIt; pN=*nordIt;}
-	}
-    for (i=0; i<ns; i++)
-    {
+     // looking for two points in the pole dilations that are the furthest away from eachother.
+     cout << "Looking for two points the furthest away from eachother" << endl;
+     std::set<uint>::iterator nordIt, sudIt;
+     uint pS, pN;
+     float d, dP=0;
+     Point3df vS, vN;
+     for (sudIt=sud.begin(); sudIt!=sud.end(); ++sudIt)
+	     for (nordIt=nord.begin(); nordIt!=nord.end(); ++nordIt)
+	     {
+	          vS=surface.vertex()[*sudIt];
+	          vN=surface.vertex()[*nordIt];
+	          d=sqrt( (vS[0]-vN[0])*(vS[0]-vN[0]) + 
+		          (vS[1]-vN[1])*(vS[1]-vN[1]) +
+		          (vS[2]-vN[2])*(vS[2]-vN[2]) ); 
+	          if (d>dP) {dP=d; pS=*sudIt; pN=*nordIt;}
+	     }
+     for (i=0; i<ns; i++)
+     {
           if (i==pS)
 	          poleDilation[0].item(i)=POLE_S;
 	     else if (i==pN)
 	          poleDilation[0].item(i)=POLE_N;
 	     else
 	          poleDilation[0].item(i)=0;
-    }
+     }
 
+//      cout << "writing texture poles : " << flush;
+//      Writer<TimeTexture<short> >  polesW( "poles.tex" );
+//      polesW.write( poleDilation );
+
+     cout << "OK" << endl;
+
+     // At this stage poleDilation contains POLE_S and POLE_N 
+     // at the poles and 0 elsewhere
      
-     GraphPath<short> shortest3;
+/*     GraphPath<short> shortest3;*/
      TimeTexture<short> tmpNord(1, ns), tmpSud(1, ns), ptmpS(1, ns), ptmpN(1, ns), diltmpN(1, ns), diltmpS(1, ns);
-     
+
+     cout << "Building ptmpS&N" << endl;;
      for (i=0; i<ns; i++)
           if (i==pS)
           {
@@ -485,64 +498,67 @@ cout << "\t Pole dilation done" << endl;
                ptmpS[0].item(i)=0;
                ptmpN[0].item(i)=0;
           }
-     diltmpN[0]=MeshDilation<short>( surface[0], ptmpN[0], short(0), -1, 5.0, true);
-     diltmpS[0]=MeshDilation<short>( surface[0], ptmpS[0], short(0), -1, 5.0, true);
-
-//       cout << "\t Starting shortest path" << endl;
-
-//       Writer<TimeTexture<short> > tmpW1("diltmpN.tex");
-//       Writer<TimeTexture<short> > tmpW2("diltmpS.tex");
-//       tmpW1.write(diltmpN);
-//       tmpW2.write(diltmpS);
-     tmpNord=shortest3.process(diltmpN, surface, 1 , int(itn), int(pN));
-/*      cout << "North : done" << endl;*/
-     tmpSud=shortest3.process(diltmpS, surface, 1 , int(its), int(pS));
-/*      cout << "South : done" << endl;*/
-/*     cout << "OK" << endl;*/
+     // connection of topRidge to Poles
+     cout << "Done" << endl;
+     cout << "OK. Connecting topRidge to Poles" << endl;
      
-     for (i=0; i<ns; i++)
+     if (topRidge[0].item(pS) == 0)
      {
-          if ((tmpNord[0].item(i)!=0) || (tmpSud[0].item(i)!=0))
-               topRidge[0].item(i)=RIDGE_TOP;
+          cout << "\t Pole Sud" << endl;
+          topRidge[0].item(pS) = POLE_S;
+          ConnectMeshPath<short> conn_ts(surface, topRidge, RIDGE_TOP, POLE_S);
+          topRidge[0]=conn_ts.run(RIDGE_TOP);
+     }
+     if (topRidge[0].item(pN) == 0)
+     {
+          cout << "\t Pole Nord" << endl;
+          topRidge[0].item(pN) = POLE_N;
+          ConnectMeshPath<short> conn_tn(surface, topRidge, RIDGE_TOP, POLE_N);
+          topRidge[0]=conn_tn.run(RIDGE_TOP);
+     }
+     
+     // connection of botRidge to Poles 
+     
+     // the following shortest path removes rare cases where there is a pb
+     // (pole not at the extremity of the ridge)
+     cout << "\t Cleaning" << endl;
+     GraphPath<short> shortestExt;
+     topRidge=shortestExt.process(topRidge, surface, RIDGE_TOP, pN, pS);
+     cout << "OK. Connecting botRidge to Poles" << flush;
+//      cout << "writing texture topRidgeConnected : " << flush;
+//      Writer<TimeTexture<short> >  topRidgeConW( "topRidgeConnected.tex" );
+//      topRidgeConW.write( topRidge );
+//      cout << "done " << endl;
+     
+     if (botRidge[0].item(pS) == 0)
+     {
+          cout << "\t Pole Sud" << endl;
+          botRidge[0].item(pS) = POLE_S;
+          ConnectMeshPath<short> conn_bs(surface, botRidge, RIDGE_BOT, POLE_S);
+          botRidge[0]=conn_bs.run(RIDGE_BOT);
+     }
+     if (botRidge[0].item(pN) == 0)
+     {
+          cout << "\t Pole Nord" << endl;
+          botRidge[0].item(pN) = POLE_N;
+          ConnectMeshPath<short> conn_bn(surface, botRidge, RIDGE_BOT, POLE_N);
+          botRidge[0]=conn_bn.run(RIDGE_BOT);
      }
 
-     topDilation[0]=MeshDilation<short>( surface[0], topRidge[0], short(0), -1, 10.0, true);
-     topClosing[0]=MeshErosion<short>( surface[0], topDilation[0], short(0), -1, 9.0, true);
-
-//      cout << "writing texture topClosing.tex : " << flush;
-//      Writer<TimeTexture<short> >  topClosingW( "topClosing.tex" );
-//      topClosingW.write( topClosing );
-//      cout << "done " << endl;
-     
-     topLine[0]=MeshSkeletization<short> ( surface[0], topClosing[0], short(RIDGE_TOP), short(0), neighbourso );
-     topLine[0].item(pS)=RIDGE_TOP;
-     topLine[0].item(pN)=RIDGE_TOP;
-     
-     list<unsigned> neighN=neighbourso[pN], neighS=neighbourso[pS];
-     list<unsigned>::iterator itN=neighN.begin(), itS=neighS.begin();
-     int flag=0;
-     for (; itN!=neighN.end(); ++itN)
-          if ((topLine[0].item(*itN) == RIDGE_TOP) && (*itN != pN))
-               flag=1;
-     if (flag==0)
-          cout << "North pole disconnected" << endl;
-     else cout << "North pole connected OK" << endl;
-     flag=0;
-     for (; itS!=neighS.end(); ++itS)
-          if ((topLine[0].item(*itS) == RIDGE_TOP) && (*itS != pS))
-               flag=1;
-     if (flag==0)
-          cout << "South pole disconnected" << endl;
-     else cout << "South pole connected OK" << endl;
-     
-//      cout << "writing texture topLine.tex : " << flush;
-//      Writer<TimeTexture<short> >  topLineW( "topLine.tex" );
-//      topLineW.write( topLine );
+     // at this stage, bottom and top ridge are linked to poles in topRidge and botRidge
+     cout << "\t Cleaning" << endl;
+     botRidge=shortestExt.process(botRidge, surface, RIDGE_BOT, pN, pS);
+     cout << "OK" << endl;
+//      cout << "writing texture botRidgeConnected : " << flush;
+//      Writer<TimeTexture<short> >  botRidgeConW( "botRidgeConnected.tex" );
+//      botRidgeConW.write( botRidge );
 //      cout << "done " << endl;
 
-     topRidge=shortest3.process(topLine, surface, RIDGE_TOP , int(pS), int(pN));
+     // Here the poles are removed from the ridges 
      topRidge[0].item(pS)=0;
      topRidge[0].item(pN)=0;
+     botRidge[0].item(pS)=0;
+     botRidge[0].item(pN)=0;
   
      cout << "Generating constraints" << endl;
 
@@ -562,14 +578,14 @@ cout << "\t Pole dilation done" << endl;
       float p1v=0.0, p2v=100.0;
       for (i=0; i<ns; i++)
       {
-           if (poleDilation[0].item(i)==POLE_N)
+           if (i==pN)
            {
                 dist[0].item(i)=0;
                 coord_x[0].item(i)=-100.0;
                 coord_y[0].item(i)=p1v;
                 pole1.insert(i);
            }
-           else if (poleDilation[0].item(i)==POLE_S)
+           else if (i==pS)
            {
                 dist[0].item(i)=10;
                 coord_x[0].item(i)=-100.0;
@@ -597,19 +613,6 @@ cout << "\t Pole dilation done" << endl;
                 coord_y[0].item(i)=50.0;
           }
      }
-
-//      cout << "writing texture topRidge.tex : " << flush;
-//      Writer<TimeTexture<short> >  topRidgeW( "topRidge.tex" );
-//      topRidgeW.write( topRidge );
-//      cout << "done " << endl;
-//      cout << "writing texture bottomRidge.tex : " << flush;
-//      Writer<TimeTexture<short> >  botRidgeW( "bottomRidge.tex" );
-//      botRidgeW.write( botRidge );
-//      cout << "done " << endl;
-//      cout << "writing texture poles.tex : " << flush;
-//      Writer<TimeTexture<short> >  polesW( "poles.tex" );
-//      polesW.write( poleDilation );
-//      cout << "done " << endl;
 
 
       //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -683,7 +686,7 @@ cout << "\t Pole dilation done" << endl;
       // for propagation in the other direction, poles have to be virtually 'removed'
      // in the same time we identify the two sides of the origin meridian, that are concerned
      // by the periodicity of the coordinates
-
+     cout << "Preparing data for diffusion of x coordinate" << endl;
       TimeTexture<short> sides(1,ns), split(1,ns);
       for (i=0; i<ns; i++)
       {
@@ -701,10 +704,10 @@ cout << "\t Pole dilation done" << endl;
            {
                unsigned neigh=(*itN).first;
                float poids=(*itN).second;
-               if (poleDilation[0].item(neigh) > 0)
+               if ((neigh == pS) || (neigh == pN))
                     poids=0.0;
                setW.insert(std::pair<unsigned,float>(neigh, poids));
-               if ((topRidge[0].item(i)>0) && (topRidge[0].item(neigh) == 0) && (poleDilation[0].item(neigh)==0) )
+               if ((topRidge[0].item(i)>0) && (topRidge[0].item(neigh) == 0) && (neigh != pS)  && (neigh != pN))
                {
                     sides[0].item(neigh)=10;
                }
@@ -714,22 +717,19 @@ cout << "\t Pole dilation done" << endl;
 
       // splitting 'sides' in two separate components
       
-//      cout << "Writing Top Ridge" << endl;
-//      Writer<TimeTexture<short> > topridgeW("topridge.tex");
-//      topridgeW.write(topRidge);
-//      cout << "Done" << endl;
+
 //      cout << "Writing Sides" << endl;
 //      Writer<TimeTexture<short> > sideW("sides.tex");
 //      sideW.write(sides);
 //      cout << "Done" << endl;
      cout << "splitting ... " << flush;
      split[0]=AimsMeshLabelConnectedComponent<short>( surface[0], sides[0], 9, 0);
-     cout << "OK" << endl;
+     cout << "splitting done" << endl;
 
 
      cout << "Getting nb connected components : " << flush;
      unsigned nbSides=AimsMeshLabelNbConnectedComponent<short>( surface[0], sides[0], 10 );
-     cout << "found " << nbSides << endl;
+     cout << "found " << nbSides << " components" << endl;
      
      if (nbSides < 2)
      {
@@ -782,6 +782,62 @@ cout << "\t Pole dilation done" << endl;
      FILE *laplF;
 //      laplF=fopen("laplacienX.txt", "w");
 
+     float x1=0.0, x2=0.0, y1=0.0, y2=0.0, z1=0.0, z2=0.0;
+     short l1, l2;
+     set<uint> set1, set2;
+
+          // here we use the orientation to decide which side of the sulci
+          // will have x between 0 and 10000
+          
+     for (uint i=0; i<ns ; i++)
+     {
+          Point3df vert=surface.vertex()[i];
+          if (split[0].item(i)==1)
+          {
+               x1+=vert[0];
+               y1+=vert[1];
+               z1+=vert[2];
+               set1.insert(i);
+          }
+          else if (split[0].item(i)==2)
+          {
+               x2+=vert[0];
+               y2+=vert[1];
+               z2+=vert[2];
+               set2.insert(i);
+          }
+          x1/=float(ns); y1/=float(ns); z1/=float(ns);
+          x2/=float(ns); y2/=float(ns); z2/=float(ns);
+     }
+     if (orientation==TOP2BOTTOM)
+     {
+          if (y1<y2)
+          {
+               l1=1; l2=2;
+          }
+          else
+          {
+               l1=2; l2=1;
+          }
+     }
+     else if (orientation == BACK2FRONT)
+     {
+          if (z1>z2)
+          {
+               l1=1; l2=2;
+          }
+          else
+          {
+               l1=2; l2=1;
+          }
+     }
+     set<uint>::iterator it1=set1.begin();
+     set<uint>::iterator it2=set2.begin();
+     for ( ; it1!=set1.end(); ++it1)
+               split[0].item(*it1)=l1;
+     for ( ; it2!=set2.end(); ++it2)
+               split[0].item(*it2)=l2;
+
      while (flagOut<1)
      {
           lMax=-10000.0;
@@ -793,6 +849,7 @@ cout << "\t Pole dilation done" << endl;
           unsigned node, voisin;
           Point3df temp, temp_current;
           float L,weight;
+
           for (il=newWeights.begin(), el=newWeights.end(); il!=el; ++il, cpt++)
           {
                node = il->first;

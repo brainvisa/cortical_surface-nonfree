@@ -6,6 +6,9 @@ TARGET = cortical_surface${BUILDMODEEXT}
 HEADERS = \
   mesh/isoLine.h \
   mesh/median.h \
+  mesh/pointDistance.h \
+  mesh/linkPath.h \
+  mesh/meshToMeshResample.h \
   surfacereferential/corticalConstraints.h \
   surfacereferential/corticalReferential.h \
   surfacereferential/corticalTools.h \
@@ -18,6 +21,7 @@ HEADERS = \
 SOURCES = \
   mesh/isoLine.cc \
   mesh/median.cc \
+  mesh/pointDistance.cc \
   surfacereferential/corticalConstraints.cc \
   surfacereferential/corticalReferential.cc \
   surfacereferential/corticalTools.cc \
