@@ -45,7 +45,30 @@ private:
      
      void checkIntegrity();
      void buildAlternateRep();
+     float _min(float a, float b, float c);
+     float _max(float a, float b, float c);
 };
+
+
+template<typename T> float Mesh2mesh<T>::_min(float a, float b, float c)
+{
+     if (a<=b)
+          if (a<=c) return a;
+          else return c;
+     else 
+          if (b<=c) return b;
+          else return c;
+}
+
+template<typename T> float Mesh2mesh<T>::_max(float a, float b, float c)
+{
+     if (a>=b)
+          if (a>=c) return a;
+          else return c;
+     else 
+          if (b>=c) return b;
+          else return c;
+}
 
 
 template<typename T> void Mesh2mesh<T>::checkIntegrity()
@@ -83,16 +106,51 @@ template<typename T> int Mesh2mesh<T>::isInTriangle(float px, float py, uint i)
      uint p1=triangle[0];
      uint p2=triangle[1];
      uint p3=triangle[2];
-     float p1x, p1y, p2x, p2y, p3x, p3y;
+     double p1x, p1y, p2x, p2y, p3x, p3y;
      double vp3, vp2, vp1;
-     double eps=0.01;
+     double eps=0.00001;
 
-     p1x=_sx[0].item(p1); p1y=_sy[0].item(p1);
-     p2x=_sx[0].item(p2); p2y=_sy[0].item(p2);
-     p3x=_sx[0].item(p3); p3y=_sy[0].item(p3);
+     p1x=(double) _sx[0].item(p1); p1y=(double) _sy[0].item(p1);
+     p2x=(double) _sx[0].item(p2); p2y=(double) _sy[0].item(p2);
+     p3x=(double) _sx[0].item(p3); p3y=(double) _sy[0].item(p3);
+     if (fabs(p1x) <0.00001) // we are on the origin meridian
+          {
+               if ((p2x>(_period-p2x)) || (p3x>(_period-p3x)))
+               {
+                    p1x=_period;
+                    if (fabs(p2x) < 0.00001) p2x=_period;
+                    if (fabs(p3x) < 0.00001) p3x=_period;
+               }
+               else
+               {
+                    p1x=0.0;
+                    if (fabs(p2x) < 0.00001) p2x=0.0;
+                    if (fabs(p3x) < 0.00001) p3x=0.0;
+               }
+          }
+          else if (fabs(p2x) < 0.00001)
+          {
+               if ((p1x>(_period-p1x)) || (p3x>(_period-p3x)))
+               {
+                    p2x=_period;
+                    if (fabs(p3x) < 0.00001) p3x=_period;
+               }
+               else 
+               {
+                    p2x=0.0;
+                    if (fabs(p3x) < 0.00001) p3x=0.0;
+               }
+          }
+          else if (fabs(p3x) < 0.00001)
+          {
+               if ((p1x>(_period-p1x)) || (p2x>(_period-p2x)))
+                    p3x=_period;
+               else
+                    p3x=0.0;
+          }
 
 
-     // The two following have to be positive
+     // The three following have to be positive
 
      vp1=((p3x-p1x)*(py-p1y) - (p3y-p1y)*(px-p1x))
         *((px-p1x)*(p2y-p1y) - (py-p1y)*(p2x-p1x));
@@ -100,32 +158,12 @@ template<typename T> int Mesh2mesh<T>::isInTriangle(float px, float py, uint i)
      vp2=((p3x-p2x)*(py-p2y) - (p3y-p2y)*(px-p2x))
         *((px-p2x)*(p1y-p2y) - (py-p2y)*(p1x-p2x));
 
-     // this one sort ambiguous cases (colinearities)
-
      vp3=((p1x-p3x)*(py-p3y) - (p1y-p3y)*(px-p3x))
         *((px-p3x)*(p2y-p3y) - (py-p3y)*(p2x-p3x));
 
-     if ((vp1>eps) && (vp2>eps))
+     if ((vp1>=0) && (vp2>=0) && (vp3>=0))
      {
           return(1);
-     }
-     else if (fabs(vp1) < eps)
-     {
-          if (vp2>eps)
-               return(1);
-          else if (fabs(vp2) < eps)
-          {
-               if (vp3>eps)
-                    return(1);
-               else return(0);
-          }
-          else return(0);
-     }
-     else if (fabs(vp2) < eps)
-     {
-          if (vp1 > eps)
-               return(1);
-          else return(0);
      }
      else return(0);
 }
@@ -137,12 +175,12 @@ template<typename T> TimeTexture<T> Mesh2mesh<T>::sendTextureToTarget(TimeTextur
      TimeTexture<T> result(1,_nt);
      uint i, j, polsrc;
      float x,y;
-     int flag=0;
+     int flag=0, count=0;
      float x1, x2, x3, y1, y2, y3;
      
      if (text[0].nItem() != _ns)
      {
-          std::cerr << "Mesh2Mesh::sendtextureTotarget : texture does not have the same nb ofitems than the source" << std::endl;
+          std::cerr << "Mesh2Mesh::sendTextureTotarget : texture does not have the same nb of items than the source" << std::endl;
           exit(EXIT_FAILURE);
      }
 
@@ -151,12 +189,18 @@ template<typename T> TimeTexture<T> Mesh2mesh<T>::sendTextureToTarget(TimeTextur
           x=_tx[0].item(i);
           y=_ty[0].item(i);
           flag=0;
+          count=0;
           for (j=0; (j<ntr) && (flag==0); j++)
           {
+               x1=_sx[0].item(poly[j][0]); y1=_sy[0].item(poly[j][0]);
+               x2=_sx[0].item(poly[j][1]); y2=_sy[0].item(poly[j][1]);
+               x3=_sx[0].item(poly[j][2]); y3=_sy[0].item(poly[j][2]);
+
                if (isInTriangle(x, y, j)==1)
                {
                     polsrc=j;
                     flag=1;
+                    count++;
                }
           }
           if (flag==0)
@@ -168,9 +212,9 @@ template<typename T> TimeTexture<T> Mesh2mesh<T>::sendTextureToTarget(TimeTextur
                double t1, t2, t3;
                double sum;
                double l1, l2, l3;
-               x1=_sx[0].item(poly[j][0]); y1=_sy[0].item(poly[j][0]);
-               x2=_sx[0].item(poly[j][1]); y2=_sy[0].item(poly[j][1]);
-               x3=_sx[0].item(poly[j][2]); y3=_sy[0].item(poly[j][2]);
+               x1=_sx[0].item(poly[polsrc][0]); y1=_sy[0].item(poly[polsrc][0]);
+               x2=_sx[0].item(poly[polsrc][1]); y2=_sy[0].item(poly[polsrc][1]);
+               x3=_sx[0].item(poly[polsrc][2]); y3=_sy[0].item(poly[polsrc][2]);
 
                l1=sqrt((x2-x3)*(x2-x3) + (y2-y3)*(y2-y3));
                l2=sqrt((x3-x1)*(x3-x1) + (y3-y1)*(y3-y1));
@@ -181,12 +225,12 @@ template<typename T> TimeTexture<T> Mesh2mesh<T>::sendTextureToTarget(TimeTextur
                t3=fabs((x1-x2)*(y-y2) - (y1-y2)*(x-x2))/l3;
                sum=t1+t2+t3; t1/=sum; t2/=sum; t3/=sum;
 
-               result[0].item(i)=(T) t1*text[0].item(poly[j][0]) + t2*text[0].item(poly[j][1]) + t3*text[0].item(poly[j][2]);
+               result[0].item(i)=(T) (t1*text[0].item(poly[j][0]) + t2*text[0].item(poly[j][1]) + t3*text[0].item(poly[j][2]));
+
           }
+          //result[0].item(i)=(T) count;
      }
      return(result);
-
-     
 }
 
 }  //fin du namespace

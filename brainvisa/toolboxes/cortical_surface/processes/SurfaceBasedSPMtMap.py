@@ -43,6 +43,7 @@ userLevel = 2
 signature = Signature(
   'projection_texture', ReadDiskItem( 'Texture', 'Texture'),
   'protocol_text', ReadDiskItem( 'Text File', 'Text File' ),
+  'beta', WriteDiskItem('Texture', 'Texture'),
   'spmt_texture', WriteDiskItem( 'Texture', 'Texture'),
   'contraste', String()
 )
@@ -157,7 +158,7 @@ def get_hrf(TR, longueur):
 def creer_prereg(condition, maxtime, hrfduration, t_type, t_time):
   import numpy as N
   prereg = N.zeros(int((maxtime + hrfduration)/100), float)
-  print len(prereg)
+  #print len(prereg)
   for j in range(0,len(t_type)):
      if int(t_type[j]) == int(condition)+1:
         prereg[int(t_time[j]/100)] = 1
@@ -167,6 +168,8 @@ def initialization( self ):
   #self.projection_texture = "/home/olivier/time_Lwhite.tex"
   #self.protocol_text = "/home/olivier/localizer.txt"
   #self.spmt_texture = "/home/olivier/t_tex.tex"
+  self.setOptional('beta')
+
   self.contraste = "0 0 1 1 -1 -1 1 -1 -1 1"
 
 def execution( self, context ):
@@ -198,40 +201,47 @@ def execution( self, context ):
   tab = tab.reshape(nb_nodes,nb_scans)
   
   (TR,t_type,t_time) = streamFile(str(self.protocol_text))
-  print t_type
-  print t_time
-  print TR
+  #print t_type
+  #print t_time
+  #print TR
   nb_cond = int(N.max(t_type))
   maxtime = int(N.max(t_time))
   lentype = len(t_type)
-  print lentype
-  print str(len(t_time))
+  #print lentype
+  #print str(len(t_time))
   
   hrf = get_hrf(0.1, 250)
-  print 'hrf'
-  print hrf
-  print ' '
+  #print 'hrf'
+  #print hrf
+  #print ' '
   reg = N.zeros((nb_cond+1)*nb_scans, float)
   reg = reg.reshape(nb_scans, (nb_cond+1))
   
   for i in range(0,nb_cond):
      prereg = creer_prereg(i,maxtime, 250, t_type, t_time)
      hrf_aux = N.convolve(prereg,hrf)
-     print 'prereg'
-     print prereg
-     print 'hrf_aux'
-     print int(len(hrf_aux))
-     print 'cond' + str(i)
+     #print 'prereg' + str(len(prereg))
+     #for j in range(0, len(prereg)):
+       #print prereg[j]
+     #print 'hrf_aux' + str(len(hrf_aux))
+     #for j in range(0, len(hrf_aux)):
+       #print hrf_aux[j]
+     #print int(len(hrf_aux))
+     #print 'cond' + str(i)
      for j in range(0,nb_scans):
-         print str(j) + ' ' +str(int(j*TR))
-         print str(float(hrf_aux[int(j*TR)]))
-         reg[j,i] = float(hrf_aux[int(j*TR)]) 
+         ##print str(j) + ' ' +str(int(j*TR))
+         #print str(float(hrf_aux[int(j*TR)]))
+         reg[j,i] = float(hrf_aux[int(j*TR)])
    
   reg[:,nb_cond] = baseline
-
+  #for i in range(0,nb_cond):
+    #print 'reg' + str(i)
+    #print reg[:,i]
   #B, nVB, s2, dof = G.KF_fit(tab, reg, axis=1)
   model = G.glm(tab, reg, axis=1)
   model.fit(method='kalman.ar1') ## default is 'ols'
+  #print model.beta[:,1].size
+  #print model.beta[1].size
   c = N.zeros(int(nb_cond+1))
   j=0
   for i in string.split(str(self.contraste)):
@@ -249,3 +259,14 @@ def execution( self, context ):
   for i in range(0,t.size):
      textur[0][i] = float(t[i])
   writer.write(textur, str(self.spmt_texture))
+
+  if self.beta is not '' :
+    betatex = aims.TimeTexture_FLOAT()
+    for i in range(0,model.beta[1].size):
+      betatex[i] = aims.Texture_FLOAT(int(model.beta[:,1].size))
+      for j in range(0, model.beta[:,1].size):
+        betatex[i][j] = float(model.beta[j][i])
+    writer2 = aims.Writer()
+    writer2.write(betatex, str(self.beta))
+  
+    

@@ -8,6 +8,7 @@ signature = Signature(  'intmesh', ReadDiskItem( 'Hemisphere White Mesh', 'MESH 
         'functional_volumes', ListOf(ReadDiskItem('4D Volume', 'BrainVISA volume formats')),
         'timetexture', WriteDiskItem('Texture', 'Texture'),
         'protocol_text', ReadDiskItem( 'Text File', 'Text File' ),
+        'beta', WriteDiskItem('Texture', 'Texture'),
         'spmt_texture', WriteDiskItem( 'Texture', 'Texture'),
         'contraste', String()
   )
@@ -15,7 +16,8 @@ signature = Signature(  'intmesh', ReadDiskItem( 'Hemisphere White Mesh', 'MESH 
 
 def initialization( self ):
     eNode = SerialExecutionNode( self.name, parameterized=self )
-
+    self.setOptional('beta')
+    
     eNode.addChild( 'Kernels', ProcessExecutionNode( 'CreateKernelsForProjection', optional = 1 ) )
     eNode.addChild( 'Projection', ProcessExecutionNode( 'FunctionalProjection', optional = 1 ) )
     eNode.addChild( 'FusionTextures', ProcessExecutionNode( 'TexturesAsTimeTexture', optional = 1 ) )
@@ -29,6 +31,7 @@ def initialization( self ):
     eNode.addLink('StatisticalAnalysis.projection_texture','FusionTextures.output')
     eNode.addLink('StatisticalAnalysis.spmt_texture','spmt_texture')
     eNode.addLink('StatisticalAnalysis.contraste', 'contraste')
+    eNode.addLink('StatisticalAnalysis.beta', 'beta')
     eNode.addLink('StatisticalAnalysis.protocol_text', 'protocol_text')
     
     self.setExecutionNode( eNode )
