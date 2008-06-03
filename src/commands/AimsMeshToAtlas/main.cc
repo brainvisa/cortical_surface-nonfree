@@ -16,7 +16,7 @@ int main(int argc, const char **argv) //int argc, const char **argv)
      //DECLARATIONS
      std::string adressTexIn="./";
      std::string adressMesh="./";
-     std::string adressTexOut="./";
+     std::string adressMeshOut="./";
      std::string adressAtlas="./";
      std::string adressIx="./";
      std::string adressIy="./";
@@ -24,15 +24,13 @@ int main(int argc, const char **argv) //int argc, const char **argv)
      std::string adressAy="./";
      float px=0;
 
-     AimsApplication     app( argc, argv, "Projet a texture from one mesh onto an atlas using spherical parameterization of both. x-coordinate is the longitude (with a period)");
+     AimsApplication     app( argc, argv, "Remesh a surface to a template atlas using spherical parameterization of both. x-coordinate is the longitude (with a period). The atlas and the resulting mesh then have a node to node correspondance");
 
      try
      {
       app.addOption( adressMesh, "-i", "input mesh");
       app.alias( "--inputMesh", "-i" );
-      app.addOption( adressTexIn, "-t", "input texture (float)");
-      app.alias( "--inputTex", "-t" );
-      app.addOption( adressTexOut, "-o", "output texture");
+      app.addOption( adressMeshOut, "-o", "output mesh");
       app.alias( "--outputTex", "-o" );
       app.addOption( adressAtlas, "-a", "atlas mesh");
       app.alias( "--atlasMesh", "-a" );
@@ -55,14 +53,12 @@ int main(int argc, const char **argv) //int argc, const char **argv)
 
 
      std::cout << "Reading all mesh and textures" << endl;
-     AimsSurfaceTriangle mesh, atlas;
-     TimeTexture<float> texIn, texIx, texIy, texAx, texAy, texOut;
+     AimsSurfaceTriangle mesh, meshOut, atlas;
+     TimeTexture<float> texIx, texIy, texAx, texAy;
      Reader < AimsSurfaceTriangle > rm(adressMesh);
      rm.read( mesh );
      Reader < AimsSurfaceTriangle > ra(adressAtlas);
      ra.read( atlas );
-     Reader < TimeTexture<float> > rt(adressTexIn);
-     rt.read( texIn );
      Reader < TimeTexture<float> > rix(adressIx);
      rix.read( texIx );
      Reader < TimeTexture<float> > riy(adressIy);
@@ -72,15 +68,15 @@ int main(int argc, const char **argv) //int argc, const char **argv)
      Reader < TimeTexture<float> > ray(adressAy);
      ray.read( texAy );
 
-     cout << "Building interpolator and computing new texture" << endl;
+     cout << "Building interpolator and computing new mesh" << endl;
      Mesh2mesh projection(mesh, atlas, texIx, texIy, texAx, texAy, px);
-     texOut=projection.sendTextureToTarget(texIn);
+     meshOut=projection.remeshSourceToTarget();
 
-    std::cout << "Writing interpolated texture" << endl;
+    std::cout << "Writing new mesh" << endl;
     // ECRITURE DE LA TEXTURE
 
-    Writer< TimeTexture<float> > wt(adressTexOut);
-    wt.write( texOut );
+    Writer< AimsSurfaceTriangle > wt(adressMeshOut);
+    wt.write( meshOut );
 
     return(0);
 }

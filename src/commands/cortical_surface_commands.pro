@@ -19,5 +19,5 @@ PSUBDIRS += \
   AimsSulcusCorticalSnake  \
   AimsTextureToAtlas \
   surfTexActivationSimulation \
-  AimsCheck2DCoordinate 
-
+  AimsCheck2DCoordinate \
+  AimsMeshToAtlas
