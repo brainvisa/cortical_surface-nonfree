@@ -864,13 +864,12 @@ int main( int argc, const char** argv )
 
                     // periodicity management around the meridian
                     //Side chnge with left or right hemisphere -- not managed yet
-                    if(( split[0].item(node)==1)  ) // && (botR.find(voisin)!=botR.end())
+                    if(( split[0].item(node)==1) && (topR.find(voisin)!=topR.end()) )
                     //1 for left hemisphere, 2 for right hemisphere
-                         L += weight * (- coord_x[0].item(node) + 200 );
-                    else
-                         if( (split[0].item(node)==2) && (botR.find(voisin)!=botR.end()) )
+                         L += weight * (200.0 - coord_x[0].item(node) );
+                    else if( (split[0].item(node)==2) && (topR.find(voisin)!=topR.end()) )
                          //2 for left hemisphere, 1 for righthemisphere
-                              L += weight * (-coord_x[0].item(node));
+                         L += weight * (-coord_x[0].item(node));
                     //for all other nodes
                     else
                          L += weight * (- coord_x[0].item(node) + coord_x[0].item(voisin));
