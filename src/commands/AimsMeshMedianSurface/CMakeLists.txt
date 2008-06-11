@@ -1,0 +1,2 @@
+
+SHFJ_ADD_EXECUTABLE(AimsMeshMedianSurface main.cc cortical_surface)

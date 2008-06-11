@@ -1,0 +1,1 @@
+SHFJ_ADD_EXECUTABLE(AimsCheck2DCoordinates main.cc cortical_surface)

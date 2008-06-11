@@ -1,0 +1,2 @@
+
+SHFJ_ADD_EXECUTABLE(AimsCoordinateGridMesh main.cc cortical_surface)

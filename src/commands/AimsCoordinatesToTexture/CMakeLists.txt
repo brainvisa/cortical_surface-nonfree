@@ -1,0 +1,2 @@
+
+SHFJ_ADD_EXECUTABLE(AimsCoordinatesToTexture main.cc cortical_surface)
