@@ -75,7 +75,7 @@ template<typename Val> class GraphPath
 
 /* Fabrique un nouveau noeud */
 template<typename Val>
-NOEUD * GraphPath<Val>::nouveau_noeud(const int nom)
+  struct aims::_noeud * GraphPath<Val>::nouveau_noeud(const int nom)
 {
      NOEUD *noeud= (NOEUD *) malloc(sizeof(NOEUD));
      if (noeud != NULL)
@@ -91,7 +91,7 @@ NOEUD * GraphPath<Val>::nouveau_noeud(const int nom)
 
 /* Insere un noeud dans la liste de noeuds du graphe */
 template<typename Val>
-NOEUD * GraphPath<Val>::insere_noeud(GRAPHE *graphe, NOEUD *noeud)
+  struct aims::_noeud * GraphPath<Val>::insere_noeud(GRAPHE *graphe, NOEUD *noeud)
 {
      /* Insertion */
      noeud->suivant= graphe->noeuds;
@@ -100,7 +100,7 @@ NOEUD * GraphPath<Val>::insere_noeud(GRAPHE *graphe, NOEUD *noeud)
 }
 
 template<typename Val>
-NOEUD * GraphPath<Val>::trouve_noeud(const GRAPHE *graphe, const int nom)
+  struct aims::_noeud * GraphPath<Val>::trouve_noeud(const GRAPHE *graphe, const int nom)
 {
      NOEUD *noeud;
 
@@ -114,7 +114,7 @@ NOEUD * GraphPath<Val>::trouve_noeud(const GRAPHE *graphe, const int nom)
 /* Cherche si un noeud d'apres son nom, en creee un nouveau s'il
 n'existe pas */
 template<typename Val>
-NOEUD * GraphPath<Val>::ajoute_noeud(GRAPHE *graphe, const int nom)
+  struct aims::_noeud * GraphPath<Val>::ajoute_noeud(GRAPHE *graphe, const int nom)
 {
      NOEUD *noeud= trouve_noeud(graphe, nom);
 
