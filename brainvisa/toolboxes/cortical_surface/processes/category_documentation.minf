@@ -2,20 +2,35 @@
 <minf version="1.0">
 
 <xhtml name="en">
-  <h1>Analysis of cortical surface</h1>
+  <h1>Cortical surface analysis</h1>
   
   <p>
-You should find here the processes dedicated to analysis of the cortical surface geometry (parcellation in gyri, primal sketch of mean curvature). These processes are not supported yet...
+This toolbox includes many processes dedicated to the analysis of the cortical surface geometry or to the analysis of data (e.g. functional data) projected on this surface.
   </p>
+  <p>
+Amongst the different components, one will find :
+  <ul>
+  <li> "functional", that contains tools to project functional data on the surface and provide different analysis techniques (structural analysis, random effect). This is VERY experimental, unsupported, and probably not suitable for anybody else than the developers at the moment.</li>
+  <li> "referentials", that contains tools to parameterize the cortical surface or the surface of a specific sulcus, and tools to send data from one surface to another after they have been parameterized.</li>
+ </ul>
+</p>
 
 </xhtml>
 
 <xhtml name="fr">
-  <h1>Analyse de la surface corticale</h1>
+  <h1>Analyse de/sur la surface corticale</h1>
   
-  <p>
-Vous devriez trouver ici tous les traitements d�di�s � l'analyse de la surface corticale (parcellisation en gyri, "primal sketch" de la courbure moyenne. Ces processus ne sont pas encore support�s.
+   <p>
+Cette toolbox contient un certain nombre de processus dédiés à l'analyse de la géométrie de la surface corticale ou à l'analyse de données (e.g. fonctionnelles) projetées sur cette surface.T
   </p>
+  <p>
+Parmis les différents éléments de la toolbox on trouvera :
+  <ul>
+  <li> "functional", qui contient des outils pour projeter des données fonctionnelles sur la surface corticale et ainsi que différentes techniques d'analyses (effet aléatoire, analyse structurelle). Ces procédés sont TRES expérimentaux, ne sont pas supportés, et sont probablement réservés aux développeurs pour le moment.</li>
+  <li> "referentials", qui contient des outils pour paramétriser la surface corticale ou la surface de sillons particuliers ainsi que pour faire passer des données d'une surface à une autre si ces deux surfaces sont paramétrisées.</li>
+ </ul>
+</p>
+
 
 </xhtml>
 

@@ -13,10 +13,15 @@
 
 namespace aims
 {
-#define NOEUD struct _noeud
-#define ARC struct _arc
 
-NOEUD
+struct _noeud;
+struct _arc;
+struct _chemin;
+typedef _noeud NOEUD;
+typedef _arc ARC;
+typedef _chemin CHEMIN;
+
+struct _noeud
 {
      int nom;
      int marque;
@@ -24,20 +29,19 @@ NOEUD
      NOEUD *suivant;               /* dans le graphe */
 };
 
-ARC
+struct _arc
 {
      NOEUD *noeud;
      int cout;
      ARC *suivant;
 };
 
-typedef struct
+struct GRAPHE
 {
      NOEUD *noeuds;
      int n_noeuds;
-} GRAPHE;
+};
 
-#define CHEMIN struct _chemin
 
 struct _chemin
 {
