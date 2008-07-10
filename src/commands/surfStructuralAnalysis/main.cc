@@ -52,7 +52,6 @@ int main(int argc, const char **argv){
   swc.setModelParameters(_ddweight, _intrapsweight, _simweight, _lsweight, _ddx2, _ddx1, _ddh);
   
   swc.Run();
-//   sbsa.RunMinimization(ICM);
   swc.SummaryLabels();
   SauvegarderGraphes(primal, graphFile, output);
 

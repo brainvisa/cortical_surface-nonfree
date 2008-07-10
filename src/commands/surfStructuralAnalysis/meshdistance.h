@@ -6,12 +6,13 @@
 #include <aims/io/writer.h>
 #include <aims/mesh/surface.h>
 #include <aims/mesh/texture.h>
+#include "sites.h"
 
 using namespace aims;
 using namespace std;
 using namespace carto;
 
-vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uint> nodes);
+vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uint> nodes, vector<Site *> &sites);
 map<float, vector<pair<float, uint> > > getAlternateMesh(AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &longit);
 
 #endif

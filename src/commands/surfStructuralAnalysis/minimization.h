@@ -1,6 +1,5 @@
 #ifndef AIMS_MINIMIZATION_H
 #define AIMS_MINIMIZATION_H
-#include "meshdistance.h"
 #include "cliques.h"
 
 using namespace aims;

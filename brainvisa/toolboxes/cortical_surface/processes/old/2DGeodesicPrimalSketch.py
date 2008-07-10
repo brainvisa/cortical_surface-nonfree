@@ -66,7 +66,7 @@ signature = Signature(
      'Smooth_step', Float(),
      'Grey_level_blob', Choice("Minima","Maxima"),
      'Scale', Choice("Logarithmic","Normal"),
-     'Surface_type', Choice("Tore","surface"),
+     'Surface_type', Choice("tore","surface"),
      'Grow_mode', Choice("scale","translate","pushnormal"),
      'Coef_translation', Float()
 )

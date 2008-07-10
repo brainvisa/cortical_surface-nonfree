@@ -4,6 +4,7 @@
 #include <aims/mesh/surface.h>
 #include <aims/mesh/texture.h>
 #include <float.h>
+#include "meshdistance.h"
 
 using namespace aims;
 using namespace std;
@@ -74,14 +75,12 @@ map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsign
 }
 
 
-vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uint> nodes){
+vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uint> nodes, vector<Site *> &sites){
   // SURFACIQUE DISTMAP
-  
   map<unsigned, set<unsigned> >    neighbours;
   unsigned v1b, v2, v3;
  
-  for( uint i=0; i<mesh.polygon().size(); ++i )
-  {
+  for( uint i=0; i<mesh.polygon().size(); ++i ){
     v1b = mesh.polygon()[i][0];
     v2 = mesh.polygon()[i][1];
     v3 = mesh.polygon()[i][2];
@@ -97,16 +96,38 @@ vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uin
   }
   
   vector<map<uint,float> > distmap;
+  map<uint,float>::iterator it;
+  uint ns=mesh[0].vertex().size();
   
-  uint ns=mesh.vertex().size();
+  for (uint i=0;i<ns;i++)
+    distmap.push_back(map<uint,float>());
   for (uint i=0;i<ns;i++){
     cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << ns << flush;
-    if (nodes.find(i) != nodes.end())
-      distmap.push_back(getDistMap(&mesh,&neighbours,i));
-    else
-      distmap.push_back(getDistMap(&mesh,&neighbours,-1));
+    if (nodes.find(i) != nodes.end()){
+      map<uint,float> dmap(getDistMap(&mesh,&neighbours,i));
+      for (it=dmap.begin();it!=dmap.end();it++){
+        distmap[i][it->first]=it->second;
+        distmap[it->first][i]=it->second;
+      }
+    }
   }
 
+//   uint temp=0;
+//   float rec;
+//   for (uint i=0;i<sites.size();i++){
+//     for (uint j=i;j<sites.size();j++) {
+//       if (sites[i]->subject != sites[j]->subject) {
+//         map<uint,float> dmap(distmap[sites[i]->node]);
+//         map<uint,float>::iterator distit = dmap.find(sites[j]->node);
+//         if (distit != dmap.end())
+//           rec = distit->second;
+//         else
+//           rec = 999.0;
+//         if ((rec < 20.0)&& !((sites[j]->tmin > sites[i]->tmax) || (sites[i]->tmin > sites[j]->tmax))) temp++;
+//       }
+//     }
+//   }
+//   cout << "TEMP:"<< temp << endl;
   return distmap;
 }
 

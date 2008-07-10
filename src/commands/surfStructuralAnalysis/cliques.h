@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include "sites.h"
+#include "meshdistance.h"
 
 using namespace std;
 
@@ -126,7 +127,7 @@ class Clique{
     Clique(){ type = UNKNOWN; energie = 0.0; blobs = vector<Site *>(); labelscount = map<int,uint>();  }
 };
 
-vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<map<uint,float> > &distmap);
+vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, AimsSurfaceTriangle &mesh);
 
 #endif
 

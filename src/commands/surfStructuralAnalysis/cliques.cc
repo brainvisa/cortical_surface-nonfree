@@ -27,15 +27,20 @@ void Clique::updateLabelsCount(){
   }
 }
 
-vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<map<uint,float> > &distmap){
-  
+vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, AimsSurfaceTriangle &mesh){
+  uint temp=0,temp2=0,temp3=0,temp4=0;
   cliquesDuSite = vector<vector<int> >(sites.size());
   vector<Clique> cliques;
-  vector<set<uint> > voisins(sites.size());
   set<uint> v;
   vector<string> subjects;
   double rec;
-  map<uint,float>::iterator distit;
+  cout << endl << "Construction carte de distances ..." << endl;
+  set<uint> setnodes;
+  for (uint i=0;i<sites.size();i++)
+    setnodes.insert(sites[i]->node);
+  vector<map<uint,float> > distmap(CalculeCarteDistances(mesh, setnodes,sites));
+
+  vector<pair<uint,uint> > pairs;
   vector<Clique> intraps;
   for (uint i=0;i<sites.size(); i++){
     uint j=0;
@@ -60,19 +65,20 @@ vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cl
     cliquesDuSite[sites[i]->index].push_back(cliques.size());
     ls.blobs.push_back(sites[i]);
     cliques.push_back(ls);
+  }
+  
+  for (uint i=0;i<sites.size();i++){
     for (uint j=i;j<sites.size();j++) {
       if (sites[i]->subject != sites[j]->subject) {
-        distit = distmap[sites[i]->node].find(sites[j]->node);
-        
-        if (distit != distmap[sites[i]->node].end())
-          rec = (*distit).second;
+        map<uint,float> dmap(distmap[sites[i]->node]);
+        map<uint,float>::iterator distit = dmap.find(sites[j]->node);
+        if (distit != dmap.end())
+          rec = distit->second;
         else
           rec = 999.0;
-        if ((rec < 20.0) && !((sites[j]->tmin > sites[i]->tmax) || (sites[i]->tmin > sites[j]->tmax))/* && (sites[i]->tValue * sites[j]->tValue > 40.0)*/) {
-          v.insert(i);
-          v.insert(j);
-          voisins[i].insert(j);
-          voisins[j].insert(i);
+        if ((rec < 10.0) && !((sites[j]->tmin > sites[i]->tmax) || (sites[i]->tmin > sites[j]->tmax)) /*&& (sites[i]->tValue * sites[j]->tValue > 2.0)*/) {
+
+          temp2++;
           Clique simc;
           simc.type = SIMILARITY;
           simc.rec = rec;
@@ -85,5 +91,6 @@ vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cl
       }
     }
   }
+  cout << "TEMP :" << temp<< " " << temp2 << " " << temp3 << " " << temp4 << " "<<temp+temp4<< " ";
   return cliques;
 }

@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = surfTexActivationSimulation
+TARGET = surfStructuralAnalysis
 
 #!include ../../../config-cpp-command
 

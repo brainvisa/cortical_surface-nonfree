@@ -13,18 +13,13 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, AimsSurfa
   cout << "Construction du vecteur de sites ..." << flush;
   sites = ConstruireSites(primal, altmesh);
   cout << "done (" << sites.size() << " sites)" << endl;
-  set<uint> setnodes;
   set<string> subjects;
-  for (uint i=0;i<sites.size();i++){
-    setnodes.insert(sites[i]->node);
-    subjects.insert(sites[i]->subject);
-  }
   nbsujets = subjects.size();
-  cout << "Construction carte de distances ..." << endl;
-  vector<map<uint,float> > distmap = CalculeCarteDistances(mesh,setnodes);
   cout << endl << "  done" << endl;
+  for (uint i=0;i<sites.size();i++)
+    subjects.insert(sites[i]->subject);
   cout << "Construction des cliques ... " << flush;
-  cliques = ConstruireCliques(sites,cliquesDuSite,distmap);
+  cliques = ConstruireCliques(sites,cliquesDuSite,mesh);
   uint nb_cl_sim=0, nb_cl_dd=0, nb_cl_intraps=0, nb_cl_lower=0;
   for (uint i=0;i<cliques.size();i++){
     if (cliques[i].type == SIMILARITY) nb_cl_sim++;
