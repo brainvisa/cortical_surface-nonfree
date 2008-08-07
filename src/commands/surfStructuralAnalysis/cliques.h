@@ -12,10 +12,10 @@ enum typesCliques {
 };
 
 class Clique{
-  private:
+  public:
   static float ddweight, intrapsweight, simweight, lsweight, ddx2, ddx1, ddh;
 
-  public :
+//   public :
     int type;
     vector<Site *> blobs;
     double energie,sigma,rec;
@@ -26,10 +26,11 @@ class Clique{
         case DATADRIVEN:
           ASSERT(blobs.size()==1);
           if (blobs[0]->label != 0){
+//             cout << "t:" << blobs[0]->tValue << " ";
             if (blobs[0]->tValue > ddx2) energy = ddh;
             else if (blobs[0]->tValue < ddx1) energy = ddweight;
             else // energy = ddweight - (sites[blobs[0]].t- ddx1) * (ddweight - ddh)/(double(ddx2 - ddx1));
-            { sigma = 4.0; //((3.0*ddx1+5.0*ddx2)/7.0)/sqrt(2*log(1/((5.0*ddh+1.0*ddweight)/6.0)));          // paramètre de la gaussienne
+            { 
             energy = (ddweight-ddh)/(ddx1-ddx2) * blobs[0]->tValue + (ddh - (ddweight-ddh)/(ddx1-ddx2)*ddx2);
             }
           }
@@ -37,6 +38,7 @@ class Clique{
             energy = 0.0;
           }
           energy *= CLIQUESNBSUJETS;
+//           cout << energy << " " << CLIQUESNBSUJETS << " " << ddh << endl;
           break;
         case BESTLOWERSCALE:
           ASSERT(blobs.size()==1);
@@ -59,9 +61,10 @@ class Clique{
         case SIMILARITY:
           ASSERT(blobs.size()==2);
           if (blobs[0]->label == blobs[1]->label && blobs[0]->label != 0){
-            sigma = 10.0/sqrt(2*log(10.0));          // paramètre de la gaussienne : le premier 10.0 c'est la distance-seuil à laquelle on veut un potentiel égal à 0.1
-//             energy = -simweight*exp(-pow(rec,2)/(2*pow(sigma,2)));
-            energy=simweight/20.0-simweight;
+            sigma = 16.0/sqrt(2*log(10.0));          // paramètre de la gaussienne : le premier 10.0 c'est la distance-seuil à laquelle on veut un potentiel égal à 0.1
+            energy = -simweight*exp(-pow(rec,2)/(2*pow(sigma,2)));
+//             cout << endl << rec << " : " << energy << endl;
+//             energy=simweight/20.0-simweight;
           }
           else {
             energy = 0.0;

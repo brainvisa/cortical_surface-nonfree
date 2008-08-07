@@ -48,11 +48,13 @@ int main(int argc, const char **argv){
   Reader<TimeTexture<float> > rlongit(lonpath);
   rlongit.read(lon);
   SWC swc(primal, mesh, lat, lon);
+//   Anneal swc(primal, mesh, lat,lon);
+  
   cout << _ddweight << "-" << _intrapsweight << "-" << _simweight << "-" << _lsweight << "-" << _ddx2 << "-" << _ddx1 << "-" << _ddh << endl;
   swc.setModelParameters(_ddweight, _intrapsweight, _simweight, _lsweight, _ddx2, _ddx1, _ddh);
   
-  swc.Run();
-  swc.SummaryLabels();
+  swc.Run2();
+//   swc.SummaryLabels();
   SauvegarderGraphes(primal, graphFile, output);
 
   return(0);

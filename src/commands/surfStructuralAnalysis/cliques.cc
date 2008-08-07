@@ -76,21 +76,35 @@ vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cl
           rec = distit->second;
         else
           rec = 999.0;
-        if ((rec < 10.0) && !((sites[j]->tmin > sites[i]->tmax) || (sites[i]->tmin > sites[j]->tmax)) /*&& (sites[i]->tValue * sites[j]->tValue > 2.0)*/) {
+        if ((rec < 20.0) && !((sites[j]->tmin > sites[i]->tmax) || (sites[i]->tmin > sites[j]->tmax)) /*&& (sites[i]->tValue * sites[j]->tValue > 2.0)*/) {
+//           bool test=false;
+//           for (uint k=0;k<cliques.size();k++){
+//             if (cliques[k].type == SIMILARITY){
+//               if ((cliques[k].blobs[0]->index == i && cliques[k].blobs[1]->index == j) || (cliques[k].blobs[1]->index == i && cliques[k].blobs[0]->index == j)){
+//                 test=true;
+//                 cout << "AARGH\a";
+//               }
+//             }
+//           }
+//           if (!test){
 
           temp2++;
           Clique simc;
           simc.type = SIMILARITY;
           simc.rec = rec;
+//           cout << rec << " " ;
           cliquesDuSite[sites[i]->index].push_back(cliques.size());
           cliquesDuSite[sites[j]->index].push_back(cliques.size());
           simc.blobs.push_back(sites[i]);
           simc.blobs.push_back(sites[j]);
           cliques.push_back(simc);
+//           }
         }
       }
     }
   }
+  
   cout << "TEMP :" << temp<< " " << temp2 << " " << temp3 << " " << temp4 << " "<<temp+temp4<< " ";
+//   cin >> temp;
   return cliques;
 }

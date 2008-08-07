@@ -6,7 +6,7 @@ using namespace carto;
 using namespace std;
 
 
-vector<Site *> ConstruireSites(Graph &primal, map<float, vector<pair<float, uint > > > &altmesh){
+vector<Site *> ConstruireSites(Graph &primal, AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &longit) { //map<float, vector<pair<float, uint > > > &altmesh){
   vector<Site *> sites;
 
   std::set<Vertex *>::iterator iv, jv;
@@ -14,10 +14,8 @@ vector<Site *> ConstruireSites(Graph &primal, map<float, vector<pair<float, uint
   float tmin_1, tmax_1, trep, tvalue1,x,y,precisionX=10.0, precisionY=10.0;
   int index1;
   string subject1, subject2;
-  double dist, distMin=10000.0;
-  uint dep=0,arr=0;
-  float xbis, ybis;
-  int flagbis=0,newindex=0;
+  int newindex=0;
+  float minidis=10000.0,dis; uint mini=0;
   map<float, vector<pair<float, uint > > >::iterator meshIt;
   vector<pair<float, uint> >::iterator yIt;
   for (iv=primal.vertices().begin() ; iv!=primal.vertices().end(); ++iv){
@@ -52,30 +50,15 @@ vector<Site *> ConstruireSites(Graph &primal, map<float, vector<pair<float, uint
     s->tValue = tvalue1;
     x=bc1[0];
     y=bc1[1];
-    distMin = 1000.0;
-    flagbis=0; dep=0; arr=0;
-    meshIt=altmesh.begin();
-    yIt=((*meshIt).second).begin();
-    dep=(*yIt).second;
-    for ( ; (meshIt!=altmesh.end()) && (flagbis==0) ; ++meshIt){
-      xbis=(*meshIt).first;
-      if (xbis > (x+precisionX))
-        flagbis=1;
-      else if (xbis >= (x-precisionX)){
-        yIt=((*meshIt).second).begin();
-        for ( ; yIt!=((*meshIt).second).end(); ++yIt){
-          ybis=(*yIt).first;
-          if ((ybis>=(y-precisionY)) && (ybis<=(y+precisionY))){
-            dist=(x-xbis)*(x-xbis) + (y-ybis)*(y-ybis);
-            if (dist<distMin){
-              distMin=dist;
-              dep=(*yIt).second;
-            }
-          }
-        }
+    minidis=10000.0;
+    for (uint i=0;i<mesh[0].vertex().size();i++){
+      dis = sqrt(pow(lat[0].item(i)-x,2)+pow(longit[0].item(i)-y,2));
+      if ( dis< minidis){
+        mini=i;
+        minidis=dis;
       }
     }
-    s->node = dep;
+    s->node = mini;
     (*iv)->setProperty( "sites_index", sites.size()-1);
   }
 

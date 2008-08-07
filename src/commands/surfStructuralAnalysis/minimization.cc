@@ -11,13 +11,14 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, AimsSurfa
   map<float, vector<pair<float, uint> > > altmesh = getAlternateMesh(mesh, lat, lon);
   cout << " done " << endl;
   cout << "Construction du vecteur de sites ..." << flush;
-  sites = ConstruireSites(primal, altmesh);
+  sites = ConstruireSites(primal, mesh, lat, lon); //altmesh);
   cout << "done (" << sites.size() << " sites)" << endl;
   set<string> subjects;
-  nbsujets = subjects.size();
+  
   cout << endl << "  done" << endl;
   for (uint i=0;i<sites.size();i++)
     subjects.insert(sites[i]->subject);
+  nbsujets = subjects.size();
   cout << "Construction des cliques ... " << flush;
   cliques = ConstruireCliques(sites,cliquesDuSite,mesh);
   uint nb_cl_sim=0, nb_cl_dd=0, nb_cl_intraps=0, nb_cl_lower=0;
@@ -102,7 +103,12 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
     uint nblabel=0;
     for (uint il=0;il<cliques.size();il++)
       nblabel += cliques[il].labelscount[i];
-    cout << nblabel << endl;
+    cout << nblabel << ";";
+    for (uint j=0;j<sites.size();j++)
+      if (sites[j]->label==labels[i]){
+        cout << sites[j]->index << "(" << sites[j]->node << ")-";
+      }
+    cout<<  endl;
   }
 }
 

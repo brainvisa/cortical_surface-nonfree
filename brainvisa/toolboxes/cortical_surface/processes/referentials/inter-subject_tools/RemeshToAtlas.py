@@ -38,7 +38,7 @@ def initialization( self ):
      self.period_x = 360.0
 
 def execution ( self, context ):
-    resample = [ 'AimsTextureToAtlas',
+    resample = [ 'AimsMeshToAtlas',
                  '-i', self.mesh.fullPath(),
                  '-o', self.meshOut.fullPath(),
                  '-a', self.atlasMesh.fullPath(),

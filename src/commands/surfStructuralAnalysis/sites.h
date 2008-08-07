@@ -1,5 +1,7 @@
 #ifndef AIMS_SITES_H
 #define AIMS_SITES_H
+#include <aims/mesh/surface.h>
+#include <aims/mesh/texture.h>
 
 using namespace aims;
 using namespace carto;
@@ -7,7 +9,7 @@ using namespace std;
 
 class Site{
   public :
-    int index;
+    uint index;
     int graph_index;
     string subject;
     int label;
@@ -20,7 +22,7 @@ class Site{
     uint node;
 };
 
-vector<Site *> ConstruireSites(Graph &primal, map<float, vector<pair<float, uint > > > &altmesh);
+vector<Site *> ConstruireSites(Graph &primal, AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &longit); //map<float, vector<pair<float, uint > > > &altmesh);
 
 #endif
 

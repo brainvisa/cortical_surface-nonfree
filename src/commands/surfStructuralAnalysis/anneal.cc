@@ -56,8 +56,21 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 }
 
 void Anneal::Run(){
+  //   Initialization();
+  for (uint i=0;i<sites.size();i++)
+    sites[i]->label = (int)sites[i]->tValue;
+  for (uint k=0;k<cliques.size();k++){
+    cliques[k].updateLabelsCount();
+    cliques[k].computeEnergy(true,nbsujets);
+  }
   energy = getTotalEnergy();
+
   cout << "energie initiale : " << energy << endl;
+  ShortSummaryLabels();
+
+
+
+  
   
   vector<int> indices_start;
   for(uint i=0;i<sites.size();i++)
@@ -65,14 +78,20 @@ void Anneal::Run(){
   
   long double temp=1000.0;
 
-  uint mod=1, ite=0, nb_under_threshold=0;
-  cout << "\a" << flush;   cout.precision(2);   cout.setf(ios_base::fixed, ios_base::floatfield);
+  uint mod=1, ite=0, nb_under_threshold=0,test;
+
+  cout.precision(2);       
+
+//   cout.setf(ios_base::fixed, ios_base::floatfield);
+ 
+
   FILE * f1;   f1 = fopen ("/home/grg/recuit.txt","w");
-  
+
   while (nb_under_threshold<5 || mod!=0){
     if (mod!=0) nb_under_threshold=0;
     else nb_under_threshold++;
     cout << " T=" << temp << " it="<< ite++ << " " ;
+ 
     for (uint i0=0;i0<sites.size();i0++){
       fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
     }
@@ -97,7 +116,17 @@ void Anneal::Run(){
     ShortSummaryLabels();
     cout << " E=" << energy << endl;
     temp = temp*0.98;
+    cin >> test;
   }
 
+  for (uint k=0;k<cliques.size();k++){
+    cliques[k].updateLabelsCount();
+    cliques[k].computeEnergy(true,nbsujets);
+  }
+  energy = getTotalEnergy();
+
+  cout << "energie initiale : " << energy << endl;
+  ShortSummaryLabels();
+  
   fclose(f1);
 }
