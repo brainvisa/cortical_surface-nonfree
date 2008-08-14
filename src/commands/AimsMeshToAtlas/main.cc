@@ -71,6 +71,7 @@ int main(int argc, const char **argv) //int argc, const char **argv)
      cout << "Building interpolator and computing new mesh" << endl;
      Mesh2mesh projection(mesh, atlas, texIx, texIy, texAx, texAy, px);
      meshOut=projection.remeshSourceToTarget();
+     meshOut.updateNormals();
 
     std::cout << "Writing new mesh" << endl;
     // ECRITURE DE LA TEXTURE

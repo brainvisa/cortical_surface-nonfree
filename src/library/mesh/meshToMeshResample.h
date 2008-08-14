@@ -339,6 +339,7 @@ AimsSurfaceTriangle Mesh2mesh::remeshSourceToTarget()
 
      newSource.vertex()=vert_t;
      newSource.polygon()=poly;
+     newSource.updateNormals();
 
      return(newSource);
 }
