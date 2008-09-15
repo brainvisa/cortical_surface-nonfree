@@ -41,5 +41,9 @@ insert( '.',
   "<filename>_Lwhite_GLB",SetType( 'Grey Level Blob Graph' ),SetWeakAttr( 'side', 'left' ),
   "<filename>_Rgyri",SetType( 'Gyri Graph' ),SetWeakAttr( 'side', 'right' ),
   "<filename>_Lgyri",SetType( 'Gyri Graph' ),SetWeakAttr( 'side', 'left' ),
+  "<filename>_Lwhite_curv_blob", SetType( 'Blob White Curvature Texture' ), SetWeakAttr( 'side', 'left' ),
+  "<filename>_Rwhite_curv_blob", SetType( 'Blob White Curvature Texture' ), SetWeakAttr( 'side', 'right' ),
+  "<filename>_Lwhite_curv_ss", SetType( 'Scale Space White Curvature Texture' ), SetWeakAttr( 'side', 'left' ),
+  "<filename>_Rwhite_curv_ss", SetType( 'Scale Space White Curvature Texture' ), SetWeakAttr( 'side', 'right' ),
 )
 

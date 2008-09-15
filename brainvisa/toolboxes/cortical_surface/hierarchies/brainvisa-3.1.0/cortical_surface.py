@@ -47,6 +47,10 @@ insert( '{protocol}/{subject}',
     "<subject>_Lwhite_primal",SetType( 'Primal Sketch' ),SetWeakAttr( 'side', 'left' ),
     "<subject>_Rwhite_GLB",SetType( 'Grey Level Blob Graph' ),SetWeakAttr( 'side', 'right' ),
     "<subject>_Lwhite_GLB",SetType( 'Grey Level Blob Graph' ),SetWeakAttr( 'side', 'left' ),
+    "<subject>_Lwhite_curv_blob", SetType( 'Blob White Curvature Texture' ), SetWeakAttr( 'side', 'left' ),
+    "<subject>_Rwhite_curv_blob", SetType( 'Blob White Curvature Texture' ), SetWeakAttr( 'side', 'right' ),
+    "<subject>_Lwhite_curv_ss", SetType( 'Scale Space White Curvature Texture' ), SetWeakAttr( 'side', 'left' ),
+    "<subject>_Rwhite_curv_ss", SetType( 'Scale Space White Curvature Texture' ), SetWeakAttr( 'side', 'right' ),
   ),
 )
 
