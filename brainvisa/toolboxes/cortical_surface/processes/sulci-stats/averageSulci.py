@@ -155,19 +155,28 @@ def execution ( self, context ):
      vmax=vectS[imax]
      vertMax=vector2vertices(vmax)
      modeS=aims.AimsTimeSurface_3()
-     for i in xrange(100) :
-          dt=i*5.0
-          modeS.polygon(i).assign(sulcus[0].polygon(0))
-          modeS.vertex(i).assign(sulcus[0].vertex(0))
-          vmap=modeS.vertex(i)
-          for j in xrange(nv) :
-               vmap[j][0]=vmap[j][0] + dt*vertMax[j][0]
-               vmap[j][1]=vmap[j][1] + dt*vertMax[j][1]
-               vmap[j][2]=vmap[j][2] + dt*vertMax[j][2]
-     modeS.updateNormals()
-     context.write("Saving it")
-     WM = aims.Writer()
-     WM.write(modeS, "/home/olivier/variation.mesh")
+     context.write("Computing variations")
+
+     for k in xrange(5) :
+          context.write("mode ", k)
+          vmax=vectS[k]
+          vertMax=vector2vertices(vmax)
+          for i in xrange(100) :
+               dt=i*5.0
+               modeS.polygon(i).assign(sulcus[0].polygon(0))
+               modeS.vertex(i).assign(sulcus[0].vertex(0))
+               vmap=modeS.vertex(i)
+               for j in xrange(nv) :
+                    vmap[j][0]=vmap[j][0] + dt*vertMax[j][0]
+                    vmap[j][1]=vmap[j][1] + dt*vertMax[j][1]
+                    vmap[j][2]=vmap[j][2] + dt*vertMax[j][2]
+          modeS.updateNormals()
+          nameOut="/home/olivier/variation_%i.mesh"%(k)
+          context.write("Saving", nameOut)
+          WM = aims.Writer()
+          WM.write(modeS, nameOut)
+     context.write("OK")
+
      
 
 

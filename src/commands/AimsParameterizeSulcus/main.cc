@@ -525,10 +525,14 @@ int main( int argc, const char** argv )
      GraphPath<short> shortestExt;
      topRidge=shortestExt.process(topRidge, surface, RIDGE_TOP, pN, pS);
      cout << "OK. Connecting botRidge to Poles" << flush;
-//      cout << "writing texture topRidgeConnected : " << flush;
-//      Writer<TimeTexture<short> >  topRidgeConW( "topRidgeConnected.tex" );
-//      topRidgeConW.write( topRidge );
-//      cout << "done " << endl;
+     
+     
+     // TO BE COMMENTED OR UNCOMMENTED ACCORDING TO DEBUG
+     cout << "writing texture topRidgeConnected : " << flush;
+     Writer<TimeTexture<short> >  topRidgeConW( "topRidgeConnected.tex" );
+     topRidgeConW.write( topRidge );
+     cout << "done " << endl;
+     // -------------------------------------------------
      
      if (botRidge[0].item(pS) == 0)
      {
@@ -549,11 +553,13 @@ int main( int argc, const char** argv )
      cout << "\t Cleaning" << endl;
      botRidge=shortestExt.process(botRidge, surface, RIDGE_BOT, pN, pS);
      cout << "OK" << endl;
-//      cout << "writing texture botRidgeConnected : " << flush;
-//      Writer<TimeTexture<short> >  botRidgeConW( "botRidgeConnected.tex" );
-//      botRidgeConW.write( botRidge );
-//      cout << "done " << endl;
-
+     // TO BE COMMENTED OR UNCOMMENTED ACCORDING TO DEBUG
+     cout << "writing texture botRidgeConnected : " << flush;
+     Writer<TimeTexture<short> >  botRidgeConW( "botRidgeConnected.tex" );
+     botRidgeConW.write( botRidge );
+     cout << "done " << endl;
+     //--------------------------------------------------------------
+     
      // Here the poles are removed from the ridges 
      topRidge[0].item(pS)=0;
      topRidge[0].item(pN)=0;
@@ -613,7 +619,6 @@ int main( int argc, const char** argv )
                 coord_y[0].item(i)=50.0;
           }
      }
-
 
       //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // Diffusion
@@ -787,8 +792,8 @@ int main( int argc, const char** argv )
      set<uint> set1, set2;
 
           // here we use the orientation to decide which side of the sulci
-          // will have x between 0 and 10000
-          
+          // will have x between 0 and 100
+     int n1=0, n2=0;
      for (uint i=0; i<ns ; i++)
      {
           Point3df vert=surface.vertex()[i];
@@ -797,6 +802,7 @@ int main( int argc, const char** argv )
                x1+=vert[0];
                y1+=vert[1];
                z1+=vert[2];
+               n1++;
                set1.insert(i);
           }
           else if (split[0].item(i)==2)
@@ -804,11 +810,12 @@ int main( int argc, const char** argv )
                x2+=vert[0];
                y2+=vert[1];
                z2+=vert[2];
+               n2++;
                set2.insert(i);
           }
-          x1/=float(ns); y1/=float(ns); z1/=float(ns);
-          x2/=float(ns); y2/=float(ns); z2/=float(ns);
      }
+     x1/=float(n1); y1/=float(n1); z1/=float(n1);
+     x2/=float(n2); y2/=float(n2); z2/=float(n2);
      if (orientation==TOP2BOTTOM)
      {
           if (y1<y2)

@@ -49,4 +49,3 @@ def execution ( self, context ):
                  '-px', self.period_x]
     apply( context.system, resample )
 
-     
