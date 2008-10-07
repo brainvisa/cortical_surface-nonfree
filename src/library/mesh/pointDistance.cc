@@ -30,9 +30,11 @@ float MeshPointDistance::compute(uint p1, uint p2)
 
      while(  taille < ns )
      {
+/*          std::cerr << "Taille : " << taille << std::endl;*/
           nfront->clear();
           neigh.clear();
-
+/*          std::cerr << "\tFirst loop" << std::endl;*/
+          
           for( iv=cfront->begin(), fv=cfront->end(); iv!=fv; ++iv )
           {
                i = (*iv).second;
@@ -52,30 +54,34 @@ float MeshPointDistance::compute(uint p1, uint p2)
                     }
                }
           }
+//           std::cerr << "\tSecond loop" << std::endl;
 
           for( in=neigh.begin(), fn=neigh.end(); in!=fn; ++in )
           {
                if ( *in == p2)
                {
+/*                    std::cerr << "\tFound it" << std::endl;*/
                     front1.clear();
                     front2.clear();
-                    (*cfront).clear();
-                    (*nfront).clear();
-                    (*tmpf).clear();
-                    neigh.clear();
+//                     (*cfront).clear();
+//                     (*nfront).clear();
+//                     (*tmpf).clear();
+//                     neigh.clear();
                     return distmap[*in];
                }
                else
                     nfront->insert( std::pair<float,unsigned>( distmap[*in], *in ) );
           }
+                 
+/*          std::cerr << "\tOK" << std::endl;*/
           tmpf = cfront;
           cfront = nfront;
           nfront = tmpf;
           taille=distmap.size();
      }
 
-     std::cerr << "Pb !!! MeshPointDistance::run(uint p1, uint p2) !!!" << std::endl;
-     std::cerr << "Points : " << p1 << " and " << p2 << ". Second point not found" << std::endl;
+//      std::cerr << "Pb !!! MeshPointDistance::run(uint p1, uint p2) !!!" << std::endl;
+//      std::cerr << "Points : " << p1 << " and " << p2 << ". Second point not found" << std::endl;
      exit(EXIT_FAILURE);
 }
 

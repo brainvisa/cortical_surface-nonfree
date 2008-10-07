@@ -107,7 +107,7 @@ template<typename T> Texture<T> ConnectMeshPath<T>::run(T val)
      // now let's join ext1 and ext2; 
      // this time we have no other choice than using geodesic distance
      std::cout << "\tJoining them" << std::endl;
-
+     std::cout << "\t ns=" << ns << std::endl;
      for (i=0; i<ns; i++)
      {
           if ( (set1.find(i) != set1.end()) || (set2.find(i) != set2.end()) )
@@ -115,25 +115,34 @@ template<typename T> Texture<T> ConnectMeshPath<T>::run(T val)
           else 
                texOut.item(i)=0;
      }
+     std::cout << "\tFinding actual shortest path" << std::endl;
 
+     std::cout << "\t" << ext1 << " -> " << ext2 << std::endl;
      i=ext1;
-     uint j;
+     uint j=0;
      while (i != ext2)
      {
+          std::cout << "\t\t" << i << std::endl;
           std::set<uint> voisin=neigh[i];
           std::set<uint>::iterator vIt; 
           distMin=10000.0;
+          std::cout << "\t\tj=" << j << std::endl;
+          std::cout << "\t\tChecking out neighbours" << std::endl;
           for (vIt=voisin.begin(); vIt!=voisin.end(); ++vIt)
           {
+               std::cout << "\t\tDistance de " << *vIt << " à " << ext2 << std::endl;
                dist=distance.compute(ext2, *vIt); // APPELER ICI LA DISTANCE GEODESIQUE ENTRE *vIt et ext2
+               std::cout << "\t\t\t" << dist << std::endl;
                if (dist<distMin)
                {
                     distMin=dist;
                     j=*vIt;
                }
           }
+          std::cout << "\t\tj=" << j << std::endl;
           texOut.item(j)=val;
           i=j;
+          
      }
      std::cout << "\tReturning texOut" << std::endl;
      return(texOut);

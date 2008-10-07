@@ -50,6 +50,17 @@ struct _chemin
      CHEMIN *suivant;
 };
 
+int isInVect(uint x, std::vector<uint> vect)
+{
+     int i, nv=vect.size();
+     for (i=0; i<nv; i++)
+     {
+          if (vect[i]==x)
+               return(i);
+     }
+     return(-1);
+}
+
 template<typename Val> class GraphPath
 {
 
@@ -70,6 +81,9 @@ template<typename Val> class GraphPath
      TimeTexture<Val> process(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr);
      float getLongueur(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr);
      TimeTexture<Val> cleanPath(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh);
+     TimeTexture<Val> cleanPath2(TimeTexture<Val> & path, AimsSurfaceTriangle & initmesh, uint dep, uint arr, Val value);
+     void grow(uint i, TimeTexture<Val> & path, std::vector<std::set<uint> > neigh, std::vector<uint> & done, std::vector<double> & dist, std::vector<Point3df> vert);
+
      
      protected:
      
@@ -294,7 +308,7 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
           texFinal=TimeTexture<Val>(1, ns);
           for (uint i=0; i<ns; i++)
           {
-               if ((i==arr) || (i==dep))
+               if ((i==(uint)arr) || (i==(uint)dep))
                     texFinal[0].item(i)=(Val) 1;
                else
                     texFinal[0].item(i)=(Val) 0;
@@ -314,7 +328,7 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
 //      std::cout << "\t\t\t Shortest::process -> Clean" << std::endl;
 
      delete plus_court;
-     texFinal=cleanPath(texDirty, initmesh);  // hack to solve a bug (Olivier)
+     texFinal=cleanPath2(texDirty, initmesh, dep, arr, value);  // hack to solve a bug (Olivier)
 //      // Shortest path sometimes include triangles. I have not programmed this and I cannot
 //      // find the problem so I decided to work around it with a postprocessing of the texture
 //      // obviously this is a dirty hack;
@@ -416,5 +430,119 @@ template<typename Val> TimeTexture<Val> GraphPath<Val>::cleanPath(TimeTexture<Va
 }
 
 
+template<typename Val> TimeTexture<Val> GraphPath<Val>::cleanPath2(TimeTexture<Val> & path, AimsSurfaceTriangle & initmesh, uint dep, uint arr, Val value)
+{
+     uint ns=path[0].nItem();
+     std::vector<uint> done;
+     std::vector<double> dist;
+     TimeTexture<Val> newPath(1, ns);
+     std::vector<std::set<uint> > neigh = SurfaceManip::surfaceNeighbours( initmesh );
+     std::vector<Point3df> vert=initmesh.vertex();
+     uint i, j, k;
+     double dtemp, dmin;
+     
+/*     std::cerr << "DEBUG : CleanPath2 : IN" << std::endl;*/
+     i=dep;
+     done.push_back(i);
+/*     std::cerr << "\tAjoute "<< i << " avec distance O.O" << std::endl;*/
+     dist.push_back(0.0);
+          // propagation de la distance sur les chemins trouvés;
+          // evidemment ca ne vaut pas un fast marching et ne marchera que pour reparer les chemins
+          // contenant des triangles 
+/*     std::cerr << "DEBUG : starting grow" << std::endl;*/
+     grow(i, path, neigh, done, dist, vert);
+/*     std::cerr << "DEBUG : coming out of grow" << std::endl;*/
+     
+//      std::cerr << "Done.size() at the end :" << done.size() << std::endl;
+
+     // backtraking du chemin le plus court
+     std::map<uint, double> distances;
+     uint nd=(uint)done.size();
+/*     std::cerr << "DEBUG : nd=" << nd << std::endl;*/
+     for (k=0; k<nd; k++)
+     {
+          distances[done[k]]=dist[k];
+/*          std::cerr << done[k] << " -> "<< dist[k] << std::endl;;*/
+     }
+       
+/*     std::cerr << "DEBUG : Checking distance map" << std::endl;*/
+     std::map<uint, double>::iterator itD=distances.begin();
+//      for ( ; itD!=distances.end(); ++itD);
+//      {
+//           std::cerr << (*itD).first << " -> " << (*itD).second << std::endl;
+//      }
+     
+     for (i=0; i<ns; i++)
+          newPath[0].item(i)=Val(0);
+          
+     i=arr;
+     newPath[0].item(i)=value;
+//      std::cerr << "DEBUG : backtracking" << std::endl;
+//      std::cerr << "arr=" << arr << std::endl;
+//      std::cerr << "dep=" << dep << std::endl;
+     while (i!=dep)
+     {
+/*          std::cerr << "i=" << i << std::endl;*/
+          std::set<uint> vois=neigh[i];
+          std::set<uint>::iterator itVois=vois.begin();
+          dmin=100000.0; k=10000;
+          for ( ; itVois!=vois.end(); ++itVois)
+          {
+               j=*itVois;
+/*               std::cerr << "\tvois : " << j << std::endl;*/
+               std::map<uint, double>::iterator dd=distances.find(j);
+               if (dd != distances.end())
+               {
+/*                    std::cerr << "\t\tFound" << std::endl;*/
+                    dtemp=(*dd).second;
+                    if (dtemp<dmin) {dmin=dtemp; k=j;}
+               }
+          }
+/*          std::cerr << "k=" << k << std::endl;*/
+          newPath[0].item(k)=value;
+          i=k;
+     }
+//      std::cerr << "DEBUG : backtracking finished" << std::endl;
+
+/*     std::cerr << "DEBUG : CleanPath2 : OUT" << std::endl;*/
+     return newPath;
 }
+
+template<typename Val> void GraphPath<Val>::grow(uint i, TimeTexture<Val> & path, std::vector<std::set<uint> > neigh, std::vector<uint> & done, std::vector<double> & dist, std::vector<Point3df> vert)
+{
+     std::set<uint> voisins=neigh[i];
+     std::set<uint>::iterator itVois=voisins.begin();
+     int ind;
+/*     std::cerr << "+ -> " << done.size() << std::endl;*/
+     for ( ; itVois!=voisins.end(); ++itVois)
+     {
+          uint j=*itVois;
+          if ((path[0].item(j)!=0) && (isInVect(j, done)<0)) //(done.find(j)==done.end()))
+          {
+               std::set<uint> newVois=neigh[j];
+               std::set<uint>::iterator itNewVois=newVois.begin();
+               double add, addMin=10000.0;
+               for (; itNewVois!= newVois.end(); ++itNewVois)
+               {
+                    uint k=*itNewVois;
+                    ind=isInVect(k, done);
+                    if ((path[0].item(k)!=0) && (ind>=0)) // (done.find(k)!=done.end()))
+                    {
+                         add=dnorm((vert[j]-vert[k])) + dist[ind];
+                         if (add<addMin) addMin=add;
+                    }
+               }
+               done.push_back(j);
+/*               std::cerr << "\tAjoute "<< j << " avec distance " << addMin << std::endl;*/
+               dist.push_back(addMin);
+               grow(j, path, neigh, done, dist, vert);
+//                std::cerr << "- -> " << done.size() << std::endl;
+
+          }
+     }
+     return;
+}
+
+}
+
 #endif
