@@ -25,9 +25,9 @@ class SurfaceBased_StructuralAnalysis{
 
 
   public:
-    void MinimizationSetup(Graph &primal, AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &lon);
+    void MinimizationSetup(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
     SurfaceBased_StructuralAnalysis(){}
-    SurfaceBased_StructuralAnalysis(Graph &primal, AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &lon);
+    SurfaceBased_StructuralAnalysis(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
     void setModelParameters(float _ddweight=2.0, float _intrapsweight = 10.0, float _simweight=3.0, float _lsweight=0.002, float _ddx2 = 4.0, float _ddx1 = 2.0, float _ddh=0.0001);
     
     void RunMinimization(int type);
@@ -35,7 +35,7 @@ class SurfaceBased_StructuralAnalysis{
     double getTypeEnergy(int type);
     double getTotalEnergy();
     void SummaryLabels();
-    
+    void StoreToGraph(Graph &primal);
     void Initialization();
 };
 

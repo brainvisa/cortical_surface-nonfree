@@ -6,8 +6,8 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-ICM::ICM(Graph &primal, AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &lon){
-  MinimizationSetup(primal,mesh,lat,lon);
+ICM::ICM(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
+  MinimizationSetup(primal,meshes,lats,lons);
 }
 
 void ICM::Step(uint &mod){

@@ -17,12 +17,12 @@ class SWC: public SurfaceBased_StructuralAnalysis{
     vector<int> getCompConn(vector<uint> &indicesCliques, set<uint> &listeSites);
     vector<set<uint> > getCompConnVector(vector<int> &comp);
 //     void getSpecialMesh();
-    long double getCompacite(set<uint> &comp);
+    long double getCompacite(set<uint> &comp, bool verb=true);
 
 
   public:
     SWC(){}
-    SWC(Graph &primal, AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &lon);
+    SWC(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
     void Run();
     void Run2();
 };

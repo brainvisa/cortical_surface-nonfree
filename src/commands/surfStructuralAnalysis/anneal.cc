@@ -6,8 +6,8 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-Anneal::Anneal(Graph &primal, AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &lon){
-  MinimizationSetup(primal,mesh,lat,lon);
+Anneal::Anneal(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
+  MinimizationSetup(primal,meshes,lats,lons);
 }
 
 void Anneal::Step(vector<int> &random, long double temp, uint &mod){
@@ -58,7 +58,7 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 void Anneal::Run(){
   //   Initialization();
   for (uint i=0;i<sites.size();i++)
-    sites[i]->label = (int)sites[i]->tValue;
+    sites[i]->label = 0; //(int)sites[i]->tValue;
   for (uint k=0;k<cliques.size();k++){
     cliques[k].updateLabelsCount();
     cliques[k].computeEnergy(true,nbsujets);
@@ -76,18 +76,19 @@ void Anneal::Run(){
   for(uint i=0;i<sites.size();i++)
     indices_start.push_back(i);
   
-  long double temp=1000.0;
+  long double temp=300.0;
 
   uint mod=1, ite=0, nb_under_threshold=0,test;
 
   cout.precision(2);       
 
 //   cout.setf(ios_base::fixed, ios_base::floatfield);
- 
 
+//     blobsnodes[sites[i]->subject]
+  
   FILE * f1;   f1 = fopen ("/home/grg/recuit.txt","w");
 
-  while (nb_under_threshold<5 || mod!=0){
+  while (false && (nb_under_threshold<5 || mod!=0)){
     if (mod!=0) nb_under_threshold=0;
     else nb_under_threshold++;
     cout << " T=" << temp << " it="<< ite++ << " " ;
@@ -116,7 +117,7 @@ void Anneal::Run(){
     ShortSummaryLabels();
     cout << " E=" << energy << endl;
     temp = temp*0.98;
-    cin >> test;
+//     cin >> test;
   }
 
   for (uint k=0;k<cliques.size();k++){

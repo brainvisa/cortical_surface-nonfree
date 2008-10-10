@@ -14,9 +14,9 @@ using namespace std;
 using namespace carto;
 
 int main(int argc, const char **argv){
-  string  graphFile, output, meshpath, latpath, lonpath;
+  string  graphFile, output, atlaspath;
   Graph primal;
-  float _ddweight=0.7, _intrapsweight = 2.0, _simweight=1.0, _lsweight=0.01, _ddx2 = 5.0, _ddx1 = 1.0, _ddh=0.0001;
+  float _ddweight=0.7, _intrapsweight = 2.0, _simweight=1.4, _lsweight=0.01, _ddx2 = 9.0, _ddx1 = 4.0, _ddh=0.0001;
 
   int run=1;
   AimsApplication     app( argc, argv, "Initialize");
@@ -24,9 +24,7 @@ int main(int argc, const char **argv){
   app.alias( "--primal", "-p" );
   app.addOption( output, "-o", "PS graph", "");
   app.alias( "--output", "-o" );
-  app.addOption( meshpath, "-m" , "Maillage sur lequel on calcule les distances intersujets");
-  app.addOption( latpath , "-lat", "Texture latitudes de ce maillage");
-  app.addOption( lonpath , "-lon", "Texture longitudes de ce maillage");
+  app.addOption( atlaspath, "-m" , "Chemin de base des données d'atlas");
   app.addOption(run,"--run","run","");
   app.addOption(_ddweight, "--ddw", "ddweight", 1.0);
   app.addOption(_intrapsweight, "--ipsw", "intrapsweight",  1.0);
@@ -37,24 +35,41 @@ int main(int argc, const char **argv){
   app.addOption(_ddh, "--ddh", "ddh",  1.0);
   app.initialize();
 
-  LireGraphes(graphFile,output,primal);
+  LireGraphes(graphFile,primal);
+  set<string> sujets(RecupererSujets(primal));
+  map<string, AimsSurfaceTriangle> meshes;
+  map<string, TimeTexture<float> > lats, lons;
+  set<string>::iterator it=sujets.begin();
 
-  AimsSurfaceTriangle mesh;
-  Reader<AimsSurfaceTriangle> r(meshpath);
-  r.read(mesh);
-  TimeTexture<float> lat, lon;
-  Reader<TimeTexture<float> > rlat(latpath);
-  rlat.read(lat);
-  Reader<TimeTexture<float> > rlongit(lonpath);
-  rlongit.read(lon);
-  SWC swc(primal, mesh, lat, lon);
-//   Anneal swc(primal, mesh, lat,lon);
+  for (;it!=sujets.end();it++){
+    string meshpath = atlaspath + *it + "/mesh/" + *it + "_Lwhite.mesh";
+    string latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
+    string lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
+    cout << "chargement" << endl;
+    Reader<AimsSurfaceTriangle> rmesh(meshpath);
+    Reader<TimeTexture<float> > rlat(latpath);
+    Reader<TimeTexture<float> > rlon(lonpath);
+    AimsSurfaceTriangle newmesh;
+    rmesh.read(newmesh);
+
+    meshes[*it] = AimsSurfaceTriangle(newmesh);
+
+    TimeTexture<float> lat, lon;
+    rlat.read(lat);
+    rlon.read(lon);
+    
+    lats[*it]=TimeTexture<float>(lat);
+    lons[*it]=TimeTexture<float>(lon);
+  }
+//   SWC swc(primal, mesh, lat, lon);
+  Anneal swc(primal, meshes, lats,lons);
   
   cout << _ddweight << "-" << _intrapsweight << "-" << _simweight << "-" << _lsweight << "-" << _ddx2 << "-" << _ddx1 << "-" << _ddh << endl;
   swc.setModelParameters(_ddweight, _intrapsweight, _simweight, _lsweight, _ddx2, _ddx1, _ddh);
-  
-  swc.Run2();
-//   swc.SummaryLabels();
+   
+  swc.Run();
+  swc.SummaryLabels();
+  swc.StoreToGraph(primal);
   SauvegarderGraphes(primal, graphFile, output);
 
   return(0);

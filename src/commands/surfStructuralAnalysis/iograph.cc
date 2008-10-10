@@ -34,14 +34,9 @@ vector<string> splitGraphFile(string graphFile){
   return graphFiles;
 }
 
-void LireGraphes(string graphFile, string output, Graph &primal ){
+void LireGraphes(string graphFile, Graph &primal ){
   vector<string> graphFiles = splitGraphFile(graphFile);
-  if( output.empty() )
-    output = graphFile;
-  vector<string> outputs = splitGraphFile(output);
 
-  if( graphFiles.size() != outputs.size() )
-    throw runtime_error( "Input and output graphs numbers differ" );
   if( graphFiles.size() == 1 ){
     Reader<Graph> fr( graphFile );
     try{
@@ -88,6 +83,17 @@ void LireGraphes(string graphFile, string output, Graph &primal ){
   }
 }
 
+set<string> RecupererSujets(Graph &primal){
+  Graph::iterator iv;
+  string subject;
+  set<string> sujets;
+  for( iv=primal.begin(); iv!=primal.end(); ++iv ){
+    (*iv)->getProperty( "subject", subject );
+    sujets.insert(subject);
+  }
+  return sujets;
+}
+
 void RecupererGraphesIndividuels( const std::vector<Graph*> subjects, Graph & multi, const std::string & vertexatt ){
   Graph::const_iterator       imv, emv=multi.end();
   vector<Graph*>::const_iterator    ig, eg = subjects.end();
@@ -95,6 +101,7 @@ void RecupererGraphesIndividuels( const std::vector<Graph*> subjects, Graph & mu
   map<string, map<int, Vertex *> >::iterator  is, es = smap.end();
   string          subjatt, s;
   int           index;
+  int node;
   Graph::const_iterator       isv, esv;
   map<int, Vertex *>::iterator      iv;
   string          l;
@@ -128,6 +135,8 @@ void RecupererGraphesIndividuels( const std::vector<Graph*> subjects, Graph & mu
         (*imv)->getProperty( "label", l );
         iv->second->setProperty( "label", l );
         iv->second->setProperty( "name", l );
+        (*imv)->getProperty( "node", node);
+        iv->second->setProperty( "node", node);
       }
     }
   }

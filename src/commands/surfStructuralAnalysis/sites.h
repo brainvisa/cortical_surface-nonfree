@@ -18,11 +18,13 @@ class Site{
     float tmin;
     float tmax;
     float trep;
+    int rank;
     Point3df gravitycenter;
     uint node;
+    set<uint> nodes_list;
 };
 
-vector<Site *> ConstruireSites(Graph &primal, AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &longit); //map<float, vector<pair<float, uint > > > &altmesh);
+vector<Site *> ConstruireSites(Graph &primal); //map<float, vector<pair<float, uint > > > &altmesh);
 
 #endif
 

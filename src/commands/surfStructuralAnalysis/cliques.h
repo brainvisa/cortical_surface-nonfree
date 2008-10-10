@@ -61,7 +61,7 @@ class Clique{
         case SIMILARITY:
           ASSERT(blobs.size()==2);
           if (blobs[0]->label == blobs[1]->label && blobs[0]->label != 0){
-            sigma = 16.0/sqrt(2*log(10.0));          // paramètre de la gaussienne : le premier 10.0 c'est la distance-seuil à laquelle on veut un potentiel égal à 0.1
+            sigma = 19.0/sqrt(2*log(10.0));          // paramètre de la gaussienne : le premier 10.0 c'est la distance-seuil à laquelle on veut un potentiel égal à 0.1
             energy = -simweight*exp(-pow(rec,2)/(2*pow(sigma,2)));
 //             cout << endl << rec << " : " << energy << endl;
 //             energy=simweight/20.0-simweight;
@@ -130,7 +130,7 @@ class Clique{
     Clique(){ type = UNKNOWN; energie = 0.0; blobs = vector<Site *>(); labelscount = map<int,uint>();  }
 };
 
-vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, AimsSurfaceTriangle &mesh);
+vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
 
 #endif
 

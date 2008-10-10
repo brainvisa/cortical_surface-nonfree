@@ -14,7 +14,7 @@ class Anneal: public SurfaceBased_StructuralAnalysis{
 
   public:
     Anneal(){}
-    Anneal(Graph &primal, AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &lon);
+    Anneal(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
     void Run();
     void Step(vector<int> &random, long double temp, uint &mod);
 };

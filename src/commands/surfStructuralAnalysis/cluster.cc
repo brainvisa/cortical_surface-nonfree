@@ -9,8 +9,8 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-SWC::SWC(Graph &primal, AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &lon){
-  MinimizationSetup(primal,mesh,lat,lon);
+SWC::SWC(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
+  MinimizationSetup(primal,meshes,lats,lons);
 }
 
 vector<int> SWC::getCompConn(vector<uint> &indicesCliques, set<uint> &listeSites){
@@ -144,7 +144,8 @@ vector<uint> SWC::getCliquesTurnedOn(float temp, vector<uint> &indicesCliques){
 //         qe += 0.1 * (-1.0/20.0*cliques[indicesCliques[i]].rec+1.0);
 //         long double qe = exp(-(cliques[indicesCliques[i]].rec+1.0));
 //         cout << qe << " " ;
-      if (frect<0.01) {}
+      if (frect<0.01) {
+      }
       else if (frect>0.99) {
         turnedOn.push_back(indicesCliques[i]);
       }
@@ -160,7 +161,7 @@ vector<uint> SWC::getCliquesTurnedOn(float temp, vector<uint> &indicesCliques){
   return turnedOn;
 }
 
-long double SWC::getCompacite(set<uint> &comp){
+long double SWC::getCompacite(set<uint> &comp, bool verb){
   set<string> subj;
   uint penal = 0;
   long double compac=0.0,rec=0.0;
@@ -184,13 +185,13 @@ long double SWC::getCompacite(set<uint> &comp){
 //   cout << "compsize:" << comp.size() << endl ;
 //   cout << "compac:" << compac << endl;
   for (it=auxcliques.begin();it!=auxcliques.end();it++)
-    rec+=1.0-frec(cliques[*it].rec);
+    rec += frec(cliques[*it].rec); // /10.0+0.9;
   
-  compac += rec;
+  compac += -rec;
 //   cout << "rec:" << rec<< endl;
   compac += penal*100.0;
   
-  cout << "[" << t << ";" << rec << ";" << subj.size() << ";" << penal <<"]";
+  if (verb) cout << "[" << t << ";" << -rec << ";" << subj.size() << ";" << penal <<"]";
 //   compac *=10.0;
 //   compac /= (float)comp.size();
 //   compac *= ((float)subj.size()/(float)nbsujets);
@@ -201,126 +202,10 @@ long double SWC::getCompacite(set<uint> &comp){
 
 }
 
-void SWC::getListeTriangles(){
-  //   vector<AimsVector<uint,3> > triangles;
-  //   vector<set<uint> > poly(sites.size());
-  //   for (uint i=0;i<cliques.size();i++){
-  //     if (cliques[i].type == SIMILARITY){
-  //       poly[cliques[i].blobs[0]->index].insert(cliques[i].blobs[1]->index);
-  //       poly[cliques[i].blobs[1]->index].insert(cliques[i].blobs[0]->index);
-  //     }
-  //   }
-  //   
-  //   set<uint>::iterator it,jt,kt;
-  //   uint k=0;
-  //   set<uint> vertices;
-  //   vector<uint> corres(sites.size());
-  //   map<int,int> corres2;
-  //   for (uint i=0;i<poly.size();i++){
-  //     for (it=poly[i].begin();it!=poly[i].end();it++)
-  //       for (jt=poly[i].begin();jt!=poly[i].end();jt++){
-  //         if (poly[*it].find(*jt)!=poly[*it].end()){
-  //           if (i<*it && *it<*jt){
-  //             AimsVector<uint,3> v;
-  //             vertices.insert(i);
-  //             vertices.insert(*it);
-  //             vertices.insert(*jt);
-  //             for (k=0,kt=vertices.begin();kt!=vertices.end() && *kt!=i;kt++,k++){}
-  //             v[0]=k;
-  //             corres[i] = k;
-  //             corres2[k]= i;
-  //             for (k=0,kt=vertices.begin();kt!=vertices.end() && *kt!=*it;kt++,k++){}
-  //             v[1]=k;
-  //             corres[*it]=k;
-  //             corres2[k]=*it;
-  //             for (k=0,kt=vertices.begin();kt!=vertices.end() && *kt!=*jt;kt++,k++){}
-  //             v[2]=k;
-  //             corres[*jt]=k;
-  //             corres2[k]=*jt;
-  //             triangles.push_back(v);
-  //           }
-  //         }
-  //       }
-  //   }
-  //         for (uint j=0;j<ssgraphes.size();j++)
 
-  // //   for (uint i=0;i<triangles.size();i++)
-  // //     cout << triangles[i][0] <<" " << triangles[i][1] << " " << triangles[i][2] << "-";
-  //   cout << "nombre de vertex :" << vertices.size() << endl;
-  // 
-  //   cout << "nombre de triangles :" << triangles.size() << endl;
-  //   Reader<AimsSurfaceTriangle> r("/home/grg/V10_sphere.mesh");
-  //   AimsSurfaceTriangle sphere;
-  //   r.read(sphere);
-  //   AimsSurfaceTriangle mesh;
-  //   for (kt=vertices.begin();kt!=vertices.end();kt++){
-  //     AimsVector<float,3> p(20.0*cos(sites[*kt]->gravitycenter[1])*cos(sites[*kt]->gravitycenter[0]),20.0*sin(sites[*kt]->gravitycenter[1])*cos(sites[*kt]->gravitycenter[0]),20.0*sin(sites[*kt]->gravitycenter[0]));
-  //     p = sphere[0].vertex()[sites[*kt]->gravitycenter[2]];
-  //     AimsVector<float,3> q(p);
-  //     q /= p.norm();
-  //     q *= sites[*kt]->tValue * 10.0;
-  //     p += q;
-  //     mesh[0].vertex().push_back(p);
-  //   }
-  //   for (uint i=0;i<triangles.size();i++)
-  //     mesh[0].polygon().push_back(AimsVector<uint,3>(triangles[i][0],triangles[i][1],triangles[i][2]));
-  //   mesh[0].updateNormals();
-  //   Writer<AimsSurfaceTriangle> w("/home/grg/testNewMesh.mesh");
-  //   w.write(mesh);
-  //   vector<uint> clik;
-  //   for (uint i=0;i<cliques.size();i++)
-  //     if (cliques[i].type == SIMILARITY)
-  //       clik.push_back(i);
-  //   map<int,int>::iterator itt;
-  //   TimeTexture<short> tex(1,0);
-  //   for (uint i=0;i<mesh[0].vertex().size();i++)
-  //     tex[0].push_back(0);
-  // 
-  //   vector<int> cc = getCompConn(clik);
-  //   for (uint i=0;i<sites.size();i++)
-  //     sites[i]->label = 0;
-  //   for (uint i=0;i<sites.size();i++){
-  //     if (cc[i]==-1) cc[i] = 0;
-  // //     if (cc[i]<20) sites[i]->label = cc[i];
-  //     tex[0].item(corres[i])=cc[i];
-  //   }
-  //   for (uint i=0;i<cliques.size();i++)
-  //     cliques[i].updateLabelsCount();
-  //   
-  //   Writer<TimeTexture<short> > w2("/home/grg/testNewTex.tex");
-  //   w2.write(tex);
-  // 
-  //   FILE * f1;   f1 = fopen ("/home/grg/recuit.txt","w");
-  //   for (uint i0=0;i0<sites.size();i0++){
-  //     fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
-  //   }
-  //   fprintf(f1, "\n");
-  //   fclose(f1);
-  //
-
-}
-
-// void SWC::getSpecialMesh(){
-//   AimsSurfaceTriangle *msh,tmpMesh,atlas;
-//   Reader<AimsSurfaceTriangle> r("/home/grg/data/somato/ite1/V10/mesh/V10_Lwhite_inflated.mesh");
-//   r.read(atlas);
-//   for (uint i=0;i<cliques.size();i++){
-//     if (cliques[i].type==SIMILARITY){
-//       uint gc0= cliques[i].blobs[0]->gravitycenter[2],gc1=cliques[i].blobs[1]->gravitycenter[2];
-//       
-//       msh = SurfaceGenerator::cylinder( atlas[0].vertex()[gc0], atlas[0].vertex()[gc1], 0.3, 0.3, 3, false );
-//       SurfaceManip::meshMerge( tmpMesh, *msh );
-//     }
-//   }
-//   Writer<AimsSurfaceTriangle> w("/home/grg/testcliques.mesh");
-//   w.write(tmpMesh);
-//   
-// 
-// 
-// }
 
 void SWC::Run2(){
-  float temp=20.0;
+  float temp=10.0;
 
   vector<uint> indicesCliques, turnedOn;
   set<uint> indicesSet, listeSites;
@@ -344,7 +229,8 @@ void SWC::Run2(){
   cout << endl;
 
   for (uint i=0;i<sites.size();i++){
-      sites[i]->label=(int)sites[i]->t;
+    if (sites[i]->t < 0) sites[i]->label = 0;
+    else sites[i]->label=sites[i]->t;
   }
   for (uint i0=0;i0<sites.size();i0++){
     fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
@@ -353,11 +239,13 @@ void SWC::Run2(){
   
 
   
-  while (temp>0.01){
+  while (temp>0.001){
 
     cout << " T=" << temp << " it="<< ite++ << " ssg:" << ssgraphes.size() << " "  <<endl;
     allCompConn.clear();
+    vector<set<uint> > allCC;
     for (uint i=0;i<ssgraphes.size();i++){
+      cout << ssgraphes[i].size() << "(" << getCompacite(ssgraphes[i],false) << ") ";
       indicesCliques.clear();
       indicesSet.clear();
       for (it1=ssgraphes[i].begin();it1!=ssgraphes[i].end();it1++)
@@ -377,15 +265,39 @@ void SWC::Run2(){
       auxcomp=getCompConn(turnedOn, ssgraphes[i]);
 
       vector<set<uint> > compconn(getCompConnVector(auxcomp));
-      for (uint j=0;j<compconn.size();j++){
-        if (compconn[j].size()>1){
-          allCompConn.push_back(compconn[j]);
-        }
-      }
+      for (uint j=0;j<compconn.size();j++)
+        allCC.push_back(compconn[j]);
     }
-    cout << allCompConn.size() << " composantes connexes" << endl;
-    for (uint j=0;j<allCompConn.size();j++)
-      cout << "compac:" << getCompacite(allCompConn[j]) << "("<< allCompConn[j].size() <<")" << endl;
+    cout << endl;
+    cout << allCC.size() << " composantes connexes - " ;
+    
+    for (uint j=0;j<allCC.size();j++)
+      if (allCC[j].size()>1)
+        allCompConn.push_back(allCC[j]);
+    cout << allCompConn.size() << " composantes de plus de un élement" << endl;
+    if (allCompConn.size() == 0){
+      temp=temp*0.99;
+            continue;
+    }
+    vector<long double> compacList,compacDist;
+    long double som = 0.0;
+    for (uint j=0;j<allCompConn.size();j++){
+      cout << "compac:";
+      long double aux = getCompacite(allCompConn[j]);
+      cout << aux;
+      compacList.push_back(exp(-aux/(10.0*temp)));
+      som += exp(-aux/(10.0*temp));
+      cout << "("<< allCompConn[j].size() <<")" << endl;
+    }
+    long double  som2=0.0;
+    for (uint j=0;j<allCompConn.size();j++){
+      som2+=compacList[j]/som;
+      cout << som2 << ";" ;
+      compacDist.push_back(som2);
+    }
+    cout << endl;
+    
+    
 //     ssgraphes.clear();
 //     for (uint i= 0;i<allCompConn.size();i++)
 //       if (allCompConn[i].size()>0)
@@ -445,8 +357,9 @@ void SWC::Run2(){
     vector<long double> compacDistrib;
     vector<long double> compacListe;
     compacSSGraph = getCompacite(ssgraphes[activeSG]);
+    cout << compacSSGraph <<" (" << ssgraphes[activeSG].size() << ") / ";
     compacCompConn = getCompacite(allCompConn[tir]);
-    cout << "(" << compacCompConn << "/" << compacSSGraph << ";"<<ssgraphes[activeSG].size() << ")" << endl;
+    cout << compacCompConn << endl;
     long double somme=0.0;
     compacDistrib.push_back(exp(-compacSSGraph/temp));
     compacListe.push_back(compacSSGraph);
@@ -457,7 +370,7 @@ void SWC::Run2(){
     somme += exp(-compacCompConn/temp);
 //     cout << "sum:" << somme << endl;
 
-    cout << "graphes adj:" << graphesAdjacents.size() << endl;
+    cout << "graphes adj:" << graphesAdjacents.size() << " " << "sites adj:" << sitesAdjacents.size() << endl;
     for (it=graphesAdjacents.begin();it!=graphesAdjacents.end();it++){
       set<uint> tempgraph(ssgraphes[*it]);
       for (it1=allCompConn[tir].begin();it1!=allCompConn[tir].end();it1++)
@@ -624,13 +537,16 @@ void SWC::Run2(){
     for (uint i=0;i<ssgraphes.size();i++){
       chksum+=ssgraphes[i].size();
 //       cout << "ssg.size:" << ssgraphes[i].size() << endl;
-//       float compac = getCompacite(ssgraphes[i]);
+      float compac = getCompacite(ssgraphes[i],false);
 //       cout << "compacite :" << compac << endl;
-//       if (compac > 480.0) compac=480.0;
+      if (compac > 480.0) compac=480.0;
+      if (ssgraphes[i].size()>1){
         for (it=ssgraphes[i].begin();it!=ssgraphes[i].end();it++){
-          sites[*it]->label= lab;//(int) (compac+20.0);
+          sites[*it]->label= lab; //(int) (compac+20.0);
         }
         lab++;
+      }
+        
 //       }
 
     }
@@ -646,6 +562,29 @@ void SWC::Run2(){
     cout << "====================================================================================================================" << endl;
     cin >> ite;
   }
+
+  for (uint i=0;i<sites.size();i++)
+    sites[i]->label=0;
+  for (uint i=0;i<ssgraphes.size();i++){
+    float compac = getCompacite(ssgraphes[i],false);
+    if (compac > 100.0) compac=100.0;
+    if (ssgraphes[i].size()>1){
+      for (it=ssgraphes[i].begin();it!=ssgraphes[i].end();it++){
+        sites[*it]->label= (int) (compac+20.0);
+      }
+    }
+    else{
+      for (it=ssgraphes[i].begin();it!=ssgraphes[i].end();it++){
+        sites[*it]->label= 120.0;
+      }
+    }
+      
+  }
+  for (uint i0=0;i0<sites.size();i0++){
+    fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
+  }
+  fprintf(f1, "\n");
+  
   fclose(f1);
 
 }
