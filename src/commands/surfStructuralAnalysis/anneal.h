@@ -13,6 +13,7 @@ class Anneal: public SurfaceBased_StructuralAnalysis{
   private:
 
   public:
+    vector<uint> ipscliques;
     Anneal(){}
     Anneal(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
     void Run();

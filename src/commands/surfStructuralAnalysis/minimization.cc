@@ -52,7 +52,7 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
     subjects.insert(sites[i]->subject);
   nbsujets = subjects.size();
   cout << "Construction des cliques ... " << flush;
-  cliques = ConstruireCliques(sites,cliquesDuSite,meshes, lats,lons);
+  cliques = ConstruireCliquesLastChance(sites,cliquesDuSite,meshes, lats,lons);
 //   allcliques.push_back(cliques);
 
   
@@ -160,9 +160,40 @@ double SurfaceBased_StructuralAnalysis::getTotalEnergy(){
   return energy;
 }
 
+double SurfaceBased_StructuralAnalysis::getTotalEnergyLastChance(uint site, uint newlabel){
+  double energy=0.0;
+  uint old = sites[site]->label;
+  sites[site]->label = newlabel;
+//   cout << "totalenergycalcul" << endl;
+  for (uint i=0;i<cliques.size();i++){
+    long double cen=0.0;
+    if (cliques[i].type == DATADRIVEN){
+      uint ms=cliques[i].blobs[0]->index;
+      if (sites[ms]->label!=0){
+        if (sites[ms]->t>15.0)  cen = 10.0;
+        else if (sites[ms]->t<5.0) cen = 0.001;
+        else cen = sites[ms]->t * (-5.0*0.999/10.0) + (10.0+5.0*0.999)/10.0;
+      }
+    }
+    else if (cliques[i].type == SIMILARITY){
+      uint ms1 = cliques[i].blobs[0]->index;
+      uint ms2 = cliques[i].blobs[1]->index;
+      if (sites[ms1]->label == sites[ms2]->label && sites[ms1]->label != 0){
+        cen = cliques[i].rec / 2.0 - 1.0;
+      }
+    }
+    energy+=cen;
+    
+  }
+  sites[site]->label = old;
+  return energy;
+}
+
+
+
 void SurfaceBased_StructuralAnalysis::SummaryLabels(){
   float Eintra,Edd,Els,Esim,Etot;
-  for (uint i=0;i<labels.size();i++){
+  for (uint i=1;i<labels.size();i++){
     Eintra = getLabelEnergy(labels[i], INTRAPRIMALSKETCH);
     Edd = getLabelEnergy(labels[i], DATADRIVEN);
     Els = getLabelEnergy(labels[i], BESTLOWERSCALE);
@@ -177,7 +208,7 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
     cout << nblabel << ";";
     for (uint j=0;j<sites.size();j++)
       if (sites[j]->label==labels[i]){
-        cout << sites[j]->index << "(" << sites[j]->node << ")-";
+        cout << sites[j]->index << "(" << sites[j]->subject << ")-";
       }
     cout<<  endl;
   }
@@ -255,10 +286,15 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
         s << sites[i]->label ;
         (*iv)->setProperty("label", s.str());
         (*iv)->setProperty("name", s.str());
+        node = sites[i]->node;
         (*iv)->setProperty( "node", node);
+//         cout << node << " ";
+        (*iv)->getProperty( "node", node);
+//         cout << node << " " ;
         
       }
   }
+
 
 
 

@@ -34,6 +34,8 @@ class SurfaceBased_StructuralAnalysis{
     double getLabelEnergy(int label, int type=UNKNOWN);
     double getTypeEnergy(int type);
     double getTotalEnergy();
+    double getTotalEnergyLastChance(uint site, uint newlabel);
+
     void SummaryLabels();
     void StoreToGraph(Graph &primal);
     void Initialization();

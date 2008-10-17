@@ -7,6 +7,7 @@
 #include "icm.h"
 #include "anneal.h"
 #include "cluster.h"
+
 #include <aims/math/random.h>
 
 using namespace aims;
@@ -16,7 +17,7 @@ using namespace carto;
 int main(int argc, const char **argv){
   string  graphFile, output, atlaspath;
   Graph primal;
-  float _ddweight=0.7, _intrapsweight = 2.0, _simweight=1.4, _lsweight=0.01, _ddx2 = 9.0, _ddx1 = 4.0, _ddh=0.0001;
+  float _ddweight=0.7, _intrapsweight = 2.0, _simweight=1.4, _lsweight=0.01, _ddx2 = 14.0, _ddx1 = 6.0, _ddh=0.0001;
 
   int run=1;
   AimsApplication     app( argc, argv, "Initialize");
@@ -40,6 +41,7 @@ int main(int argc, const char **argv){
   map<string, AimsSurfaceTriangle> meshes;
   map<string, TimeTexture<float> > lats, lons;
   set<string>::iterator it=sujets.begin();
+
 
   for (;it!=sujets.end();it++){
     string meshpath = atlaspath + *it + "/mesh/" + *it + "_Lwhite.mesh";

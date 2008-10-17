@@ -19,6 +19,10 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
   map<float, vector<pair<float, uint > > >::iterator meshIt;
   vector<pair<float, uint> >::iterator yIt;
   vector<int> listepts;
+  
+ 
+  
+  
   for (iv=primal.vertices().begin() ; iv!=primal.vertices().end(); ++iv){
     string test;
     (*iv)->getProperty("index", index1);
@@ -33,7 +37,7 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
     (*iv)->getProperty( "tValue", tvalue1);
     (*iv)->getProperty( "rank", rank);
     (*iv)->getProperty( "nodes_list", listepts);
-    
+
 //     if (bc1[0] >91.0 && bc1[0]<150.0 && bc1[1]>257.0 && bc1[1]<316.0){
     sites.push_back(new Site());
     Site *s=sites[sites.size()-1];
@@ -59,7 +63,8 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
       s->nodes_list.insert(listepts[i]);
     x=bc1[0];
     y=bc1[1];
-
+    
+    
 //     (*iv)->setProperty( "node", (int)mini);
     (*iv)->setProperty( "sites_index", sites.size()-1);
 //     }
