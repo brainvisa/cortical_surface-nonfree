@@ -26,11 +26,11 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
       sites[random[i]]->label = labels[k];
       globalenergieslabels[k]=energy;
       
-      uint nclsim1=0,nclsim2=0,nbips1=0,nbips2=0;
+      int nclsim1=0,nclsim2=0,nbips1=0,nbips2=0;
 
       for (uint n=0;n<cliquesDuSite[random[i]].size();n++){
         uint aux = cliquesDuSite[random[i]][n];
-        if (cliques[aux].type == SIMILARITY && cliques[aux].blobs[0]->label == cliques[aux].blobs[1]->label){
+        if (cliques[aux].type == SIMILARITY && cliques[aux].blobs[0]->label == cliques[aux].blobs[1]->label && cliques[aux].blobs[0]->label != 0){
           if (cliques[aux].blobs[0]->label == sites[random[i]]->label)
             nclsim1++;
           else if (cliques[aux].blobs[0]->label== old)
@@ -41,12 +41,17 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
       }
       for (uint n=0;n<ipscliques.size();n++){
         if (cliques[ipscliques[n]].type == INTRAPRIMALSKETCH && cliques[ipscliques[n]].blobs[0]->subject != sites[random[i]]->subject){
-          nbips1 += cliques[ipscliques[n]].labelscount[labels[k]];
-          nbips2 += cliques[ipscliques[n]].labelscount[old];
+          if (labels[k]!=0)
+            nbips1 += cliques[ipscliques[n]].labelscount[labels[k]];
+          if (old != 0)
+            nbips2 += cliques[ipscliques[n]].labelscount[old];
+          
         }
       }
-      globalenergieslabels[k] += 1.0 * (nbips1-nclsim1 - (nbips2-nclsim2));
-      cout << nbips1 << ";" << nclsim1 << ";" << nbips2 << ";" << nclsim2 << "=" <<globalenergieslabels[k] << " " ;
+      int total = (nbips1-nclsim1 - (nbips2-nclsim2));
+      globalenergieslabels[k] += 4.0 * total;
+      
+//       cout << nbips1 << ";" << nclsim1 << ";" << nbips2 << ";" << nclsim2 << "=" << total << "=" << globalenergieslabels[k] << " " ;
       
 //       for (uint m=0;m<cliquesDuSite[random[i]].size();m++){
 
@@ -57,15 +62,15 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 
     long double somme2=0.0;
 
-//     if (temp<0.9) cout << "dist:[";
+    if (energy<-7800.0) cout << "dist:[";
     for (uint k=0;k<labels.size();k++){
       somme2 += exp(-globalenergieslabels[k]/temp)/somme;
       globalenergieslabels[k] = somme2;
-//       if (temp<0.9){
-//         cout << somme2 << " " ;
-//       }
+      if (energy<-7800.0){
+        cout << somme2 << " " ;
+      }
     }
-//     if (temp<0.9) cout << "]";
+    if (energy<-7800.0) cout << "]";
       
     long double tirage = ((long double)UniformRandom() * 1.0);
     uint acc;
@@ -150,7 +155,7 @@ void Anneal::Run(){
     ShortSummaryLabels();
     cout << " E=" << energy << endl;
     temp = temp*0.98;
-    if (temp< 0.9){
+    if (energy<-7800.0){
       cin >> test;
     }
   }

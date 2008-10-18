@@ -4,9 +4,9 @@
 #include <math.h>
 #include "sites.h"
 #include "meshdistance.h"
-#include "cathier/aims_wrap.h"
-#include "cathier/triangle_mesh_geodesic_map.h"
-#include "cathier/math_functions.h"
+// #include "cathier/aims_wrap.h"
+// #include "cathier/triangle_mesh_geodesic_map.h"
+// #include "cathier/math_functions.h"
 
 using namespace std;
 
@@ -72,7 +72,7 @@ class Clique{
             energy = -simweight*exp(-pow(rec,2)/(2*pow(sigma,2)));
 //             cout << endl << rec << " : " << energy << endl;
 //             energy=simweight/20.0-simweight;            
-            energy = rec/5.0 - 2.0;
+            energy = rec/5.0 - 4.0;
 //             energy = 0.0;
           }
           else {
@@ -141,9 +141,9 @@ class Clique{
     Clique(){ type = UNKNOWN; energie = 0.0; blobs = vector<Site *>(); labelscount = map<int,uint>();  }
 };
 
-vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
+// vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
 
-vector<Clique> ConstruireCliquesSimple(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
+// vector<Clique> ConstruireCliquesSimple(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
 
 vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
 

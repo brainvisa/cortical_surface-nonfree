@@ -28,7 +28,7 @@ map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsign
   map<uint,float>::iterator distit;
   distmap[dep]=0.0;
   if (dep != -1){
-    while(  dist<=20.0 )
+    while(  dist<=40.0 )
     {
 //       cout << "TEST" << endl;
       nfront->clear();
