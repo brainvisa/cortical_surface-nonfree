@@ -21,8 +21,12 @@ void Clique::updateLabelsCount(){
     }
     map<int,uint>::iterator it;
     uint chksum=0;
-    for (it=labelscount.begin();it!=labelscount.end();it++)
+//     cout << blobs[0]->subject << endl;
+    for (it=labelscount.begin();it!=labelscount.end();it++){
+//       cout << it->first << " " << it->second << "-";
       chksum += (*it).second;
+    }
+//     cout  << endl;
     ASSERT(chksum == blobs.size());
   }
 }
@@ -48,6 +52,7 @@ int getNode(map<float, vector<pair<float, uint> > > &altmesh, float delta, float
   map<float, vector<pair<float, uint> > >::iterator xit;
   float dismin=1000.0, dis;
   int mini=-1;
+//   cout << ":" << delta << " " << x << " " << y;
   for (xit=altmesh.begin();xit!=altmesh.end();xit++){
     if (xit->first>x-delta && xit->first<x+delta){
       for (uint j=0;j<xit->second.size();j++){
@@ -64,47 +69,48 @@ int getNode(map<float, vector<pair<float, uint> > > &altmesh, float delta, float
   return mini;
 }
 
-// vector<double> test_geodmap(til::Mesh_N mesh, int dep, double distthresh){
-//   std::vector< std::size_t > startPoints;
-//   startPoints.push_back(dep);
-//   til::ghost::GMapStop_AboveThreshold<double> stopGhost(distthresh);
-//   typedef std::vector<std::vector<std::size_t> > CNeighborhoods;
-//     
-//   shared_ptr<CNeighborhoods> pneighc = til::circular_neighborhoods(getVertices(mesh), getFaceIndices(mesh));
-//     
-//   til::Triangle_mesh_geodesic_map<til::Mesh_N::VertexCollection, CNeighborhoods, double, til::ghost::GMapStop_AboveThreshold<double>, til::policy::GMap_DefaultStorage_sparse_vect_dbl >
-//       geomap(getVertices(mesh), *pneighc, stopGhost);
-//     
-//     
-// //     std::vector<std::size_t> startPoints(1);
-// //     std::vector<double> dist(1, 0.0);
-//     
-//   std::vector<double> dist(( int )startPoints.size(), 0.0);
-// //     startPoints[0] = vertex;
-//   geomap.init(startPoints, dist);
-//   geomap.process();
-//   shared_ptr<til::sparse_vector<double> > sres = geomap.distanceMap(); 
-//   {
-//     til::sparse_vector<double>::sparse_iterator iRes = sres->sparse_begin();
-//     if (false)
-//     {
-//       for (; iRes != sres->sparse_end(); ++iRes)
-//       {
-//         std::cout << iRes->first << " ";
-//         std::cout << iRes->second << " ";
-//       }
-//       std::cout << std::endl;
-//     }
-//   }
-//   std::vector<double> res(til::size(*sres));
-//   {
+map<uint,float> test_geodmap(til::Mesh_N mesh, int dep, double distthresh){
+  std::vector< std::size_t > startPoints;
+  startPoints.push_back(dep);
+  til::ghost::GMapStop_AboveThreshold<double> stopGhost(distthresh);
+  typedef std::vector<std::vector<std::size_t> > CNeighborhoods;
+    
+  shared_ptr<CNeighborhoods> pneighc = til::circular_neighborhoods(getVertices(mesh), getFaceIndices(mesh));
+    
+  til::Triangle_mesh_geodesic_map<til::Mesh_N::VertexCollection, CNeighborhoods, double, til::ghost::GMapStop_AboveThreshold<double>, til::policy::GMap_DefaultStorage_sparse_vect_dbl >
+      geomap(getVertices(mesh), *pneighc, stopGhost);
+    
+    
+//     std::vector<std::size_t> startPoints(1);
+//     std::vector<double> dist(1, 0.0);
+    
+  std::vector<double> dist(( int )startPoints.size(), 0.0);
+//     startPoints[0] = vertex;
+  geomap.init(startPoints, dist);
+  geomap.process();
+  shared_ptr<til::sparse_vector<double> > sres = geomap.distanceMap(); 
+  {
+    til::sparse_vector<double>::sparse_iterator iRes = sres->sparse_begin();
+    if (false)
+    {
+      for (; iRes != sres->sparse_end(); ++iRes)
+      {
+        std::cout << iRes->first << " ";
+        std::cout << iRes->second << " ";
+      }
+      std::cout << std::endl;
+    }
+  }
+  map<uint,float> res; //(til::size(*sres));
+  {
 //     std::vector<double>::iterator iRes = res.begin();
-//     til::sparse_vector<double>::const_iterator iRes2 = sres->begin();
-//     for (; iRes2 != sres->end(); ++iRes, ++iRes2)
-//     {
-//       *iRes = *iRes2;
-//     }
-//   }
+    til::sparse_vector<double>::const_iterator iRes2 = sres->begin();
+    uint i=0;
+    for (; iRes2 != sres->end();++iRes2,i++)
+    {
+      res[i] = *iRes2;
+    }
+  }
 //   for (std::size_t i = 0; i < til::size(res); ++i) res[i] = til::min(res[i], 100.0);
 //   
 //   {
@@ -115,10 +121,10 @@ int getNode(map<float, vector<pair<float, uint> > > &altmesh, float delta, float
 // //     for (int i = 0; i < 10; ++i) std::cout << res[i] << " ";
 // //     std::cout << std::endl;
 //   }
-//     
-// 
-//   return res;
-// }
+    
+
+  return res;
+}
 
 // vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
 //   uint temp=0,temp2=0,temp3=0,temp4=0;
@@ -550,16 +556,16 @@ vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<
   map<string,vector<map<string,uint> > > matching;
   set<uint>::iterator it;
   map<string, AimsSurfaceTriangle>::iterator meshit,meshjt;  
-//   typedef til::Mesh_N MyMesh;
-//   map<string,MyMesh> mymeshes;
-//   
-// 
-//   
-//   for (meshit = meshes.begin();meshit!=meshes.end();meshit++){
-//     til::Mesh1 mesh0;
-//     til::convert(mesh0, meshit->second);
-//     mymeshes[meshit->first] = addNeighborsToMesh(mesh0);
-//   }
+  typedef til::Mesh_N MyMesh;
+  map<string,MyMesh> mymeshes;
+  
+
+  
+  for (meshit = meshes.begin();meshit!=meshes.end();meshit++){
+    til::Mesh1 mesh0;
+    til::convert(mesh0, meshit->second);
+    mymeshes[meshit->first] = addNeighborsToMesh(mesh0);
+  }
   vector<Clique> intraps;
   for (uint i=0;i<sites.size(); i++){
     uint j=0;
@@ -610,9 +616,15 @@ vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<
   cout << "Recherche des correspondances noeud-à-noeud à travers tous les sujets..." << endl;
   set<uint> sitesnodes;
   for (uint i=0;i<sites.size();i++){
-    cout << "\b\b\b\b\b\b\b\b\b" << i << "/" << sites.size() << flush;
-    x = lats[sites[i]->subject].item(i);
-    y = lons[sites[i]->subject].item(i);
+    
+    cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b"  << i << "/" << sites.size() << flush;
+//     x = lats[sites[i]->subject].item(i);
+//     y = lons[sites[i]->subject].item(i);
+    
+    x = sites[i]->gravitycenter[0];
+    y = sites[i]->gravitycenter[1];
+//     cout << " " << x << " " << y << " " << sites[i]->gravitycenter[2] << "//" ;
+//     cout << sites[i]->subject << " " << x << " " << y << endl;
     float testdistance=0.0, testdistmin=10000000.0;
     mini=-1;
 //     for (uint j=0;j<meshes[sites[0]->subject].vertex().size();j++){
@@ -631,6 +643,7 @@ vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<
     delta *= 2.0;
     }
     sites[i]->node=mini;
+//     cout << mini << "(suj:"<< sites[i]->subject <<"t:" << sites[i]->t<< ")" <<endl;
     
     sitesnodes.insert(mini);
     ASSERT(sites[i]->node!=-1 && sites[i]->node<meshes[sites[0]->subject].vertex().size());
@@ -643,7 +656,8 @@ vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<
  
   for (it=sitesnodes.begin();it!=sitesnodes.end();it++,cpt++){
     cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << cpt << "/" << sitesnodes.size() << flush;
-    distmaps[*it] = getDistMap( &(meshes[sites[0]->subject]),  neighbours[sites[0]->subject], *it); //test_geodmap(mymeshes[sites[0]->subject], *it, 25.0);
+    distmaps[*it] = getDistMap( &(meshes[sites[0]->subject]),  neighbours[sites[0]->subject], *it); 
+//     distmaps[*it] = test_geodmap(mymeshes[sites[0]->subject], *it, 40.0);
   }
     
 
@@ -675,23 +689,24 @@ vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<
 
 //         uint cpt0=0;
 //         for (it=sitesnodes.begin();*it!=sites[i]->node;it++,cpt0++){}
-        if (distmaps[sites[i]->node].find(j) == distmaps[sites[i]->node].end())
+        if (distmaps[sites[i]->node].find(sites[j]->node) == distmaps[sites[i]->node].end())
           rec= 600.0;
         else 
-          rec = distmaps[sites[i]->node][j];
+          rec = distmaps[sites[i]->node][sites[j]->node];
 //         rec = distmaps[sites[i]->node][j];
-//         rec = sqrt(pow(meshes[sites[0]->subject].vertex()[sites[i]->node][0]-meshes[sites[0]->subject].vertex()[sites[j]->node][0],2)+pow(meshes[sites[0]->subject].vertex()[sites[i]->node][1]-meshes[sites[0]->subject].vertex()[sites[j]->node][1],2)+pow(meshes[sites[0]->subject].vertex()[sites[i]->node][2]-meshes[sites[0]->subject].vertex()[sites[j]->node][2],2));  // USING EUCLIDEAN DISTANCE
+        rec = sqrt(pow(meshes[sites[0]->subject].vertex()[sites[i]->node][0]-meshes[sites[0]->subject].vertex()[sites[j]->node][0],2)+pow(meshes[sites[0]->subject].vertex()[sites[i]->node][1]-meshes[sites[0]->subject].vertex()[sites[j]->node][1],2)+pow(meshes[sites[0]->subject].vertex()[sites[i]->node][2]-meshes[sites[0]->subject].vertex()[sites[j]->node][2],2));  // USING EUCLIDEAN DISTANCE
 //         cout << i<< ";" << j << ";" << sites[i]->node << "-" << sites[j]->node << "rec:" << rec << endl;
         if ((rec < 40.0) && !((sites[j]->tmin > sites[i]->tmax) || (sites[i]->tmin > sites[j]->tmax)) /*&& (sites[i]->tValue * sites[j]->tValue > 2.0)*/) {
-            
+          if (rec < 0.2) cout << "BLIP " << endl;
           Clique simc;
           simc.type = SIMILARITY;
           simc.rec = rec;
-//             cout << rec << " " ;
+//           cout << simc.rec << endl ;
           cliquesDuSite[sites[i]->index].push_back(cliques.size());
           cliquesDuSite[sites[j]->index].push_back(cliques.size());
           simc.blobs.push_back(sites[i]);
           simc.blobs.push_back(sites[j]);
+//           cout << "(("<<simc.rec << " (lab:" << simc.blobs[0]->label << " t:"<< simc.blobs[0]->t << "(nod:" <<  simc.blobs[0]->node << " suj:"<<simc.blobs[0]->subject<<")" << "-lab:" << simc.blobs[1]->label << " t:"<< simc.blobs[1]->t << "(nod:" <<  simc.blobs[1]->node << " suj:"<<simc.blobs[1]->subject<<")" << ")=>" << simc.energie << ")) " << endl;
           cliques.push_back(simc);
   //           }
         }
@@ -700,7 +715,6 @@ vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<
   }
   
   cout << "TEMP :" << temp<< " " << temp2 << " " << temp3 << " " << temp4 << " "<<temp+temp4<< " ";
-//   cin >> temp;
 
   return cliques;
 }

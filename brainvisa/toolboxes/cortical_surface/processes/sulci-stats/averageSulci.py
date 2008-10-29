@@ -24,6 +24,7 @@ import sys
 from qt import *
 import os
 import numpy
+import operator
 
 name = 'Average Sulci'
 userLevel = 2
@@ -145,24 +146,36 @@ def execution ( self, context ):
      context.write("Computing first mode of variation")
      imax=0
      lmax=0
+     ltot=0
+     valS2=[ ]
      for i in xrange(len(valS)) :
-          if (valS[i]>lmax) :
-               imax=i
-               lmax=valS[i]
-     context.write("First eigenvalue = ", lmax, " (index=", imax, ")")
-     context.write("List of eigenvalues :")
-     context.write(valS)
+          valS2.append((i,valS[i]))
+     valS2_sorted=sorted(valS2, key=operator.itemgetter(1), reverse=True)
+     context.write('List of sorted eigenvalues with sorted ', valS2_sorted)
+     valTot=0
+     for i in xrange(len(valS)) :
+          valTot+=valS[i]
+     i=0;
+     eigval=0.0
+     percent=0.0
+     while (percent<80.0) :
+          eigval+=valS2_sorted[i][1]
+          percent=eigval*100.0/valTot
+          i+=1
+     imax=i;
      vmax=vectS[imax]
      vertMax=vector2vertices(vmax)
      modeS=aims.AimsTimeSurface_3()
      context.write("Computing variations")
 
-     for k in xrange(5) :
-          context.write("mode ", k)
-          vmax=vectS[k]
+     for k in xrange(imax) :
+          context.write("mode ", k+1)
+          eigval=valS2_sorted[k][1]/valTot*100.0
+          context.write("Eigenvalue :", valS2_sorted[k][1], " -> ", valS2_sorted[k][0],  " -> ", eigval, "%")
+          vmax=vectS[valS2_sorted[k][0]]
           vertMax=vector2vertices(vmax)
-          for i in xrange(100) :
-               dt=i*5.0
+          for i in xrange(200) :
+               dt=(i-100)*5.0
                modeS.polygon(i).assign(sulcus[0].polygon(0))
                modeS.vertex(i).assign(sulcus[0].vertex(0))
                vmap=modeS.vertex(i)
@@ -171,7 +184,7 @@ def execution ( self, context ):
                     vmap[j][1]=vmap[j][1] + dt*vertMax[j][1]
                     vmap[j][2]=vmap[j][2] + dt*vertMax[j][2]
           modeS.updateNormals()
-          nameOut="/home/olivier/variation_%i.mesh"%(k)
+          nameOut="/home/olivier/variation_%i.mesh"%(k+1)
           context.write("Saving", nameOut)
           WM = aims.Writer()
           WM.write(modeS, nameOut)

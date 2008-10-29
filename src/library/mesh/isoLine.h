@@ -28,7 +28,7 @@ public:
 	unsigned facets;
 	bool closed, smooth;
 	
-	IsoLine(AimsSurfaceTriangle & mesh_read, TimeTexture<float> & texOriginal_read, int val):mesh(mesh_read),texOriginal(texOriginal_read), value(val)
+	IsoLine(AimsSurfaceTriangle & mesh_read, TimeTexture<float> & texOriginal_read):mesh(mesh_read),texOriginal(texOriginal_read)
 	{
 		vertex = mesh.vertex();
 		poly = mesh.polygon();
@@ -40,10 +40,11 @@ public:
 		
 	}
 
-	AimsSurfaceTriangle makeTubes();
+	AimsSurfaceTriangle makeTubes(int val);
+        AimsSegments makeLine(int val);
 	TimeTexture<short> setVertices();
 	Point3df createNewVertex(Point3df &, Point3df &, int, int);
-
+        void addSegment(Point3df v1, Point3df v2, AimsSegments *line);
 };
 
 }  //fin du namespace

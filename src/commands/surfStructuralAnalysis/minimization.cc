@@ -45,6 +45,7 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
 //     cpt += 0.125;
 //   }
 //   cin >> dir;
+
   set<string> subjects;
 
   cout << endl << "  done" << endl;
@@ -53,6 +54,24 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
   nbsujets = subjects.size();
   cout << "Construction des cliques ... " << flush;
   cliques = ConstruireCliquesLastChance(sites,cliquesDuSite,meshes, lats,lons);
+  
+  vector<uint> histo,histo_t;
+  for (uint i=0;i<200;i++){
+    histo.push_back(0);
+    histo_t.push_back(0);
+  }
+  for (uint i=0;i<cliques.size();i++){
+    if (cliques[i].rec>40.0)
+      histo[199]++;
+    else
+      histo[(uint)(5*(cliques[i].rec))]++;
+  }
+  float cp = 0.0;
+  for (uint i=0;i<200;i++){
+    cout <<  cp << " " << histo[i] << endl;
+    cp += 0.2;
+  }
+  cin >> dir;
 //   allcliques.push_back(cliques);
 
   
@@ -138,8 +157,11 @@ double SurfaceBased_StructuralAnalysis::getLabelEnergy(int label, int type){
       test = true;
       for (uint j=0;j<cliques[i].blobs.size() && test == true;j++)
         if (cliques[i].blobs[j]->label != label ) test = false;
-      if (test) energy += cliques[i].energie;
-      if (cliques[i].type == INTRAPRIMALSKETCH && cliques[i].labelscount[label] > 1 && label != 0) {energy += (cliques[i].labelscount[label]-1)*Clique::getIntraPSWeight();}
+      if (test) { energy += cliques[i].energie; 
+        
+//         if (false && cliques[i].type==SIMILARITY) cout << "(("<<cliques[i].rec << "(" << cliques[i].blobs[0]->label << "(" <<  cliques[i].blobs[0]->node << ")" << "-" << cliques[i].blobs[1]->label <<"(" <<  cliques[i].blobs[1]->node << ")" << ")=>" << cliques[i].energie << ")) ";
+      }
+//       if (cliques[i].type == INTRAPRIMALSKETCH && cliques[i].labelscount[label] > 1 && label != 0) {energy += (cliques[i].labelscount[label]-1)*Clique::getIntraPSWeight();}
     }
   }
   return energy;
@@ -155,61 +177,99 @@ double SurfaceBased_StructuralAnalysis::getTypeEnergy(int type){ // RETOURNE L'E
 
 double SurfaceBased_StructuralAnalysis::getTotalEnergy(){
   double energy=0.0;
-  for (uint i=0;i<cliques.size();i++)
-    energy += cliques[i].energie;
+  int nclsim=0,nbips=0;
+  vector<int> bysub(nbsujets);
+
+  for (uint i=0;i<cliques.size();i++){
+    cliques[i].updateLabelsCount();
+    if (cliques[i].type == DATADRIVEN){
+      energy += cliques[i].computeEnergy(true, nbsujets);
+    }
+    else if (cliques[i].type == SIMILARITY){
+      energy += cliques[i].computeEnergy(true,nbsujets);
+      if (cliques[i].blobs[0]->label == cliques[i].blobs[1]->label && cliques[i].blobs[0]->label != 0)
+        nclsim++;
+        
+    }
+  }
+    
+  for (uint k=1;k<labels.size();k++){
+
+    uint i,j;
+    for (uint n=0;n<ipscliques.size();n++){
+      bysub[n] = cliques[ipscliques[n]].labelscount[labels[k]];
+//       cout << bysub[n] << " " ;
+    }
+//     cout << endl;
+    uint nb=0;
+    for (i=0;i<nbsujets-1;i++){
+      for (j=i+1;j<nbsujets;j++){
+        nb += bysub[i]*bysub[j];
+      }
+    }
+//     cout << "nb"<< nb << " ";
+    nbips += nb;
+  }
+    
+//   Esimil = 4.0*(nbips-nclsim);
+  ASSERT(nbips>=nclsim || (cout << nbips << ">=" << nclsim << endl && false));
+  energy += 4.0 *(nbips-nclsim);
+  
   return energy;
 }
 
-double SurfaceBased_StructuralAnalysis::getTotalEnergyLastChance(uint site, uint newlabel){
-  double energy=0.0;
-  uint old = sites[site]->label;
-  sites[site]->label = newlabel;
-//   cout << "totalenergycalcul" << endl;
-  for (uint i=0;i<cliques.size();i++){
-    long double cen=0.0;
-    if (cliques[i].type == DATADRIVEN){
-      uint ms=cliques[i].blobs[0]->index;
-      if (sites[ms]->label!=0){
-        if (sites[ms]->t>15.0)  cen = 10.0;
-        else if (sites[ms]->t<5.0) cen = 0.001;
-        else cen = sites[ms]->t * (-5.0*0.999/10.0) + (10.0+5.0*0.999)/10.0;
-      }
-    }
-    else if (cliques[i].type == SIMILARITY){
-      uint ms1 = cliques[i].blobs[0]->index;
-      uint ms2 = cliques[i].blobs[1]->index;
-      if (sites[ms1]->label == sites[ms2]->label && sites[ms1]->label != 0){
-        cen = cliques[i].rec / 2.0 - 1.0;
-      }
-    }
-    energy+=cen;
-    
-  }
-  sites[site]->label = old;
-  return energy;
-}
+// double SurfaceBased_StructuralAnalysis::getTotalEnergyLastChance(uint site, uint newlabel){
+//   double energy=0.0;
+//   uint old = sites[site]->label;
+//   sites[site]->label = newlabel;
+// //   cout << "totalenergycalcul" << endl;
+//   for (uint i=0;i<cliques.size();i++){
+//     long double cen=0.0;
+//     if (cliques[i].type == DATADRIVEN){
+//       uint ms=cliques[i].blobs[0]->index;
+//       if (sites[ms]->label!=0){
+//         if (sites[ms]->t>15.0)  cen = 10.0;
+//         else if (sites[ms]->t<5.0) cen = 0.001;
+//         else cen = sites[ms]->t * (-5.0*0.999/10.0) + (10.0+5.0*0.999)/10.0;
+//       }
+//     }
+//     else if (cliques[i].type == SIMILARITY){
+//       uint ms1 = cliques[i].blobs[0]->index;
+//       uint ms2 = cliques[i].blobs[1]->index;
+//       if (sites[ms1]->label == sites[ms2]->label && sites[ms1]->label != 0){
+//         cen = cliques[i].rec / 2.0 - 1.0;
+//       }
+//     }
+//     energy+=cen;
+//     
+//   }
+//   sites[site]->label = old;
+//   return energy;
+// }
 
 
 
 void SurfaceBased_StructuralAnalysis::SummaryLabels(){
   float Eintra,Edd,Els,Esim,Etot;
+  cout << endl << endl;
+
   for (uint i=1;i<labels.size();i++){
-    Eintra = getLabelEnergy(labels[i], INTRAPRIMALSKETCH);
+//     Eintra = getLabelEnergy(labels[i], INTRAPRIMALSKETCH);
     Edd = getLabelEnergy(labels[i], DATADRIVEN);
-    Els = getLabelEnergy(labels[i], BESTLOWERSCALE);
+//     Els = getLabelEnergy(labels[i], BESTLOWERSCALE);
     Esim = getLabelEnergy(labels[i], SIMILARITY);
     Etot = Eintra + Edd + Els + Esim;
-    cout << "label " << labels[i] << " : " << Etot << " (" << Eintra << ";" << Edd << ";" << Esim << ";" << Els << ") " << flush;
+    cout << "label " << labels[i] << " : " << " (" << Edd << ";" << Esim << ") " << flush;
 
     
     uint nblabel=0;
     for (uint il=0;il<cliques.size();il++)
       nblabel += cliques[il].labelscount[i];
     cout << nblabel << ";";
-    for (uint j=0;j<sites.size();j++)
-      if (sites[j]->label==labels[i]){
-        cout << sites[j]->index << "(" << sites[j]->subject << ")-";
-      }
+//     for (uint j=0;j<sites.size();j++)
+//       if (sites[j]->label==labels[i]){
+//         cout << sites[j]->index << "(" << sites[j]->subject << ")-";
+//       }
     cout<<  endl;
   }
 }
@@ -218,39 +278,55 @@ void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
   float Eintra,Edd,Els,Esim,Etot;
   cout << labels[0] << ":";
   uint nblabel=0;
-  for (uint il=0;il<cliques.size();il++)
+  for (uint il=0;il<cliques.size();il++){
     nblabel += cliques[il].labelscount[0];
-  cout << nblabel << "-";
-  for (uint i=1;i<labels.size();i++){
-    Eintra = getLabelEnergy(labels[i], INTRAPRIMALSKETCH);
-    Edd = getLabelEnergy(labels[i], DATADRIVEN);
-    Els = getLabelEnergy(labels[i], BESTLOWERSCALE);
-    Esim = getLabelEnergy(labels[i], SIMILARITY);
-    Etot = Eintra + Edd + Els + Esim;
-    cout << "L"<<labels[i] << "(" << Etot << "=" << Eintra << "+" << Edd << "+" << Esim << "+" << Els << "):" << flush;
+  }
+  cout << nblabel << " - ";
+  vector<uint> nblab;
 
+  for (uint i=1;i<labels.size();i++){
+    
+    Edd = getLabelEnergy(labels[i], DATADRIVEN);
+    Esim = getLabelEnergy(labels[i], SIMILARITY);
+
+//     nblabel=0;
+//     uint nclsim1=0,nbips1=0;
+//     for (uint il=0;il<cliques.size();il++){
+//       if (cliques[il].type==SIMILARITY){
+//         if (cliques[il].blobs[0]->label == cliques[il].blobs[1]->label && cliques[il].blobs[0]->label== labels[i])
+//           nclsim1++;
+//       }
+//     }
+//     vector<uint> nbip1(ipscliques.size()),nbip2(ipscliques.size());
+//     for (uint n=0;n<ipscliques.size();n++){
+//       if (cliques[ipscliques[n]].type == INTRAPRIMALSKETCH){
+//           nbip1[n] = cliques[ipscliques[n]].labelscount[labels[i]];
+//           
+//       }
+//     }
+//     
+//     for (uint i1=0;i1<nbip1.size()-1;i1++)
+//       for (uint i2=i1+1;i2<nbip1.size();i2++)
+//         nbips1 += nbip1[i1]*nbip1[i2];
+//    
+//           
+//       
+//     ASSERT(nbips1>=nclsim1 || (cout << nbips1 << " " << nclsim1 << endl && false));
+    cout << "L"<<labels[i] << "(" << Edd+Esim/*+nbips1-nclsim1*/ << "=" << Edd << "+" << Esim << /*"+" << nbips1-nclsim1 <<*/ "):" << flush;
     
     nblabel=0;
-    vector<uint> nblab;
-    for (uint il=0;il<cliques.size();il++)
-      nblabel += cliques[il].labelscount[i];
+    for (uint il=0;il<cliques.size();il++){
+      nblabel += cliques[il].labelscount[labels[i]];
+//       cout << cliques[il].labelscount[labels[i]] << " ";
+    }
     cout << nblabel << " - ";
     nblab.push_back(nblabel);
-    if (nblabel==10 && Eintra<0.001) {
-      cout << "DETAIL";
-
-      for (uint jl=0;jl<cliques.size();jl++){
-        if (cliques[jl].type == SIMILARITY){
-          if (cliques[jl].blobs[0]->label==labels[i] && cliques[jl].blobs[1]->label==labels[i])
-            cout << cliques[jl].blobs[0]->index << "-" << cliques[jl].blobs[0]->subject << ";"<< cliques[jl].blobs[1]->index << "-" << cliques[jl].blobs[1]->subject << "=" << cliques[jl].energie <<"(" << cliques[jl].rec << ");" << flush;
-        }
-      }
-    }
+  }
     cout << " ";
     for (uint il=0;il<nblab.size();il++)
       cout << nblab[il] << "-" ;
     cout <<"\b ";
-  }
+  
 }
 
 

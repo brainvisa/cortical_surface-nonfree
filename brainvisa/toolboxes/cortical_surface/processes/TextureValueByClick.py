@@ -67,7 +67,7 @@ def execution( self, context ):
       if (distance < distmini):
         distmini = distance
         mini = v
-  context.write("L'indice du noeud le plus proche du point clique est : " + str(v))
+  context.write("L'indice du noeud le plus proche du point clique est : " + str(mini))
   context.write("La distance calculee entre ce noeud et le point clique est : " + str(distmini))
   context.write("Les valeurs de ce noeud dans la texture donnee sont : ")
   for t in xrange(texture.size()):

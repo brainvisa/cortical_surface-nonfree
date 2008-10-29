@@ -65,8 +65,8 @@ int main(int argc, const char **argv) //int argc, const char **argv)
 	Reader < TimeTexture<float> > rt(adressTex);
 	rt.read( texOriginal );
 
-	IsoLine mt(mesh, texOriginal, value);
-	meshResult=mt.makeTubes();
+	IsoLine mt(mesh, texOriginal);
+	meshResult=mt.makeTubes(value);
 
 	Writer<AimsSurfaceTriangle> wm(adressOutput);
 	wm.write(meshResult);

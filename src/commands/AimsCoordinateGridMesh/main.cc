@@ -34,11 +34,11 @@ int main( int argc, const char** argv )
   {
     app.addOption( fileMesh, "-m", "input mesh" );
     app.alias( "--mesh", "-m" );
-    app.addOption( fileLat, "-x", "latitude texture" );
+    app.addOption( fileLat, "-x", "latitude texture (or -x for sulci)" );
     app.alias( "--xcoord", "-x" );
-    app.addOption( fileLon, "-y", "longitude texture" );
+    app.addOption( fileLon, "-y", "longitude texture (or -y for sulci)" );
     app.alias( "--ycoord", "-y" );
-    app.addOption( coord, "-c", "coordinates (r=regular, c=constraints)" );
+    app.addOption( coord, "-c", "coordinates (r=regular, c=constraints, s=sillon)" );
     app.alias( "--coord", "-c" );
     app.addOption( fileOut, "-o", "output mesh" );
     app.alias( "--out", "-o" );
@@ -103,10 +103,18 @@ int main( int argc, const char** argv )
   if (coord=="r")
   {
           cout << "Chosing regular grid coordinates" << endl;
-          for (int x=0; x<= 180; x+=20)
+          for (int x=0; x<=180; x+=20)
             latitude.push_back((short)x);
       latitude.push_back(30); latitude.push_back(150);
       for (int y=0; y<360; y+=5)
+              longitude.push_back((short)y);
+  }
+  else  if (coord=="s")
+  {
+          cout << "Chosing regular grid coordinates for sulci" << endl;
+          for (int x=0; x<200; x+=20)
+            latitude.push_back((short)x);
+      for (int y=0; y<100; y+=5)
               longitude.push_back((short)y);
   }
   //  else if (strcmp("c", coord)==0)
@@ -131,29 +139,35 @@ int main( int argc, const char** argv )
   cout << "starting tube generation" << endl;
   std::list<short>::iterator coordIt;
   AimsSurfaceTriangle grille;
+/*  AimsSegments grille;*/
+  IsoLine mer(surface, texLat);
+  mer.radius1=diam;
+  mer.radius2=diam;
   for (coordIt=latitude.begin(); coordIt!=latitude.end(); ++coordIt)
   {
       AimsSurfaceTriangle meridien;
+/*      AimsSegments meridien;*/
       cout << "val = " <<  *coordIt << endl;
-      IsoLine mer(surface, texLat, (short)*coordIt);
-      mer.radius1=diam;
-      mer.radius2=diam;
-      meridien=mer.makeTubes();
+      meridien=mer.makeTubes((short)*coordIt);
+/*      meridien=mer.makeLine();*/
       SurfaceManip::meshMerge(grille, meridien);
   }
+  IsoLine par(surface, texLon);
+  par.radius1=diam;
+  par.radius2=diam;
   for (coordIt=longitude.begin(); coordIt!=longitude.end(); ++coordIt)
   {
+/*      AimsSegments parallele;*/
       AimsSurfaceTriangle parallele;
       cout << "val = " <<  *coordIt << endl;
-      IsoLine par(surface, texLon, (short)*coordIt);
-      par.radius1=diam;
-      par.radius2=diam;
-      parallele=par.makeTubes();
+      parallele=par.makeTubes((short)*coordIt);
+/*      parallele=par.makeLine();*/
       SurfaceManip::meshMerge(grille, parallele);
   }
 
   cout << "saving triangulation    : " << flush;
   Writer<AimsSurfaceTriangle> triW( fileOut );
+/*  Writer<AimsSegments> triW( fileOut );*/
   triW << grille;
   cout << "done" << endl;
 

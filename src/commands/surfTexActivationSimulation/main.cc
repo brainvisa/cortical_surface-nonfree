@@ -32,7 +32,11 @@
  * The fact that you are presently reading this means that you have had
  * knowledge of the CeCILL license version 2 and that you accept its terms.
  */
-
+#include <iostream>
+#include <cstdlib>
+#include <aims/data/data_g.h>
+#include <aims/io/io_g.h>
+#include <iomanip>
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
 #include <aims/mesh/texture.h>
@@ -41,7 +45,9 @@
 #include <aims/mesh/surfacegen.h>
 #include <aims/primalsketch/finiteElementSmoother_d.h>
 #include <aims/math/random.h>
+#include <math.h>
 #include <aims/distancemap/meshdistance_d.h>
+
 
 
 
@@ -191,118 +197,99 @@ void graphe(vector<float> tab){
   
 }
 
-Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<Point3df, float> > &sites, float smooth, float intensitynoise, float backgroundnoise, float simlocationnoise){
+Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<uint, float> > &sites, float smooth, float intensitynoise, float backgroundnoise, float simlocationnoise){
+  cout << "test" << endl;
   vector<set<uint> >  voisins(SurfaceManip::surfaceNeighbours(mesh));
   Texture<float> result(mesh[0].vertex().size());
   float random;
   float distance = 1000.0;
+  cout << "test" << endl;
   FiniteElementSmoother<3, float> *smoother;
   smoother=new FiniteElementSmoother<3, float>(0.05, &(mesh[0]));
-  
+  cout << "test" << endl;
     // bruit
   for (uint i=0;i<result.nItem();i++){
-//     random= fabs(GaussianRandom(0.0,1.0))*0.0; //(float)GaussianRandom((float)backgroundnoise, (float)7.0);//s + ((float)UniformRandom() * 5.0 - 7.0) ;
-// //     cout << random << " ";
-    result.item(i) = 0.0; // random;
+//     random= fabs(GaussianRandom(0.0,1.0))*0.0; 
+    random =(float)GaussianRandom((float)backgroundnoise, (float)2.75);//s + ((float)UniformRandom() * 5.0 - 7.0) ;
+//     cout << random << " ";
+    result.item(i) = random;
   }
+  cout << "testa" << endl;
+  cout << smooth << endl;
+//   lissage
+  result=smoother->doSmoothing(result, ((int)((smooth)/0.05))*0.05);
 
   
-  // lissage
-//   result=smoother->doSmoothing(result, 0, ((int)(smooth/0.05))*0.05);
-
-  
-  for (uint i=0;i<result.nItem();i++){
-    random= ((float)UniformRandom() * backgroundnoise - backgroundnoise/2.0);//* 15.0 - 7.0) ;
-    result.item(i) += random;
-  }
-  result=smoother->doSmoothing(result, 0, ((int)(smooth/0.05))*0.05);
-
-  
+//   for (uint i=0;i<result.nItem();i++){
+//     random= ((float)UniformRandom() * backgroundnoise - backgroundnoise/2.0);//* 15.0 - 7.0) ;
+//     result.item(i) += random;
+//   }
+//   result=smoother->doSmoothing(result, ((int)(smooth/0.05))*0.05);
+// 
+//   
   // texture où on crée les diracs, on les lisse, et qu'on fusionne ensuite à result
   Texture<float> tex(result.nItem());
   for (uint j=0;j<result.nItem();j++)
     tex.item(j)=0.0;
   
   // lissage de l'activation
-  double smooth1 = 16.0;
+  double smooth1 = smooth;
   
   Texture<float> tex1a,aux;   
   for (uint k=0;k<result.nItem();k++){
     aux.push_back(0.0);
   }
   uint backnode=0;
-  
+  cout << "testab" << endl;
+
   // création des pics au niveau des sites
   for (uint i=0;i<sites.size();i++){
     
-    uint node=0; distance =1000.0;
-    for (uint j=0;j<result.nItem();j++){
-      float temp = sqrt(pow(mesh[0].vertex()[j][0]-sites[i].first[0],2) + pow(mesh[0].vertex()[j][1]-sites[i].first[1],2) +pow(mesh[0].vertex()[j][2]-sites[i].first[2],2));
-      if (temp < distance) {
-        distance = temp;
-        node = j;
-      }
-    }
-    
+    uint node=sites[i].first; 
+
     // creation de texture de distance avant seuillage
     aux.item(backnode)= 0.0;
     aux.item(node)=100.0;
     backnode=node;
-    tex1a = MeshDistance_adapt_tex(mesh[0], aux, false,10.0);         
 
+    tex1a = MeshDistance_adapt_tex(mesh[0], aux, false,30.0);
 
     vector<uint> vois1;
     set<uint> vois2;
     for (uint k=0;k<result.nItem();k++){
-      if (tex1a.item(k) < simlocationnoise) vois1.push_back(k);
+      if (tex1a.item(k) < simlocationnoise+1 && tex1a.item(k)> simlocationnoise) vois1.push_back(k);
       if (tex1a.item(k) < 7.0) vois2.insert(k);
     }
     
     // introduction du bruit de similarité dans la position
     uint randomnode = (uint)(UniformRandom() * vois1.size());
-    cout << "bruit de la position : " << randomnode << "/" << vois1.size() << "-(" << mesh[0].vertex()[vois1[randomnode]][0] << ";" << mesh[0].vertex()[vois1[randomnode]][1] << ";" << mesh[0].vertex()[vois1[randomnode]][2] << "/" << sites[i].first[0] << ";" << sites[i].first[1] << ";" << sites[i].first[2] <<  ") " << sqrt(pow(mesh[0].vertex()[vois1[randomnode]][0]-sites[i].first[0],2)+pow(mesh[0].vertex()[vois1[randomnode]][1]-sites[i].first[1],2)+pow(mesh[0].vertex()[vois1[randomnode]][2]-sites[i].first[2],2)) << endl;
-    sites[i].first = mesh[0].vertex()[vois1[randomnode]];
+    cout << node << " " << vois1[randomnode] << endl;
+    cout << "bruit de la position : " << randomnode << "/" << vois1.size() << "-(" << mesh[0].vertex()[vois1[randomnode]][0] << ";" << mesh[0].vertex()[vois1[randomnode]][1] << ";" << mesh[0].vertex()[vois1[randomnode]][2] << "/" << mesh[0].vertex()[sites[i].first][0] << ";" << mesh[0].vertex()[sites[i].first][1] << ";" << mesh[0].vertex()[sites[i].first][2] <<  ") " << sqrt(pow(mesh[0].vertex()[vois1[randomnode]][0]-mesh[0].vertex()[sites[i].first][0],2)+pow(mesh[0].vertex()[vois1[randomnode]][1]-mesh[0].vertex()[sites[i].first][1],2)+pow(mesh[0].vertex()[vois1[randomnode]][2]-mesh[0].vertex()[sites[i].first][2],2)) << endl;
+    sites[i].first = vois1[randomnode];
     
     // on reparcourt le maillage pour trouver le noeud correspondant après changement
-    node=0; distance = 1000.0;
-    for (uint j=0;j<result.nItem();j++){
-      float temp = sqrt(pow(mesh[0].vertex()[j][0]-sites[i].first[0],2) + pow(mesh[0].vertex()[j][1]-sites[i].first[1],2) +pow(mesh[0].vertex()[j][2]-sites[i].first[2],2));
-      if (temp < distance) {
-        distance = temp;
-        node = j;
-      }
-    }
+    node=vois1[randomnode];
 
     aux.item(backnode)= 0.0;
     aux.item(node)=100.0;
     backnode=node;
-    tex1a = MeshDistance_adapt_tex(mesh[0], aux, false,10.0);
-
+    tex1a = MeshDistance_adapt_tex(mesh[0], aux, false,30.0);
 
     vois1.clear();
     vois2.clear();
     for (uint k=0;k<result.nItem();k++){
       if (tex1a.item(k) < simlocationnoise) vois1.push_back(k);
-      if (tex1a.item(k) < 7.0) vois2.insert(k);
+      if (tex1a.item(k) < 7.0)  vois2.insert(k); 
     }
-    
     
     // bruit de la tvalue max
     random = (UniformRandom() * intensitynoise) - intensitynoise/2.0;
-
+    
+//     cout << node << endl;
     cout << "tvalue2 : " << (sites[i].second) << endl;
     cout << "bruit de la tvalue : " << random << endl;
     // bruit de l'étendue
     set<uint>::iterator it,it2;
-//     vois2.insert(node);
-//     for (it=voisins[node].begin();it!=voisins[node].end();it++){
-//       vois2.insert(*it);
-//       for (it2=voisins[*it].begin();it2!=voisins[*it].end();it2++){
-//         vois2.insert(*it2);
-//       }
-//     }
-//     for (uint ii=0;ii<vois1.size();ii++)
-//       vois2.insert(vois1[ii]);
     
     cout << (sites[i].second + random)*sqrt(smooth1)/2.0*log(2.) << endl;
     for (it=vois2.begin();it!=vois2.end();it++){
@@ -312,10 +299,10 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<Point3df, f
     cout << "===" << endl;
 
   }
-  
+  cout << "TEST" << endl;
     // lissage des diracs
-  tex=smoother->doSmoothing(tex, 0, ((int)(smooth1/0.05))*0.05);
-
+  tex=smoother->doSmoothing(tex, ((int)(256.0/0.05))*0.05);
+  cout << "TEST" << endl;
   
   //fusion des deux textures
   for (uint j=0;j<result.nItem();j++)
@@ -324,15 +311,10 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<Point3df, f
   
   // introduction du bruit de similarité dans l'étendue (dans la valeur du lissage)
 //   random = (UniformRandom() * simareanoise);
-  
 
-  
-
-  
-  
-  
   return result;
 }
+
 
 
 // Texture<float> controldistance(AimsSurfaceTriangle mesh, pair<Point3df,float> site, float distance, float smooth, float intensitynoise, float backgroundnoise, float simlocationnoise, float simareanoise){
@@ -365,96 +347,86 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<Point3df, f
 // }
 
 
-int main(int argc, const char **argv){
-   try
-   {
-      string outpath, meshpath, meshpath2, datapath, datapath1;
-      float noise;
-      float location;
-      float intensity;
-      float smooth;
-      float f1x,f1y,f1z,f1t,f2x,f2y,f2z,f2t,f3x,f3y,f3z,f3t,f4x,f4y,f4z,f4t,f5x,f5y,f5z,f5t;
-//       int operation, size=7, type = 0, index=-1;
-//       float vsizeX=3.0,vsizeY=3.0,vsizeZ=3.0, geod_decay=5.0, norm_decay=2.0;
-      AimsApplication app( argc, argv, "AimsFunctionProjection : first computes anatomically-informed kernels from one anatomy and uses them to project some functional data onto a cortical mesh" );
-//       app.addOption( operation, "-op", "0 : computes convolution kernels from one anatomy ; 1 : projects functional volumes onto the surface (using kernels)");
-      app.addOption( meshpath , "-m", "Grey/white matter mesh (.mesh)" );
-      app.addOption( noise , "-n", "bruit de fond", 0.1 );
-      app.addOption( location , "-l", "bruit de position", 0.1 );
-      app.addOption( intensity , "-i", "bruit d'intensité", 0.1 );
-      app.addOption( smooth , "-s", "lissage", 10.0);
-      app.addOption( f1x , "-f1x", "lissage", 10.0);
-      app.addOption( f1y , "-f1y", "lissage", 10.0);
-      app.addOption( f1z , "-f1z", "lissage", 10.0);
-      app.addOption( f1t , "-f1t", "lissage", 10.0);
-      app.addOption( f2x , "-f2x", "lissage", 10.0);
-      app.addOption( f2y , "-f2y", "lissage", 10.0);
-      app.addOption( f2z , "-f2z", "lissage", 10.0);
-      app.addOption( f2t , "-f2t", "lissage", 10.0);
-      app.addOption( f3x , "-f3x", "lissage", 10.0);
-      app.addOption( f3y , "-f3y", "lissage", 10.0);
-      app.addOption( f3z , "-f3z", "lissage", 10.0);
-      app.addOption( f3t , "-f3t", "lissage", 10.0);
-      app.addOption( f4x , "-f4x", "lissage", 10.0);
-      app.addOption( f4y , "-f4y", "lissage", 10.0);
-      app.addOption( f4z , "-f4z", "lissage", 10.0);
-      app.addOption( f4t , "-f4t", "lissage", 10.0);
-      app.addOption( f5x , "-f5x", "lissage", 10.0);
-      app.addOption( f5y , "-f5y", "lissage", 10.0);
-      app.addOption( f5z , "-f5z", "lissage", 10.0);
-      app.addOption( f5t , "-f5t", "lissage", 10.0);
 
 
+int main( int argc, const char **argv )
+{
+  try {
+  
+    std::vector< std::size_t > startPoints;
+    vector<std::size_t> intensities;
 
-//       app.addOption( type , "-t", "For computing convolution kernels (-op=0), selects the cortical thickness evaluation method : 0 for 3mm constant (only for now) ", 1); //; 1 for cortical mask-based evaluation ; 2 if using thickness texture\n  For projecting volumes onto the surface (-op=1), sets the output type : 0 for single volume projection ; 1 for several volumes -> several textures ; 2 for several volumes -> one timetexture", 0 );
-      app.addOption( outpath , "-o", "Output file : convolution kernels (-op=0) or projection texture (-op=1)" );
-//       app.addOption( index, "-I", "[DEBUG] Index of a precise kernel to be computed", 1);
-      app.initialize();
-      AimsSurfaceTriangle msh;
-      AimsSurfaceTriangle *msh2;
-      msh2 = SurfaceGenerator::sphere( Point3df(0.0,0.0,0.0), 1.0, 100);
-//       Writer<AimsSurfaceTriangle> writer2("/home/grg/data/synth/sphere.mesh");
-//       writer2.write(*msh2);
-      Reader<AimsSurfaceTriangle> r(meshpath);
-      r.read(msh);
-
-      Writer<TimeTexture<float> > writer(outpath);
-      TimeTexture<float> result;
-      vector<pair<Point3df,float> > sites; //126.764, 23.888, 46.989
-//           sites.push_back( pair<Point3df,float>(Point3df(126.764, 23.888, 46.989), 5.0));
-      sites.push_back(pair<Point3df,float>(Point3df(f1x, f1y, f1z), f1t));
-      sites.push_back(pair<Point3df,float>(Point3df(f2x, f2y, f2z), f2t));
-      sites.push_back(pair<Point3df,float>(Point3df(f3x, f3y, f3z), f3t));
-      sites.push_back(pair<Point3df,float>(Point3df(f4x, f4y, f4z), f4t));
-      sites.push_back(pair<Point3df,float>(Point3df(f5x, f5y, f5z), f5t));
-//       sites.push_back(pair<Point3df,float>(Point3df(113.669, 69.4213, 29.1237), 5.0));
-// 
-//       sites.push_back(pair<Point3df,float>(Point3df(141.079, 81.536, 58.6003), 5.0));
-// 
-//       sites.push_back(pair<Point3df,float>(Point3df(129.447, 131.799, 40.0678), 5.0));
-// 
-//       sites.push_back(pair<Point3df,float>(Point3df(123.486, 49.0954, 62.2587), 5.0));
-      
-      
-
-
-
-      // float smooth, float intensitynoise, float backgroundnoise, float simlocationnoise, float simareanoise
-      result[0] = createSynthData(msh, sites, smooth, intensity, noise, location);
-      writer.write(result);
-
-   }
-   catch( user_interruption & )
-   {
-      return EXIT_FAILURE;
-   }
-   catch( exception & e )
-   {
-      cerr << e.what() << endl;
-      return EXIT_FAILURE;
-   }
+    std::string outpath = "";
+    
    
-   return EXIT_SUCCESS;
-}
+    float noise;
+    float location;
+    float intensity;
+    float smooth;
+    Reader<AimsSurfaceTriangle> rmesh;
+    AimsApplication app( argc, argv, "surfTexActivationSimulation" );
+    app.addOption( rmesh, "-m", "mesh for testGeomap ");
+    app.addOption( outpath, "-o", "output File");
+    app.addOption( noise , "-n", "bruit de fond", true );
+    app.addOption( location , "-l", "bruit de position", true );
+    app.addOption( intensity , "-i", "bruit d'intensité", true );
+    app.addOption( smooth , "-s", "lissage", true);
+    app.addOptionSeries(startPoints, "-F", "vertex index list",true);
+    app.addOptionSeries( intensities, "-I", "intensities", true);
 
+//     AimsSurfaceTriangle *mesh;
+//     mesh = SurfaceGenerator::sphere(Point3df(0.0,0.0,0.0) , 70.0, 22000 );
+//     Writer<AimsSurfaceTriangle> w("/home/grg/data/simulations/sphere.mesh");
+//     w.write(*mesh);
+//     TimeTexture<float> lat(1,mesh[0].vertex().size()), lon(1,mesh[0].vertex().size());
+//     for (uint i=0;i<mesh[0].vertex().size();i++){
+//       Point3df p(mesh[0].vertex()[i]);
+//       lat[0].item(i)= atan(p[1]/p[0])*57.2957795;
+//       lon[0].item(i)= acos(p[2]/70.0)*57.2957795;
+//     }
+//     Writer<TimeTexture<float> > w1("/home/grg/data/simulations/latitude2.tex");
+//     w1.write(lat);
+//     Writer<TimeTexture<float> > w2("/home/grg/data/simulations/longitude2.tex");
+//     w2.write(lon);
+
+    app.initialize();
+    if ( startPoints.empty() )
+      throw runtime_error( "bad startPoints input" );
+   
+    int startPoints_nb = ( int )startPoints.size();
+    
+    AimsSurfaceTriangle msh;
+    rmesh.read(msh);
+    
+    for ( int i = 0; i < startPoints_nb; i++ )
+    {
+      std::cout << "input Vertex [" << i << "]: " << startPoints[i] << std::endl;
+    }
+    
+    Writer<TimeTexture<float> > writer(outpath);
+    TimeTexture<float> synthtex;
+    vector<pair<uint,float> > sites; 
+    
+    for (uint i=0;i<startPoints.size();i++){
+      pair<uint,float> newfocus;
+      newfocus.first = startPoints[i];
+      newfocus.second = intensities[i];
+      sites.push_back(newfocus);
+    }
+        
+      
+      // float smooth, float intensitynoise, float backgroundnoise, float simlocationnoise, float simareanoise
+    synthtex[0] = createSynthData(msh, sites, smooth, intensity, noise, location);
+    writer.write(synthtex);
+    return EXIT_SUCCESS;
+  }
+  catch( carto::user_interruption & )
+  {
+  // Exceptions thrown by command line parser (already handled, simply exit)
+  }
+  catch( exception & e )
+  {
+    cerr << e.what() << endl;
+  }
+}
 

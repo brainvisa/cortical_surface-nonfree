@@ -47,6 +47,9 @@ int main(int argc, const char **argv){
     string meshpath = atlaspath + *it + "/mesh/" + *it + "_Lwhite.mesh";
     string latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
     string lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
+    meshpath = atlaspath + "sphere.mesh";
+    latpath = atlaspath + "latitude.tex";
+    lonpath = atlaspath + "longitude.tex";
     cout << "chargement" << endl;
     Reader<AimsSurfaceTriangle> rmesh(meshpath);
     Reader<TimeTexture<float> > rlat(latpath);
