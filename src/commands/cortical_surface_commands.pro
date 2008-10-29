@@ -21,4 +21,5 @@ PSUBDIRS += \
   surfTexActivationSimulation \
   surfStructuralAnalysis \
   AimsCheck2DCoordinate \
-  AimsMeshToAtlas
+  AimsMeshToAtlas \
+  AimsSulcusNormalizeDepthProfile 

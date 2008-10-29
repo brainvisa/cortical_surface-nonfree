@@ -81,3 +81,10 @@ FileType( 'Functional texture', 'Texture' )
 FileType( 'Cortical thickness', 'Texture' )
 
 FileType( 'Surface Label Translation', 'Label Translation' )
+
+# Sulci parameterizations
+
+FileType( 'Sulcus mesh' , 'Mesh' )
+FileType( 'Sulcus x coordinate texture', 'Texture' )
+FileType( 'Sulcus y coordinate texture', 'Texture' ) 
+FileType( 'Sulcus depth profile', 'Text file' )

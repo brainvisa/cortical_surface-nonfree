@@ -74,3 +74,16 @@ insert('{protocol}/{subject}/t1mri/{acquisition}/{analysis}/folds/{graph_version
     "<subject>_Lwhite_gyri_<sulci_recognition_session>_auto", SetType( 'Gyri White Volume' ), SetWeakAttr( 'side', 'left' ),
     "<subject>_Rwhite_gyri_<sulci_recognition_session>_auto", SetType( 'Gyri White Volume' ), SetWeakAttr( 'side', 'right' )
     )
+
+insert( '{protocol}/{subject}',
+  'sulci', SetContent(
+     '<subject>_L_<sulcus_name>', SetType( 'Sulcus mesh' ), SetWeakAttr( 'side', 'left' ),
+     '<subject>_R_<sulcus_name>', SetType( 'Sulcus mesh' ), SetWeakAttr( 'side', 'right' ),
+     '<subject>_L_<sulcus_name>-x', SetType( 'Sulcus x coordinate texture' ), SetWeakAttr( 'side', 'left' ),
+     '<subject>_R_<sulcus_name>-x', SetType( 'Sulcus x coordinate texture' ), SetWeakAttr( 'side', 'right' ),
+     '<subject>_L_<sulcus_name>-y', SetType( 'Sulcus y coordinate texture' ), SetWeakAttr( 'side', 'left' ),
+     '<subject>_R_<sulcus_name>-y', SetType( 'Sulcus y coordinate texture' ), SetWeakAttr( 'side', 'right' ),
+     '<subject>_L_<sulcus_name>-depth', SetType( 'Sulcus depth profile' ), SetWeakAttr( 'side', 'left' ),
+     '<subject>_R_<sulcus_name>-depth', SetType( 'Sulcus depth profile' ), SetWeakAttr( 'side', 'right' )
+  ),
+)
