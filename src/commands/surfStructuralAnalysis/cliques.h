@@ -4,9 +4,9 @@
 #include <math.h>
 #include "sites.h"
 #include "meshdistance.h"
-#include "cathier/aims_wrap.h"
-#include "cathier/triangle_mesh_geodesic_map.h"
-#include "cathier/math_functions.h"
+// #include "cathier/aims_wrap.h"
+// #include "cathier/triangle_mesh_geodesic_map.h"
+// #include "cathier/math_functions.h"
 
 using namespace std;
 
