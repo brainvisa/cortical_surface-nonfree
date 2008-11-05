@@ -240,11 +240,11 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<uint, float
     aux.push_back(0.0);
   }
   uint backnode=0;
-  cout << "testab" << endl;
+  
 
   // création des pics au niveau des sites
   for (uint i=0;i<sites.size();i++){
-    
+    cout << "site " << i  << endl;
     uint node=sites[i].first; 
 
     // creation de texture de distance avant seuillage
@@ -257,13 +257,15 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<uint, float
     vector<uint> vois1;
     set<uint> vois2;
     for (uint k=0;k<result.nItem();k++){
-      if (tex1a.item(k) < simlocationnoise+1 && tex1a.item(k)> simlocationnoise) vois1.push_back(k);
+      if (tex1a.item(k) < simlocationnoise+1 && tex1a.item(k)> simlocationnoise-0.01) vois1.push_back(k);
       if (tex1a.item(k) < 7.0) vois2.insert(k);
     }
-    
+
+
     // introduction du bruit de similarité dans la position
     uint randomnode = (uint)(UniformRandom() * vois1.size());
-    cout << node << " " << vois1[randomnode] << endl;
+
+    
     cout << "bruit de la position : " << randomnode << "/" << vois1.size() << "-(" << mesh[0].vertex()[vois1[randomnode]][0] << ";" << mesh[0].vertex()[vois1[randomnode]][1] << ";" << mesh[0].vertex()[vois1[randomnode]][2] << "/" << mesh[0].vertex()[sites[i].first][0] << ";" << mesh[0].vertex()[sites[i].first][1] << ";" << mesh[0].vertex()[sites[i].first][2] <<  ") " << sqrt(pow(mesh[0].vertex()[vois1[randomnode]][0]-mesh[0].vertex()[sites[i].first][0],2)+pow(mesh[0].vertex()[vois1[randomnode]][1]-mesh[0].vertex()[sites[i].first][1],2)+pow(mesh[0].vertex()[vois1[randomnode]][2]-mesh[0].vertex()[sites[i].first][2],2)) << endl;
     sites[i].first = vois1[randomnode];
     
@@ -279,7 +281,7 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<uint, float
     vois2.clear();
     for (uint k=0;k<result.nItem();k++){
       if (tex1a.item(k) < simlocationnoise) vois1.push_back(k);
-      if (tex1a.item(k) < 7.0)  vois2.insert(k); 
+      if (tex1a.item(k) < 10.0)  vois2.insert(k); 
     }
     
     // bruit de la tvalue max
@@ -294,19 +296,18 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<uint, float
     cout << (sites[i].second + random)*sqrt(smooth1)/2.0*log(2.) << endl;
     for (it=vois2.begin();it!=vois2.end();it++){
       
-      tex.item(*it) += (sites[i].second + random)*sqrt(smooth1)/2.0*log(2.);
+      tex.item(*it) += (sites[i].second + random)*sqrt(8.0)/2.0*log(2.);
     }
     cout << "===" << endl;
 
   }
-  cout << "TEST" << endl;
     // lissage des diracs
-  tex=smoother->doSmoothing(tex, ((int)(256.0/0.05))*0.05);
-  cout << "TEST" << endl;
+  tex=smoother->doSmoothing(tex, ((int)(200.0/0.05))*0.05);
   
   //fusion des deux textures
   for (uint j=0;j<result.nItem();j++)
-    result.item(j) += tex.item(j);
+//     if (result.item(j) < tex.item(j) && tex.item(j) > 1.0) result.item(j) = 0.3*result.item(j) + 0.7* tex.item(j);
+  result.item(j) += tex.item(j);
   
   
   // introduction du bruit de similarité dans l'étendue (dans la valeur du lissage)
@@ -390,6 +391,7 @@ int main( int argc, const char **argv )
 //     w2.write(lon);
 
     app.initialize();
+    cout << "SIMULATION" << endl;
     if ( startPoints.empty() )
       throw runtime_error( "bad startPoints input" );
    

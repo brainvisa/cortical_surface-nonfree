@@ -11,7 +11,7 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
 //   map<float, vector<pair<float, uint> > > altmesh = getAlternateMesh(mesh, lat, lon);
 //   cout << " done " << endl;
   cout << "Construction du vecteur de sites ..." << flush;
-  string dir = "/home/grg/data/nmr_surface/";
+//   string dir = "/home/grg/data/nmr_surface/";
 
 //   vector<vector<Clique> > allcliques;
 
@@ -55,62 +55,28 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
   cout << "Construction des cliques ... " << flush;
   cliques = ConstruireCliquesLastChance(sites,cliquesDuSite,meshes, lats,lons);
   
-  vector<uint> histo,histo_t;
-  for (uint i=0;i<200;i++){
-    histo.push_back(0);
-    histo_t.push_back(0);
-  }
-  for (uint i=0;i<cliques.size();i++){
-    if (cliques[i].rec>40.0)
-      histo[199]++;
-    else
-      histo[(uint)(5*(cliques[i].rec))]++;
-  }
-  float cp = 0.0;
-  for (uint i=0;i<200;i++){
-    cout <<  cp << " " << histo[i] << endl;
-    cp += 0.2;
-  }
-  cin >> dir;
-//   allcliques.push_back(cliques);
-
   
-
-
-//   for (uint i=0;i<cliques.size();i++){
-//     if (cliques[i].type==SIMILARITY){
-//       if (cliques[i].blobs[0]->rank <5 && cliques[i].blobs[1]->rank <5){
-// //         cout << cliques[i].blobs[0]->rank << " " << cliques[i].blobs[0]->subject << " - " << cliques[i].blobs[1]->rank << " " << cliques[i].blobs[1]->subject << " : " << cliques[i].rec << endl;
-//         float distance = 0.0, ecart = 0.0;
-//         vector<float> vectdist;
-//         for (uint j=0;j<allcliques.size();j++){
-//           for (uint k=0;k<allcliques[j].size();k++){
-//             if ((allcliques[j][k].blobs[0]->index == cliques[i].blobs[0]-> index && allcliques[j][k].blobs[1]->index == cliques[i].blobs[1]-> index) || (allcliques[j][k].blobs[0]->index == cliques[i].blobs[1]-> index && allcliques[j][k].blobs[1]->index == cliques[i].blobs[0]-> index)){
-// //               cout << /*allcliques[j][k].blobs[0]->rank << " " << allcliques[j][k].blobs[0]->subject << " - " << allcliques[j][k].blobs[1]->rank << " " << allcliques[j][k].blobs[1]->subject << " : " <<*/ allcliques[j][k].rec << " " ;
-//               distance += allcliques[j][k].rec;
-//               vectdist.push_back(allcliques[j][k].rec);
-//             }
-//           }
-//         }
-//         distance /= allcliques.size();
-//         cout << distance << " ";
-//         
-//         for (uint j=0;j<vectdist.size();j++){
-//           ecart += (vectdist[j] - distance) *(vectdist[j] - distance) ;
-//         }
-//         ecart /= vectdist.size();
-//         cout << sqrt(ecart) << endl;
-//       }
-//         
-//     }
+// === HISTOGRAMME ==========================================
+//   vector<uint> histo,histo_t;
+//   for (uint i=0;i<200;i++){
+//     histo.push_back(0);
+//     histo_t.push_back(0);
 //   }
+//   for (uint i=0;i<cliques.size();i++){
+//     if (cliques[i].rec>40.0)
+//       histo[199]++;
+//     else
+//       histo[(uint)(5*(cliques[i].rec))]++;
+//   }
+//   float cp = 0.0;
+//   for (uint i=0;i<200;i++){
+//     cout <<  cp << " " << histo[i] << endl;
+//     cp += 0.2;
+//   }
+//   cin >> dir;
+// ===  FIN HISTOGRAMME ==========================================
 
 
-    
-  
-  
-  
-  
   uint nb_cl_sim=0, nb_cl_dd=0, nb_cl_intraps=0, nb_cl_lower=0;
   for (uint i=0;i<cliques.size();i++){
     if (cliques[i].type == SIMILARITY) nb_cl_sim++;
@@ -252,7 +218,8 @@ double SurfaceBased_StructuralAnalysis::getTotalEnergy(){
 void SurfaceBased_StructuralAnalysis::SummaryLabels(){
   float Eintra,Edd,Els,Esim,Etot;
   cout << endl << endl;
-
+  FILE * f;   f = fopen (energypath.data(),"a"); 
+  fprintf(f, "== SUMMARYLABELS ==\n"); 
   for (uint i=1;i<labels.size();i++){
 //     Eintra = getLabelEnergy(labels[i], INTRAPRIMALSKETCH);
     Edd = getLabelEnergy(labels[i], DATADRIVEN);
@@ -260,18 +227,21 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
     Esim = getLabelEnergy(labels[i], SIMILARITY);
     Etot = Eintra + Edd + Els + Esim;
     cout << "label " << labels[i] << " : " << " (" << Edd << ";" << Esim << ") " << flush;
-
+    
+    
     
     uint nblabel=0;
     for (uint il=0;il<cliques.size();il++)
       nblabel += cliques[il].labelscount[i];
     cout << nblabel << ";";
+    fprintf(f,"label %d : (%3lf;%3lf) %i;\n", labels[i],Edd,Esim,nblabel);
 //     for (uint j=0;j<sites.size();j++)
 //       if (sites[j]->label==labels[i]){
 //         cout << sites[j]->index << "(" << sites[j]->subject << ")-";
 //       }
     cout<<  endl;
   }
+  fclose(f);
 }
 
 void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){

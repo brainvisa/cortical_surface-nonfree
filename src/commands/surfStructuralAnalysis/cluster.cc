@@ -210,7 +210,7 @@ void SWC::Run2(){
   vector<uint> indicesCliques, turnedOn;
   set<uint> indicesSet, listeSites;
   set<uint>::iterator it,it1,it2,it3;
-  FILE * f1;   f1 = fopen ("/home/grg/recuit.txt","w");
+  FILE * f1;   f1 = fopen (recuitpath.data(),"w");
   int ite=0,acc;
   for (uint i=0;i<cliques.size();i++)
     indicesCliques.push_back(i);
@@ -596,7 +596,7 @@ void SWC::Run(){
   set<uint> nodes;
   uint cpt=0,ite=0;
 
-  FILE * f1;   f1 = fopen ("/home/grg/recuit.txt","w");
+  FILE * f1;   f1 = fopen (recuitpath,"w");
 
   while (temp>0.1){
 

@@ -81,7 +81,7 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
     uint idx = (uint)((sites[i]->t+5.0) / 1.0);
     histoblobs[idx]++;
     }
-  }
+  } 
   for (uint i=0;i<sites.size();i++){
     if ((sites[i]->tValue/1.0+5.0) < 0) histoblobs_tvalue[0]++;
     else if ((sites[i]->tValue+5.0)/1.0 > 39) histoblobs_tvalue[39]++;

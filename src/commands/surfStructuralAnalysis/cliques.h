@@ -25,7 +25,7 @@ class Clique{
     map<int,uint> labelscount;
     
     float computeEnergy(bool save, uint CLIQUESNBSUJETS) {
-      ddweight = 4.0; ddh = 0.001; ddx1 = 7.5; ddx2 = 11.5; 
+      ddweight = 4.0; ddh = 0.001; ddx1 = 7.0; ddx2 = 11.0; 
       float energy;
       switch (type){
         case DATADRIVEN:
@@ -144,7 +144,7 @@ class Clique{
     Clique(){ type = UNKNOWN; energie = 0.0; blobs = vector<Site *>(); labelscount = map<int,uint>();  }
 };
 
-// vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
+vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
 
 // vector<Clique> ConstruireCliquesSimple(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
 

@@ -16,7 +16,7 @@ class SurfaceBased_StructuralAnalysis{
   protected:
     float Esimil;
     vector<uint> ipscliques;
-
+    
     long double energy;
     uint nbsujets;
     vector<int> labels;
@@ -28,6 +28,7 @@ class SurfaceBased_StructuralAnalysis{
 
 
   public:
+    string energypath, recuitpath;
     void MinimizationSetup(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
     SurfaceBased_StructuralAnalysis(){}
     SurfaceBased_StructuralAnalysis(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);

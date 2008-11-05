@@ -10,7 +10,7 @@ using namespace aims;
 using namespace std;
 using namespace carto;
 
-map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsigned> >    &neighbours,  int dep){
+map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsigned> >    &neighbours,  int dep, float dist_thresh){
 
   unsigned i;
   multimap<float,unsigned>    front1, front2;
@@ -28,7 +28,7 @@ map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsign
   map<uint,float>::iterator distit;
   distmap[dep]=0.0;
   if (dep != -1){
-    while(  dist<=50.0 )
+    while(  dist<=dist_thresh )
     {
 //       cout << "TEST" << endl;
       nfront->clear();
@@ -114,7 +114,7 @@ map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsign
 //   return distmap;
 // }
 
-vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uint> nodes){
+vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uint> nodes, float dist_thresh){
   // SURFACIQUE DISTMAP
   map<unsigned, set<unsigned> >    neighbours;
   unsigned v1b, v2, v3;
@@ -143,7 +143,7 @@ vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uin
   for (uint i=0;i<ns;i++){
     cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << ns << flush;
     if (nodes.find(i) != nodes.end()){
-      map<uint,float> dmap(getDistMap(&mesh,neighbours,i));
+      map<uint,float> dmap(getDistMap(&mesh,neighbours,i,dist_thresh));
       for (it=dmap.begin();it!=dmap.end();it++){
         distmap[i][it->first]=it->second;
         distmap[it->first][i]=it->second;
