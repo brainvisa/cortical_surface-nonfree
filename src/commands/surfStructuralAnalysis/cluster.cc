@@ -596,7 +596,7 @@ void SWC::Run(){
   set<uint> nodes;
   uint cpt=0,ite=0;
 
-  FILE * f1;   f1 = fopen (recuitpath,"w");
+  FILE * f1;   f1 = fopen (recuitpath.data(),"w");
 
   while (temp>0.1){
 
