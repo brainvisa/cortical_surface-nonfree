@@ -760,11 +760,50 @@ vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<
         else 
           rec = distmaps[sites[i]->node][sites[j]->node];
 //         rec = distmaps[sites[i]->node][j];
+        
+        // DISTANCE AVEC SURFACES
+//           (*jv)->getProperty( "boundingbox_max", bbmax_2);
+//           (*jv)->getProperty( "boundingbox_min", bbmin_2);
+          
+          uint no_overlap=0; float overlap_x,overlap_y,overlap_z;
+          if (sites[i]->boundingbox_min[0]<=sites[j]->boundingbox_min[0])
+            if (sites[i]->boundingbox_max[0]<sites[j]->boundingbox_min[0]) no_overlap=1;
+          else overlap_x= (sites[j]->boundingbox_max[0] < sites[i]->boundingbox_max[0] ? sites[j]->boundingbox_max[0] : sites[i]->boundingbox_max[0]) - sites[j]->boundingbox_min[0] +1;
+          else
+            if (sites[j]->boundingbox_max[0]<sites[i]->boundingbox_min[0]) no_overlap=1;
+          else overlap_x= (sites[i]->boundingbox_max[0] < sites[j]->boundingbox_max[0] ? sites[i]->boundingbox_max[0] : sites[j]->boundingbox_max[0]) - sites[i]->boundingbox_min[0] +1;
+          if (no_overlap==0)
+          {
+            if (sites[i]->boundingbox_min[1]<=sites[j]->boundingbox_min[1])
+              if (sites[i]->boundingbox_max[1]<sites[j]->boundingbox_min[1]) no_overlap=1;
+            else overlap_y= (sites[j]->boundingbox_max[1] < sites[i]->boundingbox_max[1] ? sites[j]->boundingbox_max[1] : sites[i]->boundingbox_max[1]) - sites[j]->boundingbox_min[1] +1;
+            else
+              if (sites[j]->boundingbox_max[1]<sites[i]->boundingbox_min[1]) no_overlap=1;
+            else overlap_y= (sites[i]->boundingbox_max[1] < sites[j]->boundingbox_max[1] ? sites[i]->boundingbox_max[1] : sites[j]->boundingbox_max[1]) - sites[i]->boundingbox_min[1] +1;
+            if (no_overlap==0)
+            {
+              if (sites[i]->boundingbox_min[2]<=sites[j]->boundingbox_min[2])
+                if (sites[i]->boundingbox_max[2]<sites[j]->boundingbox_min[2]) no_overlap=1;
+              else overlap_z= (sites[j]->boundingbox_max[2] < sites[i]->boundingbox_max[2] ? sites[j]->boundingbox_max[2] : sites[i]->boundingbox_max[2]) - sites[j]->boundingbox_min[2] +1;
+              else
+                if (sites[j]->boundingbox_max[2]<sites[i]->boundingbox_min[2]) no_overlap=1;
+              else overlap_z= (sites[i]->boundingbox_max[2] < sites[j]->boundingbox_max[2] ? sites[i]->boundingbox_max[2] : sites[j]->boundingbox_max[2]) - sites[i]->boundingbox_min[2] +1;
+              if (no_overlap==0)
+              {
+                rec=overlap_x*overlap_y*overlap_z;
+                double div=( ((sites[i]->boundingbox_max[0]-sites[i]->boundingbox_min[0])*(sites[i]->boundingbox_max[1]-sites[i]->boundingbox_min[1])*(sites[i]->boundingbox_max[2]-sites[i]->boundingbox_min[2]) +1)
+                      + ((sites[j]->boundingbox_max[0]-sites[j]->boundingbox_min[0])*(sites[j]->boundingbox_max[1]-sites[j]->boundingbox_min[1])*(sites[j]->boundingbox_max[2]-sites[j]->boundingbox_min[2]) +1) );
+        
+                rec=2 * rec / div;
+              }
+            }
+          }
+        
 //         rec = sqrt(pow(meshes[sites[0]->subject].vertex()[sites[i]->node][0]-meshes[sites[0]->subject].vertex()[sites[j]->node][0],2)+pow(meshes[sites[0]->subject].vertex()[sites[i]->node][1]-meshes[sites[0]->subject].vertex()[sites[j]->node][1],2)+pow(meshes[sites[0]->subject].vertex()[sites[i]->node][2]-meshes[sites[0]->subject].vertex()[sites[j]->node][2],2));  // USING EUCLIDEAN DISTANCE
 //         cout << i<< ";" << j << ";" << sites[i]->node << "-" << sites[j]->node << "rec:" << rec << endl;
         if (rec < 0.0001) {sitesaux.insert(sites[i]->node); sitesaux.insert(sites[j]->node); sitesindexes.insert(i); sitesindexes.insert(j);}
         
-        if ((rec < cliques_thresh) && !((sites[j]->tmin > sites[i]->tmax) || (sites[i]->tmin > sites[j]->tmax)) /*&& (sites[i]->tValue * sites[j]->tValue > 2.0)*/) {
+        if ((no_overlap==0 && rec < cliques_thresh) && !((sites[j]->tmin > sites[i]->tmax) || (sites[i]->tmin > sites[j]->tmax)) /*&& (sites[i]->tValue * sites[j]->tValue > 2.0)*/) {
 //           if (rec < 0.2) cout << "BLIP " << endl;
           Clique simc;
           simc.type = SIMILARITY;

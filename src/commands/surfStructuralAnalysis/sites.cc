@@ -19,6 +19,7 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
   map<float, vector<pair<float, uint > > >::iterator meshIt;
   vector<pair<float, uint> >::iterator yIt;
   vector<int> listepts;
+  vector<float> bbmax, bbmin;
   
  
   
@@ -37,6 +38,8 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
     (*iv)->getProperty( "tValue", tvalue1);
     (*iv)->getProperty( "rank", rank);
     (*iv)->getProperty( "nodes_list", listepts);
+    (*iv)->getProperty( "boundingbox_max", bbmax);
+    (*iv)->getProperty( "boundingbox_min", bbmin);
 
 //     if (bc1[0] >91.0 && bc1[0]<150.0 && bc1[1]>257.0 && bc1[1]<316.0){
     sites.push_back(new Site());
@@ -57,6 +60,13 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
     s->tmax = tmax_1;
     s->trep = trep;
     s->rank = rank;
+    s->boundingbox_max[0] = bbmax[0];
+    s->boundingbox_max[1] = bbmax[1];
+    s->boundingbox_max[2] = bbmax[2];
+    s->boundingbox_min[0] = bbmin[0];
+    s->boundingbox_min[1] = bbmin[1];
+    s->boundingbox_min[2] = bbmin[2];
+    
     s->t = t1;
     s->tValue = tvalue1;
     for (uint i=0;i<listepts.size();i++)

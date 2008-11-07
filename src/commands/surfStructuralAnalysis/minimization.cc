@@ -11,7 +11,7 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
 //   map<float, vector<pair<float, uint> > > altmesh = getAlternateMesh(mesh, lat, lon);
 //   cout << " done " << endl;
   cout << "Construction du vecteur de sites ..." << flush;
-//   string dir = "/home/grg/data/nmr_surface/";
+  string dir = "/home/grg/data/nmr_surface/";
 
 //   vector<vector<Clique> > allcliques;
 
@@ -57,23 +57,27 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
   
   
 // === HISTOGRAMME ==========================================
-//   vector<uint> histo,histo_t;
-//   for (uint i=0;i<200;i++){
-//     histo.push_back(0);
-//     histo_t.push_back(0);
-//   }
-//   for (uint i=0;i<cliques.size();i++){
-//     if (cliques[i].rec>40.0)
-//       histo[199]++;
-//     else
-//       histo[(uint)(5*(cliques[i].rec))]++;
-//   }
-//   float cp = 0.0;
-//   for (uint i=0;i<200;i++){
-//     cout <<  cp << " " << histo[i] << endl;
-//     cp += 0.2;
-//   }
-//   cin >> dir;
+  FILE * f;   f = fopen ("/home/grg/histo.txt","w"); 
+  
+  vector<uint> histo,histo_t;
+  for (uint i=0;i<1600;i++){
+    histo.push_back(0);
+    histo_t.push_back(0);
+  }
+  for (uint i=0;i<cliques.size();i++){
+    if (cliques[i].rec>40.0)
+      histo[1599]++;
+    else
+      histo[(uint)(cliques[i].rec*cliques[i].rec)]++;
+  }
+  float cp = 0.0;
+  for (uint i=0;i<1600;i++){
+    fprintf(f, "%3lf %d\n", sqrt(cp), histo[i]); 
+//     cout <<  sqrt(cp) << " " << histo[i] << endl;
+    cp += 1;
+  }
+  fclose(f);
+  cin >> dir;
 // ===  FIN HISTOGRAMME ==========================================
 
 

@@ -21,6 +21,8 @@ class Site{
     int rank;
     Point3df gravitycenter;
     uint node;
+    Point3df boundingbox_max;
+    Point3df boundingbox_min;
     set<uint> nodes_list;
 };
 
