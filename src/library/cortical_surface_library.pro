@@ -16,7 +16,7 @@ HEADERS = \
   surfacereferential/sulcusCleaner.h \
   surfacereferential/sulcusCorticalSnake.h \
   surfacereferential/sulcusCorticalSnake_energy.h \
-
+  surfacereferential/conformalMapping.h \
 
 SOURCES = \
   mesh/isoLine.cc \
@@ -28,4 +28,5 @@ SOURCES = \
   surfacereferential/sulcusCleaner.cc \
   surfacereferential/sulcusCorticalSnake.cc \
   surfacereferential/sulcusCorticalSnake_energy.cc \
+  surfacereferential/conformalMapping.cc \
 

@@ -22,4 +22,5 @@ PSUBDIRS += \
   surfStructuralAnalysis \
   AimsCheck2DCoordinate \
   AimsMeshToAtlas \
-  AimsSulcusNormalizeDepthProfile 
+  AimsSulcusNormalizeDepthProfile \
+  AimsConformalMapping

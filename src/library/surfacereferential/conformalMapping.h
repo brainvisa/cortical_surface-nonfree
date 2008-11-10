@@ -29,22 +29,39 @@ namespace aims
      class ConformalMapping
      {
           public:
-               CorticalReferential(std::string adr_mesh, float dt, float dE) : 
-                    _adr_mesh(adr_mesh), _dt(dt), _dE(dE)
+               ConformalMapping(std::string adr_mesh, float dt, float dE) : 
+                    _dt(dt), _dE(dE)
                     {
                          Reader < AimsSurfaceTriangle > r(adr_mesh);
                          r.read( _mesh );
-                         _nv=_mesh.vertex.size();
-                         _tuetteMap=std::vector<Point3df>(nv);
-                         _conformalMap=std::vector<Point3df>(nv);
+                         _nv=_mesh.vertex().size();
+                         _tuetteMap=std::vector<Point3df>(_nv);
+                         _conformalMap=std::vector<Point3df>(_nv);
+                         _neigh= SurfaceManip::surfaceNeighbours(_mesh);
                          ComputeEdges();
+                         ComputeHarmonicCoefficients();
+                    }
+               ConformalMapping(AimsSurfaceTriangle mesh, float dt, float dE) : 
+                    _mesh(mesh), _dt(dt), _dE(dE)
+                    {
+                         _nv=_mesh.vertex().size();
+                         _tuetteMap=std::vector<Point3df>(_nv);
+                         _conformalMap=std::vector<Point3df>(_nv);
+                         _neigh= SurfaceManip::surfaceNeighbours(_mesh);
+                         ComputeEdges();
+                         ComputeHarmonicCoefficients();
                     }
                     
-               ComputeEdges();
-               TuetteMap();
-               ConformalMap();
+               void ComputeEdges();
+               void ComputeHarmonicCoefficients();
+               void TuetteMap();
+               void ConformalMap(std::string adr_tuette);
+               
                AimsSurfaceTriangle GetTuetteMapping();
-               GetConformalMapping GetConformalMapping();
+               AimsSurfaceTriangle GetConformalMapping(std::string adr_tuette);
+               float TuetteEnergy();
+               float HarmonicEnergy();
+               void WriteConformalCoordinates();
 
           private:
                AimsSurfaceTriangle _mesh;
@@ -52,10 +69,20 @@ namespace aims
                float _dE;
                
                uint _nv;
+               std::vector<std::set<uint> >  _neigh;
                std::vector<AimsVector<uint,2> > _edges;
-
+               std::vector<std::set<std::pair<uint, uint> > > _edgeMap;
+               
+               std::vector<float> _harmonicCoef;
                std::vector<Point3df> _tuetteMap;
                std::vector<Point3df> _conformalMap;
+               std::vector<float> _conformalLon;
+               std::vector<float> _conformalLat;
+               
+               void buildEdgeMap();
+               uint whichEdge(uint v1, uint v2);
+               Point3df getCenterOfMass(std::vector<Point3df> tmpMap);
+               void ComputeConformalCoordinates();
      };
 }
 
