@@ -46,4 +46,20 @@ insert( '{protocol}/{subject}',
   ),
 )
 
+insert( '{protocol}/{subject}',
+  'sulci', SetContent(
+     '<subject>_L_{sulcus_name}', SetType( 'Sulcus mesh' ), SetWeakAttr( 'side', 'left' ),
+     '<subject>_R_{sulcus_name}', SetType( 'Sulcus mesh' ), SetWeakAttr( 'side', 'right' ),
+     '<subject>_L_{sulcus_name}-x', SetType( 'Sulcus x coordinate texture' ), SetWeakAttr( 'side', 'left' ),
+     '<subject>_R_{sulcus_name}-x', SetType( 'Sulcus x coordinate texture' ), SetWeakAttr( 'side', 'right' ),
+     '<subject>_L_{sulcus_name}-y', SetType( 'Sulcus y coordinate texture' ), SetWeakAttr( 'side', 'left' ),
+     '<subject>_R_{sulcus_name}-y', SetType( 'Sulcus y coordinate texture' ), SetWeakAttr( 'side', 'right' ),
+     '<subject>_L_{sulcus_name}-depth', SetType( 'Sulcus depth profile' ), SetWeakAttr( 'side', 'left' ),
+     '<subject>_R_{sulcus_name}-depth', SetType( 'Sulcus depth profile' ), SetWeakAttr( 'side', 'right' ),
+     '<subject>_L_{sulcus_name}-grid.mesh', SetType( 'Sulcus coordinate grid mesh' ), SetWeakAttr( 'side', 'left'),
+     '<subject>_R_{sulcus_name}-grid.mesh', SetType( 'Sulcus coordinate grid mesh' ), SetWeakAttr( 'side', 'right')
+  ),
+)
+
+
 

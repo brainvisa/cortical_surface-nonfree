@@ -45,15 +45,21 @@ signature = Signature(
     'label_attributes', Choice( 'label', 'name' ),
     'label_values', String(),
     'orientation', Choice( 'Top->Bottom', 'Front->Back' ),
-    'sulcus_mesh', WriteDiskItem( 'Mesh', 'MESH mesh' ),
-    'texture_param1', WriteDiskItem( 'Coordinate Texture', 'Texture' ),
-    'texture_param2', WriteDiskItem( 'Coordinate Texture', 'Texture' ),
-    'coordinates_grid', WriteDiskItem( 'Mesh', 'MESH mesh'),
+    'sulcus_mesh', WriteDiskItem( 'Sulcus mesh', 'MESH mesh' ),
+    'texture_param1', WriteDiskItem( 'Sulcus x coordinate texture', 'Texture' ),
+    'texture_param2', WriteDiskItem( 'Sulcus y coordinate texture', 'Texture' ),
+    'coordinates_grid', WriteDiskItem( 'Sulcus coordinate grid mesh', 'MESH mesh'),
+    'depth_profile', WriteDiskItem( 'Sulcus depth profile', 'Text file' ),
     'dilation', Float()
 )
 
 def initialization( self ):
      self.linkParameters( 'mri', 'graph' )
+     self.linkParameters( 'sulcus_mesh', 'graph' )
+     self.linkParameters( 'texture_param1', 'sulcus_mesh' )
+     self.linkParameters( 'texture_param2', 'sulcus_mesh' )
+     self.linkParameters( 'coordinates_grid', 'sulcus_mesh' )
+     self.linkParameters( 'depth_profile', 'sulcus_mesh' )
      self.label_attributes = 'name'
      self.dilation = 1.0
 
