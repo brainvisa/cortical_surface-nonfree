@@ -35,17 +35,17 @@ int main( int argc, const char** argv )
 		AimsSurfaceTriangle meshIn;
                 AimsSurfaceTriangle meshOut;
                 
-                std::string addMeshIn, addMeshOut, addMeshTuette="nofile";
+                std::string addMeshIn, addMeshOut, addFileOut, addMeshTuette="nofile";
                 float dt=0.1, de=0.001;
 
-		AimsApplication    app( argc, argv, "SPherical conformalpParameterization of a mesh" );
+		AimsApplication    app( argc, argv, "Spherical conformal parameterization of a mesh" );
 		app.addOption( addMeshIn, "-i", "input mesh" );
 		app.alias( "--input", "-i" );
 		app.addOption( dt, "-dt", "time step (recommended : 0.1, nothing above that for stability)", 0.1 );
 		app.alias( "--deltat", "-dt" );
 		app.addOption( de, "-de", "energy variation threshold for convergence (recommended : 0.001)", 0.001 );
 		app.alias( "--deltae", "-de" );
-		app.addOption( addMeshOut, "-o", "output (spherical) mesh" );
+		app.addOption( addFileOut, "-o", "output file pattern (output = spherical mesh + coordinate textures" );
 		app.alias( "--output", "-o" );
                 app.addOption( addMeshTuette, "-t", "Tuette map precomputed mesh", "nofile" );
 		app.alias( "--tuette", "-t" );
@@ -57,8 +57,9 @@ int main( int argc, const char** argv )
                 meshOut=map.GetConformalMapping(addMeshTuette);
                 std::cout << "OK. Writing it" << std::endl;
                 std::cout << "OK. Writing coordinates" << std::endl;
-                map.WriteConformalCoordinates();
+                map.WriteConformalCoordinates(addFileOut);
                 std::cout << "OK" << std::endl;
+                addMeshOut=addFileOut+".mesh";
 		Writer<AimsSurfaceTriangle> meshW(addMeshOut);
 		meshW.write(meshOut);
 		

@@ -475,7 +475,7 @@ namespace aims
           return(result);
      }
      
-     void ConformalMapping::WriteConformalCoordinates()
+     void ConformalMapping::WriteConformalCoordinates(std::string adr_coord)
      {
           TimeTexture<float> lat(1, _nv), lon(1, _nv);
           uint i;
@@ -484,9 +484,11 @@ namespace aims
                lat[0].item(i)=_conformalLat[i];
                lon[0].item(i)=_conformalLon[i];
           } 
-          Writer<TimeTexture<float> > lonW("longitude.tex");
+          std::string strlon=adr_coord+"_lon.tex";
+          Writer<TimeTexture<float> > lonW(strlon);
           lonW.write(lon);
-          Writer<TimeTexture<float> > latW("latitude.tex");
+          std::string strlat=adr_coord+"_lat.tex";
+          Writer<TimeTexture<float> > latW(strlat);
           latW.write(lat);
      }
 }
