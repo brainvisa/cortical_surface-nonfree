@@ -207,6 +207,15 @@ def execution( self, context ):
           apply(context.system, iso)
           apply(context.system, conc)
           i=i+10
+          
+          
+     context.write('Computing depth profile')
+     depth = [ 'AimsSulcusNormalizeDepthProfile',
+               '-m', self.sulcus_mesh.fullPath(),
+               '-x', self.texture_param1.fullPath(),
+               '-y', self.texture_param2.fullPath(),
+               '-o', self.depth_profile.fullPath() ]
+     apply(context.system, depth)
 
      context.write('Finished')
 
