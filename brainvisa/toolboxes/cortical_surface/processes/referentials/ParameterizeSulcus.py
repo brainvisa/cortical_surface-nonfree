@@ -141,10 +141,13 @@ def execution( self, context ):
 
      test=self.sulcus_mesh.fullName()
      sulcusMname=test + '_32767_0.mesh'
-     moving = [ 'mv', sulcusMname, self.sulcus_mesh.fullPath()]
-     movingminf = [ 'mv', sulcusMname + '.minf', self.sulcus_mesh.fullPath() + '.minf']
-     apply( context.system, moving )
-     apply( context.system, movingminf )
+     #moving = [ 'mv', sulcusMname, self.sulcus_mesh.fullPath()]
+     #movingminf = [ 'mv', sulcusMname + '.minf', self.sulcus_mesh.fullPath() + '.minf']
+     #apply( context.system, moving )
+     #apply( context.system, movingminf )
+
+     shelltools.mv(sulcusMname, self.sulcus_mesh.fullPath())
+     shelltools.mv(sulcusMname + '.minf', self.sulcus_mesh.fullPath() + '.minf')
 
      context.write('Starting parameterisation')
 
