@@ -16,8 +16,13 @@ using namespace carto;
 
 int main(int argc, const char **argv){
   string  graphFile, output, atlaspath, recuitpath = "/home/grg/recuit.txt", energypath = "/home/grg/energy.txt";
+  int verbose=1;
   Graph primal;
-  float _ddweight=0.7, _intrapsweight = 2.0, _simweight=1.4, _lsweight=0.01, _ddx2 = 14.0, _ddx1 = 6.0, _ddh=0.0001;
+  float _ddweight=0.4, _intrapsweight = 4.0, _simweight=1.0, _lsweight=1.0, _ddx1 = 3.125, _ddx2 = 4.50, _ddh=0.0001;
+  _ddx1 = 8.0;
+  _ddx2 = 20.0;
+//   _ddx1 = 10.0;
+//   _ddx2 = 31.0;
 
   int run=1;
   AimsApplication     app( argc, argv, "Initialize");
@@ -27,6 +32,7 @@ int main(int argc, const char **argv){
   app.alias( "--output", "-o" );
   app.addOption( atlaspath, "-m" , "Chemin de base des données d'atlas");
   app.addOption(run,"--run","run","");
+  app.addOption(verbose,"--verbose","verbose", 1.0);
   app.addOption(_ddweight, "--ddw", "ddweight", 1.0);
   app.addOption(_intrapsweight, "--ipsw", "intrapsweight",  1.0);
   app.addOption(_simweight, "--simw", "simweight",  1.0);
@@ -83,7 +89,7 @@ int main(int argc, const char **argv){
   cout << _ddweight << "-" << _intrapsweight << "-" << _simweight << "-" << _lsweight << "-" << _ddx2 << "-" << _ddx1 << "-" << _ddh << endl;
   swc.setModelParameters(_ddweight, _intrapsweight, _simweight, _lsweight, _ddx2, _ddx1, _ddh);
    
-  swc.Run();
+  swc.Run(verbose);
   swc.SummaryLabels();
   swc.StoreToGraph(primal);
   SauvegarderGraphes(primal, graphFile, output);

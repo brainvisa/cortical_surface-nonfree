@@ -25,22 +25,23 @@ class Clique{
     map<int,uint> labelscount;
     
     float computeEnergy(bool save, uint CLIQUESNBSUJETS) {
-      ddweight = 4.0; ddh = 0.001; ddx1 = 7.0; ddx2 = 11.0; 
-      float energy;
+//       cout << ddweight << " " << simweight << " " << ddh << " " << ddx1 << " " << ddx2 << ";" ;
+      float energy=-1.0;
       switch (type){
         case DATADRIVEN:
           ASSERT(blobs.size()==1);
           if (blobs[0]->label != 0){
             if (blobs[0]->t > ddx2) energy = ddh;
-            else if (blobs[0]->t < ddx1) energy = ddweight; 
+            else if (blobs[0]->t < ddx1) energy = 1.0; 
             else { 
-            energy = blobs[0]->t * (ddh-ddweight)/(ddx2-ddx1) + (ddh-(ddh-ddweight)/(ddx2-ddx1)*ddx2);
+            energy = blobs[0]->t * (ddh-1.0)/(ddx2-ddx1) + (ddh-(ddh-1.0)/(ddx2-ddx1)*ddx2);
             }
 
           }
           else {
             energy = 0.0;
           }
+          energy *= ddweight;
           energy *= CLIQUESNBSUJETS;
 
         break;
@@ -71,11 +72,12 @@ class Clique{
 //             energy = -simweight*exp(-pow(rec,2)/(2*pow(sigma,2)));
 //             cout << endl << rec << " : " << energy << endl;
 //             energy=simweight/20.0-simweight;            
-            if (rec > 20.0)
-              energy = rec/5.0 - 4.0;
-            else if (rec < 20.0)
-              energy = rec/10.0 - 1.0;
+//             if (rec > 20.0)
+//               energy = rec/5.0 - 4.0;
+//             else if (rec < 20.0)
+              energy = -rec;
 //             cout << "((" << rec << "=>" << energy << ")) " ;
+            energy *= simweight;
 //             energy = 0.0;
           }
           else {
@@ -88,7 +90,7 @@ class Clique{
     }
     float updateEnergy(uint node, int old, bool save, uint CLIQUESNBSUJETS)  {
       float energy=0.0;
-      uint index;
+//       uint index;
       float _intrapsweight;
       switch(type){
         case DATADRIVEN:
@@ -108,10 +110,15 @@ class Clique{
 //           ASSERT(((uint)blobs[0]->index == (uint)node || (uint)blobs[1]->index == (uint)node));
 //           if ((uint)blobs[0]->index == (uint)node) index = 0;
 //           else if ((uint)blobs[1]->index == (uint)node) index = 1;
-          if (energie*energie < 0.0001 && (uint)blobs[0]->label == (uint)blobs[1]->label && (uint)blobs[0]->label != 0)
-            energy = computeEnergy(false, CLIQUESNBSUJETS);
-          else if (energie*energie > 0.0001 && ((blobs[0]->label != blobs[1]->label) || (blobs[1]->label == 0 || blobs[0]->label == 0)))
-            energy = -energie;
+          if (energie*energie < 0.000000000001){
+            if ((uint)blobs[0]->label == (uint)blobs[1]->label && (uint)blobs[0]->label != 0)
+              energy = computeEnergy(false, CLIQUESNBSUJETS);
+          }
+          else if (energie*energie > 0.000000000001){
+            if ((blobs[0]->label != blobs[1]->label) || (blobs[1]->label == 0 || blobs[0]->label == 0))
+              energy = -energie;
+          } 
+          else printf("eerr %lf\n", (double)energie);
           break;
         case INTRAPRIMALSKETCH:
           _intrapsweight = intrapsweight;
@@ -130,12 +137,11 @@ class Clique{
           energy = 0.0;
           if (save){
             labelscount[blobs[i]->label]++;
-            labelscount[old]--;
+            labelscount[old]--;            
           }
           break;
       }
       if (save) energie += energy;
-     
       return energy;
     }
     void updateLabelsCount();
@@ -143,6 +149,8 @@ class Clique{
     static float getIntraPSWeight(){return intrapsweight;}
     Clique(){ type = UNKNOWN; energie = 0.0; blobs = vector<Site *>(); labelscount = map<int,uint>();  }
 };
+
+double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bbmax2, uint *no_overlap);
 
 vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
 

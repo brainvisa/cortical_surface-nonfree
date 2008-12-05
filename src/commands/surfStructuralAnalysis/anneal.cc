@@ -18,12 +18,31 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 
   for (uint i=0; i<random.size();i++){
     somme=0.0;
-    vector<long double> globalenergieslabels(labels.size()), expenergies(labels.size()),total(labels.size());
+    
     old = sites[random[i]]->label;
     
-
-    for (uint k=0;k<labels.size();k++){
-      sites[random[i]]->label = labels[k];
+    vector<int> zoneLab;
+    zoneLab.push_back(0);
+    uint no_overlap=0;
+//     cin >> no_overlap ;
+//     cout << sites[random[i]]->boundingbox_min[0] << " " << sites[random[i]]->boundingbox_min[1] << " " << sites[random[i]]->boundingbox_max[0] << " " << sites[random[i]]->boundingbox_max[1] << " "  << endl;
+//     cout << sites[random[i]]->nodes_list.size() << endl;
+    for (int k=0;k<labelsZones.size();k++){
+//       cout << "miaou"<<k << endl;
+      Point3df bbmin1 = sites[random[i]]->boundingbox_min, bbmax1 = sites[random[i]]->boundingbox_max;
+      no_overlap=0;
+      double rec = getOverlap(bbmin1, bbmax1, Point3df(labelsZones[k].first[0],labelsZones[k].first[1],0.0), Point3df(labelsZones[k].second[0],labelsZones[k].second[1] ,0.0), &no_overlap);
+//       cout << "rec="<< rec << endl ;
+      if (no_overlap == 0){
+//         cout << k << endl;
+        zoneLab.push_back(k+1);
+      }
+    }
+    vector<long double> globalenergieslabels(zoneLab.size()), expenergies(zoneLab.size()),total(zoneLab.size());
+// cout << endl;
+//     cout << zoneLab.size() << endl;
+    for (uint k=0;k<zoneLab.size();k++){
+      sites[random[i]]->label = zoneLab[k];
       globalenergieslabels[k]=energy;
       
       int nclsim1=0,nclsim2=0,nbips1=0,nbips2=0;
@@ -36,18 +55,18 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
         else if (cliques[aux].type == SIMILARITY){
           globalenergieslabels[k]+=cliques[aux].updateEnergy(random[i],old,false,nbsujets);
           uint index=0;
-          if (cliques[aux].blobs[0]->index==random[i]) index = 1;
-          else if (cliques[aux].blobs[1]->index==random[i]) index = 0;
+          if (cliques[aux].blobs[0]->index==(uint)random[i]) index = 1;
+          else if (cliques[aux].blobs[1]->index==(uint)random[i]) index = 0;
           else ASSERT(false);
-          if (cliques[aux].blobs[index]->label == labels[k] && labels[k] != 0) nclsim1++;
+          if (cliques[aux].blobs[index]->label == zoneLab[k] && zoneLab[k] != 0) nclsim1++;
           if (cliques[aux].blobs[index]->label == old && old != 0) nclsim2++;
         }
       }
       for (uint n=0;n<ipscliques.size();n++){
         uint aux = ipscliques[n];
         if (cliques[aux].blobs[0]->subject != sites[random[i]]->subject){
-          if (labels[k] !=0)
-            nbips1+=cliques[aux].labelscount[labels[k]];
+          if (zoneLab[k] !=0)
+            nbips1+=cliques[aux].labelscount[zoneLab[k]];
           if (old != 0)
             nbips2+=cliques[aux].labelscount[old];
         }
@@ -58,7 +77,7 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
       total[k] = (nbips1-nclsim1 - (nbips2-nclsim2));
 
       
-      globalenergieslabels[k] += 4.0 * total[k];
+      globalenergieslabels[k] += Clique::intrapsweight * total[k];
       
       somme += exp(-globalenergieslabels[k]/temp);
       if (isnan(somme)) cout << "#####################################" << endl;
@@ -68,13 +87,13 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
     uint acc;
     if (somme > exp(700.0)) {
       acc=0;
-      for (uint k=0;k<labels.size();k++)
+      for (uint k=0;k<zoneLab.size();k++)
         if (globalenergieslabels[k]<globalenergieslabels[acc]) acc = k;
       
     } 
     else {
       if (somme > exp(700.0)) cout << "dist:[";
-      for (uint k=0;k<labels.size();k++){
+      for (uint k=0;k<zoneLab.size();k++){
         somme2 += exp(-globalenergieslabels[k]/temp)/somme;
         expenergies[k] = somme2;
         if (somme > exp(700.0)){
@@ -87,14 +106,15 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 
       for (acc=0;acc<expenergies.size() && expenergies[acc]<tirage;acc++){} //cout << globalenergieslabels[acc] << " " ;
     }
-    if (old != labels[acc]) {
-      sites[random[i]]->label=labels[acc];
+    if (old != zoneLab[acc]) {
+      sites[random[i]]->label=zoneLab[acc];
       for (uint m=0;m<cliquesDuSite[random[i]].size();m++){
+
          energy +=cliques[cliquesDuSite[random[i]][m]].updateEnergy(random[i],old,true,nbsujets);
       }
+      
 
-      energy += 4.0*total[acc];
-
+      energy += Clique::intrapsweight*total[acc];
       mod++;
     }
     else {
@@ -106,7 +126,7 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 
 }
 
-void Anneal::Run(){
+void Anneal::Run(int verbose){
   //   Initialization();
 //   set<uint>::iterator it;
 //   map<uint,uint> values;
@@ -125,10 +145,12 @@ void Anneal::Run(){
 //         found = *it;
 //     }
 //     if (found != -1) 
-//       if (sites[i]->t>9.875) sites[i]->label = values[found];
+//       if (sites[i]->t>5.875) sites[i]->label = values[found];
 //   }
   for (uint i=0;i<sites.size();i++)
+//     cout << sites[i]->rank << flush;
     sites[i]->label = 0; //(int)sites[i]->tValue;
+
   for (uint k=0;k<cliques.size();k++){
     cliques[k].updateLabelsCount();
     cliques[k].computeEnergy(true,nbsujets);
@@ -144,7 +166,6 @@ void Anneal::Run(){
 
   cout << "energie initiale : " << energy << endl;
   ShortSummaryLabels();
-
 
 
   
@@ -168,9 +189,10 @@ void Anneal::Run(){
   fprintf(f, "== DEBUT NOUVEAU RECUIT ==\n"); 
   
 //   cin >> test;
-  
+//   test=0;
 
-  while ((nb_under_threshold<5 || mod!=0) && test!=0){
+  while (nb_under_threshold<5 || mod!=0){
+//    while (temp>0.001){
     if (mod!=0) nb_under_threshold=0;
     else nb_under_threshold++;
     cout << " T=" << temp << " it="<< ite++ << " " ;
@@ -194,10 +216,12 @@ void Anneal::Run(){
     cout << " chg:" << mod << " " << flush;
 
 
-    ShortSummaryLabels();
-    cout << " E=" << energy << endl;
+   if (verbose == 1) ShortSummaryLabels();
+// double everif= getTotalEnergy();
+    cout << " E=" << energy << endl; //<< " Everif=" << everif << endl;
+// if (pow(everif-energy,2)<0.01) cout << "ok"<<endl; else printf("no %.3lf\n",(double)(everif-energy));
     
-    temp = temp*0.98;
+    temp = temp*0.99;
 
   }
 

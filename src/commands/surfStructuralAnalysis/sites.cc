@@ -67,7 +67,8 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
     s->boundingbox_min[1] = bbmin[1];
     s->boundingbox_min[2] = bbmin[2];
     
-    s->t = t1;
+    
+    s->t = t1; //value1;
     s->tValue = tvalue1;
     for (uint i=0;i<listepts.size();i++)
       s->nodes_list.insert(listepts[i]);

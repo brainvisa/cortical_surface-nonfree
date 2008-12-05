@@ -20,6 +20,7 @@ class SurfaceBased_StructuralAnalysis{
     long double energy;
     uint nbsujets;
     vector<int> labels;
+    vector<pair<Point2df,Point2df> > labelsZones;
     vector<Site *> sites;
     vector<Clique> cliques;
     vector<vector<int> > cliquesDuSite;
@@ -35,9 +36,9 @@ class SurfaceBased_StructuralAnalysis{
     void setModelParameters(float _ddweight=2.0, float _intrapsweight = 10.0, float _simweight=3.0, float _lsweight=0.002, float _ddx2 = 4.0, float _ddx1 = 2.0, float _ddh=0.0001);
     
     void RunMinimization(int type);
-    double getLabelEnergy(int label, int type=UNKNOWN);
-    double getTypeEnergy(int type);
-    double getTotalEnergy();
+    long double getLabelEnergy(int label, int type=UNKNOWN);
+    long double getTypeEnergy(int type);
+    long double getTotalEnergy();
 //     double getTotalEnergyLastChance(uint site, uint newlabel);
 
     void SummaryLabels();
