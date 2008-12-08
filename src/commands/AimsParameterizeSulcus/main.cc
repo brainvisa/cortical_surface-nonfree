@@ -57,6 +57,7 @@ int main( int argc, const char** argv )
       string  method = "boix";
       float deltaT=0.05;
       float stop=0.000003;
+      float offset=0.0;
 
 /*      float tCurv=0.95;*/
       int orientation;
@@ -80,6 +81,7 @@ int main( int argc, const char** argv )
       app.alias( "--deltaT", "-d" );
       app.addOption( stop, "-s", "laplacian variation stopping criterion (default=0.000003)", 0.000003 );
       app.alias( "--stop", "-s" );
+      app.addOption( offset, "-mo", "Morphological offset between dilation and erosion of ridges for extrem cases (default=0, otherwise should be 1.0)", 0.0);
       app.initialize();
 
       if ( (orientation != TOP2BOTTOM) && (orientation != BACK2FRONT) )
@@ -131,47 +133,104 @@ int main( int argc, const char** argv )
      // computing intersection of mesh with bottom and hull image for selection of "ridges"
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-      cout << "Detecting top and bottom ridges" << endl;
+     cout << "Detecting top and bottom ridges (new style)" << endl;
       
-      for (i=0; i<ns; i++)
-      {
-          texPole[0].item(i)=short(0);
-          texBot[0].item(i)=short(0);
-          texHull[0].item(i)=short(0);
-          Point3df vert=surface.vertex()[i];
-          x=int(floor(vert[0]/dx));
-          y=int(floor(vert[1]/dy));
-          z=int(floor(vert[2]/dz));
-          if (  (hull(x,y,z)!=0) || (hull(x,y,z+1)!=0) || (hull(x,y+1,z)!=0) || (hull(x,y+1,z+1)!=0)
-             || (hull(x+1,y,z)!=0) || (hull(x+1,y,z+1)!=0) || (hull(x+1,y+1,z)!=0) || (hull(x+1,y+1,z+1)!=0) )
-          {
-              texHull[0].item(i)=short(RIDGE_TOP);
-          }
-          if (  (bottom(x,y,z)!=0) || (bottom(x,y,z+1)!=0) || (bottom(x,y+1,z)!=0) || (bottom(x,y+1,z+1)!=0)
-             || (bottom(x+1,y,z)!=0) || (bottom(x+1,y,z+1)!=0) || (bottom(x+1,y+1,z)!=0) || (bottomDil(x+1,y+1,z+1)!=0) )
-          {
-              texBot[0].item(i)=short(RIDGE_BOT);
-          }
-      }
+//       for (i=0; i<ns; i++)
+//       {
+//           texPole[0].item(i)=short(0);
+//           texBot[0].item(i)=short(0);
+//           texHull[0].item(i)=short(0);
+//           Point3df vert=surface.vertex()[i];
+//           x=int(floor(vert[0]/dx));
+//           y=int(floor(vert[1]/dy));
+//           z=int(floor(vert[2]/dz));
+//           if (  (hull(x,y,z)!=0) || (hull(x,y,z+1)!=0) || (hull(x,y+1,z)!=0) || (hull(x,y+1,z+1)!=0)
+//              || (hull(x+1,y,z)!=0) || (hull(x+1,y,z+1)!=0) || (hull(x+1,y+1,z)!=0) || (hull(x+1,y+1,z+1)!=0) )
+//           {
+//               texHull[0].item(i)=short(RIDGE_TOP);
+//           }
+//           if (  (bottom(x,y,z)!=0) || (bottom(x,y,z+1)!=0) || (bottom(x,y+1,z)!=0) || (bottom(x,y+1,z+1)!=0)
+//              || (bottom(x+1,y,z)!=0) || (bottom(x+1,y,z+1)!=0) || (bottom(x+1,y+1,z)!=0) || (bottomDil(x+1,y+1,z+1)!=0) )
+//           {
+//               texBot[0].item(i)=short(RIDGE_BOT);
+//           }
+//       }
+
+           // trying another more robust way
+
+     for (i=0; i<ns; i++)
+     {
+          texHull[0].item(i)=0;
+          texBot[0].item(i)=0;
+     }
+     float fx, fy, fz;
+     int count=0;
+     for (z=0; z<sz; z++)
+          for (y=0; y<sy; y++)
+               for (x=0; x<sx; x++)
+               {
+                    if (hull(x,y,z) != 0)
+                    {
+                         float dist, distMin=10000.0;
+                         uint imin=0;
+                         for (i=0; i<ns; i++)
+                         {
+                              Point3df vert=surface.vertex()[i];
+                              fx=vert[0]/dx;
+                              fy=vert[1]/dy;
+                              fz=vert[2]/dz;
+                              dist=sqrt((fx-x)*(fx-x) + (fy-y)*(fy-y) + (fz-z)*(fz-z));
+                              if (dist<distMin)
+                              {
+                                   distMin=dist; imin=i;
+                              }
+                         }
+                         texHull[0].item(imin)=short(RIDGE_TOP);
+                    }
+                    if (bottom(x,y,z) != 0)
+                    {
+                         float dist, distMin=10000.0;
+                         uint imin=0;
+                         for (i=0; i<ns; i++)
+                         {
+                              Point3df vert=surface.vertex()[i];
+                              fx=vert[0]/dx;
+                              fy=vert[1]/dy;
+                              fz=vert[2]/dz;
+                              dist=sqrt((fx-x)*(fx-x) + (fy-y)*(fy-y) + (fz-z)*(fz-z));
+                              if (dist<distMin)
+                              {
+                                   distMin=dist; imin=i;
+                              }
+                         }
+                         texBot[0].item(imin)=short(RIDGE_BOT);
+                         count ++;
+                    }
+               }
 
      cout << "Done... moving on to postprocessing of ridges" << endl;
+     cout << "Done " << count << " texBot points" << endl;
+     cout << "writing texture texBot : " << flush;
+     Writer<TimeTexture<short> >  texBotW( "texBot.tex" );
+     texBotW.write( texBot );
+     cout << "done " << endl;
 
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // dilation of ridges
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       topDilation[0]=MeshDilation<short>( surface[0], texHull[0], short(0), -1, 6.0, true); 
       botDilation[0]=MeshDilation<short>( surface[0], texBot[0], short(0), -1, 6.0, true);
-      topClosing[0]=MeshErosion<short>( surface[0], topDilation[0], short(0), -1, 6.0, true);// was 6.0
-      botClosing[0]=MeshErosion<short>( surface[0], botDilation[0], short(0), -1, 6.0, true);
+      topClosing[0]=MeshErosion<short>( surface[0], topDilation[0], short(0), -1, 6.0-offset, true);// was 6.0
+      botClosing[0]=MeshErosion<short>( surface[0], botDilation[0], short(0), -1, 6.0-offset, true);
 
-//      cout << "writing texture botClosing : " << flush;
-//      Writer<TimeTexture<short> >  botClosingW( "botClosing.tex" );
-//      botClosingW.write( botClosing );
-//      cout << "done " << endl;
-//      cout << "writing texture topClosing : " << flush;
-//      Writer<TimeTexture<short> >  topClosingW( "topClosing.tex" );
-//      topClosingW.write( topClosing );
-//      cout << "done " << endl;
+     cout << "writing texture botClosing : " << flush;
+     Writer<TimeTexture<short> >  botClosingW( "botClosing.tex" );
+     botClosingW.write( botClosing );
+     cout << "done " << endl;
+     cout << "writing texture topClosing : " << flush;
+     Writer<TimeTexture<short> >  topClosingW( "topClosing.tex" );
+     topClosingW.write( topClosing );
+     cout << "done " << endl;
      
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // skeletization/thinnning of ridges
@@ -181,13 +240,13 @@ int main( int argc, const char** argv )
       topLine[0]=MeshSkeletization<short> ( surface[0], topClosing[0], short(RIDGE_TOP), short(0), neighbourso );
       botLine[0]=MeshSkeletization<short> ( surface[0], botClosing[0], short(RIDGE_BOT), short(0), neighbourso );
 
-//      cout << "writing texture botLine : " << flush;
-//      Writer<TimeTexture<short> >  botLineW( "botLine.tex" );
-//      botLineW.write( botLine );
-//      cout << "writing texture topLine : " << flush;
-//      Writer<TimeTexture<short> >  topLineW( "topLine.tex" );
-//      topLineW.write( topLine );
-//      cout << "done " << endl;
+     cout << "writing texture botLine : " << flush;
+     Writer<TimeTexture<short> >  botLineW( "botLine.tex" );
+     botLineW.write( botLine );
+     cout << "writing texture topLine : " << flush;
+     Writer<TimeTexture<short> >  topLineW( "topLine.tex" );
+     topLineW.write( topLine );
+     cout << "done " << endl;
 
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // removing branches and triangles from skeletons using a graph shortest path algorithm
@@ -277,6 +336,7 @@ int main( int argc, const char** argv )
      uint cand1, cand2, tmp1, tmp2;
      float length, lengthmax=0.0;
      uint its, itn, ibs, ibn;
+
      
      for (topIt=topCand.begin(); topIt!=topCand.end(); ++topIt)
      {

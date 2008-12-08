@@ -50,7 +50,8 @@ signature = Signature(
     'texture_param2', WriteDiskItem( 'Sulcus y coordinate texture', 'Texture' ),
     'coordinates_grid', WriteDiskItem( 'Sulcus coordinate grid mesh', 'MESH mesh'),
     'depth_profile', WriteDiskItem( 'Sulcus depth profile', 'Text file' ),
-    'dilation', Float()
+    'dilation', Float(),
+    'morpho_offset', Choice( '0.0', '1.0' )
 )
 
 def initialization( self ):
@@ -62,6 +63,7 @@ def initialization( self ):
      self.linkParameters( 'depth_profile', 'sulcus_mesh' )
      self.label_attributes = 'name'
      self.dilation = 1.0
+     self.morpho_offset = '0.0'
 
 
 def execution( self, context ):
@@ -157,7 +159,8 @@ def execution( self, context ):
                         '-t', hullIm.fullPath(),
                         '-o', orient,
                         '-ox', self.texture_param1.fullPath(),
-                        '-oy', self.texture_param2.fullPath() ]
+                        '-oy', self.texture_param2.fullPath(),
+                        '-mo', self.morpho_offset ]
 
      apply(context.system, parameterising )
 
