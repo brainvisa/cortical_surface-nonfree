@@ -51,7 +51,7 @@ signature = Signature(
     'coordinates_grid', WriteDiskItem( 'Sulcus coordinate grid mesh', 'MESH mesh'),
     'depth_profile', WriteDiskItem( 'Sulcus depth profile', 'Text file' ),
     'dilation', Float(),
-    'morpho_offset', Choice( '0.0', '1.0' )
+    'morpho_offset', Choice( '0.0', '0.5', '0.8', '1.0' )
 )
 
 def initialization( self ):

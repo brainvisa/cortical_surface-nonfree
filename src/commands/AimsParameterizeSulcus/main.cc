@@ -135,28 +135,28 @@ int main( int argc, const char** argv )
 
      cout << "Detecting top and bottom ridges (new style)" << endl;
       
-//       for (i=0; i<ns; i++)
-//       {
-//           texPole[0].item(i)=short(0);
-//           texBot[0].item(i)=short(0);
-//           texHull[0].item(i)=short(0);
-//           Point3df vert=surface.vertex()[i];
-//           x=int(floor(vert[0]/dx));
-//           y=int(floor(vert[1]/dy));
-//           z=int(floor(vert[2]/dz));
-//           if (  (hull(x,y,z)!=0) || (hull(x,y,z+1)!=0) || (hull(x,y+1,z)!=0) || (hull(x,y+1,z+1)!=0)
-//              || (hull(x+1,y,z)!=0) || (hull(x+1,y,z+1)!=0) || (hull(x+1,y+1,z)!=0) || (hull(x+1,y+1,z+1)!=0) )
-//           {
-//               texHull[0].item(i)=short(RIDGE_TOP);
-//           }
-//           if (  (bottom(x,y,z)!=0) || (bottom(x,y,z+1)!=0) || (bottom(x,y+1,z)!=0) || (bottom(x,y+1,z+1)!=0)
-//              || (bottom(x+1,y,z)!=0) || (bottom(x+1,y,z+1)!=0) || (bottom(x+1,y+1,z)!=0) || (bottomDil(x+1,y+1,z+1)!=0) )
-//           {
-//               texBot[0].item(i)=short(RIDGE_BOT);
-//           }
-//       }
+      for (i=0; i<ns; i++)
+      {
+          texPole[0].item(i)=short(0);
+          texBot[0].item(i)=short(0);
+          texHull[0].item(i)=short(0);
+          Point3df vert=surface.vertex()[i];
+          x=int(floor(vert[0]/dx));
+          y=int(floor(vert[1]/dy));
+          z=int(floor(vert[2]/dz));
+          if (  (hull(x,y,z)!=0) || (hull(x,y,z+1)!=0) || (hull(x,y+1,z)!=0) || (hull(x,y+1,z+1)!=0)
+             || (hull(x+1,y,z)!=0) || (hull(x+1,y,z+1)!=0) || (hull(x+1,y+1,z)!=0) || (hull(x+1,y+1,z+1)!=0) )
+          {
+              texHull[0].item(i)=short(RIDGE_TOP);
+          }
+          if (  (bottom(x,y,z)!=0) || (bottom(x,y,z+1)!=0) || (bottom(x,y+1,z)!=0) || (bottom(x,y+1,z+1)!=0)
+             || (bottom(x+1,y,z)!=0) || (bottom(x+1,y,z+1)!=0) || (bottom(x+1,y+1,z)!=0) || (bottomDil(x+1,y+1,z+1)!=0) )
+          {
+              texBot[0].item(i)=short(RIDGE_BOT);
+          }
+      }
 
-           // trying another more robust way
+           // adding a second (different) pass for robustness
 
      for (i=0; i<ns; i++)
      {
