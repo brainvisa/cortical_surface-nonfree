@@ -23,4 +23,6 @@ PSUBDIRS += \
   AimsCheck2DCoordinate \
   AimsMeshToAtlas \
   AimsSulcusNormalizeDepthProfile \
-  AimsConformalMapping
+  AimsConformalMapping \
+  AimsMeshCoordinatesToDecimated
+  
