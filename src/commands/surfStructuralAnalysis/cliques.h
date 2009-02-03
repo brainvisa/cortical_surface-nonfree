@@ -31,10 +31,10 @@ class Clique{
         case DATADRIVEN:
           ASSERT(blobs.size()==1);
           if (blobs[0]->label != 0){
-            if (blobs[0]->t > ddx2) energy = ddh;
-            else if (blobs[0]->t < ddx1) energy = 1.0; 
+//            if (blobs[0]->t > ddx2) energy = ddh;
+            if (blobs[0]->t < ddx1) energy = 1.0; 
             else { 
-            energy = blobs[0]->t * (ddh-1.0)/(ddx2-ddx1) + (ddh-(ddh-1.0)/(ddx2-ddx1)*ddx2);
+            energy =  pow(ddx2/2.0,2)/(pow(0.5*ddx2,2)+pow(blobs[0]->t-ddx1,2));
             }
 
           }
@@ -63,7 +63,7 @@ class Clique{
           }
           energy *= CLIQUESNBSUJETS;
           energy = 0.0;
-          ASSERT (energy*energy < 0.00001);
+//           ASSERT (energy*energy < 0.00001);
           break;
         case SIMILARITY:
           ASSERT(blobs.size()==2);

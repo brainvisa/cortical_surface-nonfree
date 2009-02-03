@@ -113,6 +113,7 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
         labelsZones.push_back(zone);
         i++;
       }
+  cout << labelsZones.size() << " zones" << endl;
   for (i=0;i<labelsZones.size()+1;i++)
 //   for (i=0;i<10;i++)
     labels.push_back(i);
@@ -121,9 +122,12 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
     zonescount.push_back(0);
     labelscount.push_back(0);
   }
-  
+  zonesListesBlobs = vector<set<uint> >(labelsZones.size()+1);
+  listeZones = vector<set<uint> > (sites.size());
   for (uint j=0;j<sites.size();j++){
     uint count=0;
+    listeZones[j].insert(0);
+    zonesListesBlobs[0].insert(j);
     for (int k=0;k<labelsZones.size();k++){
 //       cout << "miaou"<<k << endl;
       Point3df bbmin1 = sites[j]->boundingbox_min, bbmax1 = sites[j]->boundingbox_max;
@@ -133,10 +137,13 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
       if (no_overlap == 0){
 //         cout << k << endl;
         zonescount[k+1]++;
+        zonesListesBlobs[k+1].insert(j);
+        listeZones[j].insert(k+1);
         count++;
       }
     }
     labelscount[count]++;
+    assert(listeZones[j].size()!=0);
   }
   for (i=0;i<labelsZones.size()+1;i++)
     cout << zonescount[i] << " ";
@@ -176,19 +183,47 @@ void SurfaceBased_StructuralAnalysis::Initialization(){
 
 long double SurfaceBased_StructuralAnalysis::getLabelEnergy(int label, int type){
   bool test = true;
-  long double energy=0.0;
+  long double energydd=0.0, energysim=0.0, energy=0.0;
+  uint nclsim=0,nbips=0;
+  vector<int> bysub(nbsujets);
+  
   for (uint i=0;i<cliques.size();i++){
+    cliques[i].updateLabelsCount();
+    cliques[i].computeEnergy(true,nbsujets);
     if (type==UNKNOWN || cliques[i].type == type){
       test = true;
       for (uint j=0;j<cliques[i].blobs.size() && test == true;j++)
         if (cliques[i].blobs[j]->label != label ) test = false;
-      if (test) { energy += cliques[i].energie; 
-        
+      if (test) { 
+          if (cliques[i].type==DATADRIVEN) {energydd += cliques[i].energie; }
+          else if (cliques[i].type==SIMILARITY)  { nclsim++; energysim += cliques[i].energie;
+          }
+
 //         if (false && cliques[i].type==SIMILARITY) cout << "(("<<cliques[i].rec << "(" << cliques[i].blobs[0]->label << "(" <<  cliques[i].blobs[0]->node << ")" << "-" << cliques[i].blobs[1]->label <<"(" <<  cliques[i].blobs[1]->node << ")" << ")=>" << cliques[i].energie << ")) ";
       }
 //       if (cliques[i].type == INTRAPRIMALSKETCH && cliques[i].labelscount[label] > 1 && label != 0) {energy += (cliques[i].labelscount[label]-1)*Clique::getIntraPSWeight();}
     }
   }
+    uint i,j;
+    for (uint n=0;n<ipscliques.size();n++){
+      bysub[n] = cliques[ipscliques[n]].labelscount[label];
+//       cout << bysub[n] << " " ;
+    }
+//     cout << endl;
+    uint nb=0;
+    for (i=0;i<nbsujets-1;i++){
+      for (j=i+1;j<nbsujets;j++){
+        nb += bysub[i]*bysub[j];
+      }
+    }
+//     cout << nclsim << "|"<< energydd << " " << energysim << "|";
+    nbips += nb;
+// cout << Clique::intrapsweight*(nbips-nclsim) << " ";
+    ASSERT(nbips>=nclsim || (cout << nbips << ">=" << nclsim << endl && false));
+  energy += Clique::intrapsweight*(nbips-nclsim);
+  energy += energydd;
+  energy += energysim;
+
   return energy;
 }
 
@@ -483,11 +518,486 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
       }
   }
 
+}
 
 
 
+// void SurfaceBased_StructuralAnalysis::Validation() {
+//   
+//   for (uint i=1;i<labels.size();i++){
+//     
+//     set<uint> listeBlobs;
+//     set<uint>::iterator it,it1;
+// 
+// //     for (uint j=0;j<sites.size();j++){
+// //       if (sites[j]->label == labels[i]){
+// //         for (it=listeZones[j].begin();it!=listeZones[j].end();it++){
+// //           if (*it==0) continue;
+// //           for (it1=zonesListesBlobs[*it].begin();it1!=zonesListesBlobs[*it].end();it1++){
+// //             listeBlobs.insert(*it1);
+// //           }
+// //         }
+// //       }
+// //     }
+//     uint zone=i;
+//       for (it1=zonesListesBlobs[zone].begin();it1!=zonesListesBlobs[zone].end();it1++)
+//         listeBlobs.insert(*it1);
+// 
+// 
+//     cout << listeBlobs.size() << " blobs pour ce label" << endl;
+//     long double testcount=1.0;
+//     for (it=listeBlobs.begin();it!=listeBlobs.end();it++){
+// //       cout << testcount << " ";
+//       testcount *= 2.0;// listeZones[*it].size();
+//     }
+//     cout << "label " << labels[i] << ":" << testcount << " possibilités" << endl;
+//     
+//     for (uint k=0;k<cliques.size();k++){
+//       cliques[k].updateLabelsCount();
+//       cliques[k].computeEnergy(true,nbsujets);
+//     }
+//     ipscliques.clear();
+//     for (uint k=0;k<cliques.size();k++)
+//       if (cliques[k].type == INTRAPRIMALSKETCH)
+//         ipscliques.push_back(k);
+//     
+//     cout << ipscliques.size() << " cliques intraps" << endl;
+//     
+// 
+//     uint old;
+//     vector<uint> permut(listeBlobs.size());
+//     vector<uint> listeBlobsV;
+//     vector<vector<uint> > listeLabV(listeZones.size());
+//     for (uint k=0;k<listeZones.size();k++){
+// //       for (it=listeZones[k].begin();it!=listeZones[k].end();it++)
+//         listeLabV[k].push_back(0);
+//         listeLabV[k].push_back(zone);
+//     }
+//     for (it=listeBlobs.begin();it!=listeBlobs.end();it++)
+//       listeBlobsV.push_back(*it);
+//     for (uint k=0;k<permut.size();k++)
+//       permut[k]=0;
+//     for (uint j=0;j<listeBlobsV.size();j++)
+//       sites[j]->label=listeLabV[j][permut[j]];
+//     double energy = getTotalEnergy();
+//     cout << "energie initiale : " << energy << endl;
+//     long double count =1;
+//     bool stop=false;
+//     if (listeBlobs.size()==0) stop=true;
+//     while(!stop){
+//           uint site_courant=permut.size()-1;
+//           
+//           // permutation suivante
+//           old = sites[site_courant]->label;
+//           permut[site_courant]++;
+// //           for (int j=permut.size()-1;j>=0;j--)
+//           while (permut[site_courant]==listeZones[site_courant].size()){
+//             permut[site_courant]=0;
+// 
+//             // mise à jour intermédiaire
+//             old = sites[site_courant]->label;
+//             sites[site_courant]->label = listeLabV[site_courant][permut[site_courant]];
+//             int nclsim1=0,nclsim2=0,nbips1=0,nbips2=0;
+// 
+//             for (uint n=0;n<cliquesDuSite[site_courant].size();n++){
+//               uint aux = cliquesDuSite[site_courant][n];
+//               if (cliques[aux].type == DATADRIVEN){
+//                 energy +=cliques[aux].updateEnergy(site_courant,old,false,nbsujets);
+//               }
+//               else if (cliques[aux].type == SIMILARITY){
+//                 energy +=cliques[aux].updateEnergy(site_courant,old,false,nbsujets);
+//                 uint index=0;
+//                 if (cliques[aux].blobs[0]->index==(uint)site_courant) index = 1;
+//                 else if (cliques[aux].blobs[1]->index==(uint)site_courant) index = 0;
+//                 else ASSERT(false);
+//                 if (cliques[aux].blobs[index]->label == listeLabV[site_courant][permut[site_courant]] && listeLabV[site_courant][permut[site_courant]] != 0) nclsim1++;
+//                 if (cliques[aux].blobs[index]->label == old && old != 0) nclsim2++;
+//               }
+//             }
+//             for (uint n=0;n<ipscliques.size();n++){
+//               uint aux = ipscliques[n];
+//               if (cliques[aux].blobs[0]->subject != sites[site_courant]->subject){
+//                 if (listeLabV[site_courant][permut[site_courant]] !=0)
+//                   nbips1+=cliques[aux].labelscount[listeLabV[site_courant][permut[site_courant]]];
+//                 if (old != 0)
+//                   nbips2+=cliques[aux].labelscount[old];
+//               }
+//             }
+//     
+//             energy += Clique::intrapsweight * (nbips1-nclsim1 - (nbips2-nclsim2));
+// 
+//             site_courant--;
+//             old = sites[site_courant]->label;
+//             permut[site_courant]++;
+//             
+//           }
+//           
+//           assert(sites[site_courant]->label!= listeLabV[site_courant][permut[site_courant]]);
+//           sites[site_courant]->label= listeLabV[site_courant][permut[site_courant]];
+//           
+//           stop=true;
+//           for (uint j=0;j<permut.size()&&stop==true;j++)
+//             if (permut[j]!=listeZones[j].size()-1) 
+//               stop = false;
+// 
+// //           for (uint j=0;j<permut.size();j++)
+// //             cout << listeZones[j][permut[j]] << " ";
+// //           cout << endl;
+//           
+//           
+//           
+//           // mise à jour énergie
+//           int nclsim1=0,nclsim2=0,nbips1=0,nbips2=0;
+// 
+//           for (uint n=0;n<cliquesDuSite[site_courant].size();n++){
+//             uint aux = cliquesDuSite[site_courant][n];
+//             if (cliques[aux].type == DATADRIVEN){
+//               energy +=cliques[aux].updateEnergy(site_courant,old,false,nbsujets);
+//             }
+//             else if (cliques[aux].type == SIMILARITY){
+//               energy +=cliques[aux].updateEnergy(site_courant,old,false,nbsujets);
+//               uint index=0;
+//               if (cliques[aux].blobs[0]->index==(uint)site_courant) index = 1;
+//               else if (cliques[aux].blobs[1]->index==(uint)site_courant) index = 0;
+//               else ASSERT(false);
+//               if (cliques[aux].blobs[index]->label == listeLabV[site_courant][permut[site_courant]] && listeLabV[site_courant][permut[site_courant]] != 0) nclsim1++;
+//               if (cliques[aux].blobs[index]->label == old && old != 0) nclsim2++;
+//             }
+//           }
+//           for (uint n=0;n<ipscliques.size();n++){
+//             uint aux = ipscliques[n];
+//             if (cliques[aux].blobs[0]->subject != sites[site_courant]->subject){
+//               if (listeLabV[site_courant][permut[site_courant]] !=0)
+//                 nbips1+=cliques[aux].labelscount[listeLabV[site_courant][permut[site_courant]]];
+//               if (old != 0)
+//                 nbips2+=cliques[aux].labelscount[old];
+//             }
+//           }
+//   
+//           energy += Clique::intrapsweight * (nbips1-nclsim1 - (nbips2-nclsim2));
+// //           cout << energy << " " << flush;
+// //           cin >> nclsim1;
+// //           vector<uint> histo;
+// //           for (uint i=0;i<100;i++){
+// //             histo.push_back(0);
+// //           }
+// //           for (uint i=0;i<cliques.size();i++){
+// //             if (cliques[i].rec>40.0)
+// //               histo[1599]++;
+// //             else
+// //               histo[(uint)(cliques[i].rec*cliques[i].rec)]++;
+// //           }
+//         
+//           count++;
+//           cout << count << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << flush;
+//         }
+// 
+// //       sites[*it]->label = old;
+//       }
+//     }
+
+long double frec0(long double rec){
+  if (rec>20.0) return 0.0;
+  else if (rec<0.0) return 1.0;
+  else return -1.0/20.0*rec+1.0;
+}
+long double ft0(long double t){
+  if (t>16.0) return 1.0;
+  else if (t<8.0) return 0.0;
+  else return 1.0/8.0*t-8.0/8.0;
+}
+
+long double SurfaceBased_StructuralAnalysis::getCompacite(set<uint> &comp, bool verb){
+  set<string> subj;
+  uint penal = 0;
+  long double compac=0.0,rec=0.0;
+  set<uint> auxcliques;
+  set<uint>::iterator it;
+  float t=0.0;
+  for (it=comp.begin();it!=comp.end();it++){
+    for (uint i=0;i<cliquesDuSite[*it].size();i++){
+      uint aux=cliquesDuSite[*it][i],index0,index1;
+      index0=cliques[aux].blobs[0]->index;
+      index1=cliques[aux].blobs[1]->index;
+      if ((comp.find(index0) != comp.end() && index0 != *it) || (comp.find(index1) != comp.end() && index1 != *it))
+        auxcliques.insert(cliquesDuSite[*it][i]);
+    }
+        
+    compac += sites[*it]->t;
+    if (subj.find(sites[*it]->subject)!=subj.end()) penal=penal+1;
+    subj.insert(sites[*it]->subject);
+  }
+  compac /= comp.size();
+  t = (float) compac;
+//   cout << "compsize:" << comp.size() << endl ;
+//   cout << "compac:" << compac << endl;
+//   for (it=auxcliques.begin();it!=auxcliques.end();it++)
+//     rec += frec0(cliques[*it].rec); // /10.0+0.9;
+  
+//   compac += -rec;
+//   cout << "rec:" << rec<< endl;
+//   compac += penal*100.0;
+  
+  if (verb) cout << "[" << t << ";" << -rec << ";" << subj.size() << ";" << penal <<"]";
+//   compac *=10.0;
+//   compac /= (float)comp.size();
+//   compac *= ((float)subj.size()/(float)nbsujets);
+//   compac /= (float)penal;
+//   cout << "= "<< compac << " - " ;
+  
+  return compac;
 
 }
+
+
+vector<float> SurfaceBased_StructuralAnalysis::getPseudoSamplesPermut(vector<uint> &listeBlobs) {
+vector<float> samples;
+float compac=0.0, Ttest=0.0, sum=0.0, energy=0.0;
+vector<uint> permut(listeBlobs.size());
+for (uint k=0;k<permut.size();k++)
+  permut[k]=0;
+bool stop=false;
+if (listeBlobs.size()==0) stop=true;
+
+
+
+while(!stop){
+  uint site_courant=permut.size()-1;
+  
+
+  permut[site_courant]++;
+  while (permut[site_courant]==2){
+    permut[site_courant]=0;
+      site_courant--;
+      permut[site_courant]++;
+  }
+  compac=0.0; Ttest=0.0; sum=0.0; energy=0.0;
+  for (uint j=0;j<permut.size();j++)
+    if (permut[j]==0) compac += sites[listeBlobs[j]]->t;
+    else compac -= sites[listeBlobs[j]]->t;
+  
+  compac /= listeBlobs.size();
+  for (uint j=0;j<permut.size();j++){
+    if (permut[j]!=0) 
+      sites[listeBlobs[j]]->t = -sites[listeBlobs[j]]->t;
+    sum += pow(sites[listeBlobs[j]]->t-compac,2);
+  }
+
+  energy = getLabelEnergy(sites[listeBlobs[0]]->label);
+  for (uint j=0;j<permut.size();j++)
+    if (permut[j]!=0) 
+      sites[listeBlobs[j]]->t = -sites[listeBlobs[j]]->t;
+
+
+  Ttest = sqrt(listeBlobs.size()*(listeBlobs.size()-1))*compac/sqrt(sum);
+//   cout << compac << " " << Ttest << " " << energy <<  endl;
+  samples.push_back(Ttest);
+
+  stop=true;
+  for (uint j=0;j<permut.size()&&stop==true;j++)
+    if (permut[j]!=1) 
+      stop = false;
+  
+}
+return samples;
+}
+
+
+vector<float> SurfaceBased_StructuralAnalysis::getPseudoSamplesBootstrap(vector<uint> &listeBlobs) {
+vector<float> samples;
+float compac=0.0, Ttest=0.0, sum=0.0, energy=0.0;
+
+// vector<uint> permut(listeBlobs.size());
+vector<float> old_t(listeBlobs.size());
+for (uint j=0;j<listeBlobs.size();j++)
+  old_t[j] = sites[listeBlobs[j]]->t;
+
+for (uint i=0;i<1000;i++){
+  
+  for (uint j=0;j<listeBlobs.size();j++){
+    sites[listeBlobs[j]]->t = old_t[(float)UniformRandom() * listeBlobs.size()];
+  }
+  compac=0.0; Ttest=0.0; sum=0.0; energy=0.0;
+  for (uint j=0;j<listeBlobs.size();j++)
+    compac += sites[listeBlobs[j]]->t;
+   
+  
+  compac /= listeBlobs.size();
+  for (uint j=0;j<listeBlobs.size();j++)
+    sum += pow(sites[listeBlobs[j]]->t-compac,2);
+  
+
+  energy = getLabelEnergy(sites[listeBlobs[0]]->label);
+  for (uint j=0;j<listeBlobs.size();j++)
+    sites[listeBlobs[j]]->t = old_t[j];
+
+
+  Ttest = sqrt(listeBlobs.size()*(listeBlobs.size()-1))*compac/sqrt(sum);
+//   cout << compac << " " << Ttest << " " << energy <<  endl;
+  samples.push_back(energy);
+
+  
+  
+}
+
+
+return samples;
+
+}
+
+vector<float> SurfaceBased_StructuralAnalysis::getPseudoSamplesFullBootstrap(vector<uint> &listeBlobs) {
+vector<float> samples;
+float compac=0.0, Ttest=0.0, sum=0.0, energy=0.0;
+
+// vector<uint> permut(listeBlobs.size());
+vector<float> old_t(listeBlobs.size());
+
+map<uint,float> old_sim;
+map<uint,float>::iterator it,jt;
+for (uint j=0;j<listeBlobs.size();j++){
+  old_t[j] = sites[listeBlobs[j]]->t;
+  for (uint k=0;k<cliquesDuSite[listeBlobs[j]].size();k++)
+    if (cliques[cliquesDuSite[listeBlobs[j]][k]].type == SIMILARITY) {
+      pair<uint,float> clsim;
+      clsim.first = cliquesDuSite[listeBlobs[j]][k];
+      clsim.second = cliques[cliquesDuSite[listeBlobs[j]][k]].rec;
+      old_sim.insert(clsim);
+    }
+}
+
+for (uint i=0;i<1000;i++){
+  
+  for (uint j=0;j<listeBlobs.size();j++){
+    sites[listeBlobs[j]]->t = old_t[(float)UniformRandom() * listeBlobs.size()];
+  }
+  for (it=old_sim.begin();it!=old_sim.end();it++){
+    uint random = (float)UniformRandom() * old_sim.size(),j=0;
+    for (jt=old_sim.begin();j<random && jt!=old_sim.end();jt++,j++){}
+    cliques[(*it).first].rec=(*jt).second;
+  }
+  compac=0.0; Ttest=0.0; sum=0.0; energy=0.0;
+  for (uint j=0;j<listeBlobs.size();j++)
+    compac += sites[listeBlobs[j]]->t;
+   
+  
+  compac /= listeBlobs.size();
+  for (uint j=0;j<listeBlobs.size();j++)
+    sum += pow(sites[listeBlobs[j]]->t-compac,2);
+  
+
+  energy = getLabelEnergy(sites[listeBlobs[0]]->label);
+  for (uint j=0;j<listeBlobs.size();j++)
+    sites[listeBlobs[j]]->t = old_t[j];
+  for (it=old_sim.begin();it!=old_sim.end();it++){
+    cliques[(*it).first].rec=(*it).second;
+  }
+
+
+  Ttest = sqrt(listeBlobs.size()*(listeBlobs.size()-1))*compac/sqrt(sum);
+//   cout << compac << " " << Ttest << " " << energy <<  endl;
+  samples.push_back(energy);
+
+  
+  
+}
+
+
+return samples;
+
+}
+
+
+
+
+void SurfaceBased_StructuralAnalysis::Validation(int type) {
+  uint test=0,test1;
+  for (int i=1;i<labels.size();i++){
+    vector<uint> listeBlobs;
+    for (uint j=0;j<sites.size();j++){
+      if (sites[j]->label == i){
+        listeBlobs.push_back(j);
+      }
+    }
+//     cout << "label "<< i << " : " << getCompacite(listeBlobs,true) << endl;
+    if  (listeBlobs.size()==0) continue;
+    
+    cout << "Label " << i << ":" ;
+    cout << listeBlobs.size() << " ";
+    float compac=0.0, Ttest=0.0, sum=0.0, energy=0.0;
+    for (uint j=0;j<listeBlobs.size();j++)
+      compac += sites[listeBlobs[j]]->t;
+    compac /= listeBlobs.size();
+    for (uint j=0;j<listeBlobs.size();j++)
+      sum += pow(sites[listeBlobs[j]]->t-compac,2);
+    Ttest = sqrt(listeBlobs.size()*(listeBlobs.size()-1))*compac/sqrt(sum);
+    cout.precision(5);
+    cout << compac << " T=" << Ttest << " E=" << getLabelEnergy(i) << endl;
+    int histosize;
+    vector<float> samples;
+    if (type == PERMUT){
+      cout << "PERMUT" << endl;
+      samples=getPseudoSamplesPermut(listeBlobs);
+      histosize =10;
+    }
+    else if (type == BOOTSTRAP){
+      cout << "BOOTSTRAP" << endl;
+      samples=getPseudoSamplesFullBootstrap(listeBlobs);
+      histosize =100;
+    }
+
+    while(histosize>9){
+      cin >> histosize;
+      vector<uint> histo(histosize);
+      vector<float> integ(histosize);
+      float mini=10000000.0, maxi=-10000000.0, step=0.0;
+      sum=0.0;
+      for (uint j=0; j<samples.size();j++){
+        if (samples[j]>maxi) maxi = samples[j];
+        if (samples[j]<mini) mini = samples[j];
+      }
+      step = (maxi-mini)/(float)histosize;
+      cout << "mini:"<<mini<< " maxi:" << maxi << " step:" << step << " nombre d'échantillons:" << samples.size() << endl;
+      for (uint j=0;j<samples.size();j++){
+        histo[(samples[j]-mini)/(maxi-mini)*(histosize-1)]++;
+      }
+        
+      for (uint j=0;j<histosize;j++){
+        integ[j]= (float)step * (float)histo[j] + (float)sum;
+        sum += histo[j];
+        cout << j*step+mini << " ";
+      }
+      cout << endl;
+      for (uint j=0;j<histosize;j++)
+        cout << j*step+mini << " " << histo[j] << endl;;
+      cout << endl;
+  //     for (uint j=0;j<histosize;j++)
+  //       cout << integ[j] << " ";
+  //     cout << endl;
+      uint alpha = 0;
+      uint percent = 99;
+      for (uint j=0;integ[j]<percent*sum/100.0;j++) alpha=j;
+  
+      cout << "diff (=0):" << samples.size() - sum << " alpha("<<percent <<"%) : " << alpha*step+mini;
+  
+      cout << endl<<endl;
+    
+  
+
+    }
+  }
+ 
+
+}
+
+
+   
+  
+
+
+
+
+
+
 
 
 

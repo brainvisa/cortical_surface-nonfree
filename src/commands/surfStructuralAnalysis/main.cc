@@ -5,6 +5,7 @@
 #include <aims/mesh/texture.h>
 #include "iograph.h"
 #include "icm.h"
+#include "old_anneal.h"
 #include "anneal.h"
 #include "cluster.h"
 
@@ -18,9 +19,9 @@ int main(int argc, const char **argv){
   string  graphFile, output, atlaspath, recuitpath = "/home/grg/recuit.txt", energypath = "/home/grg/energy.txt";
   int verbose=1;
   Graph primal;
-  float _ddweight=0.4, _intrapsweight = 4.0, _simweight=1.0, _lsweight=1.0, _ddx1 = 3.125, _ddx2 = 4.50, _ddh=0.0001;
+  float _ddweight=0.8, _intrapsweight = 4.0, _simweight=1.0, _lsweight=1.0, _ddx1 = 3.125, _ddx2 = 4.50, _ddh=0.0001;
   _ddx1 = 8.0;
-  _ddx2 = 20.0;
+  _ddx2 = 3.0;
 //   _ddx1 = 10.0;
 //   _ddx2 = 31.0;
 
@@ -63,6 +64,11 @@ int main(int argc, const char **argv){
     latpath = atlaspath + "latitude.tex";
     lonpath = atlaspath + "longitude.tex";
     }
+    else if (atlaspath.find("somato")!=string::npos){
+    meshpath = atlaspath + *it + "/tri/" + *it + "_Lwhite.mesh";
+    latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
+    lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
+    }
     else ASSERT(false);
     cout << "chargement" << endl;
     Reader<AimsSurfaceTriangle> rmesh(meshpath);
@@ -92,8 +98,12 @@ int main(int argc, const char **argv){
   swc.Run(verbose);
   swc.SummaryLabels();
   swc.StoreToGraph(primal);
-  SauvegarderGraphes(primal, graphFile, output);
 
+ 
+  
+  SauvegarderGraphes(primal, graphFile, output);
+  swc.Validation(PERMUT);
+  swc.Validation(BOOTSTRAP);
   return(0);
 
 }

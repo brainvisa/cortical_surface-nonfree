@@ -6,7 +6,9 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-
+enum typesValid{
+  PERMUT, BOOTSTRAP
+};
 
 enum typesMinim{
   ICM, ANNEAL, CUSTOM
@@ -21,6 +23,8 @@ class SurfaceBased_StructuralAnalysis{
     uint nbsujets;
     vector<int> labels;
     vector<pair<Point2df,Point2df> > labelsZones;
+    vector<set<uint> > zonesListesBlobs;
+    vector<set<uint> > listeZones; // attention les indices de listeZones sont décalés de 1 par rapport à labelsZones (à cause du label 0 qui recouvre tout l'espace 2D)
     vector<Site *> sites;
     vector<Clique> cliques;
     vector<vector<int> > cliquesDuSite;
@@ -44,6 +48,15 @@ class SurfaceBased_StructuralAnalysis{
     void SummaryLabels();
     void StoreToGraph(Graph &primal);
     void Initialization();
+
+
+    long double getCompacite(set<uint> &liste, bool verb);
+    vector<float> getPseudoSamplesPermut(vector<uint> &listeBlobs);
+    vector<float> getPseudoSamplesBootstrap(vector<uint> &listeBlobs);
+    vector<float> getPseudoSamplesFullBootstrap(vector<uint> &listeBlobs);
+
+
+    void Validation(int type=PERMUT);
 };
 
 

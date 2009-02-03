@@ -210,7 +210,8 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<uint, float
     // bruit
   for (uint i=0;i<result.nItem();i++){
 //     random= fabs(GaussianRandom(0.0,1.0))*0.0; 
-    random =(float)GaussianRandom((float)backgroundnoise, (float)2.75);//s + ((float)UniformRandom() * 5.0 - 7.0) ;
+    random =(float)GaussianRandom((float)backgroundnoise, (float)3.0);//s + ((float)UniformRandom() * 5.0 - 7.0) ;
+
 //     cout << random << " ";
     result.item(i) = random;
   }
@@ -219,7 +220,8 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<uint, float
 //   lissage
   result=smoother->doSmoothing(result, ((int)((smooth)/0.05))*0.05);
 
-  
+  for (uint i=0;i<result.nItem();i++)
+      result.item(i) += ((float)UniformRandom()*3.0 - 1.5);
 //   for (uint i=0;i<result.nItem();i++){
 //     random= ((float)UniformRandom() * backgroundnoise - backgroundnoise/2.0);//* 15.0 - 7.0) ;
 //     result.item(i) += random;
@@ -268,7 +270,7 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<uint, float
     
     cout << "bruit de la position : " << randomnode << "/" << vois1.size() << "-(" << mesh[0].vertex()[vois1[randomnode]][0] << ";" << mesh[0].vertex()[vois1[randomnode]][1] << ";" << mesh[0].vertex()[vois1[randomnode]][2] << "/" << mesh[0].vertex()[sites[i].first][0] << ";" << mesh[0].vertex()[sites[i].first][1] << ";" << mesh[0].vertex()[sites[i].first][2] <<  ") " << sqrt(pow(mesh[0].vertex()[vois1[randomnode]][0]-mesh[0].vertex()[sites[i].first][0],2)+pow(mesh[0].vertex()[vois1[randomnode]][1]-mesh[0].vertex()[sites[i].first][1],2)+pow(mesh[0].vertex()[vois1[randomnode]][2]-mesh[0].vertex()[sites[i].first][2],2)) << endl;
     sites[i].first = vois1[randomnode];
-    
+     
     // on reparcourt le maillage pour trouver le noeud correspondant après changement
     node=vois1[randomnode];
 
@@ -307,7 +309,7 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<uint, float
   //fusion des deux textures
   for (uint j=0;j<result.nItem();j++)
 //     if (result.item(j) < tex.item(j) && tex.item(j) > 1.0) result.item(j) = 0.3*result.item(j) + 0.7* tex.item(j);
-  result.item(j) += tex.item(j);
+    result.item(j) += tex.item(j);
   
   
   // introduction du bruit de similarité dans l'étendue (dans la valeur du lissage)
@@ -372,8 +374,8 @@ int main( int argc, const char **argv )
     app.addOption( location , "-l", "bruit de position", true );
     app.addOption( intensity , "-i", "bruit d'intensité", true );
     app.addOption( smooth , "-s", "lissage", true);
-    app.addOptionSeries(startPoints, "-F", "vertex index list",true);
-    app.addOptionSeries( intensities, "-I", "intensities", true);
+    app.addOptionSeries(startPoints, "-F", "vertex index list",false);
+    app.addOptionSeries( intensities, "-I", "intensities", false);
 
 //     AimsSurfaceTriangle *mesh;
 //     mesh = SurfaceGenerator::sphere(Point3df(0.0,0.0,0.0) , 70.0, 22000 );

@@ -11,6 +11,7 @@ SOURCES = iograph.cc \
           minimization.cc \
           icm.cc \
           anneal.cc \
+          old_anneal.cc \
           cluster.cc \
           main.cc
 
@@ -21,5 +22,6 @@ HEADERS = iograph.h \
           minimization.h \
           icm.h \
           anneal.h \
+          old_anneal.h \
           cluster.h
           

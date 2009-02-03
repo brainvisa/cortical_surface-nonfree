@@ -15,29 +15,29 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
   long double somme=0.0;
   int old;
   mod=0;
-
+  set<uint>::iterator it;
   for (uint i=0; i<random.size();i++){
     somme=0.0;
     
     old = sites[random[i]]->label;
     
     vector<int> zoneLab;
-    zoneLab.push_back(0);
+//     zoneLab.push_back(0);
     uint no_overlap=0;
 //     cin >> no_overlap ;
 //     cout << sites[random[i]]->boundingbox_min[0] << " " << sites[random[i]]->boundingbox_min[1] << " " << sites[random[i]]->boundingbox_max[0] << " " << sites[random[i]]->boundingbox_max[1] << " "  << endl;
 //     cout << sites[random[i]]->nodes_list.size() << endl;
-    for (int k=0;k<labelsZones.size();k++){
-//       cout << "miaou"<<k << endl;
-      Point3df bbmin1 = sites[random[i]]->boundingbox_min, bbmax1 = sites[random[i]]->boundingbox_max;
-      no_overlap=0;
-      double rec = getOverlap(bbmin1, bbmax1, Point3df(labelsZones[k].first[0],labelsZones[k].first[1],0.0), Point3df(labelsZones[k].second[0],labelsZones[k].second[1] ,0.0), &no_overlap);
-//       cout << "rec="<< rec << endl ;
-      if (no_overlap == 0){
-//         cout << k << endl;
-        zoneLab.push_back(k+1);
-      }
-    }
+//     for (int k=0;k<labelsZones.size();k++){
+//       Point3df bbmin1 = sites[random[i]]->boundingbox_min, bbmax1 = sites[random[i]]->boundingbox_max;
+//       no_overlap=0;
+//       double rec = getOverlap(bbmin1, bbmax1, Point3df(labelsZones[k].first[0],labelsZones[k].first[1],0.0), Point3df(labelsZones[k].second[0],labelsZones[k].second[1] ,0.0), &no_overlap);
+//       if (no_overlap == 0){
+//         zoneLab.push_back(k+1);
+//       }
+//     }
+    
+    for (it=listeZones[random[i]].begin();it!=listeZones[random[i]].end();it++)
+      zoneLab.push_back(*it);
     vector<long double> globalenergieslabels(zoneLab.size()), expenergies(zoneLab.size()),total(zoneLab.size());
 // cout << endl;
 //     cout << zoneLab.size() << endl;
@@ -192,7 +192,7 @@ void Anneal::Run(int verbose){
 //   test=0;
 
   while (nb_under_threshold<5 || mod!=0){
-//    while (temp>0.001){
+//    while (temp>200.0){
     if (mod!=0) nb_under_threshold=0;
     else nb_under_threshold++;
     cout << " T=" << temp << " it="<< ite++ << " " ;
