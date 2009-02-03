@@ -1896,6 +1896,9 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 			}
 		}
 		iter++;
+    Writer<TimeTexture<float> > wtemp("/home/olivier/source.tex");
+    wtemp.write(smooth);
+    cin >> iter;
 	}
 	while(max > criterium);
 	//while(iter<300000);
