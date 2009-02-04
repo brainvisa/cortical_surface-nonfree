@@ -11,7 +11,7 @@ FileType( 'Poles texture', 'Texture' )
 FileType( 'Left poles texture', 'Poles texture' )
 FileType( 'Right poles texture', 'Poles texture' )
 
-FileType( 'Constraints texture', 'Texture' )
+FileType( 'Constraints texture', 'Label Texture' )
 FileType( 'Latitude constraints texture', 'Constraints texture' )
 FileType( 'Left hemisphere latitude constraints texture', 'Latitude constraints texture' )
 FileType( 'Right hemisphere latitude constraints texture', 'Latitude constraints texture' )
@@ -33,13 +33,9 @@ FileType( 'Left hemisphere latitude texture', 'Latitude coordinate texture' )
 FileType( 'Right hemisphere longitude texture', 'Longitude coordinate texture' )
 FileType( 'Right hemisphere latitude texture', 'Latitude coordinate texture' )
 
-FileType( 'Hemisphere gyri parcellation texture', 'Texture' )
+FileType( 'Hemisphere gyri parcellation texture', 'Gyri White Texture' )
 FileType( 'Left hemisphere gyri parcellation texture', 'Hemisphere gyri parcellation texture' )
 FileType( 'Right hemisphere gyri parcellation texture', 'Hemisphere gyri parcellation texture' )
-
-FileType( 'Coordinate texture', 'Texture' )
-FileType( 'Latitude coordinate texture', 'Coordinate texture' )
-FileType( 'Longitude coordinate texture', 'Coordinate texture' )
 
 FileType( 'Coordinate grid', 'Mesh' )
 FileType( 'Left hemisphere coordinate grid', 'Coordinate grid')

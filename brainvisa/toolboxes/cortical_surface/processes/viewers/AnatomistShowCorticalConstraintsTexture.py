@@ -39,26 +39,22 @@ from brainvisa import anatomist
 def validation():
   anatomist.validation()
 
-name = 'Anatomist Show Gyri Texture'
+name = 'Anatomist Show Cortical Constraints Texture'
 roles = ('viewer',)
 userLevel = 0
 
 signature = Signature(
-    'gyri_texture', ReadDiskItem( 'Gyri White Texture', 'Texture' ),
-    'Triangulation', ReadDiskItem( 'Hemisphere White Mesh',shfjGlobals.aimsMeshFormats ),
+    'constaints_texture', ReadDiskItem( 'Constraints Texture', 'Texture' ),
+    'mesh', ReadDiskItem( 'Hemisphere White Mesh',shfjGlobals.aimsMeshFormats ),
 )
 
 def initialization( self ):
-  self.linkParameters('Triangulation','gyri_texture' )
+  self.linkParameters('mesh','constaints_texture' )
 
 def execution( self, context ):
-  if self.gyri_texture is not None \
-     and self.gyri_texture.type.isA( 'Label Texture' ):
-      intp = 'rgb'
-  else:
-      intp = None
+  intp = 'rgb'
   a=anatomist.Anatomist()
-  return a.viewTextureOnMesh( self.Triangulation,
-                                           self.gyri_texture, a.getPalette('Talairach'),
-                                           interpolation = intp )
+  return a.viewTextureOnMesh( self.mesh,
+                              self.constaints_texture, a.getPalette('Talairach'),
+                              interpolation = intp )
 
