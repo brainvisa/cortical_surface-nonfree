@@ -11,7 +11,7 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
 
   std::set<Vertex *>::iterator iv, jv;
   vector<float> bc1, bc2;
-  float tmin_1, tmax_1, trep, tvalue1,t1,x,y;
+  float tmin_1, tmax_1, trep, tvalue1,t1,t2,x,y;
   int index1,rank;
   string subject1, subject2;
   int newindex=0;
@@ -35,6 +35,7 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
     (*iv)->getProperty( "tmax", tmax_1);
     (*iv)->getProperty( "trep", trep);
     (*iv)->getProperty( "t", t1);
+    (*iv)->getProperty( "depth", t2);
     (*iv)->getProperty( "tValue", tvalue1);
     (*iv)->getProperty( "rank", rank);
     (*iv)->getProperty( "nodes_list", listepts);
@@ -69,6 +70,7 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
     
     
     s->t = t1; //value1;
+    s->t2 = t2;
     s->tValue = tvalue1;
     for (uint i=0;i<listepts.size();i++)
       s->nodes_list.insert(listepts[i]);

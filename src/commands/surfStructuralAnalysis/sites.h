@@ -15,6 +15,7 @@ class Site{
     int label;
     float tValue;
     float t;
+    float t2;
     float tmin;
     float tmax;
     float trep;

@@ -478,8 +478,8 @@ void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
 
 
 
-void SurfaceBased_StructuralAnalysis::setModelParameters(float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh){
-  Clique::setParameters(_ddweight, _intrapsweight, _simweight, _lsweight, _ddx2, _ddx1, _ddh);
+void SurfaceBased_StructuralAnalysis::setModelParameters(float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh, float _ddweight2, float _dd2x1, float _dd2x2){
+  Clique::setParameters(_ddweight, _intrapsweight, _simweight, _lsweight, _ddx2, _ddx1, _ddh, _ddweight2, _dd2x1, _dd2x2);
 }
 
 void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
