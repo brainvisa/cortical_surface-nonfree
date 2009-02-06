@@ -87,7 +87,17 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
     cp += 1;
   }
   fclose(f);
-//   cin >> dir;
+
+  for (uint i=0;i<sites.size();i++){
+    sites[i]->label = 1;
+  }
+
+  for (uint i=0;i<cliques.size();i++)
+    cliques[i].computeEnergy(false,nbsujets);
+
+
+  
+  cin >> dir;
 // ===  FIN HISTOGRAMME ==========================================
 
 

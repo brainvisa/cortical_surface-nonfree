@@ -49,12 +49,13 @@ signature = Signature(
     'subject', String(),
     'filterout', Float(),
     'intersectioncriterium', Integer(),
+    'textureAux', ReadDiskItem( 'Texture','Texture'),
     'latitude', ReadDiskItem( 'Latitude coordinate texture','Texture'),
     'longitude', ReadDiskItem('Longitude coordinate texture','Texture')
     )
 
 def initialization( self ):
-     self.setOptional('whiteAux','subject','filterout','intersectioncriterium','latitude','longitude')
+     self.setOptional('whiteAux','subject','filterout','intersectioncriterium','latitude','longitude','textureAux')
      self.linkParameters( 'primalsketch', 'texture' )
      self.linkParameters( 'white', 'texture' )
      self.linkParameters( 'whiteAux', 'white' )
@@ -94,6 +95,8 @@ def execution( self, context ):
 	     call_list += ['-L', self.longitude]
      if (self.intersectioncriterium is not ""):
 	     call_list += ['-iP', self.intersectioncriterium]
+     if (self.textureAux is not None):
+       call_list += ['-tX', self.textureAux.fullPath()]
 
      context.write('Starting primal sketch computation')
      apply( context.system, call_list )
