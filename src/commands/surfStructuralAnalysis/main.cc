@@ -69,7 +69,13 @@ int main(int argc, const char **argv){
     latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
     lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
     }
-    else ASSERT(false);
+    else
+    {
+      meshpath = atlaspath + *it + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/" + *it + "_Lwhite.mesh";
+      latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
+      lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
+    }
+//    else ASSERT(false);
     cout << "chargement" << endl;
     Reader<AimsSurfaceTriangle> rmesh(meshpath);
     Reader<TimeTexture<float> > rlat(latpath);
