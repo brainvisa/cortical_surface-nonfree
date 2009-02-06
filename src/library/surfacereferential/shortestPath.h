@@ -10,539 +10,180 @@
 #include <aims/distancemap/meshdistance.h>
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
+#include <limits>
+
+#include "cathier/aims_wrap.h"
+#include "cathier/triangle_mesh_geodesic_map.h"
+#include "cathier/math_functions.h"
 
 namespace aims
 {
 
-struct _noeud;
-struct _arc;
-struct _chemin;
-typedef _noeud NOEUD;
-typedef _arc ARC;
-typedef _chemin CHEMIN;
 
-struct _noeud
-{
-     int nom;
-     int marque;
-     ARC *arcs;                    /* liste d'arcs */
-     NOEUD *suivant;               /* dans le graphe */
-};
-
-struct _arc
-{
-     NOEUD *noeud;
-     int cout;
-     ARC *suivant;
-};
-
-struct GRAPHE
-{
-     NOEUD *noeuds;
-     int n_noeuds;
-};
-
-
-struct _chemin
-{
-     NOEUD *noeud;
-     int cout;
-     CHEMIN *suivant;
-};
-
-int isInVect(uint x, std::vector<uint> vect)
-{
-     int i, nv=vect.size();
-     for (i=0; i<nv; i++)
-     {
-          if (vect[i]==x)
-               return(i);
-     }
-     return(-1);
-}
+// cette classe calcule le plus court chemin entre deux points d'un maillage,
+// contraint à passer dans un ensemble de noeuds défini par une texture et une valeur
+// L'algo utilise une carte de distance par fast marching sur la surface et un backtracking tout con
+// a l'intérieur de l'ensemble de noeuds.
 
 template<typename Val> class GraphPath
 {
 
      public:
      
-     GraphPath() {plus_court=NULL; longueur =0;}
-
-     NOEUD * nouveau_noeud(const int nom);
-     NOEUD * insere_noeud(GRAPHE *graphe, NOEUD *noeud);
-     NOEUD * trouve_noeud(const GRAPHE *graphe, int nom);
-     NOEUD * ajoute_noeud(GRAPHE *graphe, const int nom);
-     void ajoute_arc(NOEUD *depart, const NOEUD *arrivee, const int cout);
-     GRAPHE * lecture_graphe(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value);
-     void copie_chemin(const CHEMIN *chemin);
-     void traite_chemin(const CHEMIN *chemin);
-     void tous_chemins(const GRAPHE *graphe, NOEUD *depart,const NOEUD *arrivee, CHEMIN *chemin, const int cout);
-     TimeTexture<Val> imprime_plus_court(int size, Val value);
-     TimeTexture<Val> process(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr);
+     GraphPath() {longueur =0;}
      float getLongueur(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr);
-     TimeTexture<Val> cleanPath(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh);
-     TimeTexture<Val> cleanPath2(TimeTexture<Val> & path, AimsSurfaceTriangle & initmesh, uint dep, uint arr, Val value);
-     void grow(uint i, TimeTexture<Val> & path, std::vector<std::set<uint> > neigh, std::vector<uint> & done, std::vector<double> & dist, std::vector<Point3df> vert);
+     TimeTexture<Val> process(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr);
+     
+     private:
 
-     
-     protected:
-     
-     CHEMIN *plus_court;
-     int longueur;
+     float longueur;
 };
 
-/* Fabrique un nouveau noeud */
-template<typename Val>
-  struct aims::_noeud * GraphPath<Val>::nouveau_noeud(const int nom)
-{
-     NOEUD *noeud= (NOEUD *) malloc(sizeof(NOEUD));
-     if (noeud != NULL)
-     {
-          noeud->nom= nom;
-          noeud->arcs= NULL;
-          noeud->suivant= NULL;
-          noeud->marque=0;
-     }
-
-     return noeud;
-}
-
-/* Insere un noeud dans la liste de noeuds du graphe */
-template<typename Val>
-  struct aims::_noeud * GraphPath<Val>::insere_noeud(GRAPHE *graphe, NOEUD *noeud)
-{
-     /* Insertion */
-     noeud->suivant= graphe->noeuds;
-     graphe->noeuds= noeud;
-     return noeud;
-}
-
-template<typename Val>
-  struct aims::_noeud * GraphPath<Val>::trouve_noeud(const GRAPHE *graphe, const int nom)
-{
-     NOEUD *noeud;
-
-     for (noeud= graphe->noeuds; noeud != NULL; noeud= noeud->suivant)
-          if (nom == noeud->nom)
-               break;
-
-     return noeud;
-}
-
-/* Cherche si un noeud d'apres son nom, en creee un nouveau s'il
-n'existe pas */
-template<typename Val>
-  struct aims::_noeud * GraphPath<Val>::ajoute_noeud(GRAPHE *graphe, const int nom)
-{
-     NOEUD *noeud= trouve_noeud(graphe, nom);
-
-     if (noeud == NULL)
-     {
-          noeud= nouveau_noeud(nom);
-          if (noeud != NULL)
-          {
-               graphe->n_noeuds++;
-               return insere_noeud(graphe, noeud);
-          }
-     }
-
-     return noeud;
-}
-
-template<typename Val>
-void GraphPath<Val>::ajoute_arc(NOEUD *depart, const NOEUD *arrivee, const int cout)
-{
-     ARC *arc= (ARC *) malloc(sizeof(ARC));
-     if (arc != NULL)
-     {
-          arc->noeud= (NOEUD *) arrivee;
-          arc->cout= cout;
-          /* Insertion de l'arc dans la liste des arcs */
-          arc->suivant= depart->arcs;
-          depart->arcs= arc;
-     }
-}
-
-template<typename Val>
-GRAPHE * GraphPath<Val>::lecture_graphe(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value)
-{
-     GRAPHE *graphe= (GRAPHE *) malloc(sizeof(GRAPHE));
-
-     std::vector<std::set<uint> > neigh;
-     std::set<uint>::const_iterator itneigh;
-     neigh = SurfaceManip::surfaceNeighbours( initmesh );
-     int numero_ligne =0;
-     //std::cout<<"YEAH1"<<std::endl;
-     if (graphe != NULL)
-     {
-          graphe->noeuds= NULL;
-          graphe->n_noeuds= 0;
-          for(unsigned i=0; i<tex[0].nItem(); i++)
-          {
-               itneigh=neigh[i].begin();
-               for(;itneigh!=neigh[i].end();++itneigh)
-               {
-                    if(tex[0].item(*itneigh)==value)
-                    {
-                         int nom1;
-                         int nom2;
-                         int cout_ch;
-                         nom1=i;
-                         nom2=(*itneigh);
-                         cout_ch=1;
-
-                         numero_ligne++;
-
-                         NOEUD *n1, *n2;
-                         int cout=0;
-
-                         n1= ajoute_noeud(graphe, nom1);
-                         n2= ajoute_noeud(graphe, nom2);
-                         ajoute_arc(n1, n2, cout);
-                    }
-               }
-          }
-     }
-     return graphe;
-}
-
-
-// GLOBAL VARIABLE (!!!!!!) WAS THERE
-
-template<typename Val>
-void GraphPath<Val>::copie_chemin(const CHEMIN *chemin)
-{
-     longueur= 0;
-     while (chemin)
-     {
-          /* Copie des etapes */
-          plus_court[longueur]= *chemin;
-          chemin= chemin->suivant;
-          longueur++;
-     }
-}
-
-template<typename Val>
-void GraphPath<Val>::traite_chemin(const CHEMIN *chemin)
-{
-     if (longueur == 0 || chemin->cout < plus_court->cout)
-          copie_chemin(chemin);
-}
-
-template<typename Val>
-void GraphPath<Val>::tous_chemins(const GRAPHE *graphe, NOEUD *depart,
-     const NOEUD *arrivee, CHEMIN *chemin, const int cout)
-{
-     CHEMIN etape;
-     etape.noeud= depart;
-     etape.suivant= chemin;
-     etape.cout= cout;
-
-     if (depart == arrivee)
-     {
-          traite_chemin(&etape);
-     }
-     else
-     {
-          ARC *arc;
-
-          depart->marque= 1;
-
-          for (arc= depart->arcs; arc != NULL; arc= arc->suivant)
-          {
-               if (arc->noeud->marque == 0)
-               {
-                    if (longueur == 0 || etape.cout < plus_court->cout)
-                         tous_chemins(graphe, arc->noeud, arrivee, &etape, cout + arc->cout);
-               }
-          }
-
-          depart->marque= 0;
-/*          std::cout << "+" << std::flush;*/
-     }
-}
-
-template<typename Val>
-TimeTexture<Val> GraphPath<Val>::imprime_plus_court(int size, Val value)
-{
-     int index;
-     //std::cout<<"ImprimePlusCourt et size="<<size<<std::endl;
-     TimeTexture<Val> result(1,size);
-     for(int i=0; i<size; i++)
-          result[0].item(i)=0;
-
-     //std::cout<<"ImprimePlusCourt 2 et longueur="<<longueur<<std::endl;
-     //std::cout<<plus_court[longueur-1].cout<<std::endl;
-
-     for (index= longueur - 1; index >= 0; index--)
-     {
-          //std::cout<<plus_court[index].noeud->nom<<std::endl;
-          //std::cout<<" - "<<plus_court[index].cout<<std::endl;
-
-          result[0].item( plus_court[index].noeud->nom )=value;
-     }
-     //std::cout<<"voil�"<<std::endl;
-     return result;
-}
+//------------------------------------------------------------------------------
+// calcul du plus court chemin
+//------------------------------------------------------------------------------
 
 template<typename Val>
 TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr)
 {
-     TimeTexture<Val> texDirty, texFinal;
-     GRAPHE *graphe= lecture_graphe(tex, initmesh, value);
-     NOEUD *depart, *arrivee;
-     plus_court= (CHEMIN *) calloc(graphe->n_noeuds, sizeof(CHEMIN));
-
-     longueur= 0;
-
-     // special case that generates a bug : the two points are neighbors
-
-     std::vector<std::set<uint> > neigh;
-     std::set<uint> depNeigh;
-     neigh = SurfaceManip::surfaceNeighbours( initmesh );
-     depNeigh=neigh[dep];
-     if (depNeigh.find(arr) != depNeigh.end())
-     {
-/*          std::cout << "\t\t\t Shortest::process -> neighbors !!!!" << std::endl;*/
-          uint ns=tex[0].nItem();
-          texFinal=TimeTexture<Val>(1, ns);
-          for (uint i=0; i<ns; i++)
-          {
-               if ((i==(uint)arr) || (i==(uint)dep))
-                    texFinal[0].item(i)=(Val) 1;
-               else
-                    texFinal[0].item(i)=(Val) 0;
-          }
-     }
-     else
-     {
-     depart= trouve_noeud(graphe, dep);
-     arrivee= trouve_noeud(graphe, arr);
-/*     std::cout << "\t\t\t Shortest::process -> Tous chemins" << std::endl;*/
-     tous_chemins(graphe, depart, arrivee, NULL, 0);
-    
-//      std::cout << "\t\t\t Shortest::process -> Imprime plus court" << std::endl;
-
-     texDirty=imprime_plus_court(tex[0].nItem(), value);
-
-//      std::cout << "\t\t\t Shortest::process -> Clean" << std::endl;
-
-     delete plus_court;
-     texFinal=cleanPath2(texDirty, initmesh, dep, arr, value);  // hack to solve a bug (Olivier)
-//      // Shortest path sometimes include triangles. I have not programmed this and I cannot
-//      // find the problem so I decided to work around it with a postprocessing of the texture
-//      // obviously this is a dirty hack;
-//
-
-/*     std::cout << "\t\t\t Shortest::process -> OK" << std::endl;*/
-     }
-
-     return texFinal;
-}
-
-template<typename Val> float GraphPath<Val>::getLongueur(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr)
-{
-     process(tex, initmesh, value, dep, arr);
-     return(longueur);
-}
 
 
-template<typename Val> TimeTexture<Val> GraphPath<Val>::cleanPath(TimeTexture<Val> & path, AimsSurfaceTriangle & initmesh)
-{
+     uint ns=initmesh.vertex().size();
 
-     uint i, j; 
-     uint ns=path[0].nItem();
-     TimeTexture<Val> newPath(1, ns);
-     std::vector<std::set<uint> > neigh;
-     std::set<uint> setPath;
-     std::set<uint> remove;
-     std::map<uint, int> nbIn;
-     neigh = SurfaceManip::surfaceNeighbours( initmesh );
-     std::set<uint> listN, listN2;
-     std::set<uint>::iterator itN, itN2; 
+
+     std::cerr << "Shortest Path In" << std::endl;
+
+     // ici on construit la carte de distance avec le fast marching à la cathier
+//      typedef std::vector<std::vector<std::size_t> > CNeighborhoods;
+//      til::Mesh_N meshCathier;
+//      til::Mesh1 mesh0;
+//      til::convert(mesh0, initmesh);
+//      meshCathier = addNeighborsToMesh(mesh0);
+// 
+//      shared_ptr<CNeighborhoods> pneighc = til::circular_neighborhoods(getVertices(meshCathier), getFaceIndices(meshCathier));
+
+// /*     til::Triangle_mesh_geodesic_map<til::Mesh_N::VertexCollection, CNeighborhoods, double> geomap(getVertices(meshCathier), *pneighc);*/
+//      til::Graph_distance_map<til::Mesh_N::VertexCollection, CNeighborhoods, double> geomap(getVertices(meshCathier), *pneighc);
+// 
+//      std::cerr << "Shortest Path In" << std::endl;
+// 
+//      std::vector<std::size_t> startPoints;
+//      std::vector<double> dist;
+//      startPoints.push_back(dep);
+//      dist.push_back(0.0);*/
+
+     // la boucle ci dessous intitialise la carte de distance à 0 pour le départ
+     // et l'infini pour les points hors de l'ensemble de recherche, pour avoir une distance
+     // limitée à cet ensemble.
      
-     
-//      std::cout << "DEBUG : Start cleaning" << std::endl;
-
-     for (i=0; i<ns; i++)
-          newPath[0].item(i)=path[0].item(i);
-          
-//      std::cout << "DEBUG : step1" << std::endl;
-
-     for (i=0; i<ns; i++)
-     {
-          if (path[0].item(i)!=0)
-          {
-               setPath.insert(i);
-               listN=neigh[i];
-               itN=listN.begin();
-               int countN=0;
-               for ( ; itN!=listN.end(); ++itN)
-               {
-                    if (path[0].item(*itN)!=0)
-                         countN++;
-               }
-               nbIn[i]=countN;
-          }
-     }
-     
-//      std::cout << "DEBUG : step2" << std::endl;
-
-     std::set<uint>::iterator setN=setPath.begin();
-     for ( ; setN!=setPath.end(); ++setN)
-     {
-          i=*setN;
-          if (nbIn[i]==3)
-          {
-               listN=neigh[i];
-               itN=listN.begin();
-               for ( ; itN!=listN.end(); ++itN)
-               {
-                    j=*itN;
-                    if ((nbIn.find(j)!=nbIn.end()) && (nbIn[j]==3))
-                    {
-                         listN2=neigh[j];
-                         itN2=listN2.begin();
-                         for ( ; itN2!=listN2.end(); ++itN2)
-                         {
-                              if ((nbIn.find(*itN2)!=nbIn.end()) && (nbIn[*itN2]==2) && (listN.find(*itN2)!=listN.end()))
-                                   remove.insert(*itN2);
-                         }
-                    }
-               }
-          }
-     }
-     
-//      std::cout << "DEBUG : step3" << std::endl;
-
-     std::set<uint>::iterator removeIt;
-     for (removeIt=remove.begin(); removeIt!=remove.end(); ++removeIt)
-     {
-          newPath[0].item(*removeIt)=(Val) 0;
-     }
-     
-//      std::cout << "DEBUG : writing cleaning results" << std::endl;
-//      Writer<TimeTexture<Val> >  tex1W( "/home/olivier/beforeClean.tex" );
-//      tex1W.write( path );
-//      Writer<TimeTexture<Val> >  tex2W( "/home/olivier/afterClean.tex" );
-//      tex2W.write( newPath );     
-     return newPath;
-}
-
-
-template<typename Val> TimeTexture<Val> GraphPath<Val>::cleanPath2(TimeTexture<Val> & path, AimsSurfaceTriangle & initmesh, uint dep, uint arr, Val value)
-{
-     uint ns=path[0].nItem();
-     std::vector<uint> done;
-     std::vector<double> dist;
-     TimeTexture<Val> newPath(1, ns);
-     std::vector<std::set<uint> > neigh = SurfaceManip::surfaceNeighbours( initmesh );
-     std::vector<Point3df> vert=initmesh.vertex();
-     uint i, j, k;
-     double dtemp, dmin;
-     
-/*     std::cerr << "DEBUG : CleanPath2 : IN" << std::endl;*/
-     i=dep;
-     done.push_back(i);
-/*     std::cerr << "\tAjoute "<< i << " avec distance O.O" << std::endl;*/
-     dist.push_back(0.0);
-          // propagation de la distance sur les chemins trouvés;
-          // evidemment ca ne vaut pas un fast marching et ne marchera que pour reparer les chemins
-          // contenant des triangles 
-/*     std::cerr << "DEBUG : starting grow" << std::endl;*/
-     grow(i, path, neigh, done, dist, vert);
-/*     std::cerr << "DEBUG : coming out of grow" << std::endl;*/
-     
-//      std::cerr << "Done.size() at the end :" << done.size() << std::endl;
-
-     // backtraking du chemin le plus court
-     std::map<uint, double> distances;
-     uint nd=(uint)done.size();
-/*     std::cerr << "DEBUG : nd=" << nd << std::endl;*/
-     for (k=0; k<nd; k++)
-     {
-          distances[done[k]]=dist[k];
-/*          std::cerr << done[k] << " -> "<< dist[k] << std::endl;;*/
-     }
-       
-/*     std::cerr << "DEBUG : Checking distance map" << std::endl;*/
-     std::map<uint, double>::iterator itD=distances.begin();
-//      for ( ; itD!=distances.end(); ++itD);
+//      for (uint l=0; l<ns; l++)
 //      {
-//           std::cerr << (*itD).first << " -> " << (*itD).second << std::endl;
+//           if (tex[0].item(l) != value)
+//           {
+//                startPoints.push_back(l);
+//                dist.push_back( std::numeric_limits<double>::infinity() );
+//           }
 //      }
+// 
+//      geomap.init(startPoints, dist);
+//      geomap.process();
+//      shared_ptr<til::sparse_vector<double> > sres = geomap.distanceMap(); 
+//      std::map<uint,float> res;
+//      til::sparse_vector<double>::const_iterator iRes2 = sres->begin();
+//      uint i=0;
+// 
+//      for (; iRes2 != sres->end();++iRes2,i++)
+//      {
+//           res[i] = (float) *iRes2;
+//      }
+
+
+     // ici on utilise finalement le bon vieil algo de distanceMap d'aimsalgo
+
      
-     for (i=0; i<ns; i++)
-          newPath[0].item(i)=Val(0);
-          
-     i=arr;
-     newPath[0].item(i)=value;
-//      std::cerr << "DEBUG : backtracking" << std::endl;
-//      std::cerr << "arr=" << arr << std::endl;
-//      std::cerr << "dep=" << dep << std::endl;
-     while (i!=dep)
+
+     TimeTexture<float> distanceMap;
+     Texture<short> initMap(ns);
+     for (uint l=0; l<ns; l++)
      {
-/*          std::cerr << "i=" << i << std::endl;*/
+          if (tex[0].item(l)==value)
+               initMap.item(l)=(short) 0; // domaine de calcul de la distance
+          else initMap.item(l)=(short) -1; // domaine interdit
+     }
+     initMap.item(dep)=(short) 100; // point de départ
+     
+     distanceMap[0]=meshdistance::MeshDistance( initmesh[0] , initMap , true);
+     std::map<uint,float> res;
+     uint i=0;
+     for (uint l=0; l<ns; l++)
+     {
+          res[l]=(float) distanceMap[0].item(l);
+     }
+
+
+     std::vector<std::set<uint> > neigh=SurfaceManip::surfaceNeighbours(initmesh);
+     TimeTexture<Val> result(1,ns);
+     i=arr;
+     uint j, inext, iprevious=i;
+     double distmin;
+     result[0].item(i)=(Val) value;
+     distmin=10000.0;
+     TimeTexture<Val> debugTex(tex);
+
+
+     // ici on fait le backtracking
+
+     do
+     {
           std::set<uint> vois=neigh[i];
           std::set<uint>::iterator itVois=vois.begin();
-          dmin=100000.0; k=10000;
-          for ( ; itVois!=vois.end(); ++itVois)
+          inext=i; // distmin=10000.0;
+          for (; itVois != vois.end(); ++itVois)
           {
-               j=*itVois;
-/*               std::cerr << "\tvois : " << j << std::endl;*/
-               std::map<uint, double>::iterator dd=distances.find(j);
-               if (dd != distances.end())
+               j=(*itVois);
+               if ((tex[0].item(j)==value) && (j != iprevious))
                {
-/*                    std::cerr << "\t\tFound" << std::endl;*/
-                    dtemp=(*dd).second;
-                    if (dtemp<dmin) {dmin=dtemp; k=j;}
-               }
-          }
-/*          std::cerr << "k=" << k << std::endl;*/
-          newPath[0].item(k)=value;
-          i=k;
-     }
-//      std::cerr << "DEBUG : backtracking finished" << std::endl;
-
-/*     std::cerr << "DEBUG : CleanPath2 : OUT" << std::endl;*/
-     return newPath;
-}
-
-template<typename Val> void GraphPath<Val>::grow(uint i, TimeTexture<Val> & path, std::vector<std::set<uint> > neigh, std::vector<uint> & done, std::vector<double> & dist, std::vector<Point3df> vert)
-{
-     std::set<uint> voisins=neigh[i];
-     std::set<uint>::iterator itVois=voisins.begin();
-     int ind;
-/*     std::cerr << "+ -> " << done.size() << std::endl;*/
-     for ( ; itVois!=voisins.end(); ++itVois)
-     {
-          uint j=*itVois;
-          if ((path[0].item(j)!=0) && (isInVect(j, done)<0)) //(done.find(j)==done.end()))
-          {
-               std::set<uint> newVois=neigh[j];
-               std::set<uint>::iterator itNewVois=newVois.begin();
-               double add, addMin=10000.0;
-               for (; itNewVois!= newVois.end(); ++itNewVois)
-               {
-                    uint k=*itNewVois;
-                    ind=isInVect(k, done);
-                    if ((path[0].item(k)!=0) && (ind>=0)) // (done.find(k)!=done.end()))
+                    if (res[j]<distmin)
                     {
-                         add=dnorm((vert[j]-vert[k])) + dist[ind];
-                         if (add<addMin) addMin=add;
+                         inext=j; distmin=res[j];
                     }
                }
-               done.push_back(j);
-/*               std::cerr << "\tAjoute "<< j << " avec distance " << addMin << std::endl;*/
-               dist.push_back(addMin);
-               grow(j, path, neigh, done, dist, vert);
-//                std::cerr << "- -> " << done.size() << std::endl;
-
           }
+          debugTex[0].item(inext)=value*2;
+          if (inext==i)
+          {
+               std::cerr << "ShortestPath->GraphPath<Val>::process : problem. There is no path between start and end included in the provided set" << std::endl;
+               Writer<TimeTexture<Val> > debugW("~/debugTex.tex");
+               debugTex[0].item(dep)=value*3;
+               debugTex[0].item(arr)=value*3;
+               debugW.write(debugTex);
+               exit(EXIT_FAILURE);
+               
+          }
+          longueur+=(initmesh.vertex()[i] - initmesh.vertex()[inext]).norm();
+          iprevious=i; i=inext;
+          result[0].item(i)=(Val) value;
      }
-     return;
+     while (i!=dep);
+     std::cerr << "Shortest Path Out" << std::endl;
+
+     return(result);
+     
+}
+
+//------------------------------------------------------------------------------
+// renvoie seulement la longueur du plus court chemin
+//------------------------------------------------------------------------------
+
+template<typename Val>
+float GraphPath<Val>::getLongueur(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr)
+{
+     process(tex, initmesh, value, dep, arr);
+     return longueur;
 }
 
 }
+
+
 
 #endif

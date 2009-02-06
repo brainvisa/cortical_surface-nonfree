@@ -1808,6 +1808,8 @@ TimeTexture<float> aims::originNeighbourgs(TimeTexture<float> originMeridian, in
 	sud_temp=sud;
 	
 	std::set<uint>::const_iterator itneigh;
+
+     std::cerr << "entering origin neighbours" << std::endl;
 	
 	for(int i=0; i<size; i++)
 	{
@@ -1892,8 +1894,16 @@ TimeTexture<float> aims::originNeighbourgs(TimeTexture<float> originMeridian, in
 // 	wsb.write(bothSides);
 	
 	GraphPath<float> gr;
+
+     // ATTENTION : CECI EST UNE CORRECTION DE BUG  (OLIVIER)
+     // LE PLUS COURT CHEMIN VIRE DES TRIANGLES QUI DEVRAIENT RESTER
+     // LES CONSEQUENCES SUR LES COORDONNEES SONT ENORMES
+     // SPARADRAP DE REPARATION : debug Sides et boucle en fin de fonction
+     TimeTexture<float> debugSides(bothSides);
 	
 	//repere le premier cote par un pcc
+     std::cerr << "\t origin neighbours : 1er graphe" << std::endl;
+
 	side1=gr.process(bothSides, mesh, 1, nord_temp, sud_temp);
 	/*
 	for(int i=0; i<size; i++)
@@ -1918,6 +1928,8 @@ TimeTexture<float> aims::originNeighbourgs(TimeTexture<float> originMeridian, in
 	
 // 	Writer<Texture1d> wsI("sideInter.tex");
 // 	wsI.write(bothSides);
+     std::cerr << "\t origin neighbours : 2eme graphe" << std::endl;
+
 	side2=gr.process(bothSides, mesh, 1, nord_temp, sud_temp);
 	
 // 	Writer<Texture1d> ws2("side2.tex");
@@ -1949,8 +1961,25 @@ TimeTexture<float> aims::originNeighbourgs(TimeTexture<float> originMeridian, in
 				bothSides[0].item(i)=ind;
 		}
 	}
+
+     // LA BOUCLE DE CORRECTION DE BUGS
+
+     for (int i=0; i<size; i++)
+     {
+          if ((debugSides[0].item(i) != 0) && (bothSides[0].item(i) == 0))
+          {
+               for (itneigh=neigh[i].begin(); itneigh!=neigh[i].end(); ++itneigh)
+               {
+                    if (bothSides[0].item(*itneigh) != 0)
+                    {
+                         bothSides[0].item(i) = bothSides[0].item(*itneigh);
+                    }
+               }
+          }
+     }
 	
-	
+     std::cerr << "\t origin neighbours : sortie" << std::endl;
+
 	return bothSides;
 	
 }

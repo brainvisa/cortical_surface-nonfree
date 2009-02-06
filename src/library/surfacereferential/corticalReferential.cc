@@ -431,11 +431,11 @@ void CorticalReferential::longitudePropagation()
 	
 	std::cout<<"Point insula="<<Save_Point_Insula<<std::endl;
 	
-	Writer<Texture1d> wT3c("/home/olivier/constraint_long_cleaned.tex");
-	wT3c.write(constraint_long_cleaned);
-	
-	Writer<Texture1d> wT3cs("/home/olivier/onstraint_long_side.tex");
-	wT3cs.write(constraint_long_side);
+// 	Writer<Texture1d> wT3c("/home/olivier/constraint_long_cleaned.tex");
+// 	wT3c.write(constraint_long_cleaned);
+// 	
+// 	Writer<Texture1d> wT3cs("/home/olivier/onstraint_long_side.tex");
+// 	wT3cs.write(constraint_long_side);
 	
 	//Diffusion de la longitude
 	std::cout<<"Diffusion....................";
@@ -1810,7 +1810,7 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 	float moy_previous=0;
 	std::cout << "Processing" << std::endl;
 
-    TimeTexture<float> tt;
+/*    TimeTexture<float> tt;*/
 	float max=10;
 	int iter=0;
 	int cpt_multi=0;
@@ -1896,14 +1896,14 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 				smooth.item(i) = s;
 			}
 		}
-    if( iter % 10 == 0 )
-    tt[iter/10] = smooth;
-    if( iter == 1000 )
-    {
-    Writer<TimeTexture<float> > wtemp("/home/olivier/source.tex");
-    wtemp.write(tt);
-    std::cin >> iter;
-    }
+//     if( iter % 10 == 0 )
+//     tt[iter/10] = smooth;
+//     if( iter == 1000 )
+//     {
+//     Writer<TimeTexture<float> > wtemp("/home/olivier/source.tex");
+//     wtemp.write(tt);
+//     std::cin >> iter;
+//     }
           iter++;
     }
 	while(max > criterium);
