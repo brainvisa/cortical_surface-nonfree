@@ -12,9 +12,9 @@
 #include <aims/io/writer.h>
 #include <limits>
 
-#include "cathier/aims_wrap.h"
-#include "cathier/triangle_mesh_geodesic_map.h"
-#include "cathier/math_functions.h"
+// #include "cathier/aims_wrap.h"
+// #include "cathier/triangle_mesh_geodesic_map.h"
+// #include "cathier/math_functions.h"
 
 namespace aims
 {
