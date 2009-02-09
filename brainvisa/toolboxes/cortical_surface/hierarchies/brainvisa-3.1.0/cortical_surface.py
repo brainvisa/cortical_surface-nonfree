@@ -55,25 +55,35 @@ insert( '{protocol}/{subject}',
 )
 
 # Add To white texture translation and Gyri Graph under sulci_recognition_session
-insert('{protocol}/{subject}/t1mri/{acquisition}/{analysis}/folds/{graph_version}/{sulci_recognition_session}_auto', 
-    "<subject>_left_sulci_to_texture_<sulci_recognition_session>_auto",SetType( 'Sulci To White Texture Translation' ),SetWeakAttr( 'side', 'left' ),
-    "<subject>_right_sulci_to_texture_<sulci_recognition_session>_auto",SetType( 'Sulci To White Texture Translation' ),SetWeakAttr( 'side', 'right' ),
-    # GYRI - graphs, to white texture translation
-    "<subject>_Rgyri_<sulci_recognition_session>_auto",SetType( 'Gyri Graph' ),SetWeakAttr( 'side', 'right' ),
-    "<subject>_Lgyri_<sulci_recognition_session>_auto",SetType( 'Gyri Graph' ),SetWeakAttr( 'side', 'left' ),
-    "<subject>_left_gyri_to_texture_<sulci_recognition_session>_auto",SetType( 'Gyri To White Texture Translation' ),SetWeakAttr( 'side', 'left' ),
-    "<subject>_right_gyri_to_texture_<sulci_recognition_session>_auto",SetType( 'Gyri To White Texture Translation' ),SetWeakAttr( 'side', 'right' )
-      )
-      
-# Add Sulci/Gyri White Texture and Volume in sulci_recognition_session/segmentation
-insert('{protocol}/{subject}/t1mri/{acquisition}/{analysis}/folds/{graph_version}/{sulci_recognition_session}_auto/segmentation', 
-    "<subject>_Lwhite_sulci_<sulci_recognition_session>_auto", SetType( 'Sulci White Texture' ), SetWeakAttr( 'side', 'left' ),
-    "<subject>_Rwhite_sulci_<sulci_recognition_session>_auto", SetType( 'Sulci White Texture' ), SetWeakAttr( 'side', 'right' ),
-    "<subject>_Lwhite_gyri_<sulci_recognition_session>_auto", SetType( 'Gyri White Texture' ), SetWeakAttr( 'side', 'left' ),
-    "<subject>_Rwhite_gyri_<sulci_recognition_session>_auto", SetType( 'Gyri White Texture' ), SetWeakAttr( 'side', 'right' ),
-    "<subject>_Lwhite_gyri_<sulci_recognition_session>_auto", SetType( 'Gyri White Volume' ), SetWeakAttr( 'side', 'left' ),
-    "<subject>_Rwhite_gyri_<sulci_recognition_session>_auto", SetType( 'Gyri White Volume' ), SetWeakAttr( 'side', 'right' )
+def _insertWhiteTextureGraph( recognition_type ):
+  return ('{protocol}/{subject}/t1mri/{acquisition}/{analysis}/folds/{graph_version}/{sulci_recognition_session}_' + recognition_type,
+      "<subject>_left_sulci_to_texture_<sulci_recognition_session>_" + recognition_type, SetType( 'Sulci To White Texture Translation' ),SetWeakAttr( 'side', 'left' ),
+      "<subject>_right_sulci_to_texture_<sulci_recognition_session>_" + recognition_type, SetType( 'Sulci To White Texture Translation' ),SetWeakAttr( 'side', 'right' ),
+      # GYRI - graphs, to white texture translation
+      "<subject>_Rgyri_<sulci_recognition_session>_" + recognition_type, SetType( 'Gyri Graph' ),SetWeakAttr( 'side', 'right' ),
+      "<subject>_Lgyri_<sulci_recognition_session>_" + recognition_type, SetType( 'Gyri Graph' ),SetWeakAttr( 'side', 'left' ),
+      "<subject>_left_gyri_to_texture_<sulci_recognition_session>_" + recognition_type, SetType( 'Gyri To White Texture Translation' ),SetWeakAttr( 'side', 'left' ),
+      "<subject>_right_gyri_to_texture_<sulci_recognition_session>_" + recognition_type, SetType( 'Gyri To White Texture Translation' ),SetWeakAttr( 'side', 'right' )
     )
+ 
+# Add Sulci/Gyri White Texture and Volume in sulci_recognition_session/segmentation
+def _insertWhiteTexture( recognition_type ):
+  return ('<protocol>/<subject>/t1mri/<acquisition>/<analysis>/folds/<graph_version>/<sulci_recognition_session>_' + recognition_type + '/segmentation',
+      "<subject>_Lwhite_sulci_<sulci_recognition_session>_" + recognition_type, SetType( 'Sulci White Texture' ), SetWeakAttr( 'side', 'left' ),
+      "<subject>_Rwhite_sulci_<sulci_recognition_session>_" + recognition_type, SetType( 'Sulci White Texture' ), SetWeakAttr( 'side', 'right' ),
+      "<subject>_Lwhite_gyri_<sulci_recognition_session>_" + recognition_type, SetType( 'Gyri White Texture' ), SetWeakAttr( 'side', 'left' ),
+      "<subject>_Rwhite_gyri_<sulci_recognition_session>_" + recognition_type, SetType( 'Gyri White Texture' ), SetWeakAttr( 'side', 'right' ),
+      "<subject>_Lwhite_gyri_<sulci_recognition_session>_" + recognition_type, SetType( 'Gyri White Volume' ), SetWeakAttr( 'side', 'left' ),
+      "<subject>_Rwhite_gyri_<sulci_recognition_session>_" + recognition_type, SetType( 'Gyri White Volume' ), SetWeakAttr( 'side', 'right' )
+      )
+
+insert( *_insertWhiteTextureGraph( 'auto' ) )
+insert( *_insertWhiteTexture( 'auto' ) )
+insert( *_insertWhiteTextureGraph( 'manual' ) )
+insert( *_insertWhiteTexture( 'manual' ) )
+insert( *_insertWhiteTextureGraph( 'best' ) )
+insert( *_insertWhiteTexture( 'best' ) )
+del _insertWhiteTexture, _insertWhiteTextureGraph
 
 insert( '{protocol}/{subject}',
   #'sulci', SetContent(

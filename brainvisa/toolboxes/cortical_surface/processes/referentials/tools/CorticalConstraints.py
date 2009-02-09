@@ -34,8 +34,8 @@ def initialization( self ):
     self.linkParameters( 'left_white_sulci_par', 'left_white_mesh' )
     self.linkParameters( 'right_white_sulci_mer', 'right_white_mesh' )
     self.linkParameters( 'right_white_sulci_par', 'right_white_mesh' )
-    self.linkParameters( 'left_sulci_label_to_sulci_name', 'left_white_mesh' )
-    self.linkParameters( 'right_sulci_label_to_sulci_name', 'left_white_mesh' )
+    self.linkParameters( 'left_sulci_label_to_sulci_name', 'Lgraph' )
+    self.linkParameters( 'right_sulci_label_to_sulci_name', 'Rgraph' )
     self.setOptional('Rgraph', 'Lgraph', 'left_white_mesh', 'right_white_mesh', 'left_white_sulci_mer','left_white_sulci_par', 'right_white_sulci_mer', 'right_white_sulci_par'  )
     self.sulcus_identification = 'label'
     self.translation = os.environ['SHFJ_SHARED_PATH'] + '/shfj-' + neuroConfig.shortVersion + '/nomenclature/translation/surfaceReferential.trl'

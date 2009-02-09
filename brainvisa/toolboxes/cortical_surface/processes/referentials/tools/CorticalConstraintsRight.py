@@ -27,7 +27,7 @@ def initialization( self ):
     self.linkParameters( 'mri_corrected', 'right_white_mesh' )
     self.linkParameters( 'right_white_sulci_mer', 'right_white_mesh' )
     self.linkParameters( 'right_white_sulci_par', 'right_white_mesh' )
-    self.linkParameters( 'right_sulci_label_to_sulci_name', 'right_white_mesh' )
+    self.linkParameters( 'right_sulci_label_to_sulci_name', 'Rgraph' )
     self.setOptional('Rgraph', 'right_white_mesh', 'right_white_sulci_mer', 'right_white_sulci_par'  )
     self.sulcus_identification = 'label'
     self.findValue( 'translation', {} )
