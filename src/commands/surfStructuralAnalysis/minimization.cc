@@ -67,7 +67,7 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
   
   
 // === HISTOGRAMME ==========================================
-  FILE * f;   f = fopen ("/home/grg/histo.txt","w"); 
+  FILE * f;   f = fopen ( "/tmp/histo.txt","w");
   
   vector<uint> histo,histo_t;
   for (uint i=0;i<1600;i++){

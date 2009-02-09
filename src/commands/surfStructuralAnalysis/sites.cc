@@ -87,20 +87,21 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
     histoblobs[i] = 0;
     histoblobs_tvalue[i] = 0;
   }
+  float scl = 40.;
   for (uint i=0;i<sites.size();i++){
-    if ((sites[i]->t*40+1.0) < 0) histoblobs[0]++;
-    else if ((sites[i]->t+5.0)/1.0 > 39) histoblobs[39]++;
+    int histobin = (int) rint(sites[i]->t*scl+5.0);
+    if (histobin < 0) histoblobs[0]++;
+    else if (histobin > 39) histoblobs[39]++;
     else{
-    uint idx = (uint)((sites[i]->t+5.0) / 1.0);
-    histoblobs[idx]++;
+    histoblobs[histobin]++;
     }
   } 
   for (uint i=0;i<sites.size();i++){
-    if ((sites[i]->tValue/1.0+5.0) < 0) histoblobs_tvalue[0]++;
-    else if ((sites[i]->tValue+5.0)/1.0 > 39) histoblobs_tvalue[39]++;
+    int histobin = (int) rint(sites[i]->tValue*scl+5.0);
+    if (histobin < 0) histoblobs_tvalue[0]++;
+    else if (histobin > 39) histoblobs_tvalue[39]++;
     else{
-      uint idx = (uint)((sites[i]->tValue+5.0) / 1.0);
-      histoblobs_tvalue[idx]++;
+      histoblobs_tvalue[histobin]++;
     }
   }
   cout << "Histogramme" << endl;
