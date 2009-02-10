@@ -799,7 +799,7 @@ while(!stop){
       sites[listeBlobs[j]]->t = -sites[listeBlobs[j]]->t;
 
 
-  Ttest = sqrt(listeBlobs.size()*(listeBlobs.size()-1))*compac/sqrt(sum);
+  Ttest = sqrt((float)(listeBlobs.size()*(listeBlobs.size()-1)))*compac/sqrt(sum);
 //   cout << compac << " " << Ttest << " " << energy <<  endl;
   samples.push_back(Ttest);
 
@@ -842,7 +842,7 @@ for (uint i=0;i<1000;i++){
     sites[listeBlobs[j]]->t = old_t[j];
 
 
-  Ttest = sqrt(listeBlobs.size()*(listeBlobs.size()-1))*compac/sqrt(sum);
+  Ttest = sqrt((float)(listeBlobs.size()*(listeBlobs.size()-1)))*compac/sqrt(sum);
 //   cout << compac << " " << Ttest << " " << energy <<  endl;
   samples.push_back(energy);
 
@@ -903,7 +903,7 @@ for (uint i=0;i<1000;i++){
   }
 
 
-  Ttest = sqrt(listeBlobs.size()*(listeBlobs.size()-1))*compac/sqrt(sum);
+  Ttest = sqrt((float)(listeBlobs.size()*(listeBlobs.size()-1)))*compac/sqrt(sum);
 //   cout << compac << " " << Ttest << " " << energy <<  endl;
   samples.push_back(energy);
 
@@ -939,7 +939,7 @@ void SurfaceBased_StructuralAnalysis::Validation(int type) {
     compac /= listeBlobs.size();
     for (uint j=0;j<listeBlobs.size();j++)
       sum += pow(sites[listeBlobs[j]]->t-compac,2);
-    Ttest = sqrt(listeBlobs.size()*(listeBlobs.size()-1))*compac/sqrt(sum);
+    Ttest = sqrt((float)(listeBlobs.size()*(listeBlobs.size()-1)))*compac/sqrt(sum);
     cout.precision(5);
     cout << compac << " T=" << Ttest << " E=" << getLabelEnergy(i) << endl;
     int histosize;
