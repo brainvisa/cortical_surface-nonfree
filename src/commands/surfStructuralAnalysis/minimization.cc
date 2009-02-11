@@ -21,7 +21,6 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
 //   map<float, vector<pair<float, uint> > > altmesh = getAlternateMesh(mesh, lat, lon);
 //   cout << " done " << endl;
   cout << "Construction du vecteur de sites ..." << flush;
-  string dir = "/home/grg/data/nmr_surface/";
 
 //   vector<vector<Clique> > allcliques;
 
@@ -88,16 +87,10 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
   }
   fclose(f);
 
-  for (uint i=0;i<sites.size();i++){
-    sites[i]->label = 1;
-  }
-
-  for (uint i=0;i<cliques.size();i++)
-    cliques[i].computeEnergy(false,nbsujets);
 
 
   
-  cin >> dir;
+//   cin >> dir;
 // ===  FIN HISTOGRAMME ==========================================
 
 
@@ -167,6 +160,7 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
 
 SurfaceBased_StructuralAnalysis::SurfaceBased_StructuralAnalysis(Graph &primal, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
   MinimizationSetup(primal,meshes,lats,lons);
+
 }
 
 
@@ -226,11 +220,16 @@ long double SurfaceBased_StructuralAnalysis::getLabelEnergy(int label, int type)
         nb += bysub[i]*bysub[j];
       }
     }
+    uint nb2=0;
+    for (i=0;i<nbsujets;i++)
+      if (bysub[i]>1) nb2 += bysub[i]-1;
+    
 //     cout << nclsim << "|"<< energydd << " " << energysim << "|";
     nbips += nb;
 // cout << Clique::intrapsweight*(nbips-nclsim) << " ";
     ASSERT(nbips>=nclsim || (cout << nbips << ">=" << nclsim << endl && false));
   energy += Clique::intrapsweight*(nbips-nclsim);
+  energy += Clique::intrapsweight*nb2;
   energy += energydd;
   energy += energysim;
 
@@ -247,7 +246,7 @@ long double SurfaceBased_StructuralAnalysis::getTypeEnergy(int type){ // RETOURN
 
 long double SurfaceBased_StructuralAnalysis::getTotalEnergy(){
   long double energy=0.0;
-  int nclsim=0,nbips=0;
+  int nclsim=0,nbips=0,nb2=0;
   vector<int> bysub(nbsujets);
 
   for (uint i=0;i<cliques.size();i++){
@@ -279,11 +278,16 @@ long double SurfaceBased_StructuralAnalysis::getTotalEnergy(){
     }
 //     cout << "nb"<< nb << " ";
     nbips += nb;
+    for (i=0;i<nbsujets;i++)
+      if (bysub[i]>1) nb2 += bysub[i]-1;
   }
+
+    
     
 //   Esimil = 4.0*(nbips-nclsim);
   ASSERT(nbips>=nclsim || (cout << nbips << ">=" << nclsim << endl && false));
   energy += Clique::intrapsweight*(nbips-nclsim);
+  energy += Clique::intrapsweight*nb2*nbsujets;
   
   return energy;
 }
@@ -320,7 +324,7 @@ long double SurfaceBased_StructuralAnalysis::getTotalEnergy(){
 
 
 void SurfaceBased_StructuralAnalysis::SummaryLabels(){
-  long double Edd,Esim,energy,Esub;
+  long double Edd,Esim,energy,Esub,Eintra;
   cout << labels[0] << ":";
   uint nblabel=0;
   for (uint il=0;il<cliques.size();il++){
@@ -335,7 +339,7 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
   fprintf(f, "== SUMMARYLABELS ==\n"); 
 
   for (uint lab=1;lab<labels.size();lab++){
-    Edd=0.0; Esim=0.0; Esub=0.0;
+    Edd=0.0; Esim=0.0; Esub=0.0; Eintra=0.0;
     
     energy=0.0;
     int nclsim=0,nbips=0;
@@ -369,13 +373,20 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
         }
       }
       nbips += nb;
+    
+    uint nb2=0.0;
+    for (uint i=0;i<nbsujets;i++)
+      if (bysub[i]>1) nb2 += bysub[i]-1;
+    
 
     ASSERT(nbips>=nclsim || (cout << nbips << ">=" << nclsim << endl && false));
     energy += Clique::intrapsweight*(nbips-nclsim);
     Esub += Clique::intrapsweight*(nbips-nclsim);
+    energy += Clique::intrapsweight*nb2*nbsujets;
+    Eintra += Clique::intrapsweight*nb2*nbsujets;
     Etotal +=energy;
 
-    ASSERT(pow(Edd+Esim+Esub-energy,2)<0.01);
+    ASSERT(pow(Edd+Esim+Esub+Eintra-energy,2)<0.01);
 //     cout << "L"<<labels[lab] << "(" << energy << "=" << Edd << "+" << Esim << "+" << Esub << "):" << flush;
     
   
@@ -386,10 +397,10 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
     for (uint il=0;il<cliques.size();il++){
       nblabel += cliques[il].labelscount[labels[lab]];
     }
-    if (nblabel != 0){cout << "label " << labels[lab] << " : " << " (" << Edd << ";" << Esim << ";" << Esub<<") " << energy << " " << flush;
+    if (nblabel != 0){cout << "label " << labels[lab] << " : " << " (" << Edd << ";" << Esim << ";" << Esub<<";" <<Eintra<<") " << energy << " " << flush;
 
     cout << nblabel << " - " << endl;
-fprintf(f,"label %d : (%3lf;%3lf) %i;\n", labels[lab],(double)Edd,(double)Esim,nblabel);
+// fprintf(f,"label %d : (%3lf;%3lf) %i;\n", labels[lab],(double)Edd,(double)Esim,nblabel);
     }
     nblab.push_back(nblabel);
     
@@ -413,7 +424,7 @@ fprintf(f,"label %d : (%3lf;%3lf) %i;\n", labels[lab],(double)Edd,(double)Esim,n
 }
 
 void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
-  long double Edd,Esim,energy,Esub;
+  long double Edd,Esim,energy,Esub,Eintra;
   cout << labels[0] << ":";
   uint nblabel=0;
   for (uint il=0;il<cliques.size();il++){
@@ -425,7 +436,7 @@ void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
   long double Etotal=0.0;
 
   for (uint lab=1;lab<labels.size();lab++){
-    Edd=0.0; Esim=0.0; Esub=0.0;
+    Edd=0.0; Esim=0.0; Esub=0.0; Eintra=0.0;
     
     energy=0.0;
     int nclsim=0,nbips=0;
@@ -448,24 +459,31 @@ void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
       
     
   
-      uint k,j;
-      for (uint n=0;n<ipscliques.size();n++){
-        bysub[n] = cliques[ipscliques[n]].labelscount[labels[lab]];
+    uint k,j;
+    for (uint n=0;n<ipscliques.size();n++){
+      bysub[n] = cliques[ipscliques[n]].labelscount[labels[lab]];
+    }
+    uint nb=0;
+    for (k=0;k<nbsujets-1;k++){
+      for (j=k+1;j<nbsujets;j++){
+        nb += bysub[k]*bysub[j];
       }
-      uint nb=0;
-      for (k=0;k<nbsujets-1;k++){
-        for (j=k+1;j<nbsujets;j++){
-          nb += bysub[k]*bysub[j];
-        }
-      }
-      nbips += nb;
+    }
+    nbips += nb;
+
+    uint nb2=0;
+    for (uint k=0;k<nbsujets;k++)
+      if (bysub[k]>1) nb2 +=bysub[k]-1;
+    
 
     ASSERT(nbips>=nclsim || (cout << nbips << ">=" << nclsim << endl && false));
     energy += Clique::intrapsweight*(nbips-nclsim);
     Esub += Clique::intrapsweight*(nbips-nclsim);
+    energy += Clique::intrapsweight*nb2*nbsujets;
+    Eintra += Clique::intrapsweight*nb2*nbsujets;
     Etotal +=energy;
 
-    ASSERT(pow(Edd+Esim+Esub-energy,2)<0.01);
+    ASSERT(pow(Edd+Esim+Esub+Eintra-energy,2)<0.01);
     
     
     nblabel=0;
@@ -759,6 +777,29 @@ long double SurfaceBased_StructuralAnalysis::getCompacite(set<uint> &comp, bool 
 
 }
 
+vector<long unsigned int> SurfaceBased_StructuralAnalysis::creerHisto(vector<double> &samples, uint histosize, float *mini, float *step){
+  vector<long unsigned int> histo(histosize);
+  for (uint j=0;j<histosize;j++)
+    histo[j]=0;
+  float maxi=-10000000.0; 
+  *step=0.0;
+  *mini=10000000.0;
+  for (uint j=0; j<samples.size();j++){
+    if (samples[j]>maxi) maxi = samples[j];
+    if (samples[j]<*mini) *mini = samples[j];
+  }
+  *step = (maxi-*mini)/(float)histosize;
+  cout << "mini:"<<*mini<< " maxi:" << maxi << " step:" << *step << " nombre d'échantillons:" << samples.size() << endl;
+  for (uint j=0;j<samples.size();j++){
+    if(samples[j]==maxi) histo[histosize-1]++;
+    else histo[(samples[j]-*mini)/(maxi-*mini)*histosize]++;
+  }
+  cout << endl;
+
+
+  return histo;
+}
+
 
 vector<float> SurfaceBased_StructuralAnalysis::getPseudoSamplesPermut(vector<uint> &listeBlobs) {
 vector<float> samples;
@@ -910,94 +951,138 @@ for (uint i=0;i<1000;i++){
   
   
 }
-
-
 return samples;
 
 }
 
+void SurfaceBased_StructuralAnalysis::getRandomLabelsEnergies(long double nb, FILE *f){
+  vector<uint> old;
+//   vector<double> samples(nb);
+  double sample;
+  
+  
+  
+  
+  for (uint i=0;i<sites.size();i++)
+    old.push_back(sites[i]->label);
+  for (uint i=0;i<nb;i++){
+    if (i%1000000==0) cout << i << "/" << nb << endl;
+    for (uint j=0;j<sites.size();j++){
+      sites[j]->label = labels[(float)UniformRandom() * labels.size()];
+    }
+    sample = getTotalEnergy();
+    fprintf(f, "%3lf\n", (float)sample); 
+  }
+  
+  for (uint i=0;i<sites.size();i++)
+    sites[i]->label=old[i];
 
+  
+}
 
 
 void SurfaceBased_StructuralAnalysis::Validation(int type) {
-  uint test=0,test1;
-  for (int i=1;i<labels.size();i++){
-    vector<uint> listeBlobs;
-    for (uint j=0;j<sites.size();j++){
-      if (sites[j]->label == i){
-        listeBlobs.push_back(j);
+  if (type==RANDOM){
+      FILE *f;
+      f= fopen("/home/grg/randomlabelsenergies.txt","w");
+      int test=0;
+      while(test == 0){
+        getRandomLabelsEnergies(10000000, f);
+        cout << endl << "continue ? 1 si non" << endl;
+        cin >> test;
       }
-    }
-//     cout << "label "<< i << " : " << getCompacite(listeBlobs,true) << endl;
-    if  (listeBlobs.size()==0) continue;
-    
-    cout << "Label " << i << ":" ;
-    cout << listeBlobs.size() << " ";
-    float compac=0.0, Ttest=0.0, sum=0.0, energy=0.0;
-    for (uint j=0;j<listeBlobs.size();j++)
-      compac += sites[listeBlobs[j]]->t;
-    compac /= listeBlobs.size();
-    for (uint j=0;j<listeBlobs.size();j++)
-      sum += pow(sites[listeBlobs[j]]->t-compac,2);
+//       float mini,step;
+//       uint histosize=40;
+//       vector<long unsigned int> histo(creerHisto(samples,histosize,&mini,&step));
+//       for (uint j=0;j<histosize;j++)
+//           cout << j*step+mini << " " << histo[j] << endl;;
+      fclose(f);
+      cout << endl;
+   }
+   else if (type==NEIGHBORHOOD){
+  
+   }
+   else {
+    uint test=0,test1;
+    for (uint i=1;i<labels.size();i++){
+      vector<uint> listeBlobs;
+      for (uint j=0;j<sites.size();j++){
+        if (sites[j]->label == i){
+          listeBlobs.push_back(j);
+        }
+      }
+  //     cout << "label "<< i << " : " << getCompacite(listeBlobs,true) << endl;
+      if  (listeBlobs.size()==0) continue;
+      
+      cout << "Label " << i << ":" ;
+      cout << listeBlobs.size() << " ";
+      float compac=0.0, Ttest=0.0, sum=0.0, energy=0.0;
+      for (uint j=0;j<listeBlobs.size();j++)
+        compac += sites[listeBlobs[j]]->t;
+      compac /= listeBlobs.size();
+      for (uint j=0;j<listeBlobs.size();j++)
+        sum += pow(sites[listeBlobs[j]]->t-compac,2);
     Ttest = sqrt((float)(listeBlobs.size()*(listeBlobs.size()-1)))*compac/sqrt(sum);
-    cout.precision(5);
-    cout << compac << " T=" << Ttest << " E=" << getLabelEnergy(i) << endl;
-    int histosize;
-    vector<float> samples;
-    if (type == PERMUT){
-      cout << "PERMUT" << endl;
-      samples=getPseudoSamplesPermut(listeBlobs);
-      histosize =10;
-    }
-    else if (type == BOOTSTRAP){
-      cout << "BOOTSTRAP" << endl;
-      samples=getPseudoSamplesFullBootstrap(listeBlobs);
-      histosize =100;
-    }
+      cout.precision(5);
+      cout << compac << " T=" << Ttest << " E=" << getLabelEnergy(i) << endl;
+      int histosize;
+      vector<float> samples;
+      if (type == PERMUT){
+        cout << "PERMUT" << endl;
+        samples=getPseudoSamplesPermut(listeBlobs);
+        histosize =10;
+      }
+      else if (type == BOOTSTRAP){
+        cout << "BOOTSTRAP" << endl;
+        samples=getPseudoSamplesFullBootstrap(listeBlobs);
+        histosize =100;
+      }
+  
+      while(histosize>9){
+        cin >> histosize;
+        vector<uint> histo(histosize);
+        vector<float> integ(histosize);
+        float mini=10000000.0, maxi=-10000000.0, step=0.0;
+        sum=0.0;
+        for (uint j=0; j<samples.size();j++){
+          if (samples[j]>maxi) maxi = samples[j];
+          if (samples[j]<mini) mini = samples[j];
+        }
+        step = (maxi-mini)/(float)histosize;
+        cout << "mini:"<<mini<< " maxi:" << maxi << " step:" << step << " nombre d'échantillons:" << samples.size() << endl;
+        for (uint j=0;j<samples.size();j++){
+          histo[(samples[j]-mini)/(maxi-mini)*(histosize-1)]++;
+        }
+          
+        for (uint j=0;j<histosize;j++){
+          integ[j]= (float)step * (float)histo[j] + (float)sum;
+          sum += histo[j];
+          cout << j*step+mini << " ";
+        }
+        cout << endl;
 
-    while(histosize>9){
-      cin >> histosize;
-      vector<uint> histo(histosize);
-      vector<float> integ(histosize);
-      float mini=10000000.0, maxi=-10000000.0, step=0.0;
-      sum=0.0;
-      for (uint j=0; j<samples.size();j++){
-        if (samples[j]>maxi) maxi = samples[j];
-        if (samples[j]<mini) mini = samples[j];
-      }
-      step = (maxi-mini)/(float)histosize;
-      cout << "mini:"<<mini<< " maxi:" << maxi << " step:" << step << " nombre d'échantillons:" << samples.size() << endl;
-      for (uint j=0;j<samples.size();j++){
-        histo[(samples[j]-mini)/(maxi-mini)*(histosize-1)]++;
-      }
-        
-      for (uint j=0;j<histosize;j++){
-        integ[j]= (float)step * (float)histo[j] + (float)sum;
-        sum += histo[j];
-        cout << j*step+mini << " ";
-      }
-      cout << endl;
-      for (uint j=0;j<histosize;j++)
-        cout << j*step+mini << " " << histo[j] << endl;;
-      cout << endl;
-  //     for (uint j=0;j<histosize;j++)
-  //       cout << integ[j] << " ";
-  //     cout << endl;
-      uint alpha = 0;
-      uint percent = 99;
-      for (uint j=0;integ[j]<percent*sum/100.0;j++) alpha=j;
-  
-      cout << "diff (=0):" << samples.size() - sum << " alpha("<<percent <<"%) : " << alpha*step+mini;
-  
-      cout << endl<<endl;
+        cout << endl;
+    //     for (uint j=0;j<histosize;j++)
+    //       cout << integ[j] << " ";
+    //     cout << endl;
+        uint alpha = 0;
+        uint percent = 99;
+        for (uint j=0;integ[j]<percent*sum/100.0;j++) alpha=j;
+    
+        cout << "diff (=0):" << samples.size() - sum << " alpha("<<percent <<"%) : " << alpha*step+mini;
+    
+        cout << endl<<endl;
+      
     
   
-
+      }
+   
     }
   }
- 
+
 
 }
+
 
 
    

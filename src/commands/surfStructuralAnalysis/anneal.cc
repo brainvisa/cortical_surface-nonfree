@@ -8,6 +8,7 @@ using namespace std;
 
 Anneal::Anneal(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
   MinimizationSetup(primal,meshes,lats,lons);
+
 }
 
 void Anneal::Step(vector<int> &random, long double temp, uint &mod){
@@ -22,25 +23,13 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
     old = sites[random[i]]->label;
     
     vector<int> zoneLab;
-//     zoneLab.push_back(0);
-    uint no_overlap=0;
-//     cin >> no_overlap ;
-//     cout << sites[random[i]]->boundingbox_min[0] << " " << sites[random[i]]->boundingbox_min[1] << " " << sites[random[i]]->boundingbox_max[0] << " " << sites[random[i]]->boundingbox_max[1] << " "  << endl;
-//     cout << sites[random[i]]->nodes_list.size() << endl;
-//     for (int k=0;k<labelsZones.size();k++){
-//       Point3df bbmin1 = sites[random[i]]->boundingbox_min, bbmax1 = sites[random[i]]->boundingbox_max;
-//       no_overlap=0;
-//       double rec = getOverlap(bbmin1, bbmax1, Point3df(labelsZones[k].first[0],labelsZones[k].first[1],0.0), Point3df(labelsZones[k].second[0],labelsZones[k].second[1] ,0.0), &no_overlap);
-//       if (no_overlap == 0){
-//         zoneLab.push_back(k+1);
-//       }
-//     }
     
+    uint no_overlap=0;
+
     for (it=listeZones[random[i]].begin();it!=listeZones[random[i]].end();it++)
       zoneLab.push_back(*it);
     vector<long double> globalenergieslabels(zoneLab.size()), expenergies(zoneLab.size()),total(zoneLab.size());
-// cout << endl;
-//     cout << zoneLab.size() << endl;
+
     for (uint k=0;k<zoneLab.size();k++){
       sites[random[i]]->label = zoneLab[k];
       globalenergieslabels[k]=energy;
@@ -49,7 +38,7 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
       
       for (uint n=0;n<cliquesDuSite[random[i]].size();n++){
         uint aux = cliquesDuSite[random[i]][n];
-        if (cliques[aux].type == DATADRIVEN){
+        if (cliques[aux].type == DATADRIVEN || cliques[aux].type == INTRAPRIMALSKETCH){
           globalenergieslabels[k]+=cliques[aux].updateEnergy(random[i],old,false,nbsujets);
         }
         else if (cliques[aux].type == SIMILARITY){
@@ -127,28 +116,41 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 }
 
 void Anneal::Run(int verbose){
-  //   Initialization();
-//   set<uint>::iterator it;
-//   map<uint,uint> values;
-//   //ATTENTION TOUT CE BORDEL CA VA POUR LES SIMULATIONS SEULEMENT
-//   values[10]=1;
-//   values[500]=2;
-//   values[1000]=3;
-//   values[2000]=4;
-//   values[3000]=5;
-//   for (uint i=0;i<sites.size();i++){
-//     int found=-1;
-//     sites[i]->label=0;
-//     set<uint> nl(sites[i]->nodes_list);
-//     for (it = nl.begin();it!=nl.end() && found == -1;it++){
-//       if (*it==10 || *it==500 || *it==1000 || *it==2000 || *it==3000)
-//         found = *it;
-//     }
-//     if (found != -1) 
-//       if (sites[i]->t>5.875) sites[i]->label = values[found];
-//   }
+  for (uint i=0;i<sites.size();i++){
+    sites[i]->label = 1;
+  }
+
+  
+    uint histosize=10;float sum;
+    vector<double> samplesDD, samplesSIM;
+
+    for (uint i=0;i<cliques.size();i++){
+      if (cliques[i].type==DATADRIVEN)
+        samplesDD.push_back(cliques[i].computeEnergy(true, nbsujets));
+      else if (cliques[i].type ==SIMILARITY)
+        samplesSIM.push_back(cliques[i].computeEnergy(true, nbsujets));
+    }
+    while(histosize>9){
+      cout << endl << Clique::ddweight << " " << Clique::simweight << endl;
+      cin >> histosize ;
+      if (histosize<=9) break;
+      vector<long unsigned int> histoDD(histosize), histoSIM(histosize);
+      float miniDD, stepDD, miniSIM, stepSIM;
+      histoDD=creerHisto(samplesDD, histosize, &miniDD,&stepDD);
+      histoSIM=creerHisto(samplesSIM, histosize, &miniSIM,&stepSIM);
+      cout << endl;
+      for (uint j=0;j<histosize;j++)
+        cout << j*stepDD+miniDD << " " << histoDD[j] << endl;
+      cout << endl;
+      for (uint j=0;j<histosize;j++)
+        cout << j*stepSIM+miniSIM << " " << histoSIM[j] << endl;
+
+      cout << endl;
+    }
+
+
   for (uint i=0;i<sites.size();i++)
-//     cout << sites[i]->rank << flush;
+  //     cout << sites[i]->rank << flush;
     sites[i]->label = 0; //(int)sites[i]->tValue;
 
   for (uint k=0;k<cliques.size();k++){
@@ -159,69 +161,67 @@ void Anneal::Run(int verbose){
   for (uint i=0;i<cliques.size();i++)
     if (cliques[i].type == INTRAPRIMALSKETCH)
       ipscliques.push_back(i);
-  
+
   cout << ipscliques.size() << " cliques intraps" << endl;
-  
+
   energy = getTotalEnergy();
 
   cout << "energie initiale : " << energy << endl;
   ShortSummaryLabels();
 
 
-  
-  
   vector<int> indices_start;
   for(uint i=0;i<sites.size();i++)
     indices_start.push_back(i);
-  
+
   long double temp=300.0;
 
   uint mod=1, ite=0, nb_under_threshold=0,test=1;
 
-  cout.precision(2);       
+  cout.precision(2);
 
-//   cout.setf(ios_base::fixed, ios_base::floatfield);
+  //   cout.setf(ios_base::fixed, ios_base::floatfield);
 
-//     blobsnodes[sites[i]->subject]
-  
-  FILE * f1;   f1 = fopen (recuitpath.data(),"w");      
-  FILE * f;   f = fopen (energypath.data(),"a"); 
-  fprintf(f, "== DEBUT NOUVEAU RECUIT ==\n"); 
-  
-//   cin >> test;
-//   test=0;
+  //     blobsnodes[sites[i]->subject]
+  FILE * f1;   f1 = fopen (recuitpath.data(),"w");
+  FILE * f;   f = fopen (energypath.data(),"a");
+  fprintf(f, "== DEBUT NOUVEAU RECUIT ==\n");
+
+  //   cin >> test;
+  //   test=0;
 
   while (nb_under_threshold<5 || mod!=0){
-//    while (temp>200.0){
-    if (mod!=0) nb_under_threshold=0;
-    else nb_under_threshold++;
-    cout << " T=" << temp << " it="<< ite++ << " " ;
- 
-    for (uint i0=0;i0<sites.size();i0++){
-      fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
-    }
-    fprintf(f, "%3lf\n", (float)energy); 
-    
-    fprintf(f1, "\n");
-    vector<int> indices(indices_start);
-    vector<int> random;
-    for (uint i=0;i<sites.size();i++){
-      int index = (int)(UniformRandom() * indices.size());
-      random.push_back(indices[index]);
-      indices.erase(indices.begin()+index);
-    }
-    ASSERT(random.size() == sites.size());
-    Step(random, temp, mod);
+  //    while (temp>200.0){
 
-    cout << " chg:" << mod << " " << flush;
+        if (mod!=0) nb_under_threshold=0;
+        else nb_under_threshold++;
+        cout << " T=" << temp << " it="<< ite++ << " " ;
+
+        for (uint i0=0;i0<sites.size();i0++){
+          fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
+        }
+        fprintf(f, "%3lf\n", (float)energy);
+
+        fprintf(f1, "\n");
+        vector<int> indices(indices_start);
+        vector<int> random;
+        for (uint i=0;i<sites.size();i++){
+          int index = (int)(UniformRandom() * indices.size());
+          random.push_back(indices[index]);
+          indices.erase(indices.begin()+index);
+        }
+        ASSERT(random.size() == sites.size());
+        Step(random, temp, mod);
+
+        cout << " chg:" << mod << " " << flush;
 
 
-   if (verbose == 1) ShortSummaryLabels();
-// double everif= getTotalEnergy();
-    cout << " E=" << energy << endl; //<< " Everif=" << everif << endl;
-// if (pow(everif-energy,2)<0.01) cout << "ok"<<endl; else printf("no %.3lf\n",(double)(everif-energy));
-    
-    temp = temp*0.99;
+        if (verbose == 1) ShortSummaryLabels();
+//         double everif= getTotalEnergy();
+        cout << " E=" << energy << endl; //" Everif=" << everif << endl;
+//         if (pow(everif-energy,2)<0.01) cout << "ok"<<endl; else printf("no %.3lf\n",(double)(everif-energy));
+
+        temp = temp*0.99;
 
   }
 
@@ -233,9 +233,9 @@ void Anneal::Run(int verbose){
 
   cout << "energie finale : " << energy << endl;
   ShortSummaryLabels();
-  fprintf(f, "%3lf\nFIN RECUIT\n", (float)energy); 
-  
+  fprintf(f, "%3lf\nFIN RECUIT\n", (float)energy);
+
   fclose(f1);fclose(f);
-//   for (uint i=0;i<sites.size();i++)
-//     sites[i]->label = (uint)sites[i]->t;
+  //   for (uint i=0;i<sites.size();i++)
+  //     sites[i]->label = (uint)sites[i]->t;
 }

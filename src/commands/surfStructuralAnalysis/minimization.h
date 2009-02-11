@@ -7,7 +7,7 @@ using namespace carto;
 using namespace std;
 
 enum typesValid{
-  PERMUT, BOOTSTRAP
+  PERMUT, BOOTSTRAP, RANDOM, NEIGHBORHOOD
 };
 
 enum typesMinim{
@@ -55,7 +55,8 @@ class SurfaceBased_StructuralAnalysis{
     vector<float> getPseudoSamplesBootstrap(vector<uint> &listeBlobs);
     vector<float> getPseudoSamplesFullBootstrap(vector<uint> &listeBlobs);
 
-
+    vector<long unsigned int> creerHisto(vector<double> &samples, uint histosize, float *mini, float *step);
+    void getRandomLabelsEnergies(long double nb, FILE *f);
     void Validation(int type=PERMUT);
 };
 

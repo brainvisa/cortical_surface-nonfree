@@ -30,12 +30,15 @@ class Clique{
       switch (type){
         case DATADRIVEN:
           ASSERT(blobs.size()==1);
+//           cout << "DD" << blobs[0]->label << " " ;
           if (blobs[0]->label != 0){
+//             cout << blobs[0]->label << " " << blobs[0]->t ;
 //            if (blobs[0]->t > ddx2) energy = ddh;
             if (blobs[0]->t < ddx1) energy = 1.0; 
             else { 
             energy =  pow(ddx2/2.0,2)/(pow(0.5*ddx2,2)+pow(blobs[0]->t-ddx1,2));
             }
+//             cout << " " << energy << " " << ddweight << " " << CLIQUESNBSUJETS << "/";
 
           }
           else {
@@ -62,11 +65,12 @@ class Clique{
               energy += intrapsweight * (labelscount[i]-1);
           }
           energy *= CLIQUESNBSUJETS;
-          energy = 0.0;
+//           energy = 0.0;
 //           ASSERT (energy*energy < 0.00001);
           break;
         case SIMILARITY:
           ASSERT(blobs.size()==2);
+//           cout << "SIM" << blobs[0]->label << " " << blobs[1]->label << " " << simweight << " ";
           if (blobs[0]->label == blobs[1]->label && blobs[0]->label != 0){
 //             sigma = 19.0/sqrt(2*log(10.0));          // paramètre de la gaussienne : le premier 10.0 c'est la distance-seuil à laquelle on veut un potentiel égal à 0.1
 //             energy = -simweight*exp(-pow(rec,2)/(2*pow(sigma,2)));
@@ -78,11 +82,13 @@ class Clique{
               energy = -rec;
 //             cout << "((" << rec << "=>" << energy << ")) " ;
             energy *= simweight;
+//             cout << energy << "/";
 //             energy = 0.0;
           }
           else {
             energy = 0.0;
           }
+          
           break;
         case DATADRIVEN2:
           ASSERT(blobs.size()==1);
@@ -151,10 +157,10 @@ class Clique{
             else if (labelscount[blobs[i]->label] > 0) energy += _intrapsweight;
           }
           energy *= CLIQUESNBSUJETS;
-          energy = 0.0;
+//           energy = 0.0;
           if (save){
             labelscount[blobs[i]->label]++;
-            labelscount[old]--;            
+            labelscount[old]--;
           }
           break;
       }

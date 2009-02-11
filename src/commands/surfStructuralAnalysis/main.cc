@@ -21,7 +21,7 @@ int main(int argc, const char **argv){
   Graph primal;
   float _ddweight=0.8, _intrapsweight = 4.0, _simweight=1.0, _lsweight=1.0, _ddx1 = 3.125, _ddx2 = 4.50, _ddh=0.0001;
   _ddx1 = 8.0;
-  _ddx2 = 3.0;
+  _ddx2 = 4.0;
 //   _ddx1 = 10.0;
 //   _ddx2 = 31.0;
 
@@ -108,8 +108,8 @@ int main(int argc, const char **argv){
  
   
   SauvegarderGraphes(primal, graphFile, output);
-  swc.Validation(PERMUT);
-  swc.Validation(BOOTSTRAP);
+//   swc.Validation(RANDOM);
+//   swc.Validation(BOOTSTRAP);
   return(0);
 
 }
