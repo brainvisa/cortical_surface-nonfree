@@ -51,7 +51,8 @@ signature = Signature(
     'coordinates_grid', WriteDiskItem( 'Sulcus coordinate grid mesh', 'MESH mesh'),
     'depth_profile', WriteDiskItem( 'Sulcus depth profile', 'Text file' ),
     'dilation', Float(),
-    'morpho_offset', Choice( '0.0', '0.5', '0.8', '1.0' )
+    'morpho_offset', Choice( '0.0', '0.5', '0.8', '1.0' ),
+    'meshDecimation', Boolean(),
 )
 
 def initialization( self ):
@@ -64,6 +65,7 @@ def initialization( self ):
      self.label_attributes = 'name'
      self.dilation = 1.0
      self.morpho_offset = '0.0'
+     self.meshDecimation=0
 
 
 def execution( self, context ):
@@ -74,6 +76,7 @@ def execution( self, context ):
      simplesurf=context.temporary( 'GIS image' )
      dilatedIm=context.temporary(  'GIS image' )
      isoL=context.temporary( 'MESH mesh')
+     meshNonDec=context.temporary( 'MESH mesh')
      transform=''
 
      if (self.orientation=='Top->Bottom'):
@@ -132,24 +135,27 @@ def execution( self, context ):
 
      context.write('Remeshing sulcus')
 
+
      meshing = [ 'AimsMesh',
                  '-i', closedIm.fullPath(),
                  '-o', self.sulcus_mesh.fullPath(),
                  '-l', '32767',
                  '--smooth',
                  '--smoothIt', '20' ]
-
      apply( context.system, meshing )
 
      test=self.sulcus_mesh.fullName()
      sulcusMname=test + '_32767_0.mesh'
-     #moving = [ 'mv', sulcusMname, self.sulcus_mesh.fullPath()]
-     #movingminf = [ 'mv', sulcusMname + '.minf', self.sulcus_mesh.fullPath() + '.minf']
-     #apply( context.system, moving )
-     #apply( context.system, movingminf )
 
-     shelltools.mv(sulcusMname, self.sulcus_mesh.fullPath())
-     shelltools.mv(sulcusMname + '.minf', self.sulcus_mesh.fullPath() + '.minf')
+     if (self.meshDecimation==0) :
+          shelltools.mv(sulcusMname, self.sulcus_mesh.fullPath())
+          shelltools.mv(sulcusMname + '.minf', self.sulcus_mesh.fullPath() + '.minf')
+     else :
+          decimating = ['AimsMeshDecimation',
+                    '-i', sulcusMname,
+                    '-o', self.sulcus_mesh.fullPath() ]
+          apply(context.system, decimating)
+
 
      context.write('Starting parameterisation')
 

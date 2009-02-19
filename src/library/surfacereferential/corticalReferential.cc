@@ -1188,8 +1188,8 @@ TimeTexture<float> CorticalReferential::diffusionLatitudeRelax( TimeTexture<floa
 	TimeTexture<float> betaInit(1,size);
 	TimeTexture<float> betaMap(1,size);
 	TimeTexture<float> cMap(1,size);
-	TimeTexture<float> pole1(1,size);
-	TimeTexture<float> pole2(1,size);
+	TimeTexture<short> pole1(1,size);
+	TimeTexture<short> pole2(1,size);
 	init_texture_single(lat_forbid);
 	init_texture_single(contraint);
 	init_texture_single(init1);
@@ -1199,61 +1199,79 @@ TimeTexture<float> CorticalReferential::diffusionLatitudeRelax( TimeTexture<floa
 	init_texture_single(betaInit);
 	init_texture_single(cMap);
 	init_texture_single(cInit);
-	init_texture_single(pole1);
-	init_texture_single(pole2);
+// 	init_texture_single(pole1);
+// 	init_texture_single(pole2);
 	
 	
 	//place la source dans une texture
-
-	pole1[0].item(nord)=1;
+     for(int i=0;i<size; i++)
+     {
+          pole1[0].item(i)=0;
+          pole2[0].item(i)=0;
+     }
+     
+	pole1[0].item(nord)=100;
 	pole2[0].item(nord)=-1;
 	
 	pole1[0].item(sud)=-1;
-	pole2[0].item(sud)=1;
+	pole2[0].item(sud)=100;
 	
 	/*A REMETTRE!!*/
 	std::cout<<"meshdistance1"<<std::endl;
-	init1[0]=meshdistance::MeshDistance( mesh[0], pole1[0], true );
-	init2[0]=meshdistance::MeshDistance( mesh[0], pole2[0], true );
+	init1[0]=meshdistance::MeshDistance( mesh[0], pole1[0], false );
+	init2[0]=meshdistance::MeshDistance( mesh[0], pole2[0], false );
 	std::cout<<"meshdistance1 OK"<<std::endl;
 	float max_init1=0;
 	float max_init2=0;
 	for(int i=0;i<size; i++)
 	{
-		if(init1[0].item(i)>max_init1)
-			max_init1=init1[0].item(i);
-		if(init2[0].item(i)>max_init2)
-			max_init2=init2[0].item(i);
+          if ((i!=nord) && (i!=sud))
+          {
+               if(init1[0].item(i)>max_init1)
+                    max_init1=init1[0].item(i);
+               if(init2[0].item(i)>max_init2)
+                    max_init2=init2[0].item(i);
+          }
 	}
  	
 	for(int i=0;i<size; i++)
 	{
-		init1[0].item(i) = (init1[0].item(i)*180)/max_init1  ;
-		init2[0].item(i) = (init2[0].item(i)*180)/max_init2  ;
-		init2[0].item(i) = sqrt( pow( (init2[0].item(i)-180), 2));
+          if ((i!=nord) && (i!=sud))
+          {
+               init1[0].item(i) = (init1[0].item(i)*180)/max_init1  ;
+               init2[0].item(i) = (init2[0].item(i)*180)/max_init2  ;
+               init2[0].item(i) = sqrt( pow( (init2[0].item(i)-180), 2));
 // 		init[0].item(i) = 0  ;
+          }
 	}
 
 	
 	for(int i=0;i<size; i++)
 	{
-		init[0].item(i)=(init1[0].item(i)+init2[0].item(i))/2;
+          if ((i!=nord) && (i!=sud))
+          {
+               init[0].item(i)=(init1[0].item(i)+init2[0].item(i))/2;
 		/*if(init1[0].item(i)>180)
 		init[0].item(i)=init2[0].item(i);*/
+          }
 	}
 	
 	float max_init=0;
 	float min_init=50;
 	for(int i=0;i<size; i++)
 	{
-		if(init[0].item(i)>max_init)
-			max_init=init[0].item(i);
-		if(init[0].item(i)<min_init)
-			min_init=init[0].item(i);
+          if ((i!=nord) && (i!=sud))
+          {
+               if(init[0].item(i)>max_init)
+                    max_init=init[0].item(i);
+               if(init[0].item(i)<min_init)
+                    min_init=init[0].item(i);
+          }
 	}
 	for(int i=0;i<size; i++)
 	{
-		init[0].item(i) =( ( (init[0].item(i)-min_init)/(max_init-min_init) ) * 180 ) +1 ;
+          if ((i!=nord) && (i!=sud))
+               init[0].item(i) =( ( (init[0].item(i)-min_init)/(max_init-min_init) ) * 180 ) +1 ;
 	}
 	
 	init[0].item(nord) = 1;
@@ -1592,6 +1610,7 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 	TimeTexture<float>  result(1,size);
 	Texture<float>     smooth(size), lapl;
 	float			s;
+     float epsi=0.0001;
 
 	//Remove weights from poles
 	unsigned  uneigh;
@@ -1607,8 +1626,8 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 	TimeTexture<float> init1(1,size);
 	TimeTexture<float> init2(1,size);
 	TimeTexture<float> init(1,size);
-	TimeTexture<float> pole1(1,size);
-	TimeTexture<float> pole2(1,size);
+	TimeTexture<short> pole1(1,size);
+	TimeTexture<short> pole2(1,size);
 	init_texture_single(contraint);
 	init_texture_single(long_forbid);
 	init_texture_single(long_forbid_comp);
@@ -1620,8 +1639,8 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 	init_texture_single(init1);
 	init_texture_single(init2);
 	init_texture_single(init);
-	init_texture_single(pole1);
-	init_texture_single(pole2);
+/*	init_texture_single(pole1);
+	init_texture_single(pole2);*/
 	
 	
 	//place la source dans une texture
@@ -1630,61 +1649,77 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 	{
 		if(tex[0].item(i) == 360)
 		{
-			pole1[0].item(i)=-1;
-			pole2[0].item(i)=-1;
+			pole1[0].item(i)=(short) -1;
+			pole2[0].item(i)=(short)-1;
 		}
 		else
 		{
-			if(side[0].item(i)==4)
-				pole1[0].item(i)=1;
+			if (side[0].item(i) == 4)
+				pole1[0].item(i)=(short) 100;
 			else
-				pole1[0].item(i)=0;
+				pole1[0].item(i)=(short) 0;
 			
-			if(side[0].item(i)==2)
-				pole2[0].item(i)=1;
+			if (side[0].item(i) == 2)
+				pole2[0].item(i)=(short) 100;
 			else
-				pole2[0].item(i)=0;
+				pole2[0].item(i)=(short) 0;
 		}
 	}
-	
-/*	Writer< Texture1d > wTiric1("initLong_source1.tex");
-	wTiric1.write(pole1);
-	Writer< Texture1d > wTiric2("initLong_source2.tex");
-	wTiric2.write(pole2);*/
+
+//      Writer< TimeTexture<float> > wT0("/home/olivier/t0_before.tex");
+//      wT0.write(tex);
+// 	Writer< TimeTexture<short> > wTp1("/home/olivier/pole1_lon.tex");
+// 	wTp1.write(pole1);
+// 	Writer< TimeTexture<short> > wTp2("/home/olivier/pole2_lon.tex");
+// 	wTp2.write(pole2);
 	
 	/*A REMETTRE!!*/
 	
-	init1[0]=meshdistance::MeshDistance( mesh[0], pole1[0], true );
-	init2[0]=meshdistance::MeshDistance( mesh[0], pole2[0], true );
+	init1[0]=meshdistance::MeshDistance( mesh[0], pole1[0], false );
+	init2[0]=meshdistance::MeshDistance( mesh[0], pole2[0], false );
+
+//      Writer< Texture1d > wTiric1("/home/olivier/init1_lon.tex");
+//      wTiric1.write(init1);
+//      Writer< Texture1d > wTiric2("/home/olivier/init2_lon.tex");
+//      wTiric2.write(init2);
+     
 	float max_init1=0;
 	float min_init1=360;
 	float max_init2=0;
 	float min_init2=360;
 	for(int i=0;i<size; i++)
 	{
-		if(init1[0].item(i)>max_init1)
-			max_init1=init1[0].item(i);
-		if(init1[0].item(i)<min_init1)
-			min_init1=init1[0].item(i);
+          if (pole1[0].item(i) > -1)
+          {
+               if(init1[0].item(i)>max_init1)
+                    max_init1=init1[0].item(i);
+               if(init1[0].item(i)<min_init1)
+                    min_init1=init1[0].item(i);
 		
-		if(init2[0].item(i)>max_init2)
-			max_init2=init2[0].item(i);
-		if(init2[0].item(i)<min_init2)
-			min_init2=init2[0].item(i);
+               if(init2[0].item(i)>max_init2)
+                    max_init2=init2[0].item(i);
+               if(init2[0].item(i)<min_init2)
+                    min_init2=init2[0].item(i);
+          }
 	}
- 	
+//      std::cerr << "distanceMap1 : min=" << min_init1 << ", max=" << max_init1 << std::endl;
+//      std::cerr << "distanceMap2 : min=" << min_init1 << ", max=" << max_init1 << std::endl;
+
 	
 	for(int i=0;i<size; i++)
 	{
-		init1[0].item(i) = (init1[0].item(i)*360)/max_init1  ;
-		init2[0].item(i) = (init2[0].item(i)*360)/max_init2  ;
-		init2[0].item(i) = sqrt( pow( (init2[0].item(i)-360), 2));
-	}
+          if (pole1[0].item(i) > -1)
+          {
+               init1[0].item(i) = (init1[0].item(i)*360)/max_init1  ;
+               init2[0].item(i) = (init2[0].item(i)*360)/max_init2  ;
+               init2[0].item(i) = (float) sqrt( pow( (init2[0].item(i)-360), 2));
+          }
+     }
 	
-/*	Writer< Texture1d > wTiricp1("initLong1.tex");
-	wTiricp1.write(init1);
-	Writer< Texture1d > wTiricp2("initLong2.tex");
-	wTiricp2.write(init2);*/
+//      Writer< Texture1d > wTiricp1("/home/olivier/init1.1_lon.tex");
+//      wTiricp1.write(init1);
+//      Writer< Texture1d > wTiricp2("/home/olivier/init2.1_lon.tex");
+//      wTiricp2.write(init2);
 	
 	for(int i=0;i<size; i++)
 	{
@@ -1692,7 +1727,10 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 		/*if(init1[0].item(i)>180)
 			init[0].item(i)=init2[0].item(i);*/
 	}
-	
+
+ /*    Writer< Texture1d > wTiricpp("/home/olivier/init1+2_lon.tex");
+     wTiricpp.write(init)*/;
+     
 	float max_init=0;
 	float min_init=50;
 	for(int i=0;i<size; i++)
@@ -1707,9 +1745,95 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 		//init[0].item(i) = (init[0].item(i)*360)/max_init  ;
 		init[0].item(i) = ( (init[0].item(i)-min_init)/(max_init-min_init) ) * 360  ;
 	}
-	
-/*	Writer< Texture1d > wTiricp("initLong.tex");
-	wTiricp.write(init);*/
+
+
+// EDIT Olivier : la texture init contient l'initialisation de la carte avant diffusion.
+// Elle est construite à partir de cartes de distances
+// Ici j'introduis une modif qui la rescale par morceau pour déjà correspondre le mieux
+// possible aux contraintes. Les contraintes, et leurs valeurs, sont dans tex[0]
+
+
+     Writer< Texture1d > wtex0("/home/olivier/init.tex");
+     wtex0.write(init);
+     std::cerr << "init written" << std::endl;
+
+     std::map<float, std::vector<float> > mapCon;
+     std::map<float, float> mapRescale;
+     for (int i=0; i<size; i++)
+     {
+          if ((tex[0].item(i) >0) && (poles[0].item(i) < epsi) && (tex[0].item(i) < 360)) // a bit tricky here because we are handling floats (why ?)
+          {
+               if (mapCon.find(tex[0].item(i)) == mapCon.end())
+               {
+                    mapCon[tex[0].item(i)]=std::vector<float>();
+                    mapCon[tex[0].item(i)].push_back(init[0].item(i));
+               }
+               else
+               {
+                    mapCon[tex[0].item(i)].push_back(init[0].item(i));
+               }
+          }
+     }
+
+
+     std::map<float, std::vector<float> >::iterator mapConIt;
+     std::vector<float> vecCon;
+     std::vector<float>::iterator vecConIt;
+     float con, mean;
+
+     for (mapConIt=mapCon.begin(); mapConIt!=mapCon.end(); ++mapConIt)
+     {
+          vecCon=(*mapConIt).second;
+          con=(*mapConIt).first;
+          mean=0;
+          int count=0;
+
+          for ( vecConIt=vecCon.begin(); vecConIt!=vecCon.end(); ++vecConIt)
+          {
+               mean += (*vecConIt);
+               count ++;
+          }
+          mapRescale[con]=(float) (mean/float(count));
+          std::cerr << "\t" << con << "->" << mapRescale[con] << std::endl;
+
+     }
+     mapRescale[360]=float(360);
+
+     float bound1, bound2, con1, con2;
+
+
+     for (int i=0; i<size; i++)
+     {
+          float val=init[0].item(i);
+          std::map<float, float>::iterator rescaleIt=mapRescale.begin();
+          bound1=0.0; con1=0.0;
+          if ((val!=0) && (val !=360))
+          {
+               for ( ; rescaleIt!=mapRescale.end(); ++rescaleIt)
+               {
+                    con2=(*rescaleIt).first; bound2=(*rescaleIt).second;
+                    if ((val>=bound1) && (val<=bound2))
+                    {
+                         init[0].item(i)=(((con2-con1)/float(bound2-bound1))*(val-bound1)) + con1;
+                         con1=con2; bound1=bound2;
+                    }
+                    else
+                    {
+                         con1=con2; bound1=bound2;
+                    }
+               }
+          }
+     }
+
+
+// EDIT Olivier : fin de la modification de l'initialisation
+
+
+//      Writer< Texture1d > wTiricp("/home/olivier/initFinal_lon.tex");
+//      wTiricp.write(init);
+
+
+
 	
 // 	TimeTexture<float> diff_multi(1000,size);
 	std::map<unsigned, std::set< std::pair<unsigned,float> > >  weightLapl1;
@@ -1783,6 +1907,11 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 		}
 	}
 
+     std::cerr << "DEBUG : Writing betaaaaaaa" << std::endl; 
+     Writer< Texture1d > wbetInit("/home/olivier/initBeta.tex");
+     wbetInit.write(betaInit);
+
+
 	if(typeBeta==0)
 	{
 		betaMap=dilate_texture(betaInit,0.5, neigh, mesh);
@@ -1799,10 +1928,18 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 		}
 	}
 
-/*	Writer<Texture1d> wbetainit("betaMap_lon.tex");
-	wbetainit.write(betaMap);
-	Writer<Texture1d> wcinit("cMap_lon.tex");
-	wcinit.write(cMap);*/
+// 	Writer<Texture1d> wbetainit("/home/olivier/betaMap_lon.tex");
+// 	wbetainit.write(betaMap);
+// 	Writer<Texture1d> wcinit("/home/olivier/cMap_lon.tex");
+// 	wcinit.write(cMap);
+//      Writer<Texture1d> wtex0("/home/olivier/texZero_lon.tex");
+//      wtex0.write(tex);
+
+     TimeTexture<float> t_smooth(1,size);
+     t_smooth[0]=smooth;
+//      Writer<TimeTexture<float> > wsmooth("/home/olivier/smooth_lon.tex");
+//      wsmooth.write(t_smooth);
+//      std::cerr << "Wrote debug textures..." << std::endl;
 	
 // 	TimeTexture<float> diff_temp(1,size);
 
@@ -1906,7 +2043,7 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 //     }
           iter++;
     }
-	while(max > criterium);
+     while(max > criterium);
 	//while(iter<300000);
 	
 	std::cout  << std::endl;
