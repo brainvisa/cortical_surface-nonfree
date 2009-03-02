@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <aims/io/writer.h>
 #include <aims/getopt/getopt2.h>
 #include <aims/mesh/texture.h>

@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <cortical_surface/surfacereferential/corticalReferential.h>
 
 #include <aims/mesh/curv.h>

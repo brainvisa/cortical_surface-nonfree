@@ -12,6 +12,7 @@
  *   France
  */
 
+#include <cstdlib>
 #include <aims/mesh/geometric.h>
 #include <aims/data/data_g.h>
 #include <aims/io/io_g.h>

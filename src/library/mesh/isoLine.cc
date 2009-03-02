@@ -1,4 +1,5 @@
 
+#include <cstdlib>
 #include <aims/mesh/texture.h>
 #include <aims/mesh/curv.h>
 #include <aims/mesh/surfaceOperation.h>

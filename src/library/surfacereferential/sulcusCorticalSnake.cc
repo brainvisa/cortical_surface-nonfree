@@ -1,4 +1,5 @@
 
+#include <cstdlib>
 #include <aims/mesh/geometric.h>
 #include <aims/mesh/texture.h>
 #include <aims/bucket/bucket.h>

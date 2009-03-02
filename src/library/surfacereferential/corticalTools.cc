@@ -9,6 +9,7 @@
  */
 
 
+#include <cstdlib>
 #include <cortical_surface/surfacereferential/corticalTools.h>
 #include <cortical_surface/surfacereferential/corticalConstraints.h>
 

@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <aims/distancemap/meshdistance_d.h>
 #include <aims/mesh/texture.h>
 #include <aims/io/io_g.h>

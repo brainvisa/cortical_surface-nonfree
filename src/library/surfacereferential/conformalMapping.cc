@@ -6,6 +6,7 @@
 
 
 
+#include <cstdlib>
 #include <aims/mesh/texture.h>
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>

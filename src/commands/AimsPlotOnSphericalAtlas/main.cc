@@ -10,6 +10,7 @@
  *  Just my own little binary for various purposes
  */
 
+#include <cstdlib>
 #include <aims/getopt/getopt.h>
 #include <aims/utility/utility_g.h>
 #include <aims/mesh/mesh_g.h>

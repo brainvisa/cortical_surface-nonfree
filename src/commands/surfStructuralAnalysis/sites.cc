@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <aims/getopt/getopt2.h>
 #include "sites.h"
 

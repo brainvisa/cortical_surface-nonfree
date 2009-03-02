@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <float.h>
 #include <aims/mesh/texture.h>
 #include <aims/mesh/surfaceOperation.h>
