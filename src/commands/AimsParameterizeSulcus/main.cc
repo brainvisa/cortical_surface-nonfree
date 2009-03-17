@@ -211,10 +211,15 @@ int main( int argc, const char** argv )
 
      cout << "Done... moving on to postprocessing of ridges" << endl;
      cout << "Done " << count << " texBot points" << endl;
-     cout << "writing texture texBot : " << flush;
-     Writer<TimeTexture<short> >  texBotW( "texBot.tex" );
-     texBotW.write( texBot );
-     cout << "done " << endl;
+//      cout << "writing texture texBot : " << flush;
+//      Writer<TimeTexture<short> >  texBotW( "texBot.tex" );
+//      texBotW.write( texBot );
+//      cout << "done " << endl;
+//      cout << "writing texture texHull : " << flush;
+//      Writer<TimeTexture<short> >  texHullW( "texHull.tex" );
+//      texHullW.write( texHull );
+//      cout << "done " << endl;
+
 
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // dilation of ridges
@@ -224,14 +229,14 @@ int main( int argc, const char** argv )
       topClosing[0]=MeshErosion<short>( surface[0], topDilation[0], short(0), -1, 6.0-offset, true);// was 6.0
       botClosing[0]=MeshErosion<short>( surface[0], botDilation[0], short(0), -1, 6.0-offset, true);
 
-     cout << "writing texture botClosing : " << flush;
-     Writer<TimeTexture<short> >  botClosingW( "botClosing.tex" );
-     botClosingW.write( botClosing );
-     cout << "done " << endl;
-     cout << "writing texture topClosing : " << flush;
-     Writer<TimeTexture<short> >  topClosingW( "topClosing.tex" );
-     topClosingW.write( topClosing );
-     cout << "done " << endl;
+//      cout << "writing texture botClosing : " << flush;
+//      Writer<TimeTexture<short> >  botClosingW( "botClosing.tex" );
+//      botClosingW.write( botClosing );
+//      cout << "done " << endl;
+//      cout << "writing texture topClosing : " << flush;
+//      Writer<TimeTexture<short> >  topClosingW( "topClosing.tex" );
+//      topClosingW.write( topClosing );
+//      cout << "done " << endl;
      
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // skeletization/thinnning of ridges
@@ -241,13 +246,13 @@ int main( int argc, const char** argv )
       topLine[0]=MeshSkeletization<short> ( surface[0], topClosing[0], short(RIDGE_TOP), short(0), neighbourso );
       botLine[0]=MeshSkeletization<short> ( surface[0], botClosing[0], short(RIDGE_BOT), short(0), neighbourso );
 
-     cout << "writing texture botLine : " << flush;
-     Writer<TimeTexture<short> >  botLineW( "botLine.tex" );
-     botLineW.write( botLine );
-     cout << "writing texture topLine : " << flush;
-     Writer<TimeTexture<short> >  topLineW( "topLine.tex" );
-     topLineW.write( topLine );
-     cout << "done " << endl;
+//      cout << "writing texture botLine : " << flush;
+//      Writer<TimeTexture<short> >  botLineW( "botLine.tex" );
+//      botLineW.write( botLine );
+//      cout << "writing texture topLine : " << flush;
+//      Writer<TimeTexture<short> >  topLineW( "topLine.tex" );
+//      topLineW.write( topLine );
+//      cout << "done " << endl;
 
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // removing branches and triangles from skeletons using a graph shortest path algorithm
@@ -327,6 +332,16 @@ int main( int argc, const char** argv )
                }
           }
      }
+
+     cout << "writing texture topRidge : " << flush;
+     Writer<TimeTexture<short> >  topRidgeW( "topRidge.tex" );
+     topRidgeW.write( topRidge );
+     cout << "done " << endl;
+     cout << "writing texture botRidge : " << flush;
+     Writer<TimeTexture<short> >  botRidgeW( "botRidge.tex" );
+     botRidgeW.write( botRidge );
+     cout << "done " << endl;
+
 
      cout << "\t OK, about to chose end points" << endl;
      // the choice of the start/end points is done amongst the candidates.
@@ -450,14 +465,14 @@ int main( int argc, const char** argv )
           botRidge[0].item(i)=val;
      }
      
-//      cout << "writing texture topRidge : " << flush;
-//      Writer<TimeTexture<short> >  topRidgeW( "topRidge.tex" );
-//      topRidgeW.write( topRidge );
-//      cout << "done " << endl;
-//      cout << "writing texture botRidge : " << flush;
-//      Writer<TimeTexture<short> >  botRidgeW( "botRidge.tex" );
-//      botRidgeW.write( botRidge );
-//      cout << "done " << endl;
+/*     cout << "writing texture topRidge : " << flush;
+     Writer<TimeTexture<short> >  topRidgeW( "topRidge.tex" );
+     topRidgeW.write( topRidge );
+     cout << "done " << endl;
+     cout << "writing texture botRidge : " << flush;
+     Writer<TimeTexture<short> >  botRidgeW( "botRidge.tex" );
+     botRidgeW.write( botRidge );
+     cout << "done " << endl;*/
      
 
 
