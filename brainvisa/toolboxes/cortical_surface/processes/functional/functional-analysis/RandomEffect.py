@@ -87,14 +87,18 @@ def execution( self, context ):
 
   #B, nVB, s2, dof = G.KF_fit(tab, reg, axis=1)
 
-  model = G.glm(tab, reg, axis=1)
-  model.fit(method='kalman.ar1') ## default is 'ols'
+  #model = G.glm(tab, reg, axis=1)
+
+  B, nVB, s2, a, dof = G.RKF_fit(tab, reg, axis=1)
+
+  #model.fit(method='kalman.ar1') ## default is 'ols'
   c = N.zeros(int(nb_cond+1))
   j=0
   c[j] = 1
-
-  tcon = model.contrast(c) ## recognizes a t contrast
-  t, p, z = tcon.test(zscore=True)
+#c = array([1,0])
+  cB, VcB, t = G.t_contrast(c, B, nVB, s2, axis=1)
+  #tcon = model.contrast(c) ## recognizes a t contrast
+  #t, p, z = tcon.test(zscore=True)
   writer = aims.Writer()
   textur = aims.TimeTexture_FLOAT()
   textur[0] = aims.Texture_FLOAT(int(t.size))

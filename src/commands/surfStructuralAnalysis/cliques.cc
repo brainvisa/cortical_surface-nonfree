@@ -608,8 +608,9 @@ vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cl
 
 double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bbmax2, uint *no_overlap){
 
-          float overlap_x,overlap_y,overlap_z,aux;
+          float overlap_x,overlap_y,aux;
           double rec=0.0;
+          
             if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) < 0.0001) {bbmax1[0] += 0.5; /*cout << "bbmax10+ ";*/}
             if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) < 0.0001) {bbmax1[1] += 0.5; /*cout << "bbmax11+ ";*/}
             if (sqrt(pow(bbmin2[0]-bbmax2[0],2)) < 0.0001) {bbmax2[0] += 0.5; /*cout << "bbmax20+ ";*/}
@@ -698,31 +699,41 @@ double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bb
           } 
           // prétraitements effectués on calcule le recouvrement
 //           if (*no_overlap==0) cout << "rec: " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+          float margin=2.0;
+          bbmin1[0]-=margin;
+          bbmin2[0]-=margin;
+          bbmin1[1]-=margin/2.0;
+          bbmin2[1]-=margin/2.0;
+          bbmax1[0]+=margin;
+          bbmax2[0]+=margin;
+          bbmax1[1]+=margin/2.0;
+          bbmax2[1]+=margin/2.0;
           *no_overlap=0;
           if (bbmin1[0]<=bbmin2[0])
             if (bbmax1[0]<bbmin2[0]) *no_overlap=1;
-          else overlap_x= (bbmax2[0] < bbmax1[0] ? bbmax2[0] : bbmax1[0]) - bbmin2[0] +1;
+          else overlap_x= (bbmax2[0] < bbmax1[0] ? bbmax2[0] : bbmax1[0]) - bbmin2[0] ;
           else
             if (bbmax2[0]<bbmin1[0]) *no_overlap=1;
-          else overlap_x= (bbmax1[0] < bbmax2[0] ? bbmax1[0] : bbmax2[0]) - bbmin1[0] +1;
+          else overlap_x= (bbmax1[0] < bbmax2[0] ? bbmax1[0] : bbmax2[0]) - bbmin1[0];
           if (*no_overlap==0)
           {
             if (bbmin1[1]<=bbmin2[1])
               if (bbmax1[1]<bbmin2[1]) *no_overlap=1;
-            else overlap_y= (bbmax2[1] < bbmax1[1] ? bbmax2[1] : bbmax1[1]) - bbmin2[1] +1;
+            else overlap_y= (bbmax2[1] < bbmax1[1] ? bbmax2[1] : bbmax1[1]) - bbmin2[1];
             else
               if (bbmax2[1]<bbmin1[1]) *no_overlap=1;
-            else overlap_y= (bbmax1[1] < bbmax2[1] ? bbmax1[1] : bbmax2[1]) - bbmin1[1] +1;
+            else overlap_y= (bbmax1[1] < bbmax2[1] ? bbmax1[1] : bbmax2[1]) - bbmin1[1];        
             if (*no_overlap==0)
             {
               rec=overlap_x*overlap_y;
-              double div=( ((bbmax1[0]-bbmin1[0])*(bbmax1[1]-bbmin1[1]) +1)
-                    + ((bbmax2[0]-bbmin2[0])*(bbmax2[1]-bbmin2[1]) +1) );
+              double div=( ((bbmax1[0]-bbmin1[0])*(bbmax1[1]-bbmin1[1]))
+                    + ((bbmax2[0]-bbmin2[0])*(bbmax2[1]-bbmin2[1])));
       
-//           if (*no_overlap==0 && rec > 0.1) {cout << "rec: " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl; cout << rec << " " << div << " " << 2*rec/div << endl;}
-
+//           if (*no_overlap==0 && rec > div/2.0) {cout << "rec: " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl; cout << rec << " " << div << " " << 2*rec/div << endl;}
+//               assert((rec > div/2.0) || !(cout << bbmax1[0] << " " << bbmax1[1] << " " << bbmax1[2] << " "
               rec=2 * rec / div;
-          //                 cout << rec << " " ;
+//                           cout << rec << " " ;
+//               assert(rec<1.0 || !(cout << "!" << rec << "!"<< flush));
 
             }
             
@@ -917,8 +928,10 @@ uint no_overlap=1;
 //           cout << simc.rec << endl ;
           cliquesDuSite[sites[i]->index].push_back(cliques.size());
           cliquesDuSite[sites[j]->index].push_back(cliques.size());
+
           simc.blobs.push_back(sites[i]);
           simc.blobs.push_back(sites[j]);
+
 //           cout << "(("<<simc.rec << " (lab:" << simc.blobs[0]->label << " t:"<< simc.blobs[0]->t << "(nod:" <<  simc.blobs[0]->node << " suj:"<<simc.blobs[0]->subject<<")" << "-lab:" << simc.blobs[1]->label << " t:"<< simc.blobs[1]->t << "(nod:" <<  simc.blobs[1]->node << " suj:"<<simc.blobs[1]->subject<<")" << ")=>" << simc.energie << ")) " << endl;
           cliques.push_back(simc);
   //           }
@@ -928,6 +941,12 @@ uint no_overlap=1;
   }
   cout << sitesaux.size() << " " << sitesindexes.size() << endl;
   cout << "TEMP :" << temp<< " " << temp2 << " " << temp3 << " " << temp4 << " "<<temp+temp4<< " ";
+    for (uint i=0;i<cliques.size();i++){
+      if (cliques[i].type == SIMILARITY){
+          assert(cliques[i].blobs[0]->index <sites.size());
+          assert(cliques[i].blobs[1]->index <sites.size());
+      }
+    } 
 
   return cliques;
 }

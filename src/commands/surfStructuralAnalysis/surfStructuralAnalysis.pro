@@ -9,6 +9,7 @@ SOURCES = iograph.cc \
           sites.cc \
           cliques.cc \
           minimization.cc \
+          validation.cc \
           icm.cc \
           anneal.cc \
           old_anneal.cc \
@@ -20,6 +21,7 @@ HEADERS = iograph.h \
           sites.h \
           cliques.h \
           minimization.h \
+          validation.h \
           icm.h \
           anneal.h \
           old_anneal.h \

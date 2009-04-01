@@ -6,16 +6,15 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-enum typesValid{
-  PERMUT, BOOTSTRAP, RANDOM, NEIGHBORHOOD
-};
 
 enum typesMinim{
   ICM, ANNEAL, CUSTOM
 };
 
+
+
 class SurfaceBased_StructuralAnalysis{
-  protected:
+  public:
     float Esimil;
     vector<uint> ipscliques;
     
@@ -31,9 +30,8 @@ class SurfaceBased_StructuralAnalysis{
 
     void ShortSummaryLabels();
 
-
-  public:
     string energypath, recuitpath;
+    uint run;
     void MinimizationSetup(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
     SurfaceBased_StructuralAnalysis(){}
     SurfaceBased_StructuralAnalysis(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
@@ -41,6 +39,7 @@ class SurfaceBased_StructuralAnalysis{
     
     void RunMinimization(int type);
     long double getLabelEnergy(int label, int type=UNKNOWN);
+    long double getClusterEnergy(vector<uint> &composante);
     long double getTypeEnergy(int type);
     long double getTotalEnergy();
 //     double getTotalEnergyLastChance(uint site, uint newlabel);
@@ -50,14 +49,6 @@ class SurfaceBased_StructuralAnalysis{
     void Initialization();
 
 
-    long double getCompacite(set<uint> &liste, bool verb);
-    vector<float> getPseudoSamplesPermut(vector<uint> &listeBlobs);
-    vector<float> getPseudoSamplesBootstrap(vector<uint> &listeBlobs);
-    vector<float> getPseudoSamplesFullBootstrap(vector<uint> &listeBlobs);
-
-    vector<long unsigned int> creerHisto(vector<double> &samples, uint histosize, float *mini, float *step);
-    void getRandomLabelsEnergies(long double nb, FILE *f);
-    void Validation(int type=PERMUT);
 };
 
 

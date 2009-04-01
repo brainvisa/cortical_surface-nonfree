@@ -8,6 +8,7 @@
 #include "old_anneal.h"
 #include "anneal.h"
 #include "cluster.h"
+#include "validation.h"
 
 #include <aims/math/random.h>
 
@@ -69,8 +70,8 @@ int main(int argc, const char **argv){
     latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
     lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
     }
-    else
-    {
+    else if (atlaspath.find("nmr_marseille")!=string::npos){
+    
       meshpath = atlaspath + *it + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/" + *it + "_Lwhite.mesh";
       latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
       lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
@@ -100,15 +101,18 @@ int main(int argc, const char **argv){
   
   cout << _ddweight << "-" << _intrapsweight << "-" << _simweight << "-" << _lsweight << "-" << _ddx2 << "-" << _ddx1 << "-" << _ddh << endl;
   swc.setModelParameters(_ddweight, _intrapsweight, _simweight, _lsweight, _ddx2, _ddx1, _ddh);
-   
+  swc.run = run;
+  swc.Initialization();
+  StructuralAnalysis_Validation valid(&swc);
+  valid.ValidAround();
   swc.Run(verbose);
   swc.SummaryLabels();
   swc.StoreToGraph(primal);
 
  
   
-  SauvegarderGraphes(primal, graphFile, output);
-//   swc.Validation(RANDOM);
+//   SauvegarderGraphes(primal, graphFile, output);
+//   swc.Validation(CLUSTERS);
 //   swc.Validation(BOOTSTRAP);
   return(0);
 

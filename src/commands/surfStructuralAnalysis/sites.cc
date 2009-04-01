@@ -98,6 +98,7 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
     }
   } 
   for (uint i=0;i<sites.size();i++){
+    assert(sites[i]->index < sites.size());
     int histobin = (int) rint(sites[i]->tValue*scl+5.0);
     if (histobin < 0) histoblobs_tvalue[0]++;
     else if (histobin > 39) histoblobs_tvalue[39]++;
@@ -105,13 +106,13 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
       histoblobs_tvalue[histobin]++;
     }
   }
-  cout << "Histogramme" << endl;
-  for (uint i=0;i<histoblobs.size();i++)
-    cout << histoblobs[i] << " " ;
-  cout << endl;
-  for (uint i=0;i<histoblobs_tvalue.size();i++)
-    cout << histoblobs_tvalue[i] << " " ;
-  cout << endl;
+//   cout << "Histogramme" << endl;
+//   for (uint i=0;i<histoblobs.size();i++)
+//     cout << histoblobs[i] << " " ;
+//   cout << endl;
+//   for (uint i=0;i<histoblobs_tvalue.size();i++)
+//     cout << histoblobs_tvalue[i] << " " ;
+//   cout << endl;
 
 
 

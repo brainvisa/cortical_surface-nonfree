@@ -24,7 +24,6 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
     
     vector<int> zoneLab;
     
-    uint no_overlap=0;
 
     for (it=listeZones[random[i]].begin();it!=listeZones[random[i]].end();it++)
       zoneLab.push_back(*it);
@@ -65,8 +64,8 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
           
       total[k] = (nbips1-nclsim1 - (nbips2-nclsim2));
 
-      
-      globalenergieslabels[k] += Clique::intrapsweight * total[k];
+
+//       globalenergieslabels[k] += Clique::intrapsweight * total[k];
       
       somme += exp(-globalenergieslabels[k]/temp);
       if (isnan(somme)) cout << "#####################################" << endl;
@@ -103,7 +102,7 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
       }
       
 
-      energy += Clique::intrapsweight*total[acc];
+//       energy += Clique::intrapsweight*total[acc];
       mod++;
     }
     else {
@@ -116,58 +115,23 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 }
 
 void Anneal::Run(int verbose){
-  for (uint i=0;i<sites.size();i++){
-    sites[i]->label = 1;
-  }
-
-  
-    uint histosize=10;float sum;
-    vector<double> samplesDD, samplesSIM;
-
-    for (uint i=0;i<cliques.size();i++){
-      if (cliques[i].type==DATADRIVEN)
-        samplesDD.push_back(cliques[i].computeEnergy(true, nbsujets));
-      else if (cliques[i].type ==SIMILARITY)
-        samplesSIM.push_back(cliques[i].computeEnergy(true, nbsujets));
-    }
-    while(histosize>9){
-      cout << endl << Clique::ddweight << " " << Clique::simweight << endl;
-      cin >> histosize ;
-      if (histosize<=9) break;
-      vector<long unsigned int> histoDD(histosize), histoSIM(histosize);
-      float miniDD, stepDD, miniSIM, stepSIM;
-      histoDD=creerHisto(samplesDD, histosize, &miniDD,&stepDD);
-      histoSIM=creerHisto(samplesSIM, histosize, &miniSIM,&stepSIM);
-      cout << endl;
-      for (uint j=0;j<histosize;j++)
-        cout << j*stepDD+miniDD << " " << histoDD[j] << endl;
-      cout << endl;
-      for (uint j=0;j<histosize;j++)
-        cout << j*stepSIM+miniSIM << " " << histoSIM[j] << endl;
-
-      cout << endl;
-    }
 
 
-  for (uint i=0;i<sites.size();i++)
-  //     cout << sites[i]->rank << flush;
-    sites[i]->label = 0; //(int)sites[i]->tValue;
-
-  for (uint k=0;k<cliques.size();k++){
-    cliques[k].updateLabelsCount();
-    cliques[k].computeEnergy(true,nbsujets);
-  }
-
-  for (uint i=0;i<cliques.size();i++)
-    if (cliques[i].type == INTRAPRIMALSKETCH)
-      ipscliques.push_back(i);
-
-  cout << ipscliques.size() << " cliques intraps" << endl;
-
-  energy = getTotalEnergy();
-
-  cout << "energie initiale : " << energy << endl;
-  ShortSummaryLabels();
+//   for (uint k=0;k<cliques.size();k++){
+//     cliques[k].updateLabelsCount();
+//     cliques[k].computeEnergy(true,nbsujets);
+//   }
+// 
+//   for (uint i=0;i<cliques.size();i++)
+//     if (cliques[i].type == INTRAPRIMALSKETCH)
+//       ipscliques.push_back(i);
+// 
+//   cout << ipscliques.size() << " cliques intraps" << endl;
+// 
+//   energy = getTotalEnergy();
+// 
+//   cout << "energie initiale : " << energy << endl;
+//   SummaryLabels();
 
 
   vector<int> indices_start;
@@ -190,8 +154,17 @@ void Anneal::Run(int verbose){
   //   cin >> test;
   //   test=0;
 
-  while (nb_under_threshold<5 || mod!=0){
-  //    while (temp>200.0){
+
+
+  for (uint k=0;k<cliques.size();k++){
+    cliques[k].updateLabelsCount();
+    cliques[k].computeEnergy(true,nbsujets);
+  }
+
+
+  if (run==1){
+      while (nb_under_threshold<5 || mod!=0){ 
+      //    while (temp>200.0){
 
         if (mod!=0) nb_under_threshold=0;
         else nb_under_threshold++;
@@ -223,6 +196,7 @@ void Anneal::Run(int verbose){
 
         temp = temp*0.99;
 
+    }
   }
 
   for (uint k=0;k<cliques.size();k++){
