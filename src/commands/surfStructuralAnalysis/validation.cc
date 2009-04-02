@@ -535,7 +535,7 @@ uint StructuralAnalysis_Validation::nbcombinaisons(set<uint> &graphe, uint card)
 double StructuralAnalysis_Validation::WalshTest(vector<double> &samplesdist, int r){
   
   std::sort(samplesdist.begin(), samplesdist.end());
-  double c =(double) ceil(sqrt(2*samplesdist.size())); uint k=r+c; double b2 = 1.0/0.05;
+  double c =(double) ceil(sqrt(2.F*samplesdist.size())); uint k=r+c; double b2 = 1.0/0.05;
   double a = (1.0 + sqrt(b2) * sqrt((c-b2)/(c-1)))/(c-b2-1.0);
 //   Point2df res(samplesdist[0]-(1+a)*samplesdist[1]+a*samplesdist[k-1],samplesdist[samplesdist.size()-1]-(1+a)*samplesdist[samplesdist.size()-2]+a*samplesdist[samplesdist.size()-k]);
 // Xr - (1+a)Xr+1 + aXk < 0
