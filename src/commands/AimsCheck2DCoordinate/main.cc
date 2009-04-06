@@ -18,6 +18,11 @@
 #include <aims/io/io_g.h>
 #include <aims/mesh/surfaceOperation.h>
 #include <aims/mesh/surfacegen.h>
+#include <aims/distancemap/meshdistance.h>
+#include <aims/distancemap/meshmorphomat.h>
+#include <aims/distancemap/meshmorphomat_d.h>
+#include <aims/connectivity/meshcc.h>
+#include <aims/connectivity/meshcc_d.h>
 
 using namespace aims;
 using namespace carto;
@@ -94,10 +99,10 @@ int main( int argc, const char** argv )
           n=n/n.norm();
           vp=vectProduct(gradLat, gradLon); 
           sign=vp.dot(n);
-          if (sign>0)
-               texOut[0].item(i)=1;
+          if (sign>=0)
+               texOut[0].item(i)=0;
           else if (sign<0)
-               texOut[0].item(i)=-1;
+               texOut[0].item(i)=1;
           else
                texOut[0].item(i)=0;
 /*          texOut[0].item(i)=sign;*/
@@ -108,25 +113,103 @@ int main( int argc, const char** argv )
      {
           set<uint> v=neigh[i];
           set<uint>::iterator vIt=v.begin();
-          uint j, count=0;          
-          for ( ; vIt!=v.end(); ++vIt)
+          uint j, count=0;
+          if (texOut[0].item(i) == 1)
           {
-               j=*vIt;
-               if (texOut[0].item(i) == texOut[0].item(j))
-                    count++;
-          }
-          if (count==0)
-          {
-               if (texOut[0].item(i) == 1)
-                    texOut[0].item(i) = -1;
-               else if (texOut[0].item(i) == -1)
-                    texOut[0].item(i) = 1;
+               for ( ; vIt!=v.end(); ++vIt)
+               {
+                    j=*vIt;
+                    if (texOut[0].item(i) == texOut[0].item(j))
+                         count++;
+               }
+               if (count<=1)
+               {
+                    texOut[0].item(i) = 0;
+               }
           }
      }
-     cout << "OK. Writing texture " << fileOut << endl;
-
-     Writer<TimeTexture<short> > texOutW( fileOut );
+     cout << "OK. Writing texture texOut.tex" << endl;
+     Writer<TimeTexture<short> > texOutW( "texOut.tex" );
      texOutW << texOut ;
+     
+     cout << "Closing result" << endl;
+
+     TimeTexture<short> dil, closed;
+     float sizeClosing=6.0;
+     
+     dil[0] = MeshDilation<short>( surface[0], texOut[0], short(0), -1 , sizeClosing, true);
+     cout << "OK. Writing texture dil.tex" << endl;
+     Writer<TimeTexture<short> > dilW( "dil.tex" );
+     dilW << dil ;
+     closed[0] = MeshErosion<short>( surface[0], dil[0], short(0), -1 , sizeClosing, true);
+     cout << "OK. Writing texture closed.tex" << endl;
+     Writer<TimeTexture<short> > closedW( "closed.tex" );
+     closedW << closed ;
+     
+     cout << "Extracting connected components" << endl;
+     
+     TimeTexture<short> compoOut;
+     compoOut[0] = AimsMeshLabelConnectedComponent<short>( surface[0], closed[0], 0, 0);
+
+     std::map<short, std::vector<uint> > compos;
+     short val;
+     for (i=0; i<nVert; i++)
+     {
+          val=compoOut[0].item(i);
+          if (val>0)
+          {
+               if (compos.find(val) == compos.end())
+               {
+                    compos[val]=std::vector<uint>();
+                    compos[val].push_back(i);
+               }
+               else
+               {
+                    compos[val].push_back(i);
+               }
+
+          }
+     }
+
+     cout << "Found " << compos.size() << " components";
+     cout << "Processing them" << endl;
+
+     TimeTexture<short> texResult(1,nVert);
+     for (i=0; i<nVert; i++) texResult[0].item(i)=0;
+     
+     uint j,k, l, sc;
+     float lat, lon, latMax, latMin, lonMax, lonMin;
+     for (i=1; i<=compos.size(); i++)
+     {
+          cout << "Composante " << i << endl;
+          lonMax=latMax=0.0; lonMin=latMin=360.0;
+          std::vector<uint> compo=compos[i];
+          sc=compo.size();
+          cout << "\t size " << sc << endl;
+          
+          for (j=0; j<sc; j++)
+          {
+               k=compo[j];
+               lat=texLat[0].item(k);
+               lon=texLon[0].item(k);
+               if (lat<latMin) latMin=lat;
+               if (lat>latMax) latMax=lat;
+               if (lon<lonMin) lonMin=lon;
+               if (lon>lonMax) lonMax=lon;
+          }
+          cout << "bounding box : (" << latMin << ", " << lonMin << ") - (" << latMax << ", " << lonMax << ")" << endl;
+          for (l=0; l<nVert; l++)
+          {
+               lat=texLat[0].item(l);
+               lon=texLon[0].item(l);
+               if ( (lat<=latMax) && (lat>=latMin) && (lon<=lonMax) && (lon>=lonMin))
+                    texResult[0].item(l)=i;
+          }
+     }
+
+     cout << "OK. Writing texture " << fileOut << endl;
+     Writer<TimeTexture<short> > compoOutW( fileOut );
+     compoOutW << texResult ;
      return EXIT_SUCCESS;
   }
   catch( user_interruption & )
