@@ -5,24 +5,23 @@ class CppComponent_cortical_surface( GenericMakerComponent ):
   _name = 'cortical_surface_cpp'
 
   def __init__( self, opts ):
-    options[ 'cortical_surface_cpp' ] = options[ 'cortical_surface' ]
-    GenericMakerComponent.__init__( self, options[ 'cortical_surface' ] )
-
+    options[ 'cortical_surface_cpp' ] = options[ 'cortical_surface-private' ]
+    GenericMakerComponent.__init__( self, options[ 'cortical_surface_cpp' ] )
 
   def dependencies( self ):
-    return [ 'aimsalgo' ]
+    return [ 'aimsalgo(aims)' ]
 
-  def name( self ):
-    return 'cortical_surface'
+  def sourceName( self ):
+    return 'cortical_surface-private'
 
   def _libraries( self ):
     return [ 'cortical_surface' ]
 
-  def makeDocumentation( self ):
-    print 'cortical_surface_cpp doc'
-    print self.doDoxygen()
-    GenericMakerComponent.makeDocumentation( self )
-    print 'cortical_surface_cpp doc done'
+  def shareDir( self ):
+    return os.path.join( 'share', 'cortical_surface-' + self.version() )
+
+  def docDir( self ):
+    return os.path.join( 'share', 'doc', 'cortical_surface-' + self.version() )
 
   def templateConfigurationFiles( self ):
     return [ os.path.join( self.sourceDir(), i ) for i in
@@ -39,8 +38,11 @@ class CppComponent_cortical_surface( GenericMakerComponent ):
 
 
 #-----------------------------------------------------------------------------
-class Component_cortical_surface( GenericMakerComponent ):
-  _name = 'cortical_surface'
+class Component_cortical_surface_private( GenericMakerComponent ):
+  _name = 'cortical_surface-private'
+
+  def __init__( self, options ):
+    GenericMakerComponent.__init__( self, options )
 
   def dependencies( self ):
     return [ CppComponent_cortical_surface ]
@@ -49,6 +51,11 @@ class Component_cortical_surface( GenericMakerComponent ):
   def templateConfigurationFiles( self ):
     []
 
+  def shareDir( self ):
+    return os.path.join( 'share', 'cortical_surface-' + self.version() )
+
+  def docDir( self ):
+    return os.path.join( 'share', 'doc', 'cortical_surface-' + self.version() )
 
   def configureCompilation( self ):
     pass

@@ -2,8 +2,10 @@ DEFINES = @defines@
 VERSION = @version@
 CONFIG  = thread
 
-INCLUDEPATH = @cortical_surface:includeBuild@
+INCLUDEPATH = @cortical_surface-private:includeBuild@
 
 BUILDMODEEXT    = @buildModeExtension@
 
 LIBS = @libDepsLine@
+
+INCBDIR = cortical_surface
