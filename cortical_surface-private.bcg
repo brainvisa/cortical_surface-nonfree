@@ -63,5 +63,5 @@ class Component_cortical_surface_private( GenericMakerComponent ):
   def build( self, instances ):
     pass
 
-  def makeDoxygenDocumentation( self ):
-    pass
+  def doDoxygen( self ):
+    return False
