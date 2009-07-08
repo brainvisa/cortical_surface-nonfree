@@ -2,6 +2,7 @@
 #define MESH2MESH_RESAMPLE_H
 
 
+#include <cstdlib>
 #include <aims/mesh/texture.h>
 #include <aims/mesh/surfaceOperation.h>
 #include <aims/mesh/surfacegen.h>

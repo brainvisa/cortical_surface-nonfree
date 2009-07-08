@@ -2,6 +2,7 @@
 #define AIMS_CONNECT_PATH_H
 
 
+#include <cstdlib>
 #include <aims/mesh/texture.h>
 #include <aims/mesh/surfaceOperation.h>
 #include <aims/mesh/surfacegen.h>

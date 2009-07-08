@@ -1,6 +1,7 @@
 #ifndef AIMS_SHORTESTPATH_H
 #define AIMS_SHORTESTPATH_H
 
+#include <cstdlib>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
