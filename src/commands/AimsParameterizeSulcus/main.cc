@@ -22,9 +22,9 @@
 #include <aims/mesh/surface.h>
 #include <aims/mesh/surfaceOperation.h>
 #include <aims/mesh/curv.h>
-#include <aims/distancemap/meshdistance_d.h>
-#include <aims/distancemap/meshmorphomat_d.h>
-#include <aims/connectivity/meshcc_d.h>
+#include <aims/distancemap/meshdistance.h>
+#include <aims/distancemap/meshmorphomat.h>
+#include <aims/connectivity/meshcc.h>
 #include <aims/morphology/morphology_g.h>
 #include <cortical_surface/surfacereferential/shortestPath.h>
 #include <cortical_surface/mesh/linkPath.h>
@@ -38,6 +38,7 @@
 using namespace aims;
 using namespace carto;
 using namespace std;
+using namespace aims::meshdistance;
 
 #define TOP2BOTTOM 0
 #define BACK2FRONT 1

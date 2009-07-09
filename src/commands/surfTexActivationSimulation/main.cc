@@ -46,7 +46,7 @@
 #include <aims/primalsketch/finiteElementSmoother_d.h>
 #include <aims/math/random.h>
 #include <math.h>
-#include <aims/distancemap/meshdistance_d.h>
+#include <aims/distancemap/meshvoronoi.h>
 
 
 

@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include <aims/distancemap/meshdistance_d.h>
+#include <aims/distancemap/meshdistance.h>
 #include <aims/mesh/texture.h>
 #include <aims/io/io_g.h>
 #include "vector_operations.h"

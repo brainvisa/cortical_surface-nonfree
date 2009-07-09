@@ -1,4 +1,3 @@
-#include <aims/distancemap/meshdistance_d.h>
 #include <aims/mesh/texture.h>
 #include "vector_operations.h"
 #include "vertices_operations.h"

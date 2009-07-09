@@ -9,9 +9,7 @@
 #include <stdlib.h>
 #include <aims/mesh/texture.h>
 #include <aims/mesh/curv.h>
-#include <aims/mesh/surfaceOperation_d.h>
-#include <aims/distancemap/meshdistance_d.h>
-#include <aims/distancemap/meshvoronoi_d.h>
+#include <aims/mesh/surfaceOperation.h>
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
 #include <aims/scalespace/meshDiffuse.h>

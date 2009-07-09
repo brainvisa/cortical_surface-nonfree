@@ -3,7 +3,7 @@
 #include <aims/io/writer.h>
 #include <aims/mesh/texture.h>
 #include <aims/mesh/surfaceOperation.h>
-#include <aims/distancemap/meshdistance_d.h>
+#include <aims/distancemap/meshdistance.h>
 
 using namespace aims;
 using namespace carto;

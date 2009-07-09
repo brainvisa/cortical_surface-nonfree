@@ -2,8 +2,8 @@
 #include <cstdlib>
 #include <cortical_surface/surfacereferential/corticalConstraints.h>
 #include <cortical_surface/surfacereferential/shortestPath.h>
-#include <aims/distancemap/meshdistance_d.h>
-#include <aims/distancemap/meshmorphomat_d.h>
+#include <aims/distancemap/meshdistance.h>
+#include <aims/distancemap/meshmorphomat.h>
 #include <cortical_surface/surfacereferential/sulcusCorticalSnake.h>
 
 /****************CONTRAINTS METHODS****************/

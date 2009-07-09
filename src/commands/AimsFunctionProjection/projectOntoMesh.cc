@@ -4,13 +4,11 @@
 #include <aims/getopt/getopt2.h>
 #include <aims/mesh/surfaceOperation.h>
 #include <aims/mesh/surfacegen.h>
-#include <aims/distancemap/meshdistance_d.h>
 #include <aims/distancemap/meshvoronoi.h>
 
 using namespace aims;
 using namespace carto;
 using namespace std;
-using namespace aims::meshdistance;
 
 
 vector<AimsData<float> > load_kernel(string path){

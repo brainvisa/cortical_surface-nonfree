@@ -2,6 +2,8 @@
 #ifndef AIMS_PARAMETERIZEGYRI_VERTICES_OPERATIONS_H
 #define AIMS_PARAMETERIZEGYRI_VERTICES_OPERATIONS_H
 
+#include <aims/mesh/surface.h>
+
 using namespace aims;
 using namespace std;
 

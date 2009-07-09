@@ -6,8 +6,10 @@
 #include <aims/distancemap/meshdistance.h>
 #include <aims/distancemap/meshvoronoi.h>
 #include <aims/scalespace/meshDiffuse.h>
-#include <aims/distancemap/meshdistance_d.h>
-#include <aims/distancemap/meshmorphomat_d.h>
+#include <aims/distancemap/meshdistance.h>
+#include <aims/distancemap/meshmorphomat.h>
+
+using namespace aims::meshdistance;
 
 
 namespace aims{
