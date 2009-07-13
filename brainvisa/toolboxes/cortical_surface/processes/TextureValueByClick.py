@@ -40,7 +40,7 @@ name = 'Texture Value By Click'
 userLevel = 2
 
 signature = Signature(
-  'mesh', ReadDiskItem( 'Mesh', 'MESH mesh' ),
+  'mesh', ReadDiskItem( 'Mesh', 'Aims mesh formats' ),
   'texture', ReadDiskItem('Texture', 'Texture'),
   'point', Point3D()
   )

@@ -9,14 +9,14 @@ userLevel = 2
 
 signature = Signature(
     'Side', Choice("Left"),
-    'mri_corrected', ReadDiskItem( 'T1 MRI Bias Corrected', 'GIS image' ),
+    'mri_corrected', ReadDiskItem( 'T1 MRI Bias Corrected', 'Aims readable volume formats' ),
     'transformation_input',ReadDiskItem( 'Transform Raw T1 MRI to Talairach-AC/PC-Anatomist',
     'Transformation matrix' ),
-    'left_pole_template',ReadDiskItem( 'Left Cingular Pole Template' , shfjGlobals.anatomistVolumeFormats),
+    'left_pole_template',ReadDiskItem( 'Left Cingular Pole Template' , 'Aims readable volume formats' ),
     'talairach_to_subject',WriteDiskItem( 'Talairach To Subject Transformation', 'Transformation matrix' ),
     'subject_to_template',WriteDiskItem( 'Subject To Template Transformation', 'Transformation matrix' ),
     'template_pole_transformation',ReadDiskItem( 'Template Pole To Talairach Tranformation', 'Transformation matrix' ),
-    'output_template', WriteDiskItem( 'Left Cingular Pole Template Subject' , 'GIS image'),
+    'output_template', WriteDiskItem( 'Left Cingular Pole Template Subject' , 'Aims writable volume formats' ),
 )
 
 def initialization( self ):

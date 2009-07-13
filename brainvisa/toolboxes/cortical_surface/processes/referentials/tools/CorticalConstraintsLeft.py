@@ -10,7 +10,7 @@ signature = Signature(
     'Side', Choice("Left"),
     'Lgraph', ReadDiskItem( 'Cortical folds graph', 'Graph',requiredAttributes={ 'side': 'left' } ),
     'sulcus_identification',Choice('name','label'),
-    'mri_corrected', ReadDiskItem( 'T1 MRI Bias Corrected', 'GIS image' ),
+    'mri_corrected', ReadDiskItem( 'T1 MRI Bias Corrected', 'Aims readable volume formats' ),
     'left_white_mesh',ReadDiskItem( 'Left Hemisphere White Mesh' , shfjGlobals.aimsMeshFormats),
     'left_white_sulci_mer',WriteDiskItem( 'Left hemisphere longitude constraints texture' ,'Texture',requiredAttributes={ 'side': 'left' } ),
     'left_white_sulci_par',WriteDiskItem( 'Left hemisphere latitude constraints texture' ,'Texture',requiredAttributes={ 'side': 'left' } ),

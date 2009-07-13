@@ -13,7 +13,7 @@ def validation():
 signature = Signature(
     'Side', Choice("Left"),
     'left_white_mesh',ReadDiskItem( 'Left Hemisphere White Mesh' , shfjGlobals.aimsMeshFormats),
-    'left_pole_template',ReadDiskItem( 'Left Cingular Pole Template Subject' , 'GIS image'),
+    'left_pole_template',ReadDiskItem( 'Left Cingular Pole Template Subject' , 'Aims readable volume formats' ),
     'left_pole',WriteDiskItem( 'Left hippocampus pole texture','Texture',requiredAttributes={ 'side': 'left' } )
 )
 

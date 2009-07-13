@@ -41,14 +41,14 @@ userLevel = 2
 
 signature = Signature(
     'graph', ReadDiskItem( 'Cortical folds graph', 'Graph' ),
-    'mri', ReadDiskItem( 'T1 MRI Bias Corrected', 'GIS image' ),
+    'mri', ReadDiskItem( 'T1 MRI Bias Corrected', 'Aims readable volume formats' ),
     'label_attributes', Choice( 'label', 'name' ),
     'label_values', String(),
     'orientation', Choice( 'Top->Bottom', 'Front->Back' ),
-    'sulcus_mesh', WriteDiskItem( 'Sulcus mesh', 'MESH mesh' ),
+    'sulcus_mesh', WriteDiskItem( 'Sulcus_mesh', 'Aims mesh formats' ),
     'texture_param1', WriteDiskItem( 'Sulcus x coordinate texture', 'Texture' ),
     'texture_param2', WriteDiskItem( 'Sulcus y coordinate texture', 'Texture' ),
-    'coordinates_grid', WriteDiskItem( 'Sulcus coordinate grid mesh', 'MESH mesh'),
+    'coordinates_grid', WriteDiskItem( 'Sulcus coordinate grid mesh', ''Aims mesh formats'),
     'depth_profile', WriteDiskItem( 'Sulcus depth profile', 'Text file' ),
     'dilation', Float(),
     'morpho_offset', Choice( '0.0', '0.5', '0.8', '1.0' ),
