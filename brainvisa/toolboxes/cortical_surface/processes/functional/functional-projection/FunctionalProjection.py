@@ -46,15 +46,15 @@ signature = Signature(
       'projection_texture', ListOf(WriteDiskItem( 'Functional texture', 'Texture'))
 )
 
-def volumemesh( values, process ):
-    result = None
-    if values.white_mesh is not None and values.functional_volumes is not None:
-      result = []
-      for functional in values.functional_volumes:
-         attributes = values.white_mesh.hierarchyAttributes()
-         attributes[ 'volume' ] = functional.name
-         result.append( process.signature[ 'projection_texture' ].contentType.findValue( attributes ) )
-    return result
+#def volumemesh( values, process ):
+    #result = None
+    #if values.white_mesh is not None and values.functional_volumes is not None:
+      #result = []
+      #for functional in values.functional_volumes:
+         #attributes = values.white_mesh.hierarchyAttributes()
+         #attributes[ 'volume' ] = functional.name
+         #result.append( process.signature[ 'projection_texture' ].contentType.findValue( attributes ) )
+    #return result
 
 
 def initialization( self ):
@@ -75,14 +75,14 @@ def execution( self, context ):
          i=i+1
          apply( context.system, projection)
       context.write('Adding mesh info in textures .minf files..')
-      for output in self.projection_texture:
-         reader = aims.Reader()
-         object = reader.read( str(output) )
-         print 'file:', object
-         h = object.header()
-         h['mesh']=str(self.white_mesh)
-         h['functional_volume']=str(self.functional_volumes[i])
-         writer = aims.Writer()
-         writer.write(object, str(output))
+      #for output in self.projection_texture:
+         #reader = aims.Reader()
+         #object = reader.read( str(output) )
+         #print 'file:', object
+         #h = object.header()
+         #h['mesh']=str(self.white_mesh)
+         #h['functional_volume']=str(self.functional_volumes[i])
+         #writer = aims.Writer()
+         #writer.write(object, str(output))
       context.write('Finished')
 

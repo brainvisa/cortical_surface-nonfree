@@ -210,7 +210,7 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<uint, float
     // bruit
   for (uint i=0;i<result.nItem();i++){
 //     random= fabs(GaussianRandom(0.0,1.0))*0.0; 
-    random =(float)GaussianRandom((float)backgroundnoise, (float)3.0);//s + ((float)UniformRandom() * 5.0 - 7.0) ;
+    random =(float)GaussianRandom((float)backgroundnoise, (float)0.05);//s + ((float)UniformRandom() * 5.0 - 7.0) ;
 
 //     cout << random << " ";
     result.item(i) = random;
@@ -220,8 +220,8 @@ Texture<float> createSynthData(AimsSurfaceTriangle mesh, vector<pair<uint, float
 //   lissage
   result=smoother->doSmoothing(result, ((int)((smooth)/0.05))*0.05);
 
-  for (uint i=0;i<result.nItem();i++)
-      result.item(i) += ((float)UniformRandom()*3.0 - 1.5);
+//   for (uint i=0;i<result.nItem();i++)
+//       result.item(i) += ((float)UniformRandom()*3.0 - 1.5);
 //   for (uint i=0;i<result.nItem();i++){
 //     random= ((float)UniformRandom() * backgroundnoise - backgroundnoise/2.0);//* 15.0 - 7.0) ;
 //     result.item(i) += random;

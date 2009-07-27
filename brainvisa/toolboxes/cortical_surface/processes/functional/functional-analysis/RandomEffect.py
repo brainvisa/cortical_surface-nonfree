@@ -83,14 +83,15 @@ def execution( self, context ):
   reg = reg.reshape(nb_sujets, 1)
    
   reg[:,0] = baseline
-  print reg[:,0]
+  #print reg[:,0]
 
   #B, nVB, s2, dof = G.KF_fit(tab, reg, axis=1)
 
   #model = G.glm(tab, reg, axis=1)
 
   B, nVB, s2, a, dof = G.RKF_fit(tab, reg, axis=1)
-
+  #print "dofDOOA"
+  context.write(dof)
   #model.fit(method='kalman.ar1') ## default is 'ols'
   c = N.zeros(int(nb_cond+1))
   j=0

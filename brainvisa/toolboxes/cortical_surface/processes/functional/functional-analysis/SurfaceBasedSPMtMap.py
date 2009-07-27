@@ -238,8 +238,10 @@ def execution( self, context ):
     #print 'reg' + str(i)
     #print reg[:,i]
   #B, nVB, s2, dof = G.KF_fit(tab, reg, axis=1)
-  model = G.glm(tab, reg, axis=1)
-  model.fit(method='kalman.ar1') ## default is 'ols'
+  #model = G.glm(tab, reg, axis=1)
+  B, nVB, s2, a, dof = G.RKF_fit(tab, reg, axis=1)
+
+  #model.fit(method='kalman.ar1') ## default is 'ols'
   #print model.beta[:,1].size
   #print model.beta[1].size
   c = N.zeros(int(nb_cond+1))
@@ -248,8 +250,11 @@ def execution( self, context ):
     c[j] = int(i)
     j=j+1
 
-  tcon = model.contrast(c) ## recognizes a t contrast
-  t, p, z = tcon.test(zscore=True)
+
+  cB, VcB, t = G.t_contrast(c, B, nVB, s2, axis=1)
+
+  #tcon = model.contrast(c) ## recognizes a t contrast
+  #t, p, z = tcon.test(zscore=True)
   #cB, VcB, t = G.t_contrast(c, B, nVB, s2, axis=1 )
   
   writer = aims.Writer()
@@ -260,13 +265,13 @@ def execution( self, context ):
      textur[0][i] = float(t[i])
   writer.write(textur, str(self.spmt_texture))
 
-  if self.beta is not '' :
-    betatex = aims.TimeTexture_FLOAT()
-    for i in range(0,model.beta[1].size):
-      betatex[i] = aims.Texture_FLOAT(int(model.beta[:,1].size))
-      for j in range(0, model.beta[:,1].size):
-        betatex[i][j] = float(model.beta[j][i])
-    writer2 = aims.Writer()
-    writer2.write(betatex, str(self.beta))
+  #if self.beta is not '' :
+    #betatex = aims.TimeTexture_FLOAT()
+    #for i in range(0,int(B.size)):
+      #betatex[i] = aims.Texture_FLOAT(int(B[:,1].size))
+      #for j in range(0, B[:,1].size):
+        #betatex[i][j] = float(B[j][i])
+    #writer2 = aims.Writer()
+    #writer2.write(betatex, str(self.beta))
   
     

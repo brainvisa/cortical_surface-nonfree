@@ -550,8 +550,8 @@ vector<double> StructuralAnalysis_Validation::getCaracSample(vector<uint> &compo
       
 
   for (uint k=0;k<composante.size();k++){
-    tmoy += ssb->sites[composante[k]]->t;
-    compac += ssb->sites[composante[k]]->tValue;
+    tmoy += ssb->sites[composante[k]]->tValue;
+    compac += ssb->sites[composante[k]]->t;
     compaccent += ssb->sites[composante[k]]->t2;
   }
   compac /= composante.size();

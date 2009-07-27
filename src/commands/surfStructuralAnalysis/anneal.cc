@@ -173,7 +173,10 @@ void Anneal::Run(int verbose){
         for (uint i0=0;i0<sites.size();i0++){
           fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
         }
-        fprintf(f, "%3lf\n", (float)energy);
+//         double sim0 = getTypeEnergy(SIMILARITY), intraps0=getTypeEnergy(INTRAPRIMALSKETCH), lower0=getTypeEnergy(BESTLOWERSCALE),dd0=getTypeEnergy(DATADRIVEN);
+        
+//         ASSERT(sim0+dd0+intraps0+lower0==energy);
+//         fprintf(f, "%3lf %3lf %3lf %3lf %3lf\n", (float)dd0, (float)sim0, (float) intraps0, (float) lower0, (float)energy);
 
         fprintf(f1, "\n");
         vector<int> indices(indices_start);

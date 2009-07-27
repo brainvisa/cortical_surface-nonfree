@@ -20,6 +20,7 @@ int main(int argc, const char **argv){
   string  graphFile, output, atlaspath, recuitpath = "/home/grg/recuit.txt", energypath = "/home/grg/energy.txt";
   int verbose=1;
   Graph primal;
+  uint save=1, val=1;
   float _ddweight=0.8, _intrapsweight = 4.0, _simweight=1.0, _lsweight=1.0, _ddx1 = 3.125, _ddx2 = 4.50, _ddh=0.0001;
   _ddx1 = 8.0;
   _ddx2 = 4.0;
@@ -34,6 +35,8 @@ int main(int argc, const char **argv){
   app.alias( "--output", "-o" );
   app.addOption( atlaspath, "-m" , "Chemin de base des données d'atlas");
   app.addOption(run,"--run","run","");
+  app.addOption(save,"--save","save",0);
+  app.addOption(val,"--valid","valid",0);
   app.addOption(verbose,"--verbose","verbose", 1.0);
   app.addOption(_ddweight, "--ddw", "ddweight", 1.0);
   app.addOption(_intrapsweight, "--ipsw", "intrapsweight",  1.0);
@@ -104,14 +107,14 @@ int main(int argc, const char **argv){
   swc.run = run;
   swc.Initialization();
   StructuralAnalysis_Validation valid(&swc);
-  valid.ValidAround();
+  if (val) valid.ValidAround();
   swc.Run(verbose);
   swc.SummaryLabels();
   swc.StoreToGraph(primal);
 
  
   
-//   SauvegarderGraphes(primal, graphFile, output);
+  if (save) SauvegarderGraphes(primal, graphFile, output);
 //   swc.Validation(CLUSTERS);
 //   swc.Validation(BOOTSTRAP);
   return(0);
