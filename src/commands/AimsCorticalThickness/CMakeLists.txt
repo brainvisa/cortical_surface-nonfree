@@ -1,2 +1,0 @@
-
-SHFJ_ADD_EXECUTABLE(AimsCorticalThickness main.cc cortical_surface)

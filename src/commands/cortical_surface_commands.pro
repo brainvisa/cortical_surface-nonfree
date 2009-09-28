@@ -8,7 +8,6 @@ PSUBDIRS += \
   AimsCorticalThickness \
   AimsFunctionProjection \
   AimsMeshMedianSurface \
-  AimsParameterizeGyri \
   AimsCoordinateGridMesh \
   AimsCoordinatesTextureToMesh \
   AimsCoordinatesToTexture \

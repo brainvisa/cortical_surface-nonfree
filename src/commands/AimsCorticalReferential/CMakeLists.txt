@@ -1,2 +1,0 @@
-
-SHFJ_ADD_EXECUTABLE(AimsCorticalReferential main.cc cortical_surface)

@@ -1,2 +1,0 @@
-
-SHFJ_ADD_EXECUTABLE(AimsSulcusCorticalSnake main.cc cortical_surface)

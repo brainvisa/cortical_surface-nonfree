@@ -1,3 +1,2 @@
-
-ADD_SUBDIRECTORY(library)
-ADD_SUBDIRECTORY(commands)
+add_subdirectory(library)
+add_subdirectory(commands)
