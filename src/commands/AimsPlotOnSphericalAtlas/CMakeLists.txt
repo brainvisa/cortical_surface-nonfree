@@ -1,2 +1,0 @@
-
-SHFJ_ADD_EXECUTABLE(AimsPlotOnSPhericalAtlas main.cc cortical_surface)

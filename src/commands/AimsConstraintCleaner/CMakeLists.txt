@@ -1,2 +1,0 @@
-
-SHFJ_ADD_EXECUTABLE(AimsConstraintCleaner main.cc cortical_surface)

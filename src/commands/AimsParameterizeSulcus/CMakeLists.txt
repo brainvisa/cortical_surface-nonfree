@@ -1,2 +1,0 @@
-
-SHFJ_ADD_EXECUTABLE(AimsParameterizeSulcus main.cc cortical_surface)

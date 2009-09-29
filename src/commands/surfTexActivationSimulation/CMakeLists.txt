@@ -1,2 +1,0 @@
-
-SHFJ_ADD_EXECUTABLE(surfTexActivationSimulation main.cc cortical_surface)
