@@ -11,6 +11,11 @@ Anneal::Anneal(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<str
 
 }
 
+Anneal::Anneal(Graph &primal){
+  MinimizationSetup(primal);
+
+}
+
 void Anneal::Step(vector<int> &random, long double temp, uint &mod){
   
   long double somme=0.0;
@@ -144,13 +149,13 @@ void Anneal::Run(int verbose){
 
   cout.precision(2);
 
-  //   cout.setf(ios_base::fixed, ios_base::floatfield);
-
-  //     blobsnodes[sites[i]->subject]
-  FILE * f1;   f1 = fopen (recuitpath.data(),"w");
-  FILE * f;   f = fopen (energypath.data(),"a");
-  fprintf(f, "== DEBUT NOUVEAU RECUIT ==\n");
-
+  FILE * f1, *f;
+  if (recuitpath!="")
+    f1 = fopen (recuitpath.data(),"w");
+  if (energypath!=""){
+      f = fopen (energypath.data(),"a");
+      fprintf(f, "== DEBUT NOUVEAU RECUIT ==\n");
+  }
   //   cin >> test;
   //   test=0;
 
@@ -170,15 +175,17 @@ void Anneal::Run(int verbose){
         else nb_under_threshold++;
         cout << " T=" << temp << " it="<< ite++ << " " ;
 
-        for (uint i0=0;i0<sites.size();i0++){
-          fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
-        }
+        if (recuitpath!=""){
+          for (uint i0=0;i0<sites.size();i0++){
+            fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
+          }
 //         double sim0 = getTypeEnergy(SIMILARITY), intraps0=getTypeEnergy(INTRAPRIMALSKETCH), lower0=getTypeEnergy(BESTLOWERSCALE),dd0=getTypeEnergy(DATADRIVEN);
         
 //         ASSERT(sim0+dd0+intraps0+lower0==energy);
 //         fprintf(f, "%3lf %3lf %3lf %3lf %3lf\n", (float)dd0, (float)sim0, (float) intraps0, (float) lower0, (float)energy);
 
-        fprintf(f1, "\n");
+          fprintf(f1, "\n");
+        }
         vector<int> indices(indices_start);
         vector<int> random;
         for (uint i=0;i<sites.size();i++){
@@ -210,9 +217,12 @@ void Anneal::Run(int verbose){
 
   cout << "energie finale : " << energy << endl;
   ShortSummaryLabels();
-  fprintf(f, "%3lf\nFIN RECUIT\n", (float)energy);
-
-  fclose(f1);fclose(f);
+  if (energypath!=""){
+    fprintf(f, "%3lf\nFIN RECUIT\n", (float)energy);
+    fclose(f);
+  }
+  if (recuitpath!="")
+    fclose(f1);
   //   for (uint i=0;i<sites.size();i++)
   //     sites[i]->label = (uint)sites[i]->t;
 }

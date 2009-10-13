@@ -30,7 +30,9 @@ struct ltstr_vec
 };
 
 
-void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
+void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){}
+
+void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal){
   cout << "Construction du vecteur de sites ..." << flush;
 
   sites = ConstruireSites(primal); 
@@ -43,7 +45,7 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
     subjects.insert(sites[i]->subject);
   nbsujets = subjects.size();
   cout << "Construction des cliques ... " << flush;
-  cliques = ConstruireCliquesLastChance(sites,cliquesDuSite,meshes, lats,lons);
+  cliques = ConstruireCliquesLastChance(sites,cliquesDuSite); //,meshes, lats,lons);
   
   
   uint nb_cl_sim=0, nb_cl_dd=0, nb_cl_intraps=0, nb_cl_lower=0;
@@ -111,6 +113,10 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<strin
 
 
     
+}
+
+SurfaceBased_StructuralAnalysis::SurfaceBased_StructuralAnalysis(Graph &primal){
+  MinimizationSetup(primal);
 }
 
 SurfaceBased_StructuralAnalysis::SurfaceBased_StructuralAnalysis(Graph &primal, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
@@ -305,9 +311,11 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
 
   long double Etotal=0.0;
   cout << endl << endl;
-  FILE * f;   f = fopen (energypath.data(),"a"); 
-  fprintf(f, "== SUMMARYLABELS ==\n"); 
-
+  FILE * f;
+  if (energypath!=""){
+   f = fopen (energypath.data(),"a");
+   fprintf(f, "== SUMMARYLABELS ==\n");
+  }
   for (uint lab=1;lab<labels.size();lab++){
     Edd=0.0; Esim=0.0; Esub=0.0; Eintra=0.0;
     

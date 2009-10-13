@@ -750,7 +750,7 @@ double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bb
 
 }
 
-vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons)  {
+vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite)  {
   uint temp=0,temp2=0,temp3=0,temp4=0;
   cliquesDuSite = vector<vector<int> >(sites.size());
   vector<Clique> cliques;

@@ -19,6 +19,7 @@ PSUBDIRS += \
   AimsTextureToAtlas \
   surfTexActivationSimulation \
   surfStructuralAnalysis \
+  surfLabelsTex2Graph \
   AimsCheck2DCoordinate \
   AimsMeshToAtlas \
   AimsSulcusNormalizeDepthProfile \

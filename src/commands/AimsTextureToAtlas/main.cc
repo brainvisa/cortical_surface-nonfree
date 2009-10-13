@@ -42,6 +42,7 @@ int main(int argc, const char **argv) //int argc, const char **argv)
       app.addOption( adressAx, "-ax", "atlas x-coordinate texture");
       app.addOption( adressAy, "-ay", "atlas y-coordinate texture");
       app.addOption( px, "-px", "x-coord period (none=0)", 0);
+//       app.addOption( px, "-py", "y-coord period (none=0)", 0);
   
       app.initialize();
      }

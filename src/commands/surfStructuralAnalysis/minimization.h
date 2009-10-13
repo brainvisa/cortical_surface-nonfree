@@ -33,7 +33,9 @@ class SurfaceBased_StructuralAnalysis{
     string energypath, recuitpath;
     uint run,save;
     void MinimizationSetup(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
+    void MinimizationSetup(Graph &primal);
     SurfaceBased_StructuralAnalysis(){}
+    SurfaceBased_StructuralAnalysis(Graph &primal);
     SurfaceBased_StructuralAnalysis(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
     void setModelParameters(float _ddweight=0.0, float _intrapsweight = 0.0, float _simweight=0.0, float _lsweight=0.0, float _ddx2 = 0.0, float _ddx1 = 0.0, float _ddh=0.0, float _ddweight2=0.0, float _dd2x1=0.0, float _dd2x2=0.0);
     

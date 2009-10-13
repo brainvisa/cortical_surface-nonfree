@@ -17,7 +17,7 @@ using namespace std;
 using namespace carto;
 
 int main(int argc, const char **argv){
-  string  graphFile, output, atlaspath, recuitpath = "/home/grg/recuit.txt", energypath = "/home/grg/energy.txt";
+  string  graphFile, output, atlaspath= "", recuitpath="", energypath="";
   int verbose=1;
   Graph primal;
   uint save=1, val=1;
@@ -33,8 +33,8 @@ int main(int argc, const char **argv){
   app.alias( "--primal", "-p" );
   app.addOption( output, "-o", "PS graph", "");
   app.alias( "--output", "-o" );
-  app.addOption( atlaspath, "-m" , "Chemin de base des données d'atlas");
-  app.addOption(run,"--run","run","");
+//   app.addOption( atlaspath, "-m" , "Chemin de base des données d'atlas", 0);
+  app.addOption(run,"--run","run",0);
   app.addOption(save,"--save","save",0);
   app.addOption(val,"--valid","valid",0);
   app.addOption(verbose,"--verbose","verbose", 1.0);
@@ -45,8 +45,8 @@ int main(int argc, const char **argv){
   app.addOption(_ddx1, "--ddx1", "ddx1",  1.0);
   app.addOption(_ddx2, "--ddx2", "ddx2",  1.0);
   app.addOption(_ddh, "--ddh", "ddh",  1.0);
-  app.addOption(energypath, "--energypath", "energypath",  1.0);
-  app.addOption(recuitpath, "--recuitpath", "recuitpath",  1.0);
+  app.addOption(energypath, "--energypath", "energypath",  0);
+  app.addOption(recuitpath, "--recuitpath", "recuitpath",  0);
   app.initialize();
 
   LireGraphes(graphFile,primal);
@@ -56,48 +56,48 @@ int main(int argc, const char **argv){
   set<string>::iterator it=sujets.begin();
 
 
-  for (;it!=sujets.end();it++){
-    string meshpath, latpath, lonpath;
-    if (atlaspath.find("nmr_surface")!=string::npos){
-    meshpath = atlaspath + *it + "/mesh/" + *it + "_Lwhite.mesh";
-    latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
-    lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
-    }
-    else if (atlaspath.find("simulations")!=string::npos){
-    meshpath = atlaspath + "sphere.mesh";
-    latpath = atlaspath + "latitude.tex";
-    lonpath = atlaspath + "longitude.tex";
-    }
-    else if (atlaspath.find("somato")!=string::npos){
-    meshpath = atlaspath + *it + "/tri/" + *it + "_Lwhite.mesh";
-    latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
-    lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
-    }
-    else if (atlaspath.find("nmr_marseille")!=string::npos){
-    
-      meshpath = atlaspath + *it + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/" + *it + "_Lwhite.mesh";
-      latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
-      lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
-    }
-//    else ASSERT(false);
-    cout << "chargement" << endl;
-    Reader<AimsSurfaceTriangle> rmesh(meshpath);
-    Reader<TimeTexture<float> > rlat(latpath);
-    Reader<TimeTexture<float> > rlon(lonpath);
-    AimsSurfaceTriangle newmesh;
-    rmesh.read(newmesh);
-
-    meshes[*it] = AimsSurfaceTriangle(newmesh);
-
-    TimeTexture<float> lat, lon;
-    rlat.read(lat);
-    rlon.read(lon);
-    
-    lats[*it]=TimeTexture<float>(lat);
-    lons[*it]=TimeTexture<float>(lon);
-  }
+//   for (;it!=sujets.end();it++){
+//     string meshpath, latpath, lonpath;
+//     if (atlaspath.find("nmr_surface")!=string::npos){
+//     meshpath = atlaspath + *it + "/mesh/" + *it + "_Lwhite.mesh";
+//     latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
+//     lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
+//     }
+//     else if (atlaspath.find("simulations")!=string::npos){
+//     meshpath = atlaspath + "sphere.mesh";
+//     latpath = atlaspath + "latitude.tex";
+//     lonpath = atlaspath + "longitude.tex";
+//     }
+//     else if (atlaspath.find("somato")!=string::npos){
+//     meshpath = atlaspath + *it + "/tri/" + *it + "_Lwhite.mesh";
+//     latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
+//     lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
+//     }
+//     else if (atlaspath.find("nmr_marseille")!=string::npos){
+//     
+//       meshpath = atlaspath + *it + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/" + *it + "_Lwhite.mesh";
+//       latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
+//       lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
+//     }
+// //    else ASSERT(false);
+//     cout << "chargement" << endl;
+//     Reader<AimsSurfaceTriangle> rmesh(meshpath);
+//     Reader<TimeTexture<float> > rlat(latpath);
+//     Reader<TimeTexture<float> > rlon(lonpath);
+//     AimsSurfaceTriangle newmesh;
+//     rmesh.read(newmesh);
+// 
+//     meshes[*it] = AimsSurfaceTriangle(newmesh);
+// 
+//     TimeTexture<float> lat, lon;
+//     rlat.read(lat);
+//     rlon.read(lon);
+//     
+//     lats[*it]=TimeTexture<float>(lat);
+//     lons[*it]=TimeTexture<float>(lon);
+//   }
 //   SWC swc(primal, mesh, lat, lon);
-  Anneal swc(primal, meshes, lats,lons);
+  Anneal swc(primal);
   
   swc.recuitpath = recuitpath;
   swc.energypath = energypath;

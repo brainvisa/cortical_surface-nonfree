@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include <aims/getopt/getopt2.h>
 #include <aims/math/random.h>
 #include "icm.h"
