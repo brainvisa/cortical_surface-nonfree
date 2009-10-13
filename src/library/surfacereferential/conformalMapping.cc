@@ -219,12 +219,12 @@ namespace aims
                iter++;
                E0=E;
           }
-          Writer<AimsSurfaceTriangle> meshW("/home/olivier/tuette.mesh");
-          AimsSurfaceTriangle tmpT;
-          tmpT.vertex()=_tuetteMap;
-          tmpT.polygon()=_mesh.polygon();
-          tmpT.updateNormals();
-          meshW.write(tmpT);
+//           Writer<AimsSurfaceTriangle> meshW("/home/olivier/tuette.mesh");
+//           AimsSurfaceTriangle tmpT;
+//           tmpT.vertex()=_tuetteMap;
+//           tmpT.polygon()=_mesh.polygon();
+//           tmpT.updateNormals();
+//           meshW.write(tmpT);
 //           Writer<AimsSurfaceTriangle> meshW("evolutionConformal.mesh");
 //           meshW.write(tmpResult);
 
@@ -419,8 +419,8 @@ namespace aims
           }
           tmpResult[time].vertex()=_conformalMap;
           tmpResult[time].polygon()=_mesh.polygon();
-          Writer<AimsSurfaceTriangle> meshW("evolutionConformal.mesh");
-          meshW.write(tmpResult);
+//           Writer<AimsSurfaceTriangle> meshW("evolutionConformal.mesh");
+//           meshW.write(tmpResult);
 
      }
 
@@ -476,7 +476,7 @@ namespace aims
           return(result);
      }
      
-     void ConformalMapping::WriteConformalCoordinates(std::string adr_coord)
+     void ConformalMapping::WriteConformalCoordinates(std::string latpath, std::string lonpath )
      {
           TimeTexture<float> lat(1, _nv), lon(1, _nv);
           uint i;
@@ -485,10 +485,10 @@ namespace aims
                lat[0].item(i)=_conformalLat[i];
                lon[0].item(i)=_conformalLon[i];
           } 
-          std::string strlon=adr_coord+"_lon.tex";
+          std::string strlon=lonpath;
           Writer<TimeTexture<float> > lonW(strlon);
           lonW.write(lon);
-          std::string strlat=adr_coord+"_lat.tex";
+          std::string strlat=latpath;
           Writer<TimeTexture<float> > latW(strlat);
           latW.write(lat);
      }

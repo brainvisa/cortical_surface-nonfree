@@ -61,7 +61,7 @@ namespace aims
                AimsSurfaceTriangle GetConformalMapping(std::string adr_tuette);
                float TuetteEnergy();
                float HarmonicEnergy();
-               void WriteConformalCoordinates(std::string adr_coord);
+               void WriteConformalCoordinates(std::string latpath, std::string lonpath);
 
           private:
                AimsSurfaceTriangle _mesh;
