@@ -71,6 +71,17 @@ pair<Point2df, Point2df> getBoundingBox(vector<int> &nodes_list, TimeTexture<flo
     if (lon[0].item(nodes_list[i]) > bbmax[1])
       bbmax[1]=lon[0].item(nodes_list[i]);
   }
+  
+  if (bbmax[1] > 300.0 && bbmin[1] < 60.0) {
+    for (uint i=0;i<nodes_list.size();i++){
+      if (lon[0].item(nodes_list[i]) >300.0 && lon[0].item(nodes_list[i]) < bbmax[1])
+        bbmax[1]=lon[0].item(nodes_list[i]);
+      if (lon[0].item(nodes_list[i]) < 60.0 && lon[0].item(nodes_list[i]) > bbmin[1])
+        bbmin[1]=lon[0].item(nodes_list[i]);
+    }
+//     cerr << "DEBUG:" << bbmin[1] << " " << bbmax[1] << endl;
+  }
+  
   bb.first = bbmin;
   bb.second = bbmax;
   return bb;
@@ -106,11 +117,11 @@ AimsSurfaceTriangle getObjects(TimeTexture<short> &tex, AimsSurfaceTriangle &mes
       if (tex[0].item(i)>labelmax)
         labelmax=tex[0].item(i);
     }
-    cerr << "labelmax:" << labelmax << endl;
+//     cerr << "labelmax:" << labelmax << endl;
     AimsSurfaceTriangle objects;
     nodes_lists=vector<vector<int> >(labelmax+1);
     vector<set<uint> > triangles(labelmax+1);
-    cerr << "TEST" << endl;
+//     cerr << "TEST" << endl;
     set<uint> trianglesDeja;
     
     set<uint>::iterator it;
@@ -131,11 +142,11 @@ AimsSurfaceTriangle getObjects(TimeTexture<short> &tex, AimsSurfaceTriangle &mes
       else if (L2==L3)
         triangles[L2].insert(i);
     }
-    cerr << "OK" << endl;
+//     cerr << "OK" << endl;
     vector<uint> corres;
     for (uint i=0;i<triangles.size();i++){
       tri = triangles[i];
-      cerr << "tri.size " << tri.size() << " " << flush;
+//       cerr << "tri.size " << tri.size() << " " << flush;
 
       comp.clear();
       for (it=tri.begin();it!=tri.end();it++){
@@ -145,7 +156,7 @@ AimsSurfaceTriangle getObjects(TimeTexture<short> &tex, AimsSurfaceTriangle &mes
         comp.insert(p1); comp.insert(p2); comp.insert(p3);
       }
       corres=vector<uint>(mesh[0].vertex().size());
-      cerr << "comp.size " << comp.size() << " " << flush;
+//       cerr << "comp.size " << comp.size() << " " << flush;
       for (it=comp.begin();it!=comp.end();it++){
         assert(*it<corres.size());
         assert(*it<mesh[0].vertex().size());
@@ -155,7 +166,7 @@ AimsSurfaceTriangle getObjects(TimeTexture<short> &tex, AimsSurfaceTriangle &mes
         corres[*it]=(objects)[i].vertex().size()-1;
         nodes_lists[i].push_back(*it);
       }
-      cerr << "versize:"<< (objects)[i].vertex().size() << " " <<flush;
+//       cerr << "versize:"<< (objects)[i].vertex().size() << " " <<flush;
 
       for (it=tri.begin();it!=tri.end();it++){
         p1=mesh[0].polygon()[*it][0];
@@ -163,9 +174,9 @@ AimsSurfaceTriangle getObjects(TimeTexture<short> &tex, AimsSurfaceTriangle &mes
         p3=mesh[0].polygon()[*it][2];
         (objects)[i].polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
       }
-      cerr << "polsize:" << (objects)[i].polygon().size() << endl;
+//       cerr << "polsize:" << (objects)[i].polygon().size() << endl;
     }
-    cerr << labelmax << endl;
+//     cerr << labelmax << endl;
     return objects;
 
 }
@@ -178,7 +189,7 @@ AimsSurfaceTriangle getBarycenters(AimsSurfaceTriangle &mesh,  vector<vector<int
       if (nodes_lists[i].size()!=0){
         jmin = nodes_lists[i][nodes_lists[i].size()/2];
 //         cerr << "jmin:" << jmin << " lat:" << lat[0].item(jmin) << " lon:" << lon[0].item(jmin) <<  endl;
-        cerr << jmin << " " << lat[0].item(jmin) << " " << lon[0].item(jmin) <<  endl;
+//         cerr << jmin << " " << lat[0].item(jmin) << " " << lon[0].item(jmin) <<  endl;
         AimsSurfaceTriangle *msh;
         msh = SurfaceGenerator::sphere( mesh[0].vertex()[jmin], radius, 10 );
         objects[i]= (*msh)[0];
@@ -187,24 +198,35 @@ AimsSurfaceTriangle getBarycenters(AimsSurfaceTriangle &mesh,  vector<vector<int
     return objects;
 }
 
-AimsSurfaceTriangle getFlatMap(AimsSurfaceTriangle &mesh,  vector<vector<int> > &nodes_lists, TimeTexture<float> &lat, TimeTexture<float> &lon){
+AimsSurfaceTriangle getFlatMap(AimsSurfaceTriangle &mesh,  vector<vector<int> > &nodes_lists, TimeTexture<float> &lat, TimeTexture<float> &lon, TimeTexture<float> &tex){
   AimsSurfaceTriangle objects;
-  for (uint i=1;i<nodes_lists.size();i++){
+//   TimeTexture<float> tex;
+  for (uint i=0;i<nodes_lists.size();i++){
     if (nodes_lists[i].size()!=0){
       pair<Point2df,Point2df> bb(getBoundingBox(nodes_lists[i],lat,lon));
+      assert(bb.first[0]<bb.second[0]);
+      assert(bb.first[1]<bb.second[1]);
+      float area = (bb.second[0]-bb.first[0])*(bb.second[1]-bb.first[1]);
+//       cerr << "area"<<area << " ";
+      if(area<1000.0){
+      tex[0].push_back(area);
+      tex[0].push_back(area);
+      tex[0].push_back(area);
+      tex[0].push_back(area);
+      cerr << tex[0].nItem() << " " << flush;
+      objects[0].vertex().push_back(Point3df(bb.first[0],bb.first[1],0.001));
+      objects[0].vertex().push_back(Point3df(bb.first[0],bb.second[1],0.002));
+      objects[0].vertex().push_back(Point3df(bb.second[0],bb.second[1],0.003));
+      objects[0].vertex().push_back(Point3df(bb.second[0],bb.first[1],0.0005));
+      cerr << objects[0].vertex().size() << endl;
+      objects[0].polygon().push_back(AimsVector<uint,3>(objects[0].vertex().size()-4,objects[0].vertex().size()-3,objects[0].vertex().size()-2));
+      objects[0].polygon().push_back(AimsVector<uint,3>(objects[0].vertex().size()-2,objects[0].vertex().size()-1,objects[0].vertex().size()-4));
       
-      
-      AimsSurfaceTriangle msh;
-      msh[0].vertex().push_back(Point3df(bb.first[0],bb.first[1],0.001));
-      msh[0].vertex().push_back(Point3df(bb.first[0],bb.second[1],0.002));
-      msh[0].vertex().push_back(Point3df(bb.second[0],bb.second[1],0.003));
-      msh[0].vertex().push_back(Point3df(bb.second[0],bb.first[1],0.0005));
-      msh[0].polygon().push_back(AimsVector<uint,3>(0,1,2));
-      msh[0].polygon().push_back(AimsVector<uint,3>(2,3,0));
-      
-      SurfaceManip::meshMerge( objects, msh );
+//       SurfaceManip::meshMerge( objects, msh );
+      }
     }
   }
+
   return objects;
 }
 
@@ -261,10 +283,16 @@ int main( int argc, const char **argv )
     if (mode == 1){
       objects = new AimsSurfaceTriangle(getBarycenters(mesh,nodes_lists,lat,lon,radius));
     }
+    
     if (flatpath != ""){
-      AimsSurfaceTriangle flat(getFlatMap(mesh,nodes_lists,lat,lon));
+      cerr << "écriture flat mesh:" << flatpath << endl;
+      TimeTexture<float> texflat;
+      AimsSurfaceTriangle flat(getFlatMap(mesh,nodes_lists,lat,lon,texflat));
+      cerr << flat[0].vertex().size() << " !=! " << texflat[0].nItem() << endl;
       Writer<AimsSurfaceTriangle> wflat(flatpath);
       wflat.write(flat);
+      Writer<TimeTexture<float> > wtex("/volatile/operto/test.tex");
+      wtex.write(texflat);
     }
     
 
@@ -310,6 +338,7 @@ int main( int argc, const char **argv )
     graph.setProperty("boundingbox_min", bbmin);
     graph.setProperty("boundingbox_max", bbmax);
     graph.setProperty("mesh", meshPath);
+    graph.setProperty("sujet", sujet);
     graph.setProperty("texture", texPath);
     
     Vertex *vert;
@@ -342,7 +371,7 @@ int main( int argc, const char **argv )
         bbmax2D.push_back(bb.second[0]);
         bbmax2D.push_back(bb.second[1]);
         bbmax2D.push_back(-1);
-        cerr << bbmin2D[0] << " " << bbmin2D[1] << ";" << bbmax2D[0] << ";" << bbmax2D[1] << endl;
+//         cerr <<i << " : " << bbmin2D[0] << ";" << bbmin2D[1] << ";" << bbmax2D[0] << ";" << bbmax2D[1] << endl;
         vert->setProperty( "gravity_center", bbmin2D);
         vert->setProperty("boundingbox_min", bbmin2D);
         vert->setProperty("boundingbox_max", bbmax2D);
