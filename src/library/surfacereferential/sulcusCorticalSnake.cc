@@ -63,8 +63,11 @@ TimeTexture<float> SulcusCorticalSnake::compute_snake()
 	int test=1;
 	test=define_extremities();
 	if(test==0)
+      {
+          std::cout << "testDefineExt=0" << std::endl;
 		return( result_total );
-	
+	}
+
 	uint n=0;
 	
 	if( are_they_neighbours(n1,n2) == 0 )
@@ -317,37 +320,54 @@ int SulcusCorticalSnake::define_extremities()
 	TimeTexture<float> tex_temp(1,size);
 	init_texture_single(tex_temp);
 	
-	std::set<uint>::const_iterator itvois;
+	//std::set<uint>::const_iterator itvois;
 	
 	std::vector<uint> pts;
 	
 		//On enleve les points non susceptibles d'etre des extremites
-	
+// 	std::cout << "bookmark1" << std::endl;
+//   std::cout << "size=" << size << endl;
 	for(uint j=0; j<size;j++)
 	{
+//           std::cout << "j=" << j << std::endl;
 		int cpt=0;
 		if(constraint[0].item(j)==value)
 		{
+//               std::cout << "j=" << j << " item=value" << std::endl;
 			int mem_vois=0;
 			std::set<uint>::const_iterator itvoisin;
+//               std::cout << "about to go into 1st loop" << std::endl;
 			itvoisin=neigh[j].begin();
+//               std::cout << "going into 1st loop" << std::endl;
 			for(; itvoisin!=neigh[j].end(); itvoisin++)
 			{
+//                     std::cout << "itVois=" << (*itvoisin) << std::endl;
+//                     std::cout << "constraint[0].item(*itvoisin)=" << constraint[0].item(*itvoisin) << std::endl;
 				if(constraint[0].item(*itvoisin)==value)
 				{
+//                         std::cout << "\t doing what i have to do then" << std::endl;
 					cpt++;
-					mem_vois=(*itvois);
+					mem_vois=(*itvoisin);
+//                         std::cout << "\t done ! mem_vois=" << mem_vois << " and cpt=" << cpt << std::endl;
 				}
 			}
+//               std::cout << "out" << std::endl;
 			if( cpt==1 || cpt==3 || cpt==4 )
 			{
+//                     std::cout << "attributing value " << std::endl;
 				tex_ext[0].item(j)=value;
+//                     std::cout << "OK " << std::endl;
 			}
 			else
+               {
+//                     std::cout << "else case : attributing value " << std::endl;
 				tex_ext[0].item(j)=0;
+//                     std::cout << "else case : OK " << std::endl;
+                }
 		}
 	}
-	
+// 	     std::cout << "bookmark2" << std::endl;
+
 	int cpt=0;
 	for(uint j=0; j<size;j++)
 	{
@@ -369,7 +389,8 @@ int SulcusCorticalSnake::define_extremities()
 	init_texture_single(tex_path_temp);
 	
 	// on prend les 2 plus loin
-	
+// 	     std::cout << "bookmark3" << std::endl;
+
 	for(uint j=0; j<pts.size() - 1; j++)
 	{
 			
@@ -395,6 +416,8 @@ int SulcusCorticalSnake::define_extremities()
 			}
 		}
 	}
+
+//     std::cout << "ok pour extremities" << std::endl;
 	return 1;
 }
 
