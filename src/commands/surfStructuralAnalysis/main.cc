@@ -112,8 +112,6 @@ int main(int argc, const char **argv){
   swc.SummaryLabels();
   swc.StoreToGraph(primal);
 
- 
-  
   if (save) SauvegarderGraphes(primal, graphFile, output);
 //   swc.Validation(CLUSTERS);
 //   swc.Validation(BOOTSTRAP);
