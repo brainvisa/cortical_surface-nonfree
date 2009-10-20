@@ -21,7 +21,7 @@ class Blob{
     set<uint> nodes_list;
 };
 
-class ScaleSpacBlob{
+class SSBlob{
   public :
     uint index;
     set<Blob *> blobs;

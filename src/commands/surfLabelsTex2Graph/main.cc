@@ -308,19 +308,38 @@ int main( int argc, const char **argv ){
     list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*>::iterator blobIt;
     list<GreyLevelBlob<SiteType<AimsSurface<3, Void> >::type > *>::iterator glbit;
     ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type > *ssb;
-//     list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> *glb;
-    uint test=0;
-    vector<ScaleSpacBlob> blobs;
+    set<SiteType<AimsSurface<3, Void> >::type,ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> >::iterator ptsit;
+    uint test=0,test2=0;
+    vector<SSBlob> ssblobs;
+    vector<Blob *> blobs;
     for (blobIt=blobList.begin();blobIt!=blobList.end();blobIt++){
       ssb = *blobIt;
-//       ScaleSpacBlob ssb;
       for (glbit = ssb->glBlobs.begin(); glbit != ssb->glBlobs.end(); glbit++){
         cout << (*glbit)->GetScale() << " " << flush;
-//         glb 
-//         blob.first = 
+        blobs.push_back(new Blob());
+        Blob *blob=blobs[blobs.size()-1];
+        blob->index = test++;
+        blob->parent = test2;
+        blob->subject = sujet;
+        blob->t = 0.0;
+        blob->scale = (*glbit)->GetScale();
+        set<SiteType<AimsSurface<3, Void> >::type,ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints;
+        listePoints = (*glbit)->GetListePoints();
+        for (ptsit=listePoints.begin();ptsit!=listePoints.end();ptsit++){
+          cout << (*ptsit).first << endl;
+        }
+//         (blob->nodes_list).insert((*ptsit).first);
+        
+        //#########################################################
+        // CLASSES BLOB ET SSBLOB
+        // FONCTION QUI GENERE DES VECTEURS DE BLOB et de SSBLOB
+        // ATTENTION LES GLB APPARTENANT AU MEME SSB DOIVENT ETRE RELIES D'UNE FACON OU UNE 
+        //    AUTRE
+        // FONCTION QUI EXTRAIT LES MAILLAGES QUI CONVIENNENT DU VECTEUR DE BLOBS A PARTIR
+        //    DU MAILLAGE
         
       }
-      test++;
+      test2++;
     }
     cout << "nb de blobs : " << test << endl;
     
