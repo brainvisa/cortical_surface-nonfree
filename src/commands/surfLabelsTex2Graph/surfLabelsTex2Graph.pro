@@ -5,5 +5,5 @@ TARGET = surfLabelsTex2Graph
 
 SOURCES =  main.cc     
       
-HEADERS = 
+HEADERS = blobs.h
 

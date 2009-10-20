@@ -47,6 +47,7 @@
 #include <aims/primalsketch/scalespace.h>
 #include <aims/primalsketch/finiteElementSmoother_d.h>
 #include <aims/primalsketch/primalSketch.h>
+#include "blobs.h"
 
 
 
@@ -309,11 +310,15 @@ int main( int argc, const char **argv ){
     ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type > *ssb;
 //     list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> *glb;
     uint test=0;
+    vector<ScaleSpacBlob> blobs;
     for (blobIt=blobList.begin();blobIt!=blobList.end();blobIt++){
       ssb = *blobIt;
+//       ScaleSpacBlob ssb;
       for (glbit = ssb->glBlobs.begin(); glbit != ssb->glBlobs.end(); glbit++){
         cout << (*glbit)->GetScale() << " " << flush;
-        // récupérer les gl blobs ici
+//         glb 
+//         blob.first = 
+        
       }
       test++;
     }
