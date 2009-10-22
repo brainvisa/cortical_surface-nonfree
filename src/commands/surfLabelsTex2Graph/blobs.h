@@ -27,5 +27,5 @@ class SSBlob{
     set<Blob *> blobs;
 };
 
-
+// vector<Blob *> construireBlobs(Graph &sketch);
 #endif 

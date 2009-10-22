@@ -381,6 +381,11 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
   for (uint il=0;il<nblab.size();il++)
     if (nblab[il] != 0) cout << "<<" << nblab[il] << ">>-";
     else cout << nblab[il] << "-" ;
+  for (uint i=0;i<sites.size();i++){
+    for (uint j=0;j<nblab.size();j++){
+      sites[i]->label_occur_number = nblab[sites[i]->label];
+    }
+  }
   cout <<"\b ";
   cout << "Etot=" << Etotal << endl;
 

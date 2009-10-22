@@ -19,6 +19,7 @@ class Site{
     float tmin;
     float tmax;
     float trep;
+    int label_occur_number;
     int rank;
     Point3df gravitycenter;
     uint node;

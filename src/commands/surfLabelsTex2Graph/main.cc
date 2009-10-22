@@ -56,6 +56,50 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
+vector<Blob *> construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch){
+    vector<Blob *> blobs;
+    list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> blobList=sketch.BlobSet();
+    uint test=0,test2=0;
+    list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*>::iterator blobIt;
+    list<GreyLevelBlob<SiteType<AimsSurface<3, Void> >::type > *>::iterator glbit;
+    ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type > *ssb;
+    set<SiteType<AimsSurface<3, Void> >::type,ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> >::iterator ptsit;
+    
+    
+    for (blobIt=blobList.begin();blobIt!=blobList.end();blobIt++){
+      ssb = *blobIt;
+      for (glbit = ssb->glBlobs.begin(); glbit != ssb->glBlobs.end(); glbit++){
+//         cout << (*glbit)->GetScale() << " " << flush;
+        blobs.push_back(new Blob());
+        Blob *blob=blobs[blobs.size()-1];
+        blob->index = test++;
+        blob->parent = test2;
+        blob->subject = sketch.Subject();
+        blob->t = 0.0;
+        blob->scale = (*glbit)->GetScale();
+        set<SiteType<AimsSurface<3, Void> >::type,ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints;
+        listePoints = (*glbit)->GetListePoints();
+        for (ptsit=listePoints.begin();ptsit!=listePoints.end();ptsit++){
+          (blob->nodes_list).insert((*ptsit).second);
+        }
+        blobs.push_back(blob);
+        //#########################################################
+        // CLASSES BLOB ET SSBLOB
+        // FONCTION QUI GENERE DES VECTEURS DE BLOB et de SSBLOB
+        // ATTENTION LES GLB APPARTENANT AU MEME SSB DOIVENT ETRE RELIES D'UNE FACON OU UNE 
+        //    AUTRE
+        // FONCTION QUI EXTRAIT LES MAILLAGES QUI CONVIENNENT DU VECTEUR DE BLOBS A PARTIR
+        //    DU MAILLAGE
+        
+      }
+      test2++;
+    }
+    cout << "nb de blobs : " << test << " / glb : " <<blobs.size()<< endl;
+    return blobs;
+}
+
+
+
 
 ScaleSpace<AimsSurface<3, Void>, Texture<float> > getScaleSpace(TimeTexture<float> &laTexture, AimsSurfaceTriangle &laMesh, TimeTexture<float> &lat, TimeTexture<float> &longit){
       float moy=0.0;
@@ -145,9 +189,59 @@ int find(const vector<int> &v, int item){
   return c;
 }
 
+AimsSurfaceTriangle getBlobsMeshes(vector<Blob *> &blobs, AimsSurfaceTriangle &mesh, vector<vector<int> > &nodes_lists){
+  AimsSurfaceTriangle objects;
+  uint p1,p2,p3;
+  nodes_lists=vector<vector<int> >(blobs.size());
+
+  set<uint>::iterator it;
+
+  for (uint i=0;i<blobs.size();i++){
+    cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
+    set<uint> tri,comp;
+    vector<uint> corres;
+    for (uint j=0;j<mesh[0].polygon().size();j++){
+      p1=mesh[0].polygon()[j][0];
+      p2=mesh[0].polygon()[j][1];
+      p3=mesh[0].polygon()[j][2];
+    
+      if (blobs[i]->nodes_list.find(p1)!=blobs[i]->nodes_list.end() && blobs[i]->nodes_list.find(p2)!=blobs[i]->nodes_list.end() &&     blobs[i]->nodes_list.find(p3)!=blobs[i]->nodes_list.end())
+        tri.insert(j);
+    }
+//     if (tri.size() == 0) {countzero++; cout << endl; }
+
+    for (it=tri.begin();it!=tri.end();it++){
+      p1=mesh[0].polygon()[*it][0];
+      p2=mesh[0].polygon()[*it][1];
+      p3=mesh[0].polygon()[*it][2];
+      comp.insert(p1); comp.insert(p2); comp.insert(p3);
+    }
+    corres=vector<uint>(mesh[0].vertex().size());
+    for (it=comp.begin();it!=comp.end();it++){
+      assert(*it<corres.size());
+      assert(*it<mesh[0].vertex().size());
+      assert(i<nodes_lists.size());
+      (objects)[i].vertex().push_back(mesh[0].vertex()[*it]);
+      corres[*it]=(objects)[i].vertex().size()-1;
+      nodes_lists[i].push_back(*it);
+    }
+
+    for (it=tri.begin();it!=tri.end();it++){
+      p1=mesh[0].polygon()[*it][0];
+      p2=mesh[0].polygon()[*it][1];
+      p3=mesh[0].polygon()[*it][2];
+      (objects)[i].polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
+    }
+    
+  }
+  cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
+  
+  return objects;
+}
+
 AimsSurfaceTriangle getObjects(TimeTexture<short> &tex, AimsSurfaceTriangle &mesh, vector<vector<int> > &nodes_lists){
     
-    int label,labelmax=0;
+    int labelmax=0;
     for (uint i=0;i<tex[0].nItem();i++){
       if (tex[0].item(i)>labelmax)
         labelmax=tex[0].item(i);
@@ -155,7 +249,6 @@ AimsSurfaceTriangle getObjects(TimeTexture<short> &tex, AimsSurfaceTriangle &mes
     AimsSurfaceTriangle objects;
     nodes_lists=vector<vector<int> >(labelmax+1);
     vector<set<uint> > triangles(labelmax+1);
-    set<uint> trianglesDeja;
     
     set<uint>::iterator it;
     set<uint> tri,comp;
@@ -205,7 +298,7 @@ AimsSurfaceTriangle getObjects(TimeTexture<short> &tex, AimsSurfaceTriangle &mes
 }
 
 
-AimsSurfaceTriangle getBarycenters(AimsSurfaceTriangle &mesh,  vector<vector<int> > &nodes_lists, TimeTexture<float> &lat, TimeTexture<float> &lon, float radius){
+AimsSurfaceTriangle getBarycenters(AimsSurfaceTriangle &mesh,  vector<vector<int> > &nodes_lists, float radius){
     AimsSurfaceTriangle objects;
     uint jmin;
     for (uint i=0;i<nodes_lists.size();i++){
@@ -219,25 +312,25 @@ AimsSurfaceTriangle getBarycenters(AimsSurfaceTriangle &mesh,  vector<vector<int
     return objects;
 }
 
-AimsSurfaceTriangle getFlatMap(AimsSurfaceTriangle &mesh,  vector<vector<int> > &nodes_lists, TimeTexture<float> &lat, TimeTexture<float> &lon, TimeTexture<float> &tex){
+AimsSurfaceTriangle getFlatMap(vector<vector<int> > &nodes_lists, TimeTexture<float> &lat, TimeTexture<float> &lon, TimeTexture<float> &tex){
   AimsSurfaceTriangle objects;
   for (uint i=0;i<nodes_lists.size();i++){
     if (nodes_lists[i].size()!=0){
       pair<Point2df,Point2df> bb(getBoundingBox(nodes_lists[i],lat,lon));
-      assert(bb.first[0]<bb.second[0]);
-      assert(bb.first[1]<bb.second[1]);
+      assert(bb.first[0]<=bb.second[0] || !(cout << bb.first[0] << " /\\" << bb.second[0] << endl));
+      assert(bb.first[1]<=bb.second[1]|| !(cout << bb.first[1] << " /\\" << bb.second[1] << endl));
       float area = (bb.second[0]-bb.first[0])*(bb.second[1]-bb.first[1]);
       if(area<1000.0){
         tex[0].push_back(area);
         tex[0].push_back(area);
         tex[0].push_back(area);
         tex[0].push_back(area);
-        cerr << tex[0].nItem() << " " << flush;
+//         cerr << tex[0].nItem() << " " << flush;
         objects[0].vertex().push_back(Point3df(bb.first[0],bb.first[1],0.001));
         objects[0].vertex().push_back(Point3df(bb.first[0],bb.second[1],0.002));
         objects[0].vertex().push_back(Point3df(bb.second[0],bb.second[1],0.003));
         objects[0].vertex().push_back(Point3df(bb.second[0],bb.first[1],0.0005));
-        cerr << objects[0].vertex().size() << endl;
+//         cerr << objects[0].vertex().size() << endl;
         objects[0].polygon().push_back(AimsVector<uint,3>(objects[0].vertex().size()-4,objects[0].vertex().size()-3,objects[0].vertex().size()-2));
         objects[0].polygon().push_back(AimsVector<uint,3>(objects[0].vertex().size()-2,objects[0].vertex().size()-1,objects[0].vertex().size()-4));
       }
@@ -255,7 +348,6 @@ AimsSurfaceTriangle getFlatMap(AimsSurfaceTriangle &mesh,  vector<vector<int> > 
 int main( int argc, const char **argv ){
   try {
   
-    float threshold = 0.0;
     int mode=0;
     string outpath = "", meshPath, texPath, latpath="", lonpath="", flatpath="", sujet;
 
@@ -278,8 +370,8 @@ int main( int argc, const char **argv ){
     TimeTexture<float> latex(1,intex[0].nItem());
     TimeTexture<short> tex(1,intex[0].nItem());
     for (uint i=0;i<intex[0].nItem();i++){
-      tex[0].item(i) = (short) intex[0].item(i)+1;
-      latex[0].item(i) = (float) intex[0].item(i)+1;
+      tex[0].item(i) = (short) intex[0].item(i); //+1;
+      latex[0].item(i) = (float) intex[0].item(i); //+1;
     }
     
     mesh[0].setMini(); mesh[0].setMaxi();
@@ -297,65 +389,47 @@ int main( int argc, const char **argv ){
     Reader<TimeTexture<float> > rlat(latpath),rlon(lonpath);
     rlat.read(lat);
     rlon.read(lon);
-    ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss(getScaleSpace(latex,mesh,lat,lon));
     
-    PrimalSketch<AimsSurface<3, Void>, Texture<float> > sketch(sujet, &ss, SURFACE);
+   
 
-    sketch.ComputePrimalSketch(1.0, 8.0, "", 10);
 
-    list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> blobList=sketch.BlobSet();
-
-    list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*>::iterator blobIt;
-    list<GreyLevelBlob<SiteType<AimsSurface<3, Void> >::type > *>::iterator glbit;
-    ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type > *ssb;
-    set<SiteType<AimsSurface<3, Void> >::type,ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> >::iterator ptsit;
-    uint test=0,test2=0;
+    
     vector<SSBlob> ssblobs;
     vector<Blob *> blobs;
-    for (blobIt=blobList.begin();blobIt!=blobList.end();blobIt++){
-      ssb = *blobIt;
-      for (glbit = ssb->glBlobs.begin(); glbit != ssb->glBlobs.end(); glbit++){
-        cout << (*glbit)->GetScale() << " " << flush;
-        blobs.push_back(new Blob());
-        Blob *blob=blobs[blobs.size()-1];
-        blob->index = test++;
-        blob->parent = test2;
-        blob->subject = sujet;
-        blob->t = 0.0;
-        blob->scale = (*glbit)->GetScale();
-        set<SiteType<AimsSurface<3, Void> >::type,ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints;
-        listePoints = (*glbit)->GetListePoints();
-        for (ptsit=listePoints.begin();ptsit!=listePoints.end();ptsit++){
-          cout << (*ptsit).first << endl;
-        }
-//         (blob->nodes_list).insert((*ptsit).first);
-        
-        //#########################################################
-        // CLASSES BLOB ET SSBLOB
-        // FONCTION QUI GENERE DES VECTEURS DE BLOB et de SSBLOB
-        // ATTENTION LES GLB APPARTENANT AU MEME SSB DOIVENT ETRE RELIES D'UNE FACON OU UNE 
-        //    AUTRE
-        // FONCTION QUI EXTRAIT LES MAILLAGES QUI CONVIENNENT DU VECTEUR DE BLOBS A PARTIR
-        //    DU MAILLAGE
-        
-      }
-      test2++;
-    }
-    cout << "nb de blobs : " << test << endl;
     
     if (mode == 1){
-      objects = new AimsSurfaceTriangle(getBarycenters(mesh,nodes_lists,lat,lon,radius));
+      objects = new AimsSurfaceTriangle(getBarycenters(mesh,nodes_lists,radius));
+    }
+    else if (mode == 2){
+      ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss(getScaleSpace(latex,mesh,lat,lon));
+    
+      PrimalSketch<AimsSurface<3, Void>, Texture<float> > sketch(sujet, &ss, SURFACE);
+
+      sketch.ComputePrimalSketch(1.0, 8.0, "", 10);
+      cout << "CONSTRUIRE BLOBS" << endl;
+      blobs = construireBlobs(sketch);
+      cout << "FIN CONSTRUIRE BLOBS" << endl;
+      objects = new AimsSurfaceTriangle(getBlobsMeshes(blobs,mesh,nodes_lists));
+
     }
     
+    
+
+    
+    
+
+    
+    
+//     assert((*objects).size()==blobs.size());
     if (flatpath != ""){
       cerr << "écriture flat mesh:" << flatpath << endl;
       TimeTexture<float> texflat;
-      AimsSurfaceTriangle flat(getFlatMap(mesh,nodes_lists,lat,lon,texflat));
+      AimsSurfaceTriangle flat(getFlatMap(nodes_lists,lat,lon,texflat));
       cerr << flat[0].vertex().size() << " !=! " << texflat[0].nItem() << endl;
       Writer<AimsSurfaceTriangle> wflat(flatpath);
       wflat.write(flat);
-      Writer<TimeTexture<float> > wtex("/volatile/operto/test.tex");
-      wtex.write(texflat);
+//       Writer<TimeTexture<float> > wtex("/volatile/operto/test.tex");
+//       wtex.write(texflat);
     }
     
     
@@ -379,9 +453,10 @@ int main( int argc, const char **argv ){
     Vertex *vert;
     carto::rc_ptr<AimsSurfaceTriangle> ptr;
     aims::GraphManip manip;
+//     for (int i=0;i<(int)blobs.size();i++){
     for (int i=0;i<(int)(*objects).size();i++){
-      if ((*objects)[i].vertex().size() != 0){
-        cerr << graph.order() << endl;
+      if ((*objects)[i].vertex().size()!=0){
+        cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph.order() << flush ;
         vert = graph.addVertex("blob");
         vert->setProperty("index", i);
         vert->setProperty("name", i);
