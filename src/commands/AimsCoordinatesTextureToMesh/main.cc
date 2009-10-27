@@ -23,7 +23,7 @@ int main(int argc, const char **argv) //int argc, const char **argv)
      std::string adressTexZ="./";
      std::string adressOut="./";
 
-     AimsApplication     app( argc, argv, "Create 3 textures of node coordinates");
+     AimsApplication     app( argc, argv, "Creates a mesh from 3 coordinates textures (x,y and z)");
      try
      {
       app.addOption( adressMesh, "-i", "input mesh");
@@ -74,7 +74,7 @@ int main(int argc, const char **argv) //int argc, const char **argv)
       
       mesh.updateNormals();
   
-      // écriture des textures
+      // ï¿½criture des textures
       cout << "Writing new mesh" << endl;
       Writer< AimsSurfaceTriangle > mo(adressOut);
       mo.write( mesh );
