@@ -45,7 +45,7 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal){
     subjects.insert(sites[i]->subject);
   nbsujets = subjects.size();
   cout << "Construction des cliques ... " << flush;
-  cliques = ConstruireCliquesLastChance(sites,cliquesDuSite); //,meshes, lats,lons);
+  cliques = ConstruireCliquesLastChance(sites,cliquesDuSite); 
   
   
   uint nb_cl_sim=0, nb_cl_dd=0, nb_cl_intraps=0, nb_cl_lower=0;
@@ -72,7 +72,6 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal){
       }
   cout << labelsZones.size() << " zones" << endl;
   for (i=0;i<labelsZones.size()+1;i++)
-//   for (i=0;i<10;i++)
     labels.push_back(i);
   vector<int> zonescount, labelscount;
   for (i=0;i<labelsZones.size()+1;i++){
@@ -86,13 +85,10 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal){
     listeZones[j].insert(0);
     zonesListesBlobs[0].insert(j);
     for (uint k=0;k<labelsZones.size();k++){
-//       cout << "miaou"<<k << endl;
       Point3df bbmin1 = sites[j]->boundingbox_min, bbmax1 = sites[j]->boundingbox_max;
       uint no_overlap=0;
       getOverlap(bbmin1, bbmax1, Point3df(labelsZones[k].first[0],labelsZones[k].first[1],0.0), Point3df(labelsZones[k].second[0],labelsZones[k].second[1] ,0.0), &no_overlap);
-//       cout << "rec="<< rec << endl ;
       if (no_overlap == 0){
-//         cout << k << endl;
         zonescount[k+1]++;
         zonesListesBlobs[k+1].insert(j);
         listeZones[j].insert(k+1);
@@ -383,7 +379,10 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
     else cout << nblab[il] << "-" ;
   for (uint i=0;i<sites.size();i++){
     for (uint j=0;j<nblab.size();j++){
-      sites[i]->label_occur_number = nblab[sites[i]->label];
+      if (sites[i]->label != 0)
+        sites[i]->label_occur_number = nblab[sites[i]->label-1];
+      else 
+        sites[i]->label_occur_number = 0;
     }
   }
   cout <<"\b ";
@@ -484,7 +483,7 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
   vector<float> bc1, bc2;
   float tmin_1, tmax_1, trep, tvalue1;
   int index1;
-  int node;
+  int node, label_occur_number;
   string subject1, subject2;
   map<float, vector<pair<float, uint > > >::iterator meshIt;
   vector<pair<float, uint> >::iterator yIt;
@@ -508,9 +507,9 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
         (*iv)->setProperty("name", s.str());
         node = sites[i]->node;
         (*iv)->setProperty( "node", node);
-//         cout << node << " ";
-        (*iv)->getProperty( "node", node);
-//         cout << node << " " ;
+        label_occur_number = sites[i]->label_occur_number;
+        (*iv)->setProperty( "label_occur_number", label_occur_number);
+        
         
       }
   }

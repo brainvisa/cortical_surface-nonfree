@@ -456,39 +456,42 @@ int main( int argc, const char **argv ){
 //     for (int i=0;i<(int)blobs.size();i++){
     for (int i=0;i<(int)(*objects).size();i++){
       if ((*objects)[i].vertex().size()!=0){
-        cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph.order() << flush ;
-        vert = graph.addVertex("blob");
-        vert->setProperty("index", i);
-        vert->setProperty("name", i);
-        vert->setProperty("label", "0");
-        vert->setProperty("t", 100.0);
-        vert->setProperty("rank", i);
-        vert->setProperty( "subject", sujet);
-        
-        vert->setProperty( "tmin", 1);
-        vert->setProperty( "tmax", 4);
-        vert->setProperty( "trep", 2);
-        vert->setProperty( "depth", 100.0);
-        vert->setProperty( "tValue", 100.0);
-                
-        vert->setProperty("nodes_list", nodes_lists[i]);
         pair<Point2df, Point2df> bb(getBoundingBox(nodes_lists[i],lat,lon));
-        
-        bbmin2D.clear(); bbmax2D.clear();
-        bbmin2D.push_back(bb.first[0]);
-        bbmin2D.push_back(bb.first[1]);
-        bbmin2D.push_back(-1);
-        bbmax2D.push_back(bb.second[0]);
-        bbmax2D.push_back(bb.second[1]);
-        bbmax2D.push_back(-1);
-        vert->setProperty( "gravity_center", bbmin2D);
-        vert->setProperty("boundingbox_min", bbmin2D);
-        vert->setProperty("boundingbox_max", bbmax2D);
-  
-        ptr=carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-        (*ptr)[0]=(*objects)[i];
-        manip.storeAims(graph, vert, "blob", ptr);
-        vert->setProperty("blob_label",i);
+        float area = (bb.second[0]-bb.first[0])*(bb.second[1]-bb.first[1]);
+        if(area<1000.0){
+          cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph.order() << flush ;
+          vert = graph.addVertex("blob");
+          vert->setProperty("index", i);
+          vert->setProperty("name", i);
+          vert->setProperty("label", "0");
+          vert->setProperty("t", 100.0);
+          vert->setProperty("rank", i);
+          vert->setProperty( "subject", sujet);
+          
+          vert->setProperty( "tmin", 1);
+          vert->setProperty( "tmax", 4);
+          vert->setProperty( "trep", 2);
+          vert->setProperty( "depth", 100.0);
+          vert->setProperty( "tValue", 100.0);
+                  
+          vert->setProperty("nodes_list", nodes_lists[i]);
+          
+          bbmin2D.clear(); bbmax2D.clear();
+          bbmin2D.push_back(bb.first[0]);
+          bbmin2D.push_back(bb.first[1]);
+          bbmin2D.push_back(-1);
+          bbmax2D.push_back(bb.second[0]);
+          bbmax2D.push_back(bb.second[1]);
+          bbmax2D.push_back(-1);
+          vert->setProperty( "gravity_center", bbmin2D);
+          vert->setProperty("boundingbox_min", bbmin2D);
+          vert->setProperty("boundingbox_max", bbmax2D);
+    
+          ptr=carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+          (*ptr)[0]=(*objects)[i];
+          manip.storeAims(graph, vert, "blob", ptr);
+          vert->setProperty("blob_label",i);
+        }
       }
     }
 
