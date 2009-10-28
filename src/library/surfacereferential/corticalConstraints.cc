@@ -485,7 +485,7 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 					if(tex_result[0].item(*itvoisin)==value)
 					{
 						cpt++;
-						mem_vois=(*itvois);
+						mem_vois=(*itvoisin);
 					}
 				}
 				if( cpt==1 || cpt==3 || cpt==4 )
@@ -600,7 +600,7 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 					if(tex_result[0].item(*itvoisin)==value)
 					{
 						cpt++;
-						mem_vois=(*itvois);
+						mem_vois=(*itvoisin);
 					}
 				}
 				if( cpt==1 )
@@ -1292,7 +1292,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 					if(tex_result[0].item(*itvoisin)==value)
 					{
 						cpt++;
-						mem_vois=(*itvois);
+						mem_vois=(*itvoisin);
 					}
 				}
 				if( cpt==1 || cpt==3 || cpt==4 )
