@@ -1756,9 +1756,9 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 // possible aux contraintes. Les contraintes, et leurs valeurs, sont dans tex[0]
 
 
-     Writer< Texture1d > wtex0("/home/olivier/init.tex");
-     wtex0.write(init);
-     std::cerr << "init written" << std::endl;
+//      Writer< Texture1d > wtex0("/home/olivier/init.tex");
+//      wtex0.write(init);
+//      std::cerr << "init written" << std::endl;
 
      std::map<float, std::vector<float> > mapCon;
      std::map<float, float> mapRescale;
@@ -1910,9 +1910,9 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 		}
 	}
 
-     std::cerr << "DEBUG : Writing betaaaaaaa" << std::endl; 
-     Writer< Texture1d > wbetInit("/home/olivier/initBeta.tex");
-     wbetInit.write(betaInit);
+//      std::cerr << "DEBUG : Writing betaaaaaaa" << std::endl; 
+//      Writer< Texture1d > wbetInit("/home/olivier/initBeta.tex");
+//      wbetInit.write(betaInit);
 
 
 	if(typeBeta==0)
