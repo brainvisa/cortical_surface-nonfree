@@ -20,6 +20,7 @@ PSUBDIRS += \
   surfTexActivationSimulation \
   surfStructuralAnalysis \
   surfLabelsTex2Graph \
+  surfResultsSignificance \
   AimsCheck2DCoordinate \
   AimsMeshToAtlas \
   AimsSulcusNormalizeDepthProfile \

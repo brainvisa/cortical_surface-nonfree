@@ -3,12 +3,12 @@
 #include <aims/io/writer.h>
 #include <aims/mesh/surface.h>
 #include <aims/mesh/texture.h>
-#include "iograph.h"
-#include "icm.h"
-#include "old_anneal.h"
-#include "anneal.h"
-#include "cluster.h"
-#include "validation.h"
+#include <cortical_surface/structuralanalysis/iograph.h>
+#include <cortical_surface/structuralanalysis/icm.h>
+#include <cortical_surface/structuralanalysis/old_anneal.h>
+#include <cortical_surface/structuralanalysis/anneal.h>
+#include <cortical_surface/structuralanalysis/cluster.h>
+// #include "validation.h"
 
 #include <aims/math/random.h>
 
@@ -24,8 +24,7 @@ int main(int argc, const char **argv){
   float _ddweight=0.8, _intrapsweight = 4.0, _simweight=1.0, _lsweight=1.0, _ddx1 = 3.125, _ddx2 = 4.50, _ddh=0.0001;
   _ddx1 = 8.0;
   _ddx2 = 4.0;
-//   _ddx1 = 10.0;
-//   _ddx2 = 31.0;
+
 
   int run=1;
   AimsApplication     app( argc, argv, "Initialize");
@@ -33,7 +32,6 @@ int main(int argc, const char **argv){
   app.alias( "--primal", "-p" );
   app.addOption( output, "-o", "PS graph", "");
   app.alias( "--output", "-o" );
-//   app.addOption( atlaspath, "-m" , "Chemin de base des données d'atlas", 0);
   app.addOption(run,"--run","run",0);
   app.addOption(save,"--save","save",0);
   app.addOption(val,"--valid","valid",0);
@@ -55,48 +53,6 @@ int main(int argc, const char **argv){
   map<string, TimeTexture<float> > lats, lons;
   set<string>::iterator it=sujets.begin();
 
-
-//   for (;it!=sujets.end();it++){
-//     string meshpath, latpath, lonpath;
-//     if (atlaspath.find("nmr_surface")!=string::npos){
-//     meshpath = atlaspath + *it + "/mesh/" + *it + "_Lwhite.mesh";
-//     latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
-//     lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
-//     }
-//     else if (atlaspath.find("simulations")!=string::npos){
-//     meshpath = atlaspath + "sphere.mesh";
-//     latpath = atlaspath + "latitude.tex";
-//     lonpath = atlaspath + "longitude.tex";
-//     }
-//     else if (atlaspath.find("somato")!=string::npos){
-//     meshpath = atlaspath + *it + "/tri/" + *it + "_Lwhite.mesh";
-//     latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
-//     lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
-//     }
-//     else if (atlaspath.find("nmr_marseille")!=string::npos){
-//     
-//       meshpath = atlaspath + *it + "/t1mri/default_acquisition/default_analysis/segmentation/mesh/" + *it + "_Lwhite.mesh";
-//       latpath = atlaspath + *it + "/surface/" + *it + "_L_lat.tex";
-//       lonpath = atlaspath + *it + "/surface/" + *it + "_L_lon.tex";
-//     }
-// //    else ASSERT(false);
-//     cout << "chargement" << endl;
-//     Reader<AimsSurfaceTriangle> rmesh(meshpath);
-//     Reader<TimeTexture<float> > rlat(latpath);
-//     Reader<TimeTexture<float> > rlon(lonpath);
-//     AimsSurfaceTriangle newmesh;
-//     rmesh.read(newmesh);
-// 
-//     meshes[*it] = AimsSurfaceTriangle(newmesh);
-// 
-//     TimeTexture<float> lat, lon;
-//     rlat.read(lat);
-//     rlon.read(lon);
-//     
-//     lats[*it]=TimeTexture<float>(lat);
-//     lons[*it]=TimeTexture<float>(lon);
-//   }
-//   SWC swc(primal, mesh, lat, lon);
   Anneal swc(primal);
   
   swc.recuitpath = recuitpath;
@@ -106,14 +62,12 @@ int main(int argc, const char **argv){
   swc.setModelParameters(_ddweight, _intrapsweight, _simweight, _lsweight, _ddx2, _ddx1, _ddh);
   swc.run = run;
   swc.Initialization();
-  StructuralAnalysis_Validation valid(&swc);
-  if (val) valid.ValidAround();
+//   StructuralAnalysis_Validation valid(&swc);
+//   if (val) valid.ValidAround();
   swc.Run(verbose);
   swc.SummaryLabels();
   swc.StoreToGraph(primal);
   if (save) SauvegarderGraphes(primal, graphFile, output);
-//   swc.Validation(CLUSTERS);
-//   swc.Validation(BOOTSTRAP);
   return(0);
 
 }

@@ -17,6 +17,17 @@ HEADERS = \
   surfacereferential/sulcusCorticalSnake.h \
   surfacereferential/sulcusCorticalSnake_energy.h \
   surfacereferential/conformalMapping.h \
+  structuralanalysis/iograph.h \
+  structuralanalysis/meshdistance.h \
+  structuralanalysis/sites.h \
+  structuralanalysis/cliques.h \
+  structuralanalysis/minimization.h \
+  structuralanalysis/icm.h \
+  structuralanalysis/anneal.h \
+  structuralanalysis/old_anneal.h \
+  structuralanalysis/cluster.h \
+  structuralanalysis/validation.h \
+
 
 SOURCES = \
   mesh/isoLine.cc \
@@ -29,4 +40,13 @@ SOURCES = \
   surfacereferential/sulcusCorticalSnake.cc \
   surfacereferential/sulcusCorticalSnake_energy.cc \
   surfacereferential/conformalMapping.cc \
-
+  structuralanalysis/iograph.cc \
+  structuralanalysis/meshdistance.cc \
+  structuralanalysis/sites.cc \
+  structuralanalysis/cliques.cc \
+  structuralanalysis/minimization.cc \
+  structuralanalysis/icm.cc \
+  structuralanalysis/anneal.cc \
+  structuralanalysis/old_anneal.cc \
+  structuralanalysis/cluster.cc \
+  structuralanalysis/validation.cc
