@@ -25,5 +25,6 @@ PSUBDIRS += \
   AimsMeshToAtlas \
   AimsSulcusNormalizeDepthProfile \
   AimsConformalMapping \
-  AimsMeshCoordinatesToDecimated
+  AimsMeshCoordinatesToDecimated \
+  AimsExtractGyrus
   
