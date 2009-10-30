@@ -34,9 +34,9 @@ class Clique{
           if (blobs[0]->label != 0){
 //             cout << blobs[0]->label << " " << blobs[0]->t ;
 //            if (blobs[0]->t > ddx2) energy = ddh;
-            if (blobs[0]->tValue < ddx1) energy = 1.0; 
+            if (blobs[0]->t < ddx1) energy = 1.0; 
             else { 
-            energy =  pow(ddx2/2.0,2)/(pow(0.5*ddx2,2)+pow(blobs[0]->tValue-ddx1,2));
+            energy =  pow(ddx2/2.0,2)/(pow(0.5*ddx2,2)+pow(blobs[0]->t -ddx1,2));
             }
 //             cout << " " << energy << " " << ddweight << " " << CLIQUESNBSUJETS << "/";
 

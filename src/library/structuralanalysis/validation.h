@@ -23,8 +23,7 @@ class StructuralAnalysis_Validation{
     vector<int> getCompConn(vector<uint> &indicesCliques, set<uint> &listeSites);
     vector<set<uint> > getCompConnVector(vector<int> &comp);
 
-//     long double getCompacite(set<uint> &liste, bool verb);
-//     vector<float> getPseudoSamplesPermut(vector<uint> &listeBlobs);
+
     vector<double> getPseudoSamplesBootstrap(vector<uint> &listeBlobs, uint type=0);
     vector<double> getPseudoSamplesFullBootstrap(vector<uint> &listeBlobs, uint type =0);
     vector<double> getPseudoSamplesFullBootstrap2(vector<uint> &listeBlobs);
@@ -36,8 +35,6 @@ class StructuralAnalysis_Validation{
     void printFile(vector<double> &samples, FILE *f);
 
 
-//     void getRandomLabelsEnergies(long double nb, FILE *f);
-//     void Validation(int type=PERMUT);
 
     void ValidTestLastChance();
     void ValidTest();

@@ -20,7 +20,7 @@ int main(int argc, const char **argv){
   string  graphFile, output, atlaspath= "", recuitpath="", energypath="";
   int verbose=1;
   Graph primal;
-  uint save=1, val=1;
+  uint save=1;
   float _ddweight=0.8, _intrapsweight = 4.0, _simweight=1.0, _lsweight=1.0, _ddx1 = 3.125, _ddx2 = 4.50, _ddh=0.0001;
   _ddx1 = 8.0;
   _ddx2 = 4.0;
@@ -34,7 +34,6 @@ int main(int argc, const char **argv){
   app.alias( "--output", "-o" );
   app.addOption(run,"--run","run",0);
   app.addOption(save,"--save","save",0);
-  app.addOption(val,"--valid","valid",0);
   app.addOption(verbose,"--verbose","verbose", 1.0);
   app.addOption(_ddweight, "--ddw", "ddweight", 1.0);
   app.addOption(_intrapsweight, "--ipsw", "intrapsweight",  1.0);
@@ -49,9 +48,9 @@ int main(int argc, const char **argv){
 
   LireGraphes(graphFile,primal);
   set<string> sujets(RecupererSujets(primal));
-  map<string, AimsSurfaceTriangle> meshes;
-  map<string, TimeTexture<float> > lats, lons;
-  set<string>::iterator it=sujets.begin();
+//   map<string, AimsSurfaceTriangle> meshes;
+//   map<string, TimeTexture<float> > lats, lons;
+//   set<string>::iterator it=sujets.begin();
 
   Anneal swc(primal);
   
@@ -62,8 +61,7 @@ int main(int argc, const char **argv){
   swc.setModelParameters(_ddweight, _intrapsweight, _simweight, _lsweight, _ddx2, _ddx1, _ddh);
   swc.run = run;
   swc.Initialization();
-//   StructuralAnalysis_Validation valid(&swc);
-//   if (val) valid.ValidAround();
+
   swc.Run(verbose);
   swc.SummaryLabels();
   swc.StoreToGraph(primal);

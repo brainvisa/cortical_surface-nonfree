@@ -6,10 +6,7 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-Anneal::Anneal(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
-  MinimizationSetup(primal,meshes,lats,lons);
 
-}
 
 Anneal::Anneal(Graph &primal){
   MinimizationSetup(primal);

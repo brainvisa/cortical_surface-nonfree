@@ -22,7 +22,7 @@ class SWC: public SurfaceBased_StructuralAnalysis{
 
   public:
     SWC(){}
-    SWC(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
+
     void Run();
     void Run2();
 };

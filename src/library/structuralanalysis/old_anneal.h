@@ -14,7 +14,7 @@ class OldAnneal: public SurfaceBased_StructuralAnalysis{
 
   public:
     OldAnneal(){}
-    OldAnneal(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
+
     void Run(int verbose=1);
     void Step(vector<int> &random, long double temp, uint &mod);
 };

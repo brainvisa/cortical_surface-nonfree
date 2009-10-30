@@ -9,9 +9,7 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-SWC::SWC(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
-  MinimizationSetup(primal,meshes,lats,lons);
-}
+
 
 vector<int> SWC::getCompConn(vector<uint> &indicesCliques, set<uint> &listeSites){
   vector<int> comp(sites.size());

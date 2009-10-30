@@ -30,7 +30,6 @@ struct ltstr_vec
 };
 
 
-void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){}
 
 void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal){
   cout << "Construction du vecteur de sites ..." << flush;
@@ -115,26 +114,7 @@ SurfaceBased_StructuralAnalysis::SurfaceBased_StructuralAnalysis(Graph &primal){
   MinimizationSetup(primal);
 }
 
-SurfaceBased_StructuralAnalysis::SurfaceBased_StructuralAnalysis(Graph &primal, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
-  MinimizationSetup(primal,meshes,lats,lons);
 
-//   Initialization();
-//   for (uint k=0;k<cliques.size();k++){
-//     cliques[k].updateLabelsCount();
-//     cliques[k].computeEnergy(true,nbsujets);
-//   }
-// 
-//   for (uint i=0;i<cliques.size();i++)
-//     if (cliques[i].type == INTRAPRIMALSKETCH)
-//       ipscliques.push_back(i);
-// 
-//   cout << ipscliques.size() << " cliques intraps" << endl;
-// 
-//   energy = getTotalEnergy();
-// 
-//   cout << "energie initiale : " << energy << endl;
-//   SummaryLabels();
-}
 
 
 // void SurfaceBased_StructuralAnalysis::Initialization(){
@@ -307,11 +287,11 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
 
   long double Etotal=0.0;
   cout << endl << endl;
-  FILE * f;
-  if (energypath!=""){
-   f = fopen (energypath.data(),"a");
-   fprintf(f, "== SUMMARYLABELS ==\n");
-  }
+//   FILE * f;
+//   if (energypath!=""){
+//    f = fopen (energypath.data(),"a");
+//    fprintf(f, "== SUMMARYLABELS ==\n");
+//   }
   for (uint lab=1;lab<labels.size();lab++){
     Edd=0.0; Esim=0.0; Esub=0.0; Eintra=0.0;
     
@@ -387,8 +367,9 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
   }
   cout <<"\b ";
   cout << "Etot=" << Etotal << endl;
-
-  fclose(f);
+//   if (energypath!="") 
+//     fclose(f);
+  
 }
 
 void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
@@ -481,7 +462,7 @@ void SurfaceBased_StructuralAnalysis::setModelParameters(float _ddweight, float 
 void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
   std::set<Vertex *>::iterator iv, jv;
   vector<float> bc1, bc2;
-  float tmin_1, tmax_1, trep, tvalue1;
+  float tmin_1, tmax_1, trep, tvalue1,value;
   int index1;
   int node, label_occur_number;
   string subject1, subject2;
@@ -509,6 +490,12 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
         (*iv)->setProperty( "node", node);
         label_occur_number = sites[i]->label_occur_number;
         (*iv)->setProperty( "label_occur_number", label_occur_number);
+        value= sites[i]->significance;
+        (*iv)->setProperty( "significance", value);
+        value= sites[i]->t_rankperc;
+        (*iv)->setProperty( "t_rankperc", value);
+        value= sites[i]->sim_rankperc;
+        (*iv)->setProperty( "sim_rankperc", value);
         
         
       }

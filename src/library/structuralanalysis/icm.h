@@ -14,7 +14,7 @@ class ICM: public SurfaceBased_StructuralAnalysis{
 
   public:
     ICM(){}
-    ICM(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
+
 
     void Run();
     void Step(uint &mod);

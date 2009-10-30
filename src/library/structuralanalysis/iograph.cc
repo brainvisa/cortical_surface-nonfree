@@ -102,6 +102,7 @@ void RecupererGraphesIndividuels( const std::vector<Graph*> subjects, Graph & mu
   string          subjatt, s;
   int           index;
   int node, label_occur_number;
+  float value;
   Graph::const_iterator       isv, esv;
   map<int, Vertex *>::iterator      iv;
   string          l;
@@ -139,6 +140,12 @@ void RecupererGraphesIndividuels( const std::vector<Graph*> subjects, Graph & mu
         iv->second->setProperty( "node", node);
         (*imv)->getProperty( "label_occur_number", label_occur_number);
         iv->second->setProperty( "label_occur_number", label_occur_number);
+        (*imv)->getProperty( "significance", value);
+        iv->second->setProperty( "significance", value);
+        (*imv)->getProperty( "t_rankperc", value);
+        iv->second->setProperty( "t_rankperc", value);
+        (*imv)->getProperty( "sim_rankperc", value);
+        iv->second->setProperty( "sim_rankperc", value);
 
       }
     }

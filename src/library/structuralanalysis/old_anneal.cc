@@ -6,9 +6,7 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-OldAnneal::OldAnneal(Graph &primal, map<string, AimsSurfaceTriangle > &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
-  MinimizationSetup(primal,meshes,lats,lons);
-}
+
 
 void OldAnneal::Step(vector<int> &random, long double temp, uint &mod){
   

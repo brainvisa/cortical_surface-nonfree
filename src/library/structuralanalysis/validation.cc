@@ -1119,13 +1119,17 @@ void StructuralAnalysis_Validation::ValidAround(){
   for (uint i=0;i<activblobs.size();i++)
     for (it=activblobs[i].begin();it!=activblobs[i].end();it++)
       activblobsglobal.insert(*it);
+  vector<vector<float> > results(activblobs.size());
+  uint activindex=0;
+  set<uint> processedsizes;
   cout << "ABG=" << activblobsglobal.size() << endl;
-
   
-  for (uint i=0;i<activblobs.size();i++){
+  
+  for (uint i=0;i<activblobs.size();i++) {
+    if (processedsizes.find(activblobs[i].size())==processedsizes.end()){
+          processedsizes.insert(activblobs[i].size());
           set<uint> forbidden,autorized(activblobs[i]);
-          
-            
+      
           cout << endl << activblobs[i].size() << endl;
           for (it=activblobs[i].begin();it!=activblobs[i].end();it++)
             cout << *it << " ";
@@ -1153,19 +1157,8 @@ void StructuralAnalysis_Validation::ValidAround(){
               }
             }
           }
-//           autorized.insert(0);
 
-//           for (uint j=0;j<ssb->sites.size();j++){
-//             if (autorized.find(j)==autorized.end()) {
-//               forbidden.insert(j);
-//             }
-//           }
           cout << "restent :"<< ssb->sites.size()-forbidden.size() << endl;
-//           cout << nbcombinaisons(autorized,activblobs[i].size()) << "possibilités"<< endl;
-//           for (uint j=0;j<ssb->sites.size();j++)
-//             if (forbidden.find(j)==forbidden.end())
-//               cout << j << "(" << ccc[j]<< ") ";
-//           cout << endl;
 
           for (uint j=0;j<10000;j++){
 //                 cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << j << flush;
@@ -1178,14 +1171,11 @@ void StructuralAnalysis_Validation::ValidAround(){
                 vector<uint> composante;
                 composante.push_back(startsite);
                           
-//                 if (startsite==*(activblobs[i].begin())) cout << startsite << " " << flush;
-
                           
                 dejapris.insert(startsite);
                           
 
                 set<uint> voisins;
-//                 cout << "start:"<<*it << " " << flush;
                 while (composante.size()<activblobs[i].size()){
                       
                   uint test = composante[composante.size()-1];
@@ -1197,23 +1187,10 @@ void StructuralAnalysis_Validation::ValidAround(){
                         voisins.insert(ssb->cliques[currclique].blobs[0]->index);
                       if (dejapris.find(ssb->cliques[currclique].blobs[1]->index) == dejapris.end())
                         voisins.insert(ssb->cliques[currclique].blobs[1]->index);
-//                       cout << ssb->cliques[currclique].blobs[0]->index << "-" << ssb->cliques[currclique].blobs[1]->index << " " << flush;
                     }
                   }
                   assert(voisins.size()!=0);
-//                   if (voisins.size()==0) {
-//                     dejapris.clear();
-//                     dejapris = set<uint>(forbidden);
-//                     do{
-//                       startsite = (float)UniformRandom() * ssb->sites.size();
-//                     }
-//                     while(tirage[startsite]<1 || dejapris.find(startsite) != dejapris.end());
-//                     composante.clear();
-//                     composante.push_back(startsite);   
-//                     dejapris.insert(startsite);
-//                     voisins.clear();
-//                   }
-//                   else {
+
                     uint random = (float)UniformRandom() * voisins.size();
                     it=voisins.begin();
                     for (uint n=0;n<random;n++,it++){}
@@ -1237,12 +1214,12 @@ void StructuralAnalysis_Validation::ValidAround(){
       
           float mini,step;
           FILE *f,*ft,*frec,*fNeg,*fAct,*fActRec;
-          f=fopen("/home/grg/histo.txt","w");
-          ft=fopen("/home/grg/histo_t.txt","w");
-          frec=fopen("/home/grg/histo_rec.txt","w");
-          fNeg=fopen("/home/grg/histo_neg.txt","w");
-          fAct=fopen("/home/grg/barres_activ.txt","w");
-          fActRec=fopen("/home/grg/barres_activrec.txt","w");
+          f=fopen("/volatile/operto/histo.txt","w");
+          ft=fopen("/volatile/operto/histo_t.txt","w");
+          frec=fopen("/volatile/operto/histo_rec.txt","w");
+          fNeg=fopen("/volatile/operto/histo_neg.txt","w");
+          fAct=fopen("/volatile/operto/barres_activ.txt","w");
+          fActRec=fopen("/volatile/operto/barres_activrec.txt","w");
           cout << endl<< "nombre de neg:"<< samplesNeg.size()<< endl;
           uint histosize=40;
 
@@ -1274,34 +1251,38 @@ void StructuralAnalysis_Validation::ValidAround(){
           
           for (uint j=0;j<activblobs.size();j++){
             if (activblobs[j].size() == activblobs[i].size()){
-            vector<uint> composante;
-            vector<double> samplesTri(samplesT);
-            
-            for (it=activblobs[j].begin();it!=activblobs[j].end();it++)
-              composante.push_back(*it);
-            vector<double> sample(getCaracSample(composante));
-            samplesTri.push_back(sample[0]);
-            std::sort(samplesTri.begin(),samplesTri.end());
-            double r;
-            for (r=0;r<(int)samplesTri.size() && pow(samplesTri[r] - sample[0],2) >0.001;r++){}
-            assert (r!=samplesTri.size());
-            cout << "perc. " << j <<":" << r/(double)samplesTri.size()*100.0 << " " << sample[0] << endl;
-            fprintf(fAct,"%f %f\n", sample[0], (double)maxiheight);
+                vector<uint> composante;
+                vector<double> samplesTri(samplesT);
+                
+                for (it=activblobs[j].begin();it!=activblobs[j].end();it++)
+                  composante.push_back(*it);
+                vector<double> sample(getCaracSample(composante));
+                samplesTri.push_back(sample[0]);
+                std::sort(samplesTri.begin(),samplesTri.end());
+                double r;
+                for (r=0;r<(int)samplesTri.size() && pow(samplesTri[r] - sample[0],2) >0.001;r++){}
+                assert (r!=samplesTri.size());
+                cout << "perc. " << j <<":" << r/(double)samplesTri.size()*100.0 << " " << sample[0] << endl;
+                results[activindex].push_back(ssb->sites[*(activblobs[j].begin())]->label);
+                results[activindex].push_back(r/(double)samplesTri.size()*100.0);
+                fprintf(fAct,"%f %f\n", sample[0], (double)maxiheight);
             }
             if (activblobs[j].size() == activblobs[i].size()){
-              vector<uint> composante;
-              vector<double> samplesTri(samplesRec);
-            
-              for (it=activblobs[j].begin();it!=activblobs[j].end();it++)
-                composante.push_back(*it);
-              vector<double> sample(getCaracSample(composante));
-              samplesTri.push_back(sample[2]);
-              std::sort(samplesTri.begin(),samplesTri.end());
-              double r;
-              for (r=0;r<(int)samplesTri.size() && pow(samplesTri[r] - sample[2],2) >0.001;r++){}
-              assert (r!=samplesTri.size());
-              cout << "perc. " << ssb->sites[*(activblobs[j].begin())]->label <<":" << r/(double)samplesTri.size()*100.0 << " " << sample[2] << endl;
-              fprintf(fActRec,"%f %f\n", sample[2], (double)maxiheight2);
+                vector<uint> composante;
+                vector<double> samplesTri(samplesRec);
+              
+                for (it=activblobs[j].begin();it!=activblobs[j].end();it++)
+                  composante.push_back(*it);
+                vector<double> sample(getCaracSample(composante));
+                samplesTri.push_back(sample[2]);
+                std::sort(samplesTri.begin(),samplesTri.end());
+                double r;
+                for (r=0;r<(int)samplesTri.size() && pow(samplesTri[r] - sample[2],2) >0.001;r++){}
+                assert (r!=samplesTri.size());
+                cout << "perc. " << ssb->sites[*(activblobs[j].begin())]->label <<":" << r/(double)samplesTri.size()*100.0 << " " << sample[2] << endl;
+                results[activindex].push_back(r/(double)samplesTri.size()*100.0);
+                activindex++;
+                fprintf(fActRec,"%f %f\n", sample[2], (double)maxiheight2);
             }
           }
             
@@ -1311,10 +1292,24 @@ void StructuralAnalysis_Validation::ValidAround(){
 //           cout << "label " << j << " tmoy=" << sample[0] << " ttest =" << sample[1] <<" rec=" << sample[2] <<  endl;
 //           cout << "label:" << j << " ttest=" << sample[1];
           fclose(f);fclose(ft);fclose(frec);fclose(fNeg);fclose(fAct);fclose(fActRec);
-          cin>>mini;
+//           cin>>mini;
+    }
 
   }
-
+  cout << "fin " << endl;
+  for (uint i=0;i<results.size();i++){
+      cerr << i << ":" << flush;
+      cerr << "label " << results[i][0] << ": t-perc=" << results[i][1] << " sim-perc=" << results[i][2] << endl;
+      uint j;
+      for (j=0;ssb->sites[*(activblobs[j].begin())]->label != results[i][0] && j<activblobs.size();j++){}
+      for (it=activblobs[j].begin();it!=activblobs[j].end();it++){
+        ssb->sites[*it]->t_rankperc = results[i][1];
+        ssb->sites[*it]->sim_rankperc = results[i][2];
+        ssb->sites[*it]->significance = (results[i][1]+results[i][2])/2.0;
+      }
+        
+      
+  }
 
 
 
