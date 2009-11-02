@@ -48,7 +48,7 @@
 #include <aims/primalsketch/finiteElementSmoother_d.h>
 #include <aims/primalsketch/primalSketch.h>
 #include <cortical_surface/structuralanalysis/representation.h>
-
+#include <cortical_surface/structuralanalysis/cliques.h>
 #include "blobs.h"
 
 
@@ -283,6 +283,7 @@ AimsSurfaceTriangle getBarycenters(AimsSurfaceTriangle &mesh,  vector<vector<int
 
 
 
+
 int main( int argc, const char **argv ){
   try {
   
@@ -329,9 +330,11 @@ int main( int argc, const char **argv ){
     rlon.read(lon);
     
     
-    vector<SSBlob> ssblobs;
+    vector<SSBlob *> ssblobs;
     vector<Blob *> blobs;
-    
+    vector<pair<Point2d, float> > cliques;
+
+
     if (mode == 1){
       objects = new AimsSurfaceTriangle(getBarycenters(mesh,nodes_lists,radius));
     }
@@ -343,6 +346,50 @@ int main( int argc, const char **argv ){
       sketch.ComputePrimalSketch(1.0, 8.0, "", 10);
       cout << "CONSTRUIRE BLOBS" << endl;
       blobs = construireBlobs(sketch);
+
+      // CONSTRUIRE ssblobs
+      vector<set<uint> > matchingblobs(ssblobs.size());
+      set<Blob *>::iterator itB1,itB2;
+      Blob *b1max, *b2max;
+      float overlap;
+      for (uint i=0;i<ssblobs.size()-1;i++){
+        for (uint j=i+1;j<ssblobs.size();j++){
+          float overmax=0.0;
+          
+          for (itB1=ssblobs[i]->blobs.begin();itB1!=ssblobs[i]->blobs.end();itB1++){
+            for (itB2=ssblobs[j]->blobs.begin();itB2!=ssblobs[j]->blobs.end();itB2++){
+              // test overlap entre deux glblobs
+              
+//               pair<Point2df,Point2df> bbi=getBoundingBox((*itB1)->nodes_list,lat,lon), bbj =getBoundingBox((*itB2)->nodes_list,lat,lon) ;
+              Point3df bbmin1, bbmin2, bbmax1, bbmax2;
+              uint no_overlap=0;
+              double overlap=getOverlap(bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap);
+              if (overlap>overmax) {
+                overmax = overlap;
+                b1max=*itB1;
+                b2max=*itB2;
+              }
+            }
+          }
+          if (overlap!=0){
+// une fois qu'on a trouvé le max pour paire de ssb i et j, et bien si overlap!=0, alors création de clique et on retient dans une liste associé à chaque ssb que ces glb particuliers ont matché quelque chose (cela servira pour calculer un glb de représentation pour chaque ssb)
+          // création d'une arête dans le Graph
+            pair<Point2d, float> res;
+            res.first = Point2d(i,j);
+            res.second = overlap;
+            cliques.push_back(res);
+            matchingblobs[i].insert(b1max->index);
+            matchingblobs[j].insert(b2max->index);
+          }
+
+        }
+      }
+      
+      for (uint i=0;i<ssblobs.size();i++){
+        // on parcourt pour chaque ssb la liste des glb qui ont matché quelque chose
+        // et on construit un glb de représentation
+
+      }
       cout << "FIN CONSTRUIRE BLOBS" << endl;
       objects = new AimsSurfaceTriangle(getBlobsMeshes(blobs,mesh,nodes_lists));
 
@@ -416,6 +463,13 @@ int main( int argc, const char **argv ){
           vert->setProperty("blob_label",i);
         }
       }
+    }
+
+    // CONSTRUIRE LES ARETES
+
+    for (uint i=0;i<cliques.size();i++){
+      vert = graph.addVertex("b2b"); // ou un truc du genre
+
     }
 
     cerr << "graph.order:" << graph.order() << endl;

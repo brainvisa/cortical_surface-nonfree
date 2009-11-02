@@ -4,9 +4,7 @@
 #include <math.h>
 #include <cortical_surface/structuralanalysis/sites.h>
 #include <cortical_surface/structuralanalysis/meshdistance.h>
-// #include "cathier/aims_wrap.h"
-// #include "cathier/triangle_mesh_geodesic_map.h"
-// #include "cathier/math_functions.h"
+
 
 using namespace std;
 
@@ -160,7 +158,7 @@ double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bb
 
 vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
 
-// vector<Clique> ConstruireCliquesSimple(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
+
 
 vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite);
 
