@@ -37,7 +37,7 @@ class SurfaceBased_StructuralAnalysis{
     SurfaceBased_StructuralAnalysis(){}
     SurfaceBased_StructuralAnalysis(Graph &primal);
 
-    void setModelParameters(float _ddweight=0.0, float _intrapsweight = 0.0, float _simweight=0.0, float _lsweight=0.0, float _ddx2 = 0.0, float _ddx1 = 0.0, float _ddh=0.0, float _ddweight2=0.0, float _dd2x1=0.0, float _dd2x2=0.0);
+    void setModelParameters(float _ddweight=0.0, float _intrapsweight = 0.0, float _simweight=0.0, float _lsweight=0.0, float _ddx2 = 0.0, float _ddx1 = 0.0, float _ddh=0.0);
     
     void RunMinimization(int type);
     long double getLabelEnergy(int label, int type=UNKNOWN);

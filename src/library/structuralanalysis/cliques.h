@@ -16,7 +16,7 @@ enum typesCliques {
 
 class Clique{
   public:
-  static float ddweight, intrapsweight, simweight, lsweight, ddx2, ddx1, ddh, ddweight2, dd2x2, dd2x1;
+  static float ddweight, intrapsweight, simweight, lsweight, ddx2, ddx1, ddh;
 
 //   public :
     int type;
@@ -90,23 +90,6 @@ class Clique{
           }
           
           break;
-        case DATADRIVEN2:
-          ASSERT(blobs.size()==1);
-          if (blobs[0]->label != 0){
-//            if (blobs[0]->t > ddx2) energy = ddh;
-            if (blobs[0]->t2 < dd2x1) energy = 1.0; 
-            else { 
-            energy =  pow(dd2x2/2.0,2)/(pow(0.5*dd2x2,2)+pow(blobs[0]->t-dd2x1,2));
-            }
-
-          }
-          else {
-            energy = 0.0;
-          }
-          energy *= ddweight2;
-          energy *= CLIQUESNBSUJETS;
-
-        break;
       }
       if (save) energie = energy;
       return energy;
@@ -168,7 +151,7 @@ class Clique{
       return energy;
     }
     void updateLabelsCount();
-    static void setParameters(float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh, float _ddweight2, float _dd2x1, float _dd2x2);
+    static void setParameters(float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh);
     static float getIntraPSWeight(){return intrapsweight;}
     Clique(){ type = UNKNOWN; energie = 0.0; blobs = vector<Site *>(); labelscount = map<int,uint>();  }
 };

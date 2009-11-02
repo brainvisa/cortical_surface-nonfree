@@ -5,9 +5,9 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-float Clique::ddweight, Clique::intrapsweight, Clique::simweight, Clique::lsweight, Clique::ddx2, Clique::ddx1, Clique::ddh, Clique::ddweight2, Clique::dd2x1, Clique::dd2x2;
-void Clique::setParameters(float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh, float _ddweight2, float _dd2x1, float _dd2x2){
-  ddweight=_ddweight; intrapsweight = _intrapsweight; simweight=_simweight; lsweight=_lsweight; ddx2 =_ddx2;  ddx1 = _ddx1; ddh=_ddh; ddweight2=_ddweight2; dd2x1=_dd2x1; dd2x2=_dd2x2;
+float Clique::ddweight, Clique::intrapsweight, Clique::simweight, Clique::lsweight, Clique::ddx2, Clique::ddx1, Clique::ddh;
+void Clique::setParameters(float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh){
+  ddweight=_ddweight; intrapsweight = _intrapsweight; simweight=_simweight; lsweight=_lsweight; ddx2 =_ddx2;  ddx1 = _ddx1; ddh=_ddh;
 }
 
 void Clique::updateLabelsCount(){
@@ -69,62 +69,6 @@ int getNode(map<float, vector<pair<float, uint> > > &altmesh, float delta, float
   return mini;
 }
 
-// map<uint,float> test_geodmap(til::Mesh_N mesh, int dep, double distthresh){
-//   std::vector< std::size_t > startPoints;
-//   startPoints.push_back(dep);
-//   til::ghost::GMapStop_AboveThreshold<double> stopGhost(distthresh);
-//   typedef std::vector<std::vector<std::size_t> > CNeighborhoods;
-//     
-//   shared_ptr<CNeighborhoods> pneighc = til::circular_neighborhoods(getVertices(mesh), getFaceIndices(mesh));
-//     
-//   til::Triangle_mesh_geodesic_map<til::Mesh_N::VertexCollection, CNeighborhoods, double, til::ghost::GMapStop_AboveThreshold<double>, til::policy::GMap_DefaultStorage_sparse_vect_dbl >
-//       geomap(getVertices(mesh), *pneighc, stopGhost);
-//     
-//     
-// //     std::vector<std::size_t> startPoints(1);
-// //     std::vector<double> dist(1, 0.0);
-//     
-//   std::vector<double> dist(( int )startPoints.size(), 0.0);
-// //     startPoints[0] = vertex;
-//   geomap.init(startPoints, dist);
-//   geomap.process();
-//   shared_ptr<til::sparse_vector<double> > sres = geomap.distanceMap(); 
-//   {
-//     til::sparse_vector<double>::sparse_iterator iRes = sres->sparse_begin();
-//     if (false)
-//     {
-//       for (; iRes != sres->sparse_end(); ++iRes)
-//       {
-//         std::cout << iRes->first << " ";
-//         std::cout << iRes->second << " ";
-//       }
-//       std::cout << std::endl;
-//     }
-//   }
-//   map<uint,float> res; //(til::size(*sres));
-//   {
-// //     std::vector<double>::iterator iRes = res.begin();
-//     til::sparse_vector<double>::const_iterator iRes2 = sres->begin();
-//     uint i=0;
-//     for (; iRes2 != sres->end();++iRes2,i++)
-//     {
-//       res[i] = *iRes2;
-//     }
-//   }
-// //   for (std::size_t i = 0; i < til::size(res); ++i) res[i] = til::min(res[i], 100.0);
-// //   
-// //   {
-// //     std::vector<double> res2 = res;
-// //     std::sort  (res2.begin(), res2.end());
-// //     std::vector<double>::iterator newend = std::unique(res2.begin(), res2.end());
-// //     if (false) std::cout << "Unique : " << std::distance(res2.begin(), newend) << std::endl;
-// // //     for (int i = 0; i < 10; ++i) std::cout << res[i] << " ";
-// // //     std::cout << std::endl;
-// //   }
-//     
-// 
-//   return res;
-// }
 
 vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons){
   uint temp=0,temp2=0,temp3=0,temp4=0;
@@ -145,15 +89,7 @@ vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cl
   set<uint>::iterator megit;
   map<string, map<uint, map<uint,float> > > distmaptable;
   map<string, AimsSurfaceTriangle>::iterator meshit,meshjt;
-//   typedef til::Mesh_N MyMesh;
-//   map<string,MyMesh> mymeshes;
-//   
-//   std::cout << "Adding neighbors" << std::endl;    
-//   for (meshit = meshes.begin();meshit!=meshes.end();meshit++){
-//     til::Mesh1 mesh0;
-//     til::convert(mesh0, meshit->second);
-//     mymeshes[meshit->first] = addNeighborsToMesh(mesh0);
-//   }
+
   
   
   typedef map<uint, set<uint> > mapvoisins;

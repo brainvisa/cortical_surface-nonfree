@@ -47,6 +47,8 @@
 #include <aims/primalsketch/scalespace.h>
 #include <aims/primalsketch/finiteElementSmoother_d.h>
 #include <aims/primalsketch/primalSketch.h>
+#include <cortical_surface/structuralanalysis/representation.h>
+
 #include "blobs.h"
 
 
@@ -69,7 +71,6 @@ vector<Blob *> construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float>
     for (blobIt=blobList.begin();blobIt!=blobList.end();blobIt++){
       ssb = *blobIt;
       for (glbit = ssb->glBlobs.begin(); glbit != ssb->glBlobs.end(); glbit++){
-//         cout << (*glbit)->GetScale() << " " << flush;
         blobs.push_back(new Blob());
         Blob *blob=blobs[blobs.size()-1];
         blob->index = test++;
@@ -133,39 +134,7 @@ ScaleSpace<AimsSurface<3, Void>, Texture<float> > getScaleSpace(TimeTexture<floa
 }
 
 
-pair<Point2df, Point2df> getBoundingBox(vector<int> &nodes_list, TimeTexture<float> &lat, TimeTexture<float> &lon){
-  Point2df bbmin, bbmax;
-  bbmin[0] = 181.0;
-  bbmin[1] = 361.0;
-  bbmax[0] = -1.0;
-  bbmax[1] = -1.0;
-  
-  pair<Point2df, Point2df> bb;
-  for (uint i=0;i<nodes_list.size();i++){
-    if (lat[0].item(nodes_list[i]) < bbmin[0])
-      bbmin[0]=lat[0].item(nodes_list[i]);
-    if (lon[0].item(nodes_list[i]) < bbmin[1])
-      bbmin[1]=lon[0].item(nodes_list[i]);
-    
-    if (lat[0].item(nodes_list[i]) > bbmax[0])
-      bbmax[0]=lat[0].item(nodes_list[i]);
-    if (lon[0].item(nodes_list[i]) > bbmax[1])
-      bbmax[1]=lon[0].item(nodes_list[i]);
-  }
-  
-  if (bbmax[1] > 300.0 && bbmin[1] < 60.0) {
-    for (uint i=0;i<nodes_list.size();i++){
-      if (lon[0].item(nodes_list[i]) >300.0 && lon[0].item(nodes_list[i]) < bbmax[1])
-        bbmax[1]=lon[0].item(nodes_list[i]);
-      if (lon[0].item(nodes_list[i]) < 60.0 && lon[0].item(nodes_list[i]) > bbmin[1])
-        bbmin[1]=lon[0].item(nodes_list[i]);
-    }
-  }
-  
-  bb.first = bbmin;
-  bb.second = bbmax;
-  return bb;
-}
+
 
 vector<set<uint> > getTriangles(AimsSurfaceTriangle &mesh){
   vector<set<uint> > triangles(mesh[0].vertex().size());
@@ -312,37 +281,6 @@ AimsSurfaceTriangle getBarycenters(AimsSurfaceTriangle &mesh,  vector<vector<int
     return objects;
 }
 
-AimsSurfaceTriangle getFlatMap(vector<vector<int> > &nodes_lists, TimeTexture<float> &lat, TimeTexture<float> &lon, TimeTexture<float> &tex){
-  AimsSurfaceTriangle objects;
-  for (uint i=0;i<nodes_lists.size();i++){
-    if (nodes_lists[i].size()!=0){
-      pair<Point2df,Point2df> bb(getBoundingBox(nodes_lists[i],lat,lon));
-      assert(bb.first[0]<=bb.second[0] || !(cout << bb.first[0] << " /\\" << bb.second[0] << endl));
-      assert(bb.first[1]<=bb.second[1]|| !(cout << bb.first[1] << " /\\" << bb.second[1] << endl));
-      float area = (bb.second[0]-bb.first[0])*(bb.second[1]-bb.first[1]);
-      if(area<1000.0){
-        tex[0].push_back(area);
-        tex[0].push_back(area);
-        tex[0].push_back(area);
-        tex[0].push_back(area);
-//         cerr << tex[0].nItem() << " " << flush;
-        objects[0].vertex().push_back(Point3df(bb.first[0],bb.first[1],0.001));
-        objects[0].vertex().push_back(Point3df(bb.first[0],bb.second[1],0.002));
-        objects[0].vertex().push_back(Point3df(bb.second[0],bb.second[1],0.003));
-        objects[0].vertex().push_back(Point3df(bb.second[0],bb.first[1],0.0005));
-//         cerr << objects[0].vertex().size() << endl;
-        objects[0].polygon().push_back(AimsVector<uint,3>(objects[0].vertex().size()-4,objects[0].vertex().size()-3,objects[0].vertex().size()-2));
-        objects[0].polygon().push_back(AimsVector<uint,3>(objects[0].vertex().size()-2,objects[0].vertex().size()-1,objects[0].vertex().size()-4));
-      }
-    }
-  }
-
-  return objects;
-}
-
-
-
-
 
 
 int main( int argc, const char **argv ){
@@ -390,9 +328,6 @@ int main( int argc, const char **argv ){
     rlat.read(lat);
     rlon.read(lon);
     
-   
-
-
     
     vector<SSBlob> ssblobs;
     vector<Blob *> blobs;
@@ -413,14 +348,6 @@ int main( int argc, const char **argv ){
 
     }
     
-    
-
-    
-    
-
-    
-    
-//     assert((*objects).size()==blobs.size());
     if (flatpath != ""){
       cerr << "écriture flat mesh:" << flatpath << endl;
       TimeTexture<float> texflat;
@@ -431,7 +358,6 @@ int main( int argc, const char **argv ){
 //       Writer<TimeTexture<float> > wtex("/volatile/operto/test.tex");
 //       wtex.write(texflat);
     }
-    
     
     cerr << "construction graphe" << endl;
     
@@ -467,13 +393,11 @@ int main( int argc, const char **argv ){
           vert->setProperty("t", 100.0);
           vert->setProperty("rank", i);
           vert->setProperty( "subject", sujet);
-          
           vert->setProperty( "tmin", 1);
           vert->setProperty( "tmax", 4);
           vert->setProperty( "trep", 2);
           vert->setProperty( "depth", 100.0);
           vert->setProperty( "tValue", 100.0);
-                  
           vert->setProperty("nodes_list", nodes_lists[i]);
           
           bbmin2D.clear(); bbmax2D.clear();
@@ -486,7 +410,6 @@ int main( int argc, const char **argv ){
           vert->setProperty( "gravity_center", bbmin2D);
           vert->setProperty("boundingbox_min", bbmin2D);
           vert->setProperty("boundingbox_max", bbmax2D);
-    
           ptr=carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
           (*ptr)[0]=(*objects)[i];
           manip.storeAims(graph, vert, "blob", ptr);
@@ -496,7 +419,6 @@ int main( int argc, const char **argv ){
     }
 
     cerr << "graph.order:" << graph.order() << endl;
-
 
     Writer<Graph> graphWtr(outpath);
     graphWtr.write(graph);
