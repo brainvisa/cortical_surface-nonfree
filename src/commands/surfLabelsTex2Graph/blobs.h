@@ -24,6 +24,10 @@ class Blob{
 class SSBlob{
   public :
     uint index;
+    float t;
+    float tmin;
+    float tmax;
+    set<uint> representation;
     set<Blob *> blobs;
 };
 

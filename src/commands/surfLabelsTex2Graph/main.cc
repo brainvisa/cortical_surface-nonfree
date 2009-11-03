@@ -58,51 +58,94 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-vector<Blob *> construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch){
-    vector<Blob *> blobs;
-    list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> blobList=sketch.BlobSet();
-    uint test=0,test2=0;
-    list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*>::iterator blobIt;
-    list<GreyLevelBlob<SiteType<AimsSurface<3, Void> >::type > *>::iterator glbit;
+
+//##############################################################################
+
+// Function that builds a collection of Blob and SSBlob objects from a previously
+//   computed Primal Sketch
+void construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch, 
+                     vector<Blob *> &blobs, vector<SSBlob *> &ssblobs){
+  
+    // Inititalization of the results vectors "blobs" and "ssblobs"
+    blobs = vector<Blob*>();
+    ssblobs = vector<SSBlob*>();
+    
+    list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> listBlobs 
+         = sketch.BlobSet();
+    uint iBlob=0, iSSBlob=0;
+    
+    list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*>::iterator itSSB;
+    list<GreyLevelBlob<SiteType<AimsSurface<3, Void> >::type > *>::iterator itGLB;
+    
     ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type > *ssb;
-    set<SiteType<AimsSurface<3, Void> >::type,ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> >::iterator ptsit;
+    set< SiteType<AimsSurface<3, Void> >::type, 
+      ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> >::iterator itPoints;
     
     
-    for (blobIt=blobList.begin();blobIt!=blobList.end();blobIt++){
-      ssb = *blobIt;
-      for (glbit = ssb->glBlobs.begin(); glbit != ssb->glBlobs.end(); glbit++){
-        blobs.push_back(new Blob());
-        Blob *blob=blobs[blobs.size()-1];
-        blob->index = test++;
-        blob->parent = test2;
-        blob->subject = sketch.Subject();
-        blob->t = 0.0;
-        blob->scale = (*glbit)->GetScale();
-        set<SiteType<AimsSurface<3, Void> >::type,ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints;
-        listePoints = (*glbit)->GetListePoints();
-        for (ptsit=listePoints.begin();ptsit!=listePoints.end();ptsit++){
-          (blob->nodes_list).insert((*ptsit).second);
-        }
-        blobs.push_back(blob);
-        //#########################################################
-        // CLASSES BLOB ET SSBLOB
-        // FONCTION QUI GENERE DES VECTEURS DE BLOB et de SSBLOB
-        // ATTENTION LES GLB APPARTENANT AU MEME SSB DOIVENT ETRE RELIES D'UNE FACON OU UNE 
-        //    AUTRE
-        // FONCTION QUI EXTRAIT LES MAILLAGES QUI CONVIENNENT DU VECTEUR DE BLOBS A PARTIR
-        //    DU MAILLAGE
+    for (itSSB=listBlobs.begin();itSSB!=listBlobs.end();itSSB++){
+      
+      // For each scale-space blob, we create a SSBlob in "ssblobs" containing 
+      //    various Blob objects (being themselves contained in a general resulting 
+      // "blobs" vector).
+      ssb = *itSSB;
+      ssblobs.push_back(new SSBlob());
+      SSBlob *ssblob = ssblobs[ssblobs.size()-1];
+      ssblob->index = iSSBlob;
+      ssblob->tmin = 999.0;
+      ssblob->tmax = -999.0;
+      
+      for (itGLB = ssb->glBlobs.begin(); itGLB != ssb->glBlobs.end(); itGLB++){
         
+        // For each grey-level blob, we create a Blob
+        blobs.push_back(new Blob());
+        Blob *blob = blobs[blobs.size()-1];
+        
+        // Each Blob has a specific index iBlob, and a SSBlob has an iSSBlob
+        blob->index = iBlob++;
+        blob->parent = iSSBlob;
+        blob->subject = sketch.Subject();
+        blob->t = (*itGLB)->measurements.t;
+        blob->scale = (*itGLB)->GetScale();
+        
+        // The Blob's nodeslist contains its corresponding nodes indices on the 
+        //    mesh it was extracted from.
+        set<SiteType<AimsSurface<3, Void> >::type, 
+             ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints 
+                 = (*itGLB)->GetListePoints();
+        for (itPoints = listePoints.begin() ; itPoints != listePoints.end() ; itPoints++)
+          (blob->nodes_list).insert((*itPoints).second);
+        
+        ssblob->blobs.insert(blob);
+        
+        if (blob->scale < ssblob->tmin)
+          ssblob->tmin=blob->scale;
+        if (blob->scale > ssblob->tmax)
+          ssblob->tmax=blob->scale;
       }
-      test2++;
+      
+      ssblob->t = ssb->GetMeasurements().t;
+      cout << ssblob->t << " " << ssb->GetMeasurements().tValue << " " << ssblob->blobs.size() << endl;
+      cout << ssblob->tmin << "/" << ssb->ScaleMin() << " " << ssblob->tmax << "/" << ssb->ScaleMax() << endl;
+      
+      
+      iSSBlob++;
     }
-    cout << "nb de blobs : " << test << " / glb : " <<blobs.size()<< endl;
-    return blobs;
+    
+    cout << " iBlob : " << iBlob << 
+            " iSSblob : " << iSSBlob <<
+            " blobs.size : " << blobs.size() << 
+            " ssblobs.size : " << ssblobs.size() << endl;
 }
 
+//##############################################################################
 
-
-
-ScaleSpace<AimsSurface<3, Void>, Texture<float> > getScaleSpace(TimeTexture<float> &laTexture, AimsSurfaceTriangle &laMesh, TimeTexture<float> &lat, TimeTexture<float> &longit){
+// Function that creates a Scale Space from a texture, a mesh and two coordinates textures
+ScaleSpace<AimsSurface<3, Void>, Texture<float> > getScaleSpace(
+                                  TimeTexture<float> &laTexture, 
+                                  AimsSurfaceTriangle &laMesh, 
+                                  TimeTexture<float> &lat, 
+                                  TimeTexture<float> &longit){
+                                    
       float moy=0.0;
       for (uint i=0;i<laTexture.nItem();i++)
         if (laTexture.item(i) == laTexture.item(i))
@@ -114,27 +157,29 @@ ScaleSpace<AimsSurface<3, Void>, Texture<float> > getScaleSpace(TimeTexture<floa
           laTexture.item(i) = moy;
 
       cout << "Size=" << laMesh[0].vertex().size() << endl;
-
       cout << "Ssmoother creation" << endl;
 
       FiniteElementSmoother<3, float> *smooth;
       smooth=new FiniteElementSmoother<3, float>(0.01, &(laMesh[0]));
-      ScaleSpace<AimsSurface<3, Void>, Texture<float> > scale_space(&(laMesh[0]), &(laTexture[0]), smooth);
+      
+      ScaleSpace< AimsSurface<3, Void>, Texture<float> > scale_space(
+            &(laMesh[0]), &(laTexture[0]), smooth);
+            
       cout << "Scale-space creation" << endl;
+      
       vector<Point3df> *coordinates;
       coordinates=new vector<Point3df>();
-      for (uint i=0;i<lat[0].nItem();i++){
+      
+      for (uint i=0;i<lat[0].nItem();i++)
         (*coordinates).push_back(Point3df(lat[0].item(i), longit[0].item(i),i));
-      }
+      
       scale_space.PutCoordinates(coordinates);
-
       scale_space.GenerateDefaultScaleSpace(8.0);
       return scale_space;
-     
 }
 
 
-
+//##############################################################################
 
 vector<set<uint> > getTriangles(AimsSurfaceTriangle &mesh){
   vector<set<uint> > triangles(mesh[0].vertex().size());
@@ -150,6 +195,9 @@ vector<set<uint> > getTriangles(AimsSurfaceTriangle &mesh){
   return triangles;
 }
 
+
+//##############################################################################
+
 int find(const vector<int> &v, int item){
   int c=-1;
   for (uint i=0; i<v.size() && c==-1 ; i++){
@@ -158,7 +206,13 @@ int find(const vector<int> &v, int item){
   return c;
 }
 
-AimsSurfaceTriangle getBlobsMeshes(vector<Blob *> &blobs, AimsSurfaceTriangle &mesh, vector<vector<int> > &nodes_lists){
+//##############################################################################
+
+// Function that extracts mesh patches from a "mesh", being given a "blobs" vector,
+//   and returning a collection of "objects" plus a vector of "nodes_lists".
+AimsSurfaceTriangle getBlobsMeshes( vector<Blob *> &blobs, 
+                                    AimsSurfaceTriangle &mesh, 
+                                    vector<vector<int> > &nodes_lists){
   AimsSurfaceTriangle objects;
   uint p1,p2,p3;
   nodes_lists=vector<vector<int> >(blobs.size());
@@ -166,18 +220,22 @@ AimsSurfaceTriangle getBlobsMeshes(vector<Blob *> &blobs, AimsSurfaceTriangle &m
   set<uint>::iterator it;
 
   for (uint i=0;i<blobs.size();i++){
-    cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
+    
+    cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
     set<uint> tri,comp;
     vector<uint> corres;
     for (uint j=0;j<mesh[0].polygon().size();j++){
+      
       p1=mesh[0].polygon()[j][0];
       p2=mesh[0].polygon()[j][1];
       p3=mesh[0].polygon()[j][2];
     
-      if (blobs[i]->nodes_list.find(p1)!=blobs[i]->nodes_list.end() && blobs[i]->nodes_list.find(p2)!=blobs[i]->nodes_list.end() &&     blobs[i]->nodes_list.find(p3)!=blobs[i]->nodes_list.end())
+      if ( blobs[i]->nodes_list.find(p1)!=blobs[i]->nodes_list.end() &&     
+              blobs[i]->nodes_list.find(p2)!=blobs[i]->nodes_list.end() &&    
+              blobs[i]->nodes_list.find(p3)!=blobs[i]->nodes_list.end() )
         tri.insert(j);
+      
     }
-//     if (tri.size() == 0) {countzero++; cout << endl; }
 
     for (it=tri.begin();it!=tri.end();it++){
       p1=mesh[0].polygon()[*it][0];
@@ -208,7 +266,78 @@ AimsSurfaceTriangle getBlobsMeshes(vector<Blob *> &blobs, AimsSurfaceTriangle &m
   return objects;
 }
 
-AimsSurfaceTriangle getObjects(TimeTexture<short> &tex, AimsSurfaceTriangle &mesh, vector<vector<int> > &nodes_lists){
+//##############################################################################
+
+// That function takes a vector of SSBlob and build mesh patches corresponding to
+//   previously computed representation blobs
+AimsSurfaceTriangle getBlobsMeshes( vector<SSBlob *> &blobs, 
+                                    AimsSurfaceTriangle &mesh, 
+                                    vector<vector<int> > &nodes_lists){
+                                      
+                                      
+                                      AimsSurfaceTriangle objects;
+                                      uint p1,p2,p3;
+                                      nodes_lists=vector<vector<int> >(blobs.size());
+
+                                      set<uint>::iterator it;
+
+                                      for (uint i=0;i<blobs.size();i++){
+    
+                                        cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " <<
+                                                objects.size() << flush ;
+                                        set<uint> tri,comp;
+                                        vector<uint> corres;
+                                        
+                                        for (uint j=0;j<mesh[0].polygon().size();j++){
+      
+                                          p1=mesh[0].polygon()[j][0];
+                                          p2=mesh[0].polygon()[j][1];
+                                          p3=mesh[0].polygon()[j][2];
+    
+                                          if ( blobs[i]->representation.find(p1) != blobs[i]->representation.end()
+                                            && blobs[i]->representation.find(p2) != blobs[i]->representation.end()
+                                            && blobs[i]->representation.find(p3) != blobs[i]->representation.end()
+                                             )
+                                            tri.insert(j);
+      
+                                        }
+
+                                        for (it=tri.begin();it!=tri.end();it++){
+                                          p1=mesh[0].polygon()[*it][0];
+                                          p2=mesh[0].polygon()[*it][1];
+                                          p3=mesh[0].polygon()[*it][2];
+                                          comp.insert(p1); comp.insert(p2); comp.insert(p3);
+                                        }
+                                        
+                                        corres=vector<uint>(mesh[0].vertex().size());
+                                        for (it=comp.begin();it!=comp.end();it++){
+                                          assert(*it<corres.size());
+                                          assert(*it<mesh[0].vertex().size());
+                                          assert(i<nodes_lists.size());
+                                          (objects)[i].vertex().push_back(mesh[0].vertex()[*it]);
+                                          corres[*it]=(objects)[i].vertex().size()-1;
+                                          nodes_lists[i].push_back(*it);
+                                        }
+
+                                        for (it=tri.begin();it!=tri.end();it++){
+                                          p1=mesh[0].polygon()[*it][0];
+                                          p2=mesh[0].polygon()[*it][1];
+                                          p3=mesh[0].polygon()[*it][2];
+                                          (objects)[i].polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
+                                        }
+    
+                                      }
+                                      cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
+  
+                                      return objects;
+                                    }
+
+
+//##############################################################################
+
+AimsSurfaceTriangle getObjects( TimeTexture<short> &tex, 
+                                AimsSurfaceTriangle &mesh, 
+                                vector<vector<int> > &nodes_lists){
     
     int labelmax=0;
     for (uint i=0;i<tex[0].nItem();i++){
@@ -266,8 +395,11 @@ AimsSurfaceTriangle getObjects(TimeTexture<short> &tex, AimsSurfaceTriangle &mes
     return objects;
 }
 
+//##############################################################################
 
-AimsSurfaceTriangle getBarycenters(AimsSurfaceTriangle &mesh,  vector<vector<int> > &nodes_lists, float radius){
+AimsSurfaceTriangle getBarycenters ( AimsSurfaceTriangle &mesh, 
+                                     vector<vector<int> > &nodes_lists, 
+                                     float radius ) {
     AimsSurfaceTriangle objects;
     uint jmin;
     for (uint i=0;i<nodes_lists.size();i++){
@@ -281,14 +413,31 @@ AimsSurfaceTriangle getBarycenters(AimsSurfaceTriangle &mesh,  vector<vector<int
     return objects;
 }
 
+//##############################################################################
 
+vector<int> set2vector(set<uint> &s){
+  
+  vector<int> v;
+  set<uint>::iterator it;
+  for (it=s.begin();it!=s.end();it++)
+    v.push_back(*it);     
+  return v;  
+  
+}
 
+//##############################################################################
 
 int main( int argc, const char **argv ){
   try {
   
     int mode=0;
-    string outpath = "", meshPath, texPath, latpath="", lonpath="", flatpath="", sujet;
+    string outpath = "", 
+           meshPath, 
+           texPath, 
+           latpath="", 
+           lonpath="", 
+           flatpath="", 
+           sujet;
 
     AimsApplication app( argc, argv, "surfLabelsTex2Graph" );
     app.addOption( meshPath, "-m", "mesh");
@@ -300,35 +449,30 @@ int main( int argc, const char **argv ){
     app.addOption( lonpath, "--lon", "longitude");
     app.addOption( flatpath, "--flat", "flat",1);
     app.initialize();
-    Reader<AimsSurfaceTriangle> meshRdr(meshPath);
-    Reader<TimeTexture<float> > texRdr(texPath);
+    assert(latpath!="");
+    assert(lonpath!="");
+    
+    // Read files (the mesh, the tex and the coordinates)
+    Reader<AimsSurfaceTriangle> rdrMesh(meshPath);
+    Reader<TimeTexture<float> > rdrTex(texPath),
+                                rdrLat(latpath),
+                                rdrLon(lonpath);
     AimsSurfaceTriangle mesh;
-    meshRdr.read(mesh);
-    TimeTexture<float> intex;
-    texRdr.read(intex);
-    TimeTexture<float> latex(1,intex[0].nItem());
-    TimeTexture<short> tex(1,intex[0].nItem());
-    for (uint i=0;i<intex[0].nItem();i++){
-      tex[0].item(i) = (short) intex[0].item(i); //+1;
-      latex[0].item(i) = (float) intex[0].item(i); //+1;
-    }
+    TimeTexture<float> tex, lat, lon;
+    rdrMesh.read(mesh);
+    rdrTex.read(tex);
+    rdrLat.read(lat);
+    rdrLon.read(lon);
     
+    // Computes a radius for the "barycenters" sphere-based representation mode
     mesh[0].setMini(); mesh[0].setMaxi();
-    cerr << mesh[0].minimum()[0] << " " << mesh[0].minimum()[1] << " " << mesh[0].minimum()[2] << ";" << mesh[0].maximum()[0] << " " << mesh[0].maximum()[1] << " " << mesh[0].maximum()[2] << endl;
-    
+    cerr << mesh[0].minimum()[0] << " " << mesh[0].minimum()[1] << " " << mesh[0].minimum()[2] << ";" << mesh[0].maximum()[0] << " " << mesh[0].maximum()[1] << " " << mesh[0].maximum()[2] << endl;    
     float dist = sqrt(pow(mesh[0].minimum()[0]-mesh[0].maximum()[0],2)+pow(mesh[0].minimum()[1]-mesh[0].maximum()[1],2)+pow(mesh[0].minimum()[2]-mesh[0].maximum()[2],2));
     float radius = dist / 300.0;
     
+    // Definition of blobs, nodes lists and objects vectors..
     vector<vector<int> > nodes_lists;
     AimsSurfaceTriangle *objects;
-    objects = new AimsSurfaceTriangle(getObjects(tex,mesh,nodes_lists));
-    TimeTexture<float> lat,lon;
-    assert(latpath!="");
-    assert(lonpath!="");
-    Reader<TimeTexture<float> > rlat(latpath),rlon(lonpath);
-    rlat.read(lat);
-    rlon.read(lon);
-    
     
     vector<SSBlob *> ssblobs;
     vector<Blob *> blobs;
@@ -336,146 +480,215 @@ int main( int argc, const char **argv ){
 
 
     if (mode == 1){
+      
+      // Barycenters mode
       objects = new AimsSurfaceTriangle(getBarycenters(mesh,nodes_lists,radius));
     }
     else if (mode == 2){
-      ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss(getScaleSpace(latex,mesh,lat,lon));
+      
+      // Construction of a primal-sketch
+      ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss(getScaleSpace(tex,mesh,lat,lon));
     
       PrimalSketch<AimsSurface<3, Void>, Texture<float> > sketch(sujet, &ss, SURFACE);
 
+      // Launching the computation of the PS (tmin, tmax, statfile, intersection_criterium)
       sketch.ComputePrimalSketch(1.0, 8.0, "", 10);
+      
       cout << "CONSTRUIRE BLOBS" << endl;
-      blobs = construireBlobs(sketch);
+      construireBlobs(sketch, blobs, ssblobs);
 
-      // CONSTRUIRE ssblobs
+      
       vector<set<uint> > matchingblobs(ssblobs.size());
-      set<Blob *>::iterator itB1,itB2;
+      set<Blob *>::iterator itB1, itB2;
       Blob *b1max, *b2max;
-      float overlap;
-      for (uint i=0;i<ssblobs.size()-1;i++){
-        for (uint j=i+1;j<ssblobs.size();j++){
-          float overmax=0.0;
+      
+      // Start of cliques construction
+            
+      for (uint i=0 ; i < ssblobs.size() - 1 ; i++){
+        for (uint j=i+1 ; j < ssblobs.size() ; j++){
+
+          // For every single pair of scale-space blobs, computes a maximal overlap
+          //   between every possible pair of grey-level blobs.
           
-          for (itB1=ssblobs[i]->blobs.begin();itB1!=ssblobs[i]->blobs.end();itB1++){
-            for (itB2=ssblobs[j]->blobs.begin();itB2!=ssblobs[j]->blobs.end();itB2++){
-              // test overlap entre deux glblobs
+          float overmax=-1.0;
+          
+          for (itB1 = ssblobs[i]->blobs.begin() ; itB1 != ssblobs[i]->blobs.end() ; itB1++){
+            for (itB2 = ssblobs[j]->blobs.begin() ; itB2 != ssblobs[j]->blobs.end() ; itB2++){
               
-//               pair<Point2df,Point2df> bbi=getBoundingBox((*itB1)->nodes_list,lat,lon), bbj =getBoundingBox((*itB2)->nodes_list,lat,lon) ;
-              Point3df bbmin1, bbmin2, bbmax1, bbmax2;
-              uint no_overlap=0;
-              double overlap=getOverlap(bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap);
-              if (overlap>overmax) {
-                overmax = overlap;
-                b1max=*itB1;
-                b2max=*itB2;
+              // For every possible pair of grey-level blobs between these two scale-
+              //   space blobs, we figure out their possible spatial overlap.
+              
+              vector<int> listNodesB1(set2vector((*itB1)->nodes_list)),
+                           listNodesB2(set2vector((*itB2)->nodes_list));
+                           
+              pair<Point2df,Point2df> bbi = getBoundingBox(listNodesB1, lat, lon), 
+                                      bbj = getBoundingBox(listNodesB2, lat, lon);
+                                                       
+              Point3df bbmin1 (bbi.first[0], bbi.first[1], 0.0), 
+                       bbmax1 (bbi.second[0], bbi.second[1], 0.0), 
+                       bbmin2 (bbj.first[0], bbj.first[1], 0.0),
+                       bbmax2 (bbj.second[0], bbj.second[1], 0.0) ;
+                       
+              uint no_overlap = 2;              
+              double overlap = getOverlap( bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap );
+
+              
+              if (no_overlap == 0 ){
+                
+                // If the current pair's overlap is maximal, then the glb indices are stored.
+                
+//                 cout << "bbi:" << bbi.first[0] << "-" << bbi.first[1] << " " <<
+//                     bbi.second[0] << "-" << bbi.second[1] << " " <<
+//                     "bbj:" << bbj.first[0] << " " << bbj.first[1] << " " <<
+//                     bbj.second[0] << " " << bbj.second[1] << " over:" << overlap << endl;
+//                 cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
+                
+                if (overlap > overmax) {
+                  overmax = overlap;
+                  b1max = *itB1;
+                  b2max = *itB2;
+                }
               }
             }
           }
-          if (overlap!=0){
-// une fois qu'on a trouvé le max pour paire de ssb i et j, et bien si overlap!=0, alors création de clique et on retient dans une liste associé à chaque ssb que ces glb particuliers ont matché quelque chose (cela servira pour calculer un glb de représentation pour chaque ssb)
-          // création d'une arête dans le Graph
+          
+          // Here all the possible glb pairs have been processed for the two current ssb
+          
+          if (overmax > 0.0 && 
+              !((ssblobs[j]->tmin > ssblobs[i]->tmax) || (ssblobs[i]->tmin > ssblobs[j]->tmax))){
+            
+            // If the two scale-space blobs have at least one pair of grey-level
+            //   overlapping (bounding-boxes) (+ scales overlapping), then a clique 
+            // is created between these two ssb and the max-overlapping pair of glb
+            // is stored in "matchingblobs".
+            
             pair<Point2d, float> res;
             res.first = Point2d(i,j);
-            res.second = overlap;
+            res.second = overmax;
             cliques.push_back(res);
             matchingblobs[i].insert(b1max->index);
-            matchingblobs[j].insert(b2max->index);
+            matchingblobs[j].insert(b2max->index);            
+//             cout << "max (" << i <<","<<j<< ") between:" << b1max->index << " " 
+//                  << b2max->index << " overmax:" << overmax << endl;
+//             cout << "scales: " << b1max->scale << " " << b1max->scale << endl;
+
           }
 
         }
       }
-      
-      for (uint i=0;i<ssblobs.size();i++){
-        // on parcourt pour chaque ssb la liste des glb qui ont matché quelque chose
-        // et on construit un glb de représentation
-
-      }
-      cout << "FIN CONSTRUIRE BLOBS" << endl;
-      objects = new AimsSurfaceTriangle(getBlobsMeshes(blobs,mesh,nodes_lists));
-
-    }
-    
-    if (flatpath != ""){
-      cerr << "écriture flat mesh:" << flatpath << endl;
-      TimeTexture<float> texflat;
-      AimsSurfaceTriangle flat(getFlatMap(nodes_lists,lat,lon,texflat));
-      cerr << flat[0].vertex().size() << " !=! " << texflat[0].nItem() << endl;
-      Writer<AimsSurfaceTriangle> wflat(flatpath);
-      wflat.write(flat);
-//       Writer<TimeTexture<float> > wtex("/volatile/operto/test.tex");
-//       wtex.write(texflat);
-    }
-    
-    cerr << "construction graphe" << endl;
-    
-    Graph graph("BlobsArg");
-    vector<float> resolution,bbmin2D,bbmax2D;
-    vector<int> bbmin, bbmax;
-    resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0); 
-    bbmin.push_back(mesh[0].minimum()[0]-1); bbmin.push_back(mesh[0].minimum()[1]-1); bbmin.push_back(mesh[0].minimum()[2]-1); 
-    bbmax.push_back(mesh[0].maximum()[0]+1); bbmax.push_back(mesh[0].maximum()[1]+1); bbmax.push_back(mesh[0].maximum()[2]+1); 
-    graph.setProperty( "filename_base", "*");
-
-    graph.setProperty("voxel_size", resolution);
-    graph.setProperty("boundingbox_min", bbmin);
-    graph.setProperty("boundingbox_max", bbmax);
-    graph.setProperty("mesh", meshPath);
-    graph.setProperty("sujet", sujet);
-    graph.setProperty("texture", texPath);
-    
-    Vertex *vert;
-    carto::rc_ptr<AimsSurfaceTriangle> ptr;
-    aims::GraphManip manip;
-//     for (int i=0;i<(int)blobs.size();i++){
-    for (int i=0;i<(int)(*objects).size();i++){
-      if ((*objects)[i].vertex().size()!=0){
-        pair<Point2df, Point2df> bb(getBoundingBox(nodes_lists[i],lat,lon));
-        float area = (bb.second[0]-bb.first[0])*(bb.second[1]-bb.first[1]);
-        if(area<1000.0){
-          cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph.order() << flush ;
-          vert = graph.addVertex("blob");
-          vert->setProperty("index", i);
-          vert->setProperty("name", i);
-          vert->setProperty("label", "0");
-          vert->setProperty("t", 100.0);
-          vert->setProperty("rank", i);
-          vert->setProperty( "subject", sujet);
-          vert->setProperty( "tmin", 1);
-          vert->setProperty( "tmax", 4);
-          vert->setProperty( "trep", 2);
-          vert->setProperty( "depth", 100.0);
-          vert->setProperty( "tValue", 100.0);
-          vert->setProperty("nodes_list", nodes_lists[i]);
+       
+      // Construction of a representation blob for each scale-space blob
+      for (uint i = 0 ; i < ssblobs.size() ; i++){
+        
+        // For every scale-space blob, we create a representation blob
+        //   from the set of grey-level blobs found to be max-matching 
+        //   with some others (from other scale-space blobs)
+        set<uint>::iterator it;
+        
+        if (matchingblobs[i].size()!=0) 
+          cout << i << ":";
+        
+        for (it = matchingblobs[i].begin() ; it != matchingblobs[i].end() ; it++){
           
-          bbmin2D.clear(); bbmax2D.clear();
-          bbmin2D.push_back(bb.first[0]);
-          bbmin2D.push_back(bb.first[1]);
-          bbmin2D.push_back(-1);
-          bbmax2D.push_back(bb.second[0]);
-          bbmax2D.push_back(bb.second[1]);
-          bbmax2D.push_back(-1);
-          vert->setProperty( "gravity_center", bbmin2D);
-          vert->setProperty("boundingbox_min", bbmin2D);
-          vert->setProperty("boundingbox_max", bbmax2D);
-          ptr=carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-          (*ptr)[0]=(*objects)[i];
-          manip.storeAims(graph, vert, "blob", ptr);
-          vert->setProperty("blob_label",i);
+          set<uint> blobNodes(blobs[*it]->nodes_list);
+          ssblobs[i]->representation.insert(blobNodes.begin(), blobNodes.end());
+          cout << ssblobs[i]->representation.size() << " " << flush;
         }
+        
+        if (matchingblobs[i].size()!=0) 
+          cout << endl ;
+        
       }
+      
+      cout << "FIN CONSTRUIRE BLOBS" << endl;
+      
+      // Extracting mesh patches before building the Aims graph
+      objects = new AimsSurfaceTriangle(getBlobsMeshes(ssblobs,mesh,nodes_lists));
+
+    // End of mode 2
     }
-
-    // CONSTRUIRE LES ARETES
-
-    for (uint i=0;i<cliques.size();i++){
-      vert = graph.addVertex("b2b"); // ou un truc du genre
-
-    }
-
-    cerr << "graph.order:" << graph.order() << endl;
-
-    Writer<Graph> graphWtr(outpath);
-    graphWtr.write(graph);
+    
+//     if (flatpath != ""){
+//       cerr << "écriture flat mesh:" << flatpath << endl;
+//       TimeTexture<float> texflat;
+//       AimsSurfaceTriangle flat(getFlatMap(nodes_lists,lat,lon,texflat));
+//       cerr << flat[0].vertex().size() << " !=! " << texflat[0].nItem() << endl;
+//       Writer<AimsSurfaceTriangle> wflat(flatpath);
+//       wflat.write(flat);
+// //       Writer<TimeTexture<float> > wtex("/volatile/operto/test.tex");
+// //       wtex.write(texflat);
+//     }
+//     
+//     cerr << "construction graphe" << endl;
+//     
+//     Graph graph("BlobsArg");
+//     vector<float> resolution,bbmin2D,bbmax2D;
+//     vector<int> bbmin, bbmax;
+//     resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0); 
+//     bbmin.push_back(mesh[0].minimum()[0]-1); bbmin.push_back(mesh[0].minimum()[1]-1); bbmin.push_back(mesh[0].minimum()[2]-1); 
+//     bbmax.push_back(mesh[0].maximum()[0]+1); bbmax.push_back(mesh[0].maximum()[1]+1); bbmax.push_back(mesh[0].maximum()[2]+1); 
+//     graph.setProperty( "filename_base", "*");
+// 
+//     graph.setProperty("voxel_size", resolution);
+//     graph.setProperty("boundingbox_min", bbmin);
+//     graph.setProperty("boundingbox_max", bbmax);
+//     graph.setProperty("mesh", meshPath);
+//     graph.setProperty("sujet", sujet);
+//     graph.setProperty("texture", texPath);
+//     
+//     Vertex *vert;
+//     carto::rc_ptr<AimsSurfaceTriangle> ptr;
+//     aims::GraphManip manip;
+// //     for (int i=0;i<(int)blobs.size();i++){
+//     for (int i=0;i<(int)(*objects).size();i++){
+//       if ((*objects)[i].vertex().size()!=0){
+//         pair<Point2df, Point2df> bb(getBoundingBox(nodes_lists[i],lat,lon));
+//         float area = (bb.second[0]-bb.first[0])*(bb.second[1]-bb.first[1]);
+//         if(area<1000.0){
+//           cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph.order() << flush ;
+//           vert = graph.addVertex("blob");
+//           vert->setProperty("index", i);
+//           vert->setProperty("name", i);
+//           vert->setProperty("label", "0");
+//           vert->setProperty("t", 100.0);
+//           vert->setProperty("rank", i);
+//           vert->setProperty( "subject", sujet);
+//           vert->setProperty( "tmin", 1);
+//           vert->setProperty( "tmax", 4);
+//           vert->setProperty( "trep", 2);
+//           vert->setProperty( "depth", 100.0);
+//           vert->setProperty( "tValue", 100.0);
+//           vert->setProperty("nodes_list", nodes_lists[i]);
+//           
+//           bbmin2D.clear(); bbmax2D.clear();
+//           bbmin2D.push_back(bb.first[0]);
+//           bbmin2D.push_back(bb.first[1]);
+//           bbmin2D.push_back(-1);
+//           bbmax2D.push_back(bb.second[0]);
+//           bbmax2D.push_back(bb.second[1]);
+//           bbmax2D.push_back(-1);
+//           vert->setProperty( "gravity_center", bbmin2D);
+//           vert->setProperty("boundingbox_min", bbmin2D);
+//           vert->setProperty("boundingbox_max", bbmax2D);
+//           ptr=carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+//           (*ptr)[0]=(*objects)[i];
+//           manip.storeAims(graph, vert, "blob", ptr);
+//           vert->setProperty("blob_label",i);
+//         }
+//       }
+//     }
+// 
+//     // CONSTRUIRE LES ARETES
+// 
+//     for (uint i=0;i<cliques.size();i++){
+//       vert = graph.addVertex("b2b"); // ou un truc du genre
+// 
+//     }
+// 
+//     cerr << "graph.order:" << graph.order() << endl;
+// 
+//     Writer<Graph> graphWtr(outpath);
+//     graphWtr.write(graph);
     
     return EXIT_SUCCESS;
   }
