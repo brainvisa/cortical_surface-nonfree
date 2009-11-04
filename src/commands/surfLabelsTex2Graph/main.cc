@@ -49,6 +49,7 @@
 #include <aims/primalsketch/primalSketch.h>
 #include <cortical_surface/structuralanalysis/representation.h>
 #include <cortical_surface/structuralanalysis/cliques.h>
+#include <cortical_surface/structuralanalysis/iograph.h>
 #include "blobs.h"
 
 
@@ -66,9 +67,9 @@ using namespace std;
 void construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch, 
                      vector<Blob *> &blobs, vector<SSBlob *> &ssblobs){
   
-    // Inititalization of the results vectors "blobs" and "ssblobs"
-    blobs = vector<Blob*>();
-    ssblobs = vector<SSBlob*>();
+//     // Inititalization of the results vectors "blobs" and "ssblobs"
+//     blobs = vector<Blob*>();
+//     ssblobs = vector<SSBlob*>();
     
     list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> listBlobs 
          = sketch.BlobSet();
@@ -446,8 +447,8 @@ vector<int> set2vector(set<uint> &s){
 //  scale-space blobs (noted by their indices) its calculated spatial overlap.
 vector<pair<Point2d, float> > construireCliques ( vector<SSBlob *>   &ssblobs,
                                                   vector<Blob *>     &blobs, 
-                                                  TimeTexture<float> &lat, 
-                                                  TimeTexture<float> &lon, 
+                                                  map<string, TimeTexture<float> > &latitudes,
+                                                  map<string, TimeTexture<float> > &longitudes, 
                                                   vector<set<uint> > &matchingblobs){
     
       vector<pair<Point2d, float> > cliques;
@@ -478,8 +479,8 @@ vector<pair<Point2d, float> > construireCliques ( vector<SSBlob *>   &ssblobs,
                 vector<int> listNodesB1(set2vector((*itB1)->nodes_list)),
                             listNodesB2(set2vector((*itB2)->nodes_list));
                             
-                pair<Point2df,Point2df> bbi = getBoundingBox(listNodesB1, lat, lon), 
-                                        bbj = getBoundingBox(listNodesB2, lat, lon);
+                pair<Point2df,Point2df> bbi = getBoundingBox(listNodesB1, latitudes[ssblobs[i]->subject], longitudes[ssblobs[i]->subject]),
+                                        bbj = getBoundingBox(listNodesB2, latitudes[ssblobs[j]->subject], longitudes[ssblobs[j]->subject]);
                                                         
                 Point3df bbmin1 (bbi.first[0], bbi.first[1], 0.0), 
                         bbmax1 (bbi.second[0], bbi.second[1], 0.0), 
@@ -635,128 +636,383 @@ void construireGraph (  Graph                         *graph,
 
 //##############################################################################
 
+// int main( int argc, const char **argv ){
+//   try {
+//   
+//     int mode=0;
+//     string outpath = "", 
+//            meshPath, 
+//            texPath, 
+//            latpath="", 
+//            lonpath="", 
+//            flatpath="", 
+//            sujet;
+// 
+//     AimsApplication app( argc, argv, "surfLabelsTex2Graph" );
+//     app.addOption( meshPath, "-m", "mesh");
+//     app.addOption( texPath, "-t", "texture");
+//     app.addOption( outpath, "-o", "output file");
+//     app.addOption( mode, "-M", "mode (0: normal - 1:barycenters (provide the lat/lon textures)",1);
+//     app.addOption( sujet,"-s", "sujet");
+//     app.addOption( latpath, "--lat", "latitude");
+//     app.addOption( lonpath, "--lon", "longitude");
+//     app.addOption( flatpath, "--flat", "flat",1);
+//     app.initialize();
+//     assert(latpath!="");
+//     assert(lonpath!="");
+//     
+//     // Read files (the mesh, the tex and the coordinates)
+//     Reader<AimsSurfaceTriangle> rdrMesh(meshPath);
+//     Reader<TimeTexture<float> > rdrTex(texPath),
+//                                 rdrLat(latpath),
+//                                 rdrLon(lonpath);
+//     AimsSurfaceTriangle mesh;
+//     TimeTexture<float> tex, lat, lon;
+//     rdrMesh.read(mesh);
+//     rdrTex.read(tex);
+//     rdrLat.read(lat);
+//     rdrLon.read(lon);
+//     
+//     // Computes a radius for the "barycenters" sphere-based representation mode
+//     mesh[0].setMini(); mesh[0].setMaxi();
+//     cerr << mesh[0].minimum()[0] << " " << mesh[0].minimum()[1] << " " << mesh[0].minimum()[2] << ";" << mesh[0].maximum()[0] << " " << mesh[0].maximum()[1] << " " << mesh[0].maximum()[2] << endl;    
+//     float dist = sqrt(pow(mesh[0].minimum()[0]-mesh[0].maximum()[0],2)+pow(mesh[0].minimum()[1]-mesh[0].maximum()[1],2)+pow(mesh[0].minimum()[2]-mesh[0].maximum()[2],2));
+//     float radius = dist / 300.0;
+//     
+//     // Definition of blobs, nodes lists and objects vectors..
+//     vector<vector<int> > nodes_lists;
+//     AimsSurfaceTriangle *objects;
+//     
+//     vector<SSBlob *> ssblobs;
+//     vector<Blob *> blobs;
+//     vector<pair<Point2d, float> > cliques;
+//     vector<set<uint> > matchingblobs;
+// 
+// 
+//     if (mode == 1){
+//       
+//       // Barycenters mode
+//       objects = new AimsSurfaceTriangle(getBarycenters(mesh,nodes_lists,radius));
+//     }
+//     else if (mode == 2){
+//       
+//       // Construction of a primal-sketch
+//       ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss(getScaleSpace(tex,mesh,lat,lon));
+// 
+//       PrimalSketch<AimsSurface<3, Void>, Texture<float> > sketch(sujet, &ss, SURFACE);
+// 
+//       // Launching the computation of the PS (tmin, tmax, statfile, intersection_criterium)
+//       sketch.ComputePrimalSketch(1.0, 8.0, "", 10);
+// 
+//       cout << "CONSTRUIRE BLOBS" << endl;
+//       construireBlobs(sketch, blobs, ssblobs);
+// 
+//       cliques = construireCliques(ssblobs, blobs, lat, lon, matchingblobs);
+//       
+//       
+// 
+//       
+//       cout << "FIN CONSTRUIRE BLOBS" << endl;
+//       
+//       // Extracting mesh patches before building the Aims graph
+//       objects = new AimsSurfaceTriangle(getBlobsMeshes(ssblobs,mesh,nodes_lists));
+// 
+//     // End of mode 2
+//     }
+//     
+// //     if (flatpath != ""){
+// //       cerr << "écriture flat mesh:" << flatpath << endl;
+// //       TimeTexture<float> texflat;
+// //       AimsSurfaceTriangle flat(getFlatMap(nodes_lists,lat,lon,texflat));
+// //       cerr << flat[0].vertex().size() << " !=! " << texflat[0].nItem() << endl;
+// //       Writer<AimsSurfaceTriangle> wflat(flatpath);
+// //       wflat.write(flat);
+// 
+// //     }
+// //     
+//     cerr << "construction graphe" << endl;
+//     Graph graph("BlobsArg");
+//     vector<float> resolution,bbmin2D,bbmax2D;
+//     vector<int> bbmin, bbmax;
+//     resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0);
+//     bbmin.push_back(mesh[0].minimum()[0]-1); bbmin.push_back(mesh[0].minimum()[1]-1); bbmin.push_back(mesh[0].minimum()[2]-1);
+//     bbmax.push_back(mesh[0].maximum()[0]+1); bbmax.push_back(mesh[0].maximum()[1]+1); bbmax.push_back(mesh[0].maximum()[2]+1);
+//     graph.setProperty( "filename_base", "*");
+// 
+//     graph.setProperty("voxel_size", resolution);
+//     graph.setProperty("boundingbox_min", bbmin);
+//     graph.setProperty("boundingbox_max", bbmax);
+//     graph.setProperty("mesh", meshPath);
+//     graph.setProperty("sujet", sujet);
+//     graph.setProperty("texture", texPath);
+//     
+//     
+//     construireGraph(&graph, ssblobs, cliques, objects);
+//     
+// 
+// 
+// 
+//     cerr << "graph.order:" << graph.order() << endl;
+//     cerr << "graph.edgesSize:" << graph.edgesSize() << endl;
+// 
+//     Writer<Graph> graphWtr(outpath);
+//     graphWtr.write(graph);
+//     
+//     return EXIT_SUCCESS;
+//   }
+//   catch( carto::user_interruption & )
+//   {
+//   }
+//   catch( exception & e )
+//   {
+//     cerr << e.what() << endl;
+//   }
+// }
+
+
+//##############################################################################
+
+void setupData( map<string, TimeTexture<float> > &textures,
+                map<string, AimsSurfaceTriangle > &meshes,
+                map<string, TimeTexture<float> > &latitudes,
+                map<string, TimeTexture<float> > &longitudes,
+                string texPaths,
+                string meshPaths,
+                string latPaths,
+                string lonPaths,
+                vector<string> &listSujets){
+
+  vector<string> paths;
+
+  // Let's split the textures pathes and then read/store every texture
+  paths = splitGraphFile(texPaths);
+  assert( paths.size() == listSujets.size() );
+  for ( uint i = 0 ; i < listSujets.size() ; i++ ) {
+    Reader<TimeTexture<float> > texRdr ( paths[i] ) ;
+    pair<string, TimeTexture<float> > tex;
+    tex.first = listSujets[i];
+    texRdr.read(tex.second);
+    textures.insert(tex);
+  }
+
+  // Let's do the same for the meshes
+  paths = splitGraphFile(meshPaths);
+  assert( paths.size() == listSujets.size() );
+  for ( uint i = 0 ; i < listSujets.size() ; i++ ) {
+    Reader<AimsSurfaceTriangle> meshRdr (paths[i] ) ;
+    pair<string, AimsSurfaceTriangle > mesh;
+    mesh.first = listSujets[i];
+    meshRdr.read(mesh.second);
+    meshes.insert(mesh);
+  }
+
+  // Let's do it for the latitudes
+  paths = splitGraphFile(latPaths);
+  assert( paths.size() == listSujets.size() );
+  for ( uint i = 0 ; i < listSujets.size() ; i++ ) {
+    Reader<TimeTexture<float> > latRdr ( paths[i] );
+    pair<string, TimeTexture<float> > lat;
+    lat.first = listSujets[i];
+    latRdr.read(lat.second);
+    latitudes.insert(lat);
+  }
+
+  // Let's do it for the longitudes
+  paths = splitGraphFile(lonPaths);
+  assert( paths.size() == listSujets.size() );
+  for ( uint i = 0 ; i < listSujets.size() ; i++ ) {
+    Reader<TimeTexture<float> > lonRdr ( paths[i] );
+    pair<string, TimeTexture<float> > lon;
+    lon.first = listSujets[i];
+    lonRdr.read(lon.second);
+    longitudes.insert(lon);
+  }
+  
+}
+
+//##############################################################################
+
+void ConstruireGraphe(Graph *graph,
+                      vector<Blob *> &blobs,
+                      vector<SSBlob *> &ssblobs,
+                      vector<pair<Point2d, float> > &cliques,
+                      vector<set<uint> > &matchingblobs,
+                      string texPaths,
+                      string meshPaths,
+                      string latPaths,
+                      string lonPaths,
+                      vector<string> &listSujets){
+
+  graph = new Graph("BlobsArg");
+
+  cerr << "Construction du Graphe" << endl;
+  vector<float> resolution,bbmin2D,bbmax2D;
+  vector<int> bbmin, bbmax;
+  resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0);
+  //   bbmin.push_back(mesh[0].minimum()[0]-1); bbmin.push_back(mesh[0].minimum()[1]-1); bbmin.push_back(mesh[0].minimum()[2]-1);
+  //   bbmax.push_back(mesh[0].maximum()[0]+1); bbmax.push_back(mesh[0].maximum()[1]+1); bbmax.push_back(mesh[0].maximum()[2]+1);
+  bbmin.push_back(-10); bbmin.push_back(-10); bbmin.push_back(-10);
+  bbmax.push_back(10); bbmax.push_back(10); bbmax.push_back(10); 
+  graph->setProperty( "filename_base", "*");
+
+  graph->setProperty("voxel_size", resolution);
+  graph->setProperty("boundingbox_min", bbmin);
+  graph->setProperty("boundingbox_max", bbmax);
+  graph->setProperty("meshes", splitGraphFile(meshPaths));
+  graph->setProperty("sujets", listSujets);
+  graph->setProperty("textures", splitGraphFile(texPaths));
+  graph->setProperty("latitudes", splitGraphFile(latPaths));
+  graph->setProperty("longitudes", splitGraphFile(lonPaths));
+
+  Vertex *vert;
+  carto::rc_ptr<AimsSurfaceTriangle> ptr;
+  aims::GraphManip manip;
+  vector<Vertex *> listVertices;
+    
+      
+  for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
+        
+    // For every scale-space blob, we create a vertex in the Aims graph : we define
+    //   its properties and store a link between the created vertex and the blob index
+    
+    cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
+    vert = graph->addVertex("ssb");
+    vert->setProperty("index", i);
+    vert->setProperty("name", i);
+    vert->setProperty("label", "0");
+    vert->setProperty("t", ssblobs[i]->t);
+    vert->setProperty("rank", i);
+    vert->setProperty( "subject", ssblobs[i]->subject);
+    vert->setProperty( "tmin", ssblobs[i]->tmin);
+    vert->setProperty( "tmax", ssblobs[i]->tmax);
+    vert->setProperty( "tValue", 100.0);
+    vert->setProperty("nodes_list", set2vector(ssblobs[i]->representation));
+      
+    
+    // We associate the proper mesh patch from "objects" to the vertex
+//     ptr=carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+//     (*ptr)[0]=(*objects)[i];
+//     manip.storeAims(*graph, vert, "blob", ptr);
+//     vert->setProperty("blob_label",i);
+    
+    listVertices.push_back(vert);
+  }
+
+  // CONSTRUIRE LES ARETES
+  cout << "Construction cliques" << endl;
+  for (uint i = 0 ; i < cliques.size() ; i++){
+    
+    // For every clique, we get the two corresponding vertices from listVertices
+    Vertex *v1, *v2;
+    v1 = listVertices[cliques[i].first[0]];
+    v2 = listVertices[cliques[i].first[1]];
+    int index1, index2;
+    v1->getProperty("index", index1);
+    v2->getProperty("index", index2);
+    cout << index1 << " " << index2 << endl;
+    
+    
+    Edge *edge= graph->addEdge(v1,v2,"b2b");
+    edge->setProperty("blob_first", cliques[i].first[0]);
+    edge->setProperty("blob_second", cliques[i].first[1]);
+    edge->setProperty("similarity", cliques[i].second);
+
+  }
+
+
+  // AJOUTER LES GREY LEVEL BLOBS
+  for (int i = 0 ; i < (int) blobs.size() ; i++) {
+        
+    // For every scale-space blob, we create a vertex in the Aims graph : we define
+    //   its properties and store a link between the created vertex and the blob index
+    
+    cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
+    vert = graph->addVertex("glb");
+    vert->setProperty("index", blobs[i]->index);
+    vert->setProperty("t", blobs[i]->t);
+    vert->setProperty( "scale", blobs[i]->scale);
+
+  }
+
+  // AJOUTER LES RELATIONS SSB -> GLB
+
+
+}
+
+
+//##############################################################################
+
 int main( int argc, const char **argv ){
   try {
-  
+
     int mode=0;
-    string outpath = "", 
-           meshPath, 
-           texPath, 
-           latpath="", 
-           lonpath="", 
-           flatpath="", 
-           sujet;
+    string outPaths = "", outPath = "",
+           meshPaths = "", meshPath = "",
+           texPaths = "", texPath = "",
+           latPaths = "", latPath = "",
+           lonPaths = "", lonPath = "",
+           flatPaths = "", flatPath = "",
+           sujets = "";
 
     AimsApplication app( argc, argv, "surfLabelsTex2Graph" );
-    app.addOption( meshPath, "-m", "mesh");
-    app.addOption( texPath, "-t", "texture");
-    app.addOption( outpath, "-o", "output file");
+    app.addOption( meshPaths, "-m", "mesh");
+    app.addOption( texPaths, "-t", "texture");
+    app.addOption( outPaths, "-o", "output file");
     app.addOption( mode, "-M", "mode (0: normal - 1:barycenters (provide the lat/lon textures)",1);
-    app.addOption( sujet,"-s", "sujet");
-    app.addOption( latpath, "--lat", "latitude");
-    app.addOption( lonpath, "--lon", "longitude");
-    app.addOption( flatpath, "--flat", "flat",1);
+    app.addOption( sujets, "-s", "sujet");
+    app.addOption( latPaths, "--lat", "latitude");
+    app.addOption( lonPaths, "--lon", "longitude");
+    app.addOption( flatPaths, "--flat", "flat",1);
     app.initialize();
-    assert(latpath!="");
-    assert(lonpath!="");
+
+    map<string, TimeTexture<float> > textures;
+    map<string, AimsSurfaceTriangle > meshes;
+    map<string, TimeTexture<float> > latitudes;
+    map<string, TimeTexture<float> > longitudes;
+    vector<string> listSujets = splitGraphFile(sujets);
+    cerr << "split string sujets -> " << listSujets.size() << " sujets" << endl;
     
-    // Read files (the mesh, the tex and the coordinates)
-    Reader<AimsSurfaceTriangle> rdrMesh(meshPath);
-    Reader<TimeTexture<float> > rdrTex(texPath),
-                                rdrLat(latpath),
-                                rdrLon(lonpath);
-    AimsSurfaceTriangle mesh;
-    TimeTexture<float> tex, lat, lon;
-    rdrMesh.read(mesh);
-    rdrTex.read(tex);
-    rdrLat.read(lat);
-    rdrLon.read(lon);
-    
-    // Computes a radius for the "barycenters" sphere-based representation mode
-    mesh[0].setMini(); mesh[0].setMaxi();
-    cerr << mesh[0].minimum()[0] << " " << mesh[0].minimum()[1] << " " << mesh[0].minimum()[2] << ";" << mesh[0].maximum()[0] << " " << mesh[0].maximum()[1] << " " << mesh[0].maximum()[2] << endl;    
-    float dist = sqrt(pow(mesh[0].minimum()[0]-mesh[0].maximum()[0],2)+pow(mesh[0].minimum()[1]-mesh[0].maximum()[1],2)+pow(mesh[0].minimum()[2]-mesh[0].maximum()[2],2));
-    float radius = dist / 300.0;
-    
-    // Definition of blobs, nodes lists and objects vectors..
-    vector<vector<int> > nodes_lists;
-    AimsSurfaceTriangle *objects;
-    
-    vector<SSBlob *> ssblobs;
+    setupData(textures, meshes, latitudes, longitudes, texPaths, meshPaths, latPaths, lonPaths, listSujets);
+
     vector<Blob *> blobs;
+    vector<SSBlob *> ssblobs;
     vector<pair<Point2d, float> > cliques;
     vector<set<uint> > matchingblobs;
 
-
-    if (mode == 1){
-      
-      // Barycenters mode
-      objects = new AimsSurfaceTriangle(getBarycenters(mesh,nodes_lists,radius));
-    }
-    else if (mode == 2){
-      
-      // Construction of a primal-sketch
-      ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss(getScaleSpace(tex,mesh,lat,lon));
     
+    for (uint i = 0 ; i < listSujets.size() ; i++) {
+      string sujet = listSujets[i];
+      cout << "sujet : " << sujet << endl;;
+      // Construction of a primal-sketch
+      ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss(
+          getScaleSpace( textures[sujet], meshes[sujet], latitudes[sujet], longitudes[sujet]) );
+
       PrimalSketch<AimsSurface<3, Void>, Texture<float> > sketch(sujet, &ss, SURFACE);
 
       // Launching the computation of the PS (tmin, tmax, statfile, intersection_criterium)
       sketch.ComputePrimalSketch(1.0, 8.0, "", 10);
-      
+
       cout << "CONSTRUIRE BLOBS" << endl;
-      construireBlobs(sketch, blobs, ssblobs);
+      construireBlobs(sketch, blobs, ssblobs);      
 
-      cliques = construireCliques(ssblobs, blobs, lat, lon, matchingblobs);
-      
-      
-
-      
-      cout << "FIN CONSTRUIRE BLOBS" << endl;
-      
-      // Extracting mesh patches before building the Aims graph
-      objects = new AimsSurfaceTriangle(getBlobsMeshes(ssblobs,mesh,nodes_lists));
-
-    // End of mode 2
+      cout << "blobs.size() = " << blobs.size() << endl;
+      cout << "ssblobs.size() = " << ssblobs.size() << endl;
     }
+
+    cliques = construireCliques(ssblobs, blobs, latitudes, longitudes, matchingblobs);
+
+    Graph *graph;
+    ConstruireGraphe(graph, blobs, ssblobs, cliques, matchingblobs, texPaths, meshPaths, latPaths, lonPaths, listSujets);
+
     
-//     if (flatpath != ""){
-//       cerr << "écriture flat mesh:" << flatpath << endl;
-//       TimeTexture<float> texflat;
-//       AimsSurfaceTriangle flat(getFlatMap(nodes_lists,lat,lon,texflat));
-//       cerr << flat[0].vertex().size() << " !=! " << texflat[0].nItem() << endl;
-//       Writer<AimsSurfaceTriangle> wflat(flatpath);
-//       wflat.write(flat);
-
-//     }
-//     
-    cerr << "construction graphe" << endl;
-    Graph graph("BlobsArg");
-    vector<float> resolution,bbmin2D,bbmax2D;
-    vector<int> bbmin, bbmax;
-    resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0); 
-    bbmin.push_back(mesh[0].minimum()[0]-1); bbmin.push_back(mesh[0].minimum()[1]-1); bbmin.push_back(mesh[0].minimum()[2]-1); 
-    bbmax.push_back(mesh[0].maximum()[0]+1); bbmax.push_back(mesh[0].maximum()[1]+1); bbmax.push_back(mesh[0].maximum()[2]+1); 
-    graph.setProperty( "filename_base", "*");
-
-    graph.setProperty("voxel_size", resolution);
-    graph.setProperty("boundingbox_min", bbmin);
-    graph.setProperty("boundingbox_max", bbmax);
-    graph.setProperty("mesh", meshPath);
-    graph.setProperty("sujet", sujet);
-    graph.setProperty("texture", texPath);
-    
-    
-    construireGraph(&graph, ssblobs, cliques, objects);
-    
-
-
-
-    cerr << "graph.order:" << graph.order() << endl;
-    cerr << "graph.edgesSize:" << graph.edgesSize() << endl;
-
-    Writer<Graph> graphWtr(outpath);
-    graphWtr.write(graph);
-    
+    Writer<Graph> wtrGraph("/volatile/operto/graph.arg");
+    wtrGraph.write(*graph);
+    // On vient d'écrire le graphe pour l'analyse (à créer : une fonction qui lit
+    //   ce graphe et qui récupère les sites et cliques)
+        
+    // Eventuellement une fonction pour séparer le graphe en sous-graphes correspondants
+    //   aux différents sujets
+     
     return EXIT_SUCCESS;
   }
   catch( carto::user_interruption & )
@@ -767,4 +1023,3 @@ int main( int argc, const char **argv ){
     cerr << e.what() << endl;
   }
 }
-

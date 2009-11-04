@@ -15,7 +15,6 @@ class Blob{
 //     string subject;
     float t;
     float scale;
-    int rank;
     Point3df boundingbox_max;
     Point3df boundingbox_min;
     set<uint> nodes_list;
