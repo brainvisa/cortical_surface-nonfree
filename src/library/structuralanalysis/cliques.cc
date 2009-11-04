@@ -703,14 +703,6 @@ vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<
   cout << "Distance maps threshold : << " << dist_thresh <<" >>"<< endl;
 
 
-//   typedef til::Mesh_N MyMesh;
-//   map<string,MyMesh> mymeshes;
-// 
-//   for (meshit = meshes.begin();meshit!=meshes.end();meshit++){
-//     til::Mesh1 mesh0;
-//     til::convert(mesh0, meshit->second);
-//     mymeshes[meshit->first] = addNeighborsToMesh(mesh0);
-//   }
   vector<Clique> intraps;
   for (uint i=0;i<sites.size(); i++){
     uint j=0;
@@ -724,95 +716,7 @@ vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<
     cliquesDuSite[sites[i]->index].push_back(j);
   }
   
-// //   for (uint i=0;i<sites.size();i++)
-// //     for (megit=sites[i]->nodes_list.begin();megit!=sites[i]->nodes_list.end();megit++){
-// // //       cout << *megit << " ";
-// //       megasitesnodes.insert(*megit);
-// //     }
-//   
-//     
-//   typedef map<uint, set<uint> > mapvoisins;
-//   map<string, mapvoisins> neighbours;
-//   unsigned v1b, v2, v3;
-//   for (uint s=0;s<subjects.size();s++){
-//     for( uint i=0; i<meshes[subjects[s]].polygon().size(); ++i ){
-//       v1b = meshes[subjects[s]].polygon()[i][0];
-//       v2 = meshes[subjects[s]].polygon()[i][1];
-//       v3 = meshes[subjects[s]].polygon()[i][2];
-//   
-//       neighbours[subjects[s]][v1b].insert( v2 );
-//       neighbours[subjects[s]][v2].insert( v1b );
-//   
-//       neighbours[subjects[s]][v1b].insert( v3 );
-//       neighbours[subjects[s]][v3].insert( v1b );
-//   
-//       neighbours[subjects[s]][v2].insert( v3 );
-//       neighbours[subjects[s]][v3].insert( v2 );
-//     }
-//   }
-//   
-//   map<string, map<float, vector<pair<float, uint> > > > altmeshes;
-//   for (meshit=meshes.begin();meshit!=meshes.end();meshit++){
-//     matching[meshit->first]=vector<map<string,uint> > (meshit->second.vertex().size());
-//     altmeshes[meshit->first]=getAlternateMesh(meshit->second, lats[meshit->first], lons[meshit->first]);
-//   }
-//   cout << "Construction maillages alternatifs terminée ..." << endl;
-//     
-//   cout << "Recherche des correspondances noeud-à-noeud à travers tous les sujets..." << endl;
-//   set<uint> sitesnodes;
-//   for (uint i=0;i<sites.size();i++){
-//     
-//     cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b"  << i << "/" << sites.size() << flush;
-// //     x = lats[sites[i]->subject].item(i);
-// //     y = lons[sites[i]->subject].item(i);
-//     
-//     x = sites[i]->gravitycenter[0];
-//     y = sites[i]->gravitycenter[1];
-// //     cout << " " << x << " " << y << " " << sites[i]->gravitycenter[2] << "//" ;
-// //     cout << sites[i]->subject << " " << x << " " << y << endl;
-// //     float testdistance=0.0, testdistmin=10000000.0;
-//     mini=-1;
-// //     for (uint j=0;j<meshes[sites[0]->subject].vertex().size();j++){
-// //       float x0 = lats[sites[0]->subject].item(j);
-// //       float y0 = lons[sites[0]->subject].item(j);
-// //       
-// //       testdistance = sqrt(pow(x0-x,2)+pow(y0-y,2));
-// //       if (testdistance < testdistmin){
-// //         testdistmin = testdistance;
-// //         mini=j;
-// //       }
-// //     }
-//     float delta = 0.5;
-//     while (mini==-1){
-//     mini=getNode(altmeshes[sites[0]->subject],delta,x,y,lats[sites[0]->subject],lons[sites[0]->subject]);
-//     delta *= 2.0;
-//     }
-//     sites[i]->node=(uint)mini;
-// //     cout << mini << "(suj:"<< sites[i]->subject <<"t:" << sites[i]->t<< ")" <<endl;
-//     
-//     sitesnodes.insert(mini);
-//     ASSERT(mini!=-1 && sites[i]->node<meshes[sites[0]->subject].vertex().size());
-// //     cout << i << " " << sites[i]->node << " - " ;
-// 
-//   }
-//   map<uint,map<uint,float> > distmaps;
-//    cout << endl;//(sitesnodes.size(),meshes[sites[0]->subject].vertex().size());
-//  uint cpt=0;
-//  
-//   for (it=sitesnodes.begin();it!=sitesnodes.end();it++,cpt++){
-//     cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << cpt << "/" << sitesnodes.size() << flush;
-//     distmaps[*it] = getDistMap( &(meshes[sites[0]->subject]),  neighbours[sites[0]->subject], *it, 50.0); 
-// //     distmaps[*it] = test_geodmap(mymeshes[sites[0]->subject], *it, 40.0);
-//   }
-//     
-// 
-//   
-//   cout << endl << "done" << endl;
-// 
-//   
-// //   for (uint i=0;i<sites.size();i++){
-// //     sites[i]->node = matching[sites[i]->subject][i][sites[0]->subject];
-// //   }
+
 
   for (uint i=0;i<intraps.size();i++)
     cliques.push_back(intraps[i]);

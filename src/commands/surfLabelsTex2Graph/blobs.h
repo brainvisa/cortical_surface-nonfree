@@ -12,7 +12,7 @@ class Blob{
   public :
     uint index;
     uint parent;
-    string subject;
+//     string subject;
     float t;
     float scale;
     int rank;
@@ -25,6 +25,7 @@ class SSBlob{
   public :
     uint index;
     float t;
+    string subject;
     float tmin;
     float tmax;
     set<uint> representation;
