@@ -961,6 +961,39 @@ void ConstruireGraphe(Graph *graph,
 
 }
 
+//##############################################################################
+
+void ConstruireIndividualGraph( Graph *graph,
+                                vector<Blob *> &blobs,
+                                vector<SSBlob *> &ssblobs){
+  // From the two vectors, we build a graph containing the ssb, the glb and
+  //  the links between ssb and glb                                 
+
+
+
+}
+
+//##############################################################################
+
+void RecoverBlobsFromGraph( Graph *graph,
+                            vector<Blob *> &blobs,
+                            vector<SSBlob *> &ssblobs){
+  
+
+
+}
+
+//##############################################################################
+
+void getSubjectBlobs( vector<Blob *> &blobs,
+                      vector<SSBlob *> &ssblobs,
+                      string sujet,
+                      vector<Blob *> &subjBlobs,
+                      vector<SSBlob *> &subjSsblobs){
+
+
+
+}
 
 //##############################################################################
 
