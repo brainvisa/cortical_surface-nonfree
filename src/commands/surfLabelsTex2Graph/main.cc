@@ -73,7 +73,7 @@ void construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch
     
     list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> listBlobs 
          = sketch.BlobSet();
-    uint iBlob=0, iSSBlob=0;
+    uint iBlob=blobs.size(), iSSBlob=ssblobs.size();
     
     list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*>::iterator itSSB;
     list<GreyLevelBlob<SiteType<AimsSurface<3, Void> >::type > *>::iterator itGLB;
@@ -460,6 +460,7 @@ vector<pair<Point2d, float> > construireCliques ( vector<SSBlob *>   &ssblobs,
       // Start of cliques construction
             
       for (uint i=0 ; i < ssblobs.size() - 1 ; i++){
+        cout << "\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << ssblobs.size() << flush;
         for (uint j=i+1 ; j < ssblobs.size() ; j++){
 
           // For every single pair of scale-space blobs, computes a maximal overlap
@@ -523,14 +524,15 @@ vector<pair<Point2d, float> > construireCliques ( vector<SSBlob *>   &ssblobs,
               // is stored in "matchingblobs".
               
               pair<Point2d, float> res;
-              res.first = Point2d(i,j);
+              res.first = Point2d(ssblobs[i]->index,ssblobs[j]->index);
               res.second = overmax;
               cliques.push_back(res);
+              assert(res.first[0] != res.first[1]);
               matchingblobs[i].insert(b1max->index);
               matchingblobs[j].insert(b2max->index);            
-              cout << "max (" << i <<","<<j<< ") between:" << b1max->index << " " 
-                   << b2max->index << " overmax:" << overmax << endl;
-              cout << "scales: " << b1max->scale << " " << b1max->scale << endl;
+//               cout << "max (" << res.first[0] <<","<< res.first[1] << ") between:" << b1max->index << " " 
+//                    << b2max->index << " overmax:" << overmax << endl;
+//               cout << "scales: " << b1max->scale << " " << b1max->scale << endl;
   
             }
           }
@@ -538,7 +540,7 @@ vector<pair<Point2d, float> > construireCliques ( vector<SSBlob *>   &ssblobs,
           // The next pair of scale-space blobs will now be processed.
         }
       }
-      
+      cout << ssblobs.size() << "/" << ssblobs.size() << endl;
       // Construction of a representation blob for each scale-space blob
       for (uint i = 0 ; i < ssblobs.size() ; i++){
         
@@ -561,8 +563,8 @@ vector<pair<Point2d, float> > construireCliques ( vector<SSBlob *>   &ssblobs,
           cout << endl ;
         
       }
-      float test;
-      cin >> test;
+//       float test;
+//       cin >> test;
       return cliques;
 }
 
@@ -867,7 +869,7 @@ void ConstruireGraphe(Graph *graph,
   Vertex *vert;
   carto::rc_ptr<AimsSurfaceTriangle> ptr;
   aims::GraphManip manip;
-  vector<Vertex *> listVertices;
+  vector<Vertex *> listVertSSB( ssblobs.size() ), listVertGLB( ssblobs.size() );
     
       
   for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
@@ -875,13 +877,16 @@ void ConstruireGraphe(Graph *graph,
     // For every scale-space blob, we create a vertex in the Aims graph : we define
     //   its properties and store a link between the created vertex and the blob index
     
-    cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
+    cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush << endl ;
     vert = graph->addVertex("ssb");
-    vert->setProperty("index", i);
-    vert->setProperty("name", i);
+    int index1=ssblobs[i]->index;
+    vert->setProperty("index", index1);
+//     int index1;
+    vert->getProperty("index", index1);
+    cout << ssblobs[i]->index << "@" << index1 << endl;
     vert->setProperty("label", "0");
     vert->setProperty("t", ssblobs[i]->t);
-    vert->setProperty("rank", i);
+//     vert->setProperty("rank", i);
     vert->setProperty( "subject", ssblobs[i]->subject);
     vert->setProperty( "tmin", ssblobs[i]->tmin);
     vert->setProperty( "tmax", ssblobs[i]->tmax);
@@ -895,7 +900,7 @@ void ConstruireGraphe(Graph *graph,
 //     manip.storeAims(*graph, vert, "blob", ptr);
 //     vert->setProperty("blob_label",i);
     
-    listVertices.push_back(vert);
+    listVertSSB[ ssblobs[i]->index ] = vert;
   }
 
   // CONSTRUIRE LES ARETES
@@ -904,15 +909,12 @@ void ConstruireGraphe(Graph *graph,
     
     // For every clique, we get the two corresponding vertices from listVertices
     Vertex *v1, *v2;
-    v1 = listVertices[cliques[i].first[0]];
-    v2 = listVertices[cliques[i].first[1]];
-    int index1, index2;
-    v1->getProperty("index", index1);
-    v2->getProperty("index", index2);
-    cout << index1 << " " << index2 << endl;
+    v1 = listVertSSB[cliques[i].first[0]];
+    v2 = listVertSSB[cliques[i].first[1]];
     
-    
-    Edge *edge= graph->addEdge(v1,v2,"b2b");
+    Edge *edge= graph->addEdge(v1, v2, "b2b");
+
+
     edge->setProperty("blob_first", cliques[i].first[0]);
     edge->setProperty("blob_second", cliques[i].first[1]);
     edge->setProperty("similarity", cliques[i].second);
@@ -931,10 +933,30 @@ void ConstruireGraphe(Graph *graph,
     vert->setProperty("index", blobs[i]->index);
     vert->setProperty("t", blobs[i]->t);
     vert->setProperty( "scale", blobs[i]->scale);
-
+    
+    listVertGLB.push_back(vert);
+    
   }
 
   // AJOUTER LES RELATIONS SSB -> GLB
+  
+  for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
+    
+    set<Blob *>::iterator itB1;
+    set<Blob *> &listGLB = ssblobs[i]->blobs;
+    for (itB1 = listGLB.begin(); itB1 != listGLB.end() ; itB1++) {
+      
+      Vertex *v1, *v2;
+      
+      v1 = listVertSSB[ssblobs[i]->index];
+      v2 = listVertGLB[(*itB1)->index];
+      Edge *edge= graph->addEdge(v1,v2,"s2g");
+      edge->setProperty("ssb_index", ssblobs[i]->index);
+      edge->setProperty("glb_index", (*itB1)->index);
+      
+    }
+  }
+
 
 
 }
@@ -1001,11 +1023,16 @@ int main( int argc, const char **argv ){
 
     cliques = construireCliques(ssblobs, blobs, latitudes, longitudes, matchingblobs);
 
+    // DEBUG PRINT
+    cout << cliques.size() << " cliques de similarité " << endl;
+    
+    
+    
     Graph *graph;
     ConstruireGraphe(graph, blobs, ssblobs, cliques, matchingblobs, texPaths, meshPaths, latPaths, lonPaths, listSujets);
 
     
-    Writer<Graph> wtrGraph("/volatile/operto/graph.arg");
+    Writer<Graph> wtrGraph(outPaths);
     wtrGraph.write(*graph);
     // On vient d'écrire le graphe pour l'analyse (à créer : une fonction qui lit
     //   ce graphe et qui récupère les sites et cliques)
