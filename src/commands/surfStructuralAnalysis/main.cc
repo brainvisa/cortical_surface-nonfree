@@ -48,10 +48,6 @@ int main(int argc, const char **argv){
 
   LireGraphes(graphFile,primal);
   set<string> sujets(RecupererSujets(primal));
-//   map<string, AimsSurfaceTriangle> meshes;
-//   map<string, TimeTexture<float> > lats, lons;
-//   set<string>::iterator it=sujets.begin();
-
   Anneal swc(primal);
   
   swc.recuitpath = recuitpath;
@@ -66,6 +62,7 @@ int main(int argc, const char **argv){
   swc.SummaryLabels();
   swc.StoreToGraph(primal);
   if (save) SauvegarderGraphes(primal, graphFile, output);
+  
   return(0);
 
 }

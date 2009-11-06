@@ -65,11 +65,13 @@ using namespace std;
 // Function that builds a collection of Blob and SSBlob objects from a previously
 //   computed Primal Sketch
 void construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch, 
-                     vector<Blob *> &blobs, vector<SSBlob *> &ssblobs){
+                     vector<Blob *> &blobs, vector<SSBlob *> &ssblobs, bool initNull = true){
   
 //     // Inititalization of the results vectors "blobs" and "ssblobs"
-//     blobs = vector<Blob*>();
-//     ssblobs = vector<SSBlob*>();
+    if (initNull){
+      blobs.clear();
+      ssblobs.clear();
+    }
     
     list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> listBlobs 
          = sketch.BlobSet();
@@ -83,14 +85,14 @@ void construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch
       ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> >::iterator itPoints;
     
     
-    for (itSSB=listBlobs.begin();itSSB!=listBlobs.end();itSSB++){
+    for (itSSB = listBlobs.begin() ; itSSB != listBlobs.end() ; itSSB++){
       
       // For each scale-space blob, we create a SSBlob in "ssblobs" containing 
       //    various Blob objects (being themselves contained in a general resulting 
       // "blobs" vector).
       ssb = *itSSB;
       ssblobs.push_back(new SSBlob());
-      SSBlob *ssblob = ssblobs[ssblobs.size()-1];
+      SSBlob *ssblob = ssblobs[ssblobs.size() - 1];
       ssblob->index = iSSBlob;
       ssblob->subject = sketch.Subject();
       ssblob->tmin = 999.0;
@@ -126,9 +128,6 @@ void construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch
       }
       
       ssblob->t = ssb->GetMeasurements().t;
-//       cout << ssblob->t << " " << ssb->GetMeasurements().tValue << " " << ssblob->blobs.size() << endl;
-//       cout << ssblob->tmin << "/" << ssb->ScaleMin() << " " << ssblob->tmax << "/" << ssb->ScaleMax() << endl;
-      
       
       iSSBlob++;
     }
@@ -442,6 +441,17 @@ vector<int> set2vector(set<uint> &s){
 
 //##############################################################################
 
+set<uint> vector2set(vector<int> &v){
+  
+  set<uint> s;
+  for (uint i=0;i<v.size();i++)
+    s.insert(v[i]);     
+  return s;  
+  
+}
+
+//##############################################################################
+
 // This function takes the "ssblobs" vector and figures out which pairs of blobs 
 //  overlap. The resulting vector "cliques" associates to every relevant pair of
 //  scale-space blobs (noted by their indices) its calculated spatial overlap.
@@ -628,8 +638,8 @@ void construireGraph (  Graph                         *graph,
     
     
     Edge *edge= graph->addEdge(v1,v2,"b2b");
-    edge->setProperty("blob_first", cliques[i].first[0]);
-    edge->setProperty("blob_second", cliques[i].first[1]);
+//     edge->setProperty("blob_first", cliques[i].first[0]);
+//     edge->setProperty("blob_second", cliques[i].first[1]);
     edge->setProperty("similarity", cliques[i].second);
 
   }    
@@ -774,60 +784,47 @@ void construireGraph (  Graph                         *graph,
 
 //##############################################################################
 
-void setupData( map<string, TimeTexture<float> > &textures,
-                map<string, AimsSurfaceTriangle > &meshes,
-                map<string, TimeTexture<float> > &latitudes,
-                map<string, TimeTexture<float> > &longitudes,
-                string texPaths,
-                string meshPaths,
-                string latPaths,
-                string lonPaths,
+void setupData( map<string, SubjectData> &data,
+                vector<string> &listTexPaths,
+                vector<string> &listMeshPaths,
+                vector<string> &listLatPaths,
+                vector<string> &listLonPaths,
                 vector<string> &listSujets){
-
-  vector<string> paths;
-
-  // Let's split the textures pathes and then read/store every texture
-  paths = splitGraphFile(texPaths);
-  assert( paths.size() == listSujets.size() );
+  
+  assert( listLatPaths.size() == listSujets.size() );
+  assert( listLonPaths.size() == listSujets.size() );
+  assert( listMeshPaths.size() == listSujets.size() );
+  assert( listTexPaths.size() == listSujets.size() );
+  
   for ( uint i = 0 ; i < listSujets.size() ; i++ ) {
-    Reader<TimeTexture<float> > texRdr ( paths[i] ) ;
-    pair<string, TimeTexture<float> > tex;
-    tex.first = listSujets[i];
-    texRdr.read(tex.second);
-    textures.insert(tex);
-  }
-
-  // Let's do the same for the meshes
-  paths = splitGraphFile(meshPaths);
-  assert( paths.size() == listSujets.size() );
-  for ( uint i = 0 ; i < listSujets.size() ; i++ ) {
-    Reader<AimsSurfaceTriangle> meshRdr (paths[i] ) ;
-    pair<string, AimsSurfaceTriangle > mesh;
-    mesh.first = listSujets[i];
-    meshRdr.read(mesh.second);
-    meshes.insert(mesh);
-  }
-
-  // Let's do it for the latitudes
-  paths = splitGraphFile(latPaths);
-  assert( paths.size() == listSujets.size() );
-  for ( uint i = 0 ; i < listSujets.size() ; i++ ) {
-    Reader<TimeTexture<float> > latRdr ( paths[i] );
-    pair<string, TimeTexture<float> > lat;
-    lat.first = listSujets[i];
-    latRdr.read(lat.second);
-    latitudes.insert(lat);
-  }
-
-  // Let's do it for the longitudes
-  paths = splitGraphFile(lonPaths);
-  assert( paths.size() == listSujets.size() );
-  for ( uint i = 0 ; i < listSujets.size() ; i++ ) {
-    Reader<TimeTexture<float> > lonRdr ( paths[i] );
-    pair<string, TimeTexture<float> > lon;
-    lon.first = listSujets[i];
-    lonRdr.read(lon.second);
-    longitudes.insert(lon);
+    
+    pair<string, SubjectData > pSubjData;
+//     SubjectData subjData;
+    pSubjData.first = listSujets[i];
+//     pSubjData.second = subjData;
+    pSubjData.second.subject = listSujets[i];
+    
+    Reader<TimeTexture<float> > texRdr ( listTexPaths[i] ) ;
+    texRdr.read(pSubjData.second.tex);
+    
+    Reader<AimsSurfaceTriangle> meshRdr (listMeshPaths[i] ) ;
+    meshRdr.read(pSubjData.second.mesh);
+    
+    Reader<TimeTexture<float> > latRdr ( listLatPaths[i] );
+    latRdr.read(pSubjData.second.lat);
+  
+    Reader<TimeTexture<float> > lonRdr ( listLonPaths[i] );
+    lonRdr.read(pSubjData.second.lon);
+    
+    // Checking the data
+    cout << " subject : " << pSubjData.second.subject << endl;
+    cout << "  texture : " << pSubjData.second.tex[0].nItem() << " values" << endl;
+    cout << "  mesh : " << pSubjData.second.mesh[0].vertex().size() << " nodes" << endl;
+    cout << "  lat : " << pSubjData.second.lat[0].nItem() << " values" << endl;
+    cout << "  lon : " << pSubjData.second.lon[0].nItem() << " values" << endl;
+    
+    data.insert(pSubjData);
+    
   }
   
 }
@@ -881,12 +878,8 @@ void ConstruireGraphe(Graph *graph,
     vert = graph->addVertex("ssb");
     int index1=ssblobs[i]->index;
     vert->setProperty("index", index1);
-//     int index1;
-    vert->getProperty("index", index1);
-    cout << ssblobs[i]->index << "@" << index1 << endl;
     vert->setProperty("label", "0");
     vert->setProperty("t", ssblobs[i]->t);
-//     vert->setProperty("rank", i);
     vert->setProperty( "subject", ssblobs[i]->subject);
     vert->setProperty( "tmin", ssblobs[i]->tmin);
     vert->setProperty( "tmax", ssblobs[i]->tmax);
@@ -915,8 +908,8 @@ void ConstruireGraphe(Graph *graph,
     Edge *edge= graph->addEdge(v1, v2, "b2b");
 
 
-    edge->setProperty("blob_first", cliques[i].first[0]);
-    edge->setProperty("blob_second", cliques[i].first[1]);
+//     edge->setProperty("blob_first", cliques[i].first[0]);
+//     edge->setProperty("blob_second", cliques[i].first[1]);
     edge->setProperty("similarity", cliques[i].second);
 
   }
@@ -933,7 +926,7 @@ void ConstruireGraphe(Graph *graph,
     vert->setProperty("index", blobs[i]->index);
     vert->setProperty("t", blobs[i]->t);
     vert->setProperty( "scale", blobs[i]->scale);
-    
+    vert->setProperty( "nodes_list", blobs[i]->nodes_list);
     listVertGLB.push_back(vert);
     
   }
@@ -951,8 +944,8 @@ void ConstruireGraphe(Graph *graph,
       v1 = listVertSSB[ssblobs[i]->index];
       v2 = listVertGLB[(*itB1)->index];
       Edge *edge= graph->addEdge(v1,v2,"s2g");
-      edge->setProperty("ssb_index", ssblobs[i]->index);
-      edge->setProperty("glb_index", (*itB1)->index);
+//       edge->setProperty("ssb_index", ssblobs[i]->index);
+//       edge->setProperty("glb_index", (*itB1)->index);
       
     }
   }
@@ -963,22 +956,236 @@ void ConstruireGraphe(Graph *graph,
 
 //##############################################################################
 
+// Creates an Aims Graph for only ONE subject with scale-space blobs, grey-level 
+//  blobs and links between both types
+
 void ConstruireIndividualGraph( Graph *graph,
                                 vector<Blob *> &blobs,
-                                vector<SSBlob *> &ssblobs){
+                                vector<SSBlob *> &ssblobs,
+                                string meshPath,
+                                string texPath,
+                                string latPath,
+                                string lonPath,
+                                string sujet){
   // From the two vectors, we build a graph containing the ssb, the glb and
   //  the links between ssb and glb                                 
 
+  cerr << "Graph construction..." << endl;
+  vector<float> resolution,bbmin2D,bbmax2D;
+  vector<int> bbmin, bbmax;
+  resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0);
+  //   bbmin.push_back(mesh[0].minimum()[0]-1); bbmin.push_back(mesh[0].minimum()[1]-1); bbmin.push_back(mesh[0].minimum()[2]-1);
+  //   bbmax.push_back(mesh[0].maximum()[0]+1); bbmax.push_back(mesh[0].maximum()[1]+1); bbmax.push_back(mesh[0].maximum()[2]+1);
+  bbmin.push_back(-10); bbmin.push_back(-10); bbmin.push_back(-10);
+  bbmax.push_back(10); bbmax.push_back(10); bbmax.push_back(10); 
+  graph->setProperty( "filename_base", "*");
 
+  graph->setProperty("voxel_size", resolution);
+  graph->setProperty("boundingbox_min", bbmin);
+  graph->setProperty("boundingbox_max", bbmax);
+  graph->setProperty("mesh", meshPath);
+  graph->setProperty("sujet", sujet);
+  graph->setProperty("texture", texPath);
+  graph->setProperty("latitude", latPath);
+  graph->setProperty("longitude", lonPath);
+
+  Vertex *vert;
+  carto::rc_ptr<AimsSurfaceTriangle> ptr;
+  aims::GraphManip manip;
+  vector<Vertex *> listVertSSB( ssblobs.size() ), listVertGLB( blobs.size() );
+    
+      
+  // Let's add the scale-space blobs
+  
+  cout << "Adding scale-space blobs..." << endl;
+  
+  int iNbSSB = 0;
+  for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
+        
+    // For every scale-space blob, we create a vertex in the Aims graph : we define
+    //   its properties and store a link between the created vertex and the blob index
+    
+    cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
+    vert = graph->addVertex("ssb");
+    iNbSSB++;
+    
+    vert->setProperty("index", ssblobs[i]->index);
+    vert->setProperty("label", "0");
+    vert->setProperty("t", ssblobs[i]->t);
+    vert->setProperty( "subject", ssblobs[i]->subject);
+    vert->setProperty( "tmin", ssblobs[i]->tmin);
+    vert->setProperty( "tmax", ssblobs[i]->tmax);
+    vert->setProperty( "tValue", 100.0);
+      
+     
+    // We associate the proper mesh patch from "objects" to the vertex
+    // ptr=carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+    // (*ptr)[0]=(*objects)[i];
+    // manip.storeAims(*graph, vert, "blob", ptr);
+    // vert->setProperty("blob_label",i);
+        
+    assert(ssblobs[i]->index < ssblobs.size());
+    listVertSSB[ ssblobs[i]->index ] = vert;
+  }
+  cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbSSB << " blobs added... done" << endl; 
+    
+  // Let's add the grey-level blobs
+  
+  cout << "Adding grey-level blobs..." << endl;
+  
+  int iNbGLB = 0;
+  for (int i = 0 ; i < (int) blobs.size() ; i++) {
+        
+    // For every scale-space blob, we create a vertex in the Aims graph : we define
+    //   its properties and store a link between the created vertex and the blob index
+    
+    cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
+    vert = graph->addVertex("glb");
+    iNbGLB++;
+    vert->setProperty("index", blobs[i]->index);
+    vert->setProperty("t", blobs[i]->t);
+    vert->setProperty( "scale", blobs[i]->scale);
+    vert->setProperty( "nodes_list", blobs[i]->nodes_list);
+
+    assert( blobs[i]->index < blobs.size() );
+    listVertGLB[ blobs[i]->index ] = vert;
+    
+  }
+  cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbGLB << " blobs added... done" << endl; 
+   
+  // Let's add the links between scale-space and grey-level blobs
+  
+  cout << "Adding links between both types..." << endl;
+  
+  uint iNbLinks=0;
+  for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
+    
+    set<Blob *>::iterator itB1;
+    set<Blob *> &listGLB = ssblobs[i]->blobs;
+    for (itB1 = listGLB.begin(); itB1 != listGLB.end() ; itB1++) {
+      
+      Vertex *v1, *v2;
+      
+      v1 = listVertSSB[ssblobs[i]->index];
+      v2 = listVertGLB[(*itB1)->index];
+      Edge *edge= graph->addEdge(v1,v2,"s2g");
+      iNbLinks++;
+//       edge->setProperty("ssb_index", ssblobs[i]->index);
+//       edge->setProperty("glb_index", (*itB1)->index);
+      
+    }
+  }
+    cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbLinks << " links added... done" << endl; 
 
 }
 
 //##############################################################################
 
 void RecoverBlobsFromGraph( Graph *graph,
+                            SubjectData &subjData,
                             vector<Blob *> &blobs,
-                            vector<SSBlob *> &ssblobs){
-  
+                            vector<SSBlob *> &ssblobs,
+                            bool initNull = true){
+    if (initNull){
+      blobs.clear();
+      ssblobs.clear();                               
+    }
+                             
+    set<Vertex *>::iterator iv, jv;
+    string meshPath, sujet, texPath, latPath, lonPath;
+    
+    graph->getProperty("mesh", meshPath);
+    graph->getProperty("sujet", sujet);
+    graph->getProperty("texture", texPath);
+    graph->getProperty("latitude", latPath);
+    graph->getProperty("longitude", lonPath);
+    
+    subjData.subject = sujet;
+    
+    cout << "Subject " << sujet << endl;
+    cout << " mesh : " << meshPath << endl;
+    cout << " tex : " << texPath << endl;
+    cout << " lat : " << lonPath << endl << endl;
+    
+    cout << "Reading files..." <<  flush;
+    Reader<AimsSurfaceTriangle> rdrMesh(meshPath);
+    rdrMesh.read(subjData.mesh);
+    
+    Reader<TimeTexture<float> > rdrTex(texPath);
+    rdrTex.read(subjData.tex);
+    
+    Reader<TimeTexture<float> > rdrLat(latPath);
+    rdrLat.read(subjData.lat);
+    
+    Reader<TimeTexture<float> > rdrLon(lonPath);
+    rdrLon.read(subjData.lon);
+    
+
+    
+    cout << " done" << endl;
+    vector<Vertex *> listVertSSB, listVertGLB;
+    vector< set<uint> > listGLBindices;
+    
+    for (iv = graph->vertices().begin() ; iv != graph->vertices().end() ; ++iv){
+      
+      if ((*iv)->getSyntax() == "ssb"){
+        
+        int index;
+        float tmax, tmin, t;
+        (*iv)->getProperty("index", index);
+        (*iv)->getProperty("tmax", tmax);
+        (*iv)->getProperty("tmin", tmin);
+        (*iv)->getProperty("t", t);
+        ssblobs.push_back(new SSBlob());
+        SSBlob *ssblob = ssblobs[ssblobs.size()-1];
+        ssblob->index = index;
+        ssblob->tmax = tmax;
+        ssblob->tmin = tmin;
+        ssblob->t = t;                
+        ssblob->subject = sujet;
+      }      
+      else if ((*iv)->getSyntax() == "glb"){
+        
+        int index;
+        float scale, t;
+        vector<int> nodes_list;
+        (*iv)->getProperty("index", index);
+        (*iv)->getProperty("scale", scale);
+        (*iv)->getProperty("nodes_list", nodes_list);
+        (*iv)->getProperty("t", t);
+        blobs.push_back(new Blob());
+        Blob *blob = blobs[blobs.size()-1];
+        blob->index = index;        
+        blob->nodes_list = vector2set(nodes_list);
+        blob->scale = scale;
+        blob->t = t;                
+      }
+      
+    }
+    
+//     int iNbLinks = 0;
+// 
+//     for (iv = graph->vertices().begin() ; iv != graph->vertices().end() ; ++iv){      
+//       if ((*iv)->getSyntax() == "ssb"){
+//     
+//         for (jv = (*iv)->neighbours().begin() ; jv != (*iv)->neighbours().end() ; jv++){
+//             if ((*jv)->getSyntax() == "ssb"){
+//               
+//             }
+//             else if ((*jv)->getSyntax() == "glb"){
+//                (*jv)->getProperty("index", index);
+//                
+//                ssblob->blobs.insert(index);
+//                iNbLinks++;
+//             } 
+//         }
+//       }
+//     }
+    
+    cout << blobs.size() << " blobs added" << endl;
+    cout << ssblobs.size() << " ssblobs added " << endl;
+//     cout << iNbLinks << " links added" << endl;
+
 
 
 }
@@ -990,10 +1197,88 @@ void getSubjectBlobs( vector<Blob *> &blobs,
                       string sujet,
                       vector<Blob *> &subjBlobs,
                       vector<SSBlob *> &subjSsblobs){
-
+  
 
 
 }
+
+//##############################################################################
+
+void FromRawTexturesToIndividualGraphsViaPrimalSketches ( string sujets,
+                                                          string indivGraphPaths,
+                                                          string meshPaths,
+                                                          string texPaths,
+                                                          string latPaths,
+                                                          string lonPaths){
+  
+  map<string, SubjectData> data;
+  vector<string> listSujets = splitGraphFile(sujets);
+  vector<string> listGraphPaths = splitGraphFile(indivGraphPaths);
+  vector<string> listMeshPaths = splitGraphFile(meshPaths);
+  vector<string> listTexPaths = splitGraphFile(texPaths);
+  vector<string> listLatPaths = splitGraphFile(latPaths);
+  vector<string> listLonPaths = splitGraphFile(lonPaths);
+      
+  cerr << "  split string sujets -> " << listSujets.size() << " sujets" << endl << endl;
+
+  cout << "Reading the data..." << endl;
+  setupData(data, listTexPaths, listMeshPaths, listLatPaths, listLonPaths, listSujets);
+  cout << "done" << endl<< endl;
+  
+  
+  vector<Blob *> blobs;
+  vector<SSBlob *> ssblobs;
+
+  
+  // Processing every subject...
+  for (uint i = 0 ; i < listSujets.size() ; i++) {
+    
+    string sujet = listSujets[i];
+    
+    // Checking the data
+    cout << " subject : " << sujet << endl;
+    cout << "  texture : " << data[sujet].tex[0].nItem() << " values" << endl;
+    cout << "  mesh : " << data[sujet].mesh[0].vertex().size() << " nodes" << endl;
+    cout << "  lat : " << data[sujet].lat[0].nItem() << " values" << endl;
+    cout << "  lon : " << data[sujet].lon[0].nItem() << " values" << endl;        
+    
+    // Generating a scale-space
+    ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss(
+        getScaleSpace( data[sujet].tex, data[sujet].mesh, data[sujet].lat, data[sujet].lon) );
+
+    // Constructing a primal-sketch        
+    PrimalSketch<AimsSurface<3, Void>, Texture<float> > sketch(sujet, &ss, SURFACE);
+
+    // Launching the computation of the PS (tmin, tmax, statfile, intersection_criterium)
+    sketch.ComputePrimalSketch(1.0, 8.0, "", 10);
+
+    // Getting the blobs from PS structure
+    cout << "Blobs vectors construction..." << endl;
+    construireBlobs(sketch, blobs, ssblobs);      
+    cout << "blobs.size() = " << blobs.size() << endl;
+    cout << "ssblobs.size() = " << ssblobs.size() << endl;
+    
+    // Converting the blobs into an Aims Graph
+    Graph *tmpGraph = new Graph("BlobsArg");
+    ConstruireIndividualGraph(tmpGraph, blobs, ssblobs, listMeshPaths[i], listTexPaths[i], listLatPaths[i], listLonPaths[i], sujet);
+    
+    // Storing the graph on the hard disk
+    cout << "Writing graph .. " << listGraphPaths[i] << endl;
+    Writer<Graph> wtrGraph(listGraphPaths[i]);
+    wtrGraph.write(*tmpGraph); 
+    cout << "done" << endl << endl;
+    
+  // Next subject...
+  }
+  
+  // Deleting the blobs vectors
+  for (uint i = 0 ; i < blobs.size() ; i++)
+    delete(blobs[i]);
+  for (uint i = 0 ; i < ssblobs.size() ; i++)
+    delete(ssblobs[i]);
+    
+}
+
 
 //##############################################################################
 
@@ -1001,77 +1286,77 @@ int main( int argc, const char **argv ){
   try {
 
     int mode=0;
-    string outPaths = "", outPath = "",
-           meshPaths = "", meshPath = "",
-           texPaths = "", texPath = "",
-           latPaths = "", latPath = "",
-           lonPaths = "", lonPath = "",
-           flatPaths = "", flatPath = "",
+    string indivGraphPaths = "",
+           groupGraphPath = "",
+           meshPaths = "",
+           texPaths = "",
+           latPaths = "",
+           lonPaths = "",
+           flatPaths = "",
            sujets = "";
 
     AimsApplication app( argc, argv, "surfLabelsTex2Graph" );
     app.addOption( meshPaths, "-m", "mesh");
     app.addOption( texPaths, "-t", "texture");
-    app.addOption( outPaths, "-o", "output file");
-    app.addOption( mode, "-M", "mode (0: normal - 1:barycenters (provide the lat/lon textures)",1);
+    app.addOption( indivGraphPaths, "-g", "indiv graphs");
+    app.addOption( groupGraphPath, "-G", "group graph");
+    app.addOption( mode, "-M", "mode : 0 (compute the primal sketches) - 1 (take previously computed primal sketches)",1);
     app.addOption( sujets, "-s", "sujet");
     app.addOption( latPaths, "--lat", "latitude");
     app.addOption( lonPaths, "--lon", "longitude");
     app.addOption( flatPaths, "--flat", "flat",1);
     app.initialize();
 
-    map<string, TimeTexture<float> > textures;
-    map<string, AimsSurfaceTriangle > meshes;
-    map<string, TimeTexture<float> > latitudes;
-    map<string, TimeTexture<float> > longitudes;
-    vector<string> listSujets = splitGraphFile(sujets);
-    cerr << "split string sujets -> " << listSujets.size() << " sujets" << endl;
-    
-    setupData(textures, meshes, latitudes, longitudes, texPaths, meshPaths, latPaths, lonPaths, listSujets);
-
-    vector<Blob *> blobs;
-    vector<SSBlob *> ssblobs;
-    vector<pair<Point2d, float> > cliques;
-    vector<set<uint> > matchingblobs;
-
-    
-    for (uint i = 0 ; i < listSujets.size() ; i++) {
-      string sujet = listSujets[i];
-      cout << "sujet : " << sujet << endl;;
-      // Construction of a primal-sketch
-      ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss(
-          getScaleSpace( textures[sujet], meshes[sujet], latitudes[sujet], longitudes[sujet]) );
-
-      PrimalSketch<AimsSurface<3, Void>, Texture<float> > sketch(sujet, &ss, SURFACE);
-
-      // Launching the computation of the PS (tmin, tmax, statfile, intersection_criterium)
-      sketch.ComputePrimalSketch(1.0, 8.0, "", 10);
-
-      cout << "CONSTRUIRE BLOBS" << endl;
-      construireBlobs(sketch, blobs, ssblobs);      
-
-      cout << "blobs.size() = " << blobs.size() << endl;
-      cout << "ssblobs.size() = " << ssblobs.size() << endl;
+    mode = 1;
+    if (mode == 0){
+      FromRawTexturesToIndividualGraphsViaPrimalSketches ( sujets, indivGraphPaths, meshPaths, texPaths, latPaths, lonPaths);
+      
     }
+    else {
 
-    cliques = construireCliques(ssblobs, blobs, latitudes, longitudes, matchingblobs);
-
-    // DEBUG PRINT
-    cout << cliques.size() << " cliques de similarité " << endl;
-    
-    
-    
-    Graph *graph;
-    ConstruireGraphe(graph, blobs, ssblobs, cliques, matchingblobs, texPaths, meshPaths, latPaths, lonPaths, listSujets);
-
-    
-    Writer<Graph> wtrGraph(outPaths);
-    wtrGraph.write(*graph);
-    // On vient d'écrire le graphe pour l'analyse (à créer : une fonction qui lit
-    //   ce graphe et qui récupère les sites et cliques)
+        vector<string> listSujets = splitGraphFile(sujets);
+        vector<string> listGraphPaths = splitGraphFile(indivGraphPaths);
+        map<string, SubjectData> data;
+        vector<Blob *> blobs;
+        vector<SSBlob *> ssblobs;
+        // Processing every subject...
+        for (uint i = 0 ; i < listSujets.size() ; i++) {
+          
+          string sujet = listSujets[i];
+          cout << "sujet : " << sujet << endl;
+          Reader<Graph> rdrIndivGraph(listGraphPaths[i]);
+          Graph *graph = new Graph("BlobsArg");
+          rdrIndivGraph.read(*graph);
+          cout << "test" << endl;
+          pair<string, SubjectData> subjData;
+          subjData.first = sujet;
+          RecoverBlobsFromGraph(graph, subjData.second, blobs, ssblobs);
+          data.insert(subjData);
+            
+        }
         
-    // Eventuellement une fonction pour séparer le graphe en sous-graphes correspondants
-    //   aux différents sujets
+
+                
+    }
+      
+//       cliques = construireCliques(ssblobs, blobs, latitudes, longitudes, matchingblobs);
+  
+      // DEBUG PRINT
+//       cout << cliques.size() << " cliques de similarité " << endl;
+      
+      
+      
+//       Graph *graph;
+//       ConstruireGraphe(graph, blobs, ssblobs, cliques, matchingblobs, texPaths, meshPaths, latPaths, lonPaths, listSujets);
+  
+      
+      
+      // On vient d'écrire le graphe pour l'analyse (à créer : une fonction qui lit
+      //   ce graphe et qui récupère les sites et cliques)
+          
+      // Eventuellement une fonction pour séparer le graphe en sous-graphes correspondants
+      //   aux différents sujets
+    
      
     return EXIT_SUCCESS;
   }

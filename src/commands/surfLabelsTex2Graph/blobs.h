@@ -7,6 +7,14 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
+class SubjectData{
+  public :
+    string subject;
+    AimsSurfaceTriangle mesh;
+    TimeTexture<float> tex;
+    TimeTexture<float> lat;
+    TimeTexture<float> lon;    
+};
 
 class Blob{
   public :
