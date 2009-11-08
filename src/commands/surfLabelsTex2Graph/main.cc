@@ -117,7 +117,7 @@ void construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch
              ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints 
                  = (*itGLB)->GetListePoints();
         for (itPoints = listePoints.begin() ; itPoints != listePoints.end() ; itPoints++)
-          (blob->nodes_list).insert((*itPoints).second);
+          (blob->nodes_set).insert((*itPoints).second);
         
         ssblob->blobs.insert(blob);
         
@@ -231,9 +231,9 @@ AimsSurfaceTriangle getBlobsMeshes( vector<Blob *> &blobs,
       p2=mesh[0].polygon()[j][1];
       p3=mesh[0].polygon()[j][2];
     
-      if ( blobs[i]->nodes_list.find(p1)!=blobs[i]->nodes_list.end() &&     
-              blobs[i]->nodes_list.find(p2)!=blobs[i]->nodes_list.end() &&    
-              blobs[i]->nodes_list.find(p3)!=blobs[i]->nodes_list.end() )
+      if ( blobs[i]->nodes_set.find(p1)!=blobs[i]->nodes_set.end() &&
+              blobs[i]->nodes_set.find(p2)!=blobs[i]->nodes_set.end() &&
+              blobs[i]->nodes_set.find(p3)!=blobs[i]->nodes_set.end() )
         tri.insert(j);
       
     }
@@ -429,10 +429,10 @@ AimsSurfaceTriangle getBarycenters ( AimsSurfaceTriangle  &mesh,
 
 //##############################################################################
 
-vector<int> set2vector(set<uint> &s){
+vector<int> set2vector(set<int> &s){
   
   vector<int> v;
-  set<uint>::iterator it;
+  set<int>::iterator it;
   for (it=s.begin();it!=s.end();it++)
     v.push_back(*it);     
   return v;  
@@ -441,9 +441,9 @@ vector<int> set2vector(set<uint> &s){
 
 //##############################################################################
 
-set<uint> vector2set(vector<int> &v){
+set<int> vector2set(vector<int> &v){
   
-  set<uint> s;
+  set<int> s;
   for (uint i=0;i<v.size();i++)
     s.insert(v[i]);     
   return s;  
@@ -452,17 +452,143 @@ set<uint> vector2set(vector<int> &v){
 
 //##############################################################################
 
+double getOverlapMeasure(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bbmax2, uint *no_overlap){
+
+  float overlap_x,overlap_y,aux;
+  double rec=0.0;
+          
+  if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) < 0.0001) {bbmax1[0] += 0.5; /*cout << "bbmax10+ ";*/}
+  if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) < 0.0001) {bbmax1[1] += 0.5; /*cout << "bbmax11+ ";*/}
+  if (sqrt(pow(bbmin2[0]-bbmax2[0],2)) < 0.0001) {bbmax2[0] += 0.5; /*cout << "bbmax20+ ";*/}
+  if (sqrt(pow(bbmin2[1]-bbmax2[1],2)) < 0.0001) {bbmax2[1] += 0.5; /*cout << "bbmax21+ ";*/}
+//           if (bbmin1[1]>bbmax1[1] && bbmin2[1] < bbmax2[1] ) {//alors i a bouclé autour de 360/0
+  if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) <300){
+//             cout << "i boucle lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+//             ASSERT(bbmin1[1]>bbmax2[1]);
+    if (360-bbmax2[1]<bbmin2[1]){
+      aux = bbmax1[1];
+      bbmax1[1] = bbmin1[1] + 360.0;
+      bbmin1[1] = aux;
+    }
+    else {
+      aux = bbmin1[1];
+      bbmin1[1] = bbmax1[1] - 360.0;
+      bbmax1[1] = aux;
+    }
+  }
+//           else if (bbmin1[1]<bbmax1[1] && bbmin2[1] > bbmax2[1] ) {//alors j a bouclé autour de 360/0
+  else if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) <300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) >300){
+//             cout << "j boucle lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+//             ASSERT(bbmin2[1]>bbmax1[1]);
+    if (360-bbmax1[1]<bbmin1[1]){
+      aux = bbmax2[1];
+      bbmax2[1] = bbmin2[1] + 360.0;
+      bbmin2[1] = aux;
+    }
+    else {
+      aux = bbmin2[1];
+      bbmin2[1] = bbmax2[1] - 360.0;
+      bbmax2[1] = aux;
+    }
+  }
+//           else if (bbmin1[1]>bbmax1[1] && bbmin2[1]>bbmax2[1] ) {//alors i&j ont bouclé
+  else if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) >300){
+//               cout << "i et j bouclent lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+    aux = bbmin1[1];
+    bbmin1[1] = bbmax1[1] - 360.0;
+    bbmax1[1] = aux;
+    aux = bbmin2[1];
+    bbmin2[1] = bbmax2[1] - 360.0;
+    bbmax2[1] = aux;
+  }
+        // on s'occupe de la latitude
+//           if (bbmin1[0]>bbmax1[0] && bbmin2[0] < bbmax2[0] ) {//alors i a bouclé autour de 360/0
+  if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) <150){
+//             cout << "i boucle lat" << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+//             ASSERT(bbmin1[0]>bbmax2[0]);
+    if (180-bbmax2[0]<bbmin2[0]){
+      aux = bbmax1[0];
+      bbmax1[0] = bbmin1[0] + 180.0;
+      bbmin1[0] = aux;
+    }
+    else {
+      aux = bbmin1[0];
+      bbmin1[0] = bbmax1[0] - 180.0;
+      bbmax1[0] = aux;
+    }
+  }
+//           else if (bbmin1[0]<bbmax1[0] && bbmin2[0] > bbmax2[0] ) {//alors j a bouclé autour de 360/0
+  else if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) <150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) >150){
+//             cout << "j boucle lat" << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+//             ASSERT(bbmin2[0]>bbmax1[0]);
+    if (180-bbmax1[0]<bbmin1[0]){
+      aux = bbmax2[0];
+      bbmax2[0] = bbmin2[0] + 180.0;
+      bbmin2[0] = aux;
+    }
+    else {
+      aux = bbmin2[0];
+      bbmin2[0] = bbmax2[0] - 180.0;
+      bbmax2[0] = aux;
+    }
+
+  }
+//           else if (bbmin1[0]>bbmax1[0] && bbmin2[0]>bbmax2[0] ) {//alors i&j ont bouclé
+  else if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) >150){
+
+    aux = bbmin1[0];
+    bbmin1[0] = bbmax1[0] - 360.0;
+    bbmax1[0] = aux;
+    aux = bbmin2[0];
+    bbmin2[0] = bbmax2[0] - 360.0;
+    bbmax2[0] = aux;
+  }
+          // prétraitements effectués on calcule le recouvrement
+  *no_overlap=0;
+  if (bbmin1[0]<=bbmin2[0])
+    if (bbmax1[0]<bbmin2[0]) *no_overlap=1;
+  else overlap_x= (bbmax2[0] < bbmax1[0] ? bbmax2[0] : bbmax1[0]) - bbmin2[0] ;
+  else
+    if (bbmax2[0]<bbmin1[0]) *no_overlap=1;
+  else overlap_x= (bbmax1[0] < bbmax2[0] ? bbmax1[0] : bbmax2[0]) - bbmin1[0];
+  if (*no_overlap==0)
+  {
+    if (bbmin1[1]<=bbmin2[1])
+      if (bbmax1[1]<bbmin2[1]) *no_overlap=1;
+    else overlap_y= (bbmax2[1] < bbmax1[1] ? bbmax2[1] : bbmax1[1]) - bbmin2[1];
+    else
+      if (bbmax2[1]<bbmin1[1]) *no_overlap=1;
+    else overlap_y= (bbmax1[1] < bbmax2[1] ? bbmax1[1] : bbmax2[1]) - bbmin1[1];
+    if (*no_overlap==0)
+    {
+//       cout << "overlap_x :" << overlap_x << " overlap_y :" << overlap_y << endl;
+      rec=overlap_x*overlap_y;
+      double div=( ((bbmax1[0]-bbmin1[0])*(bbmax1[1]-bbmin1[1]))
+            + ((bbmax2[0]-bbmin2[0])*(bbmax2[1]-bbmin2[1])));
+      
+      rec=2 * rec / div;
+
+    }
+            
+  }
+
+  return rec;
+}
+
+
+
+//##############################################################################
+
 // This function takes the "ssblobs" vector and figures out which pairs of blobs 
 //  overlap. The resulting vector "cliques" associates to every relevant pair of
 //  scale-space blobs (noted by their indices) its calculated spatial overlap.
-vector<pair<Point2d, float> > construireCliques ( vector<SSBlob *>   &ssblobs,
+vector<SSBClique> construireCliques ( vector<SSBlob *>   &ssblobs,
                                                   vector<Blob *>     &blobs, 
-                                                  map<string, TimeTexture<float> > &latitudes,
-                                                  map<string, TimeTexture<float> > &longitudes, 
-                                                  vector<set<uint> > &matchingblobs){
+                                                  map<string, SubjectData> &data,
+                                                  vector<vector<Blob *> > &matchingblobs){
     
-      vector<pair<Point2d, float> > cliques;
-      matchingblobs = vector<set<uint> > (ssblobs.size());
+      vector<SSBClique > cliques;
+      matchingblobs = vector<vector<Blob *> > (ssblobs.size());
       
       set<Blob *>::iterator itB1, itB2;
       Blob *b1max, *b2max;
@@ -470,7 +596,7 @@ vector<pair<Point2d, float> > construireCliques ( vector<SSBlob *>   &ssblobs,
       // Start of cliques construction
             
       for (uint i=0 ; i < ssblobs.size() - 1 ; i++){
-        cout << "\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << ssblobs.size() << flush;
+        cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << ssblobs.size() << "(" << cliques.size() << ")" << flush;
         for (uint j=i+1 ; j < ssblobs.size() ; j++){
 
           // For every single pair of scale-space blobs, computes a maximal overlap
@@ -487,70 +613,69 @@ vector<pair<Point2d, float> > construireCliques ( vector<SSBlob *>   &ssblobs,
                 // For every possible pair of grey-level blobs between these two scale-
                 //   space blobs, we figure out their possible spatial overlap.
                 
-                vector<int> listNodesB1(set2vector((*itB1)->nodes_list)),
-                            listNodesB2(set2vector((*itB2)->nodes_list));
-                            
-                pair<Point2df,Point2df> bbi = getBoundingBox(listNodesB1, latitudes[ssblobs[i]->subject], longitudes[ssblobs[i]->subject]),
-                                        bbj = getBoundingBox(listNodesB2, latitudes[ssblobs[j]->subject], longitudes[ssblobs[j]->subject]);
-                                                        
-                Point3df bbmin1 (bbi.first[0], bbi.first[1], 0.0), 
-                        bbmax1 (bbi.second[0], bbi.second[1], 0.0), 
+//                 vector<int> listNodesB1(set2vector((*itB1)->nodes_list)),
+//                             listNodesB2(set2vector((*itB2)->nodes_list));
+
+                pair<Point2df,Point2df> bbi = getBoundingBox((*itB1)->nodes_list, data[ssblobs[i]->subject].lat, data[ssblobs[i]->subject].lon),
+                                        bbj = getBoundingBox((*itB2)->nodes_list, data[ssblobs[j]->subject].lat, data[ssblobs[j]->subject].lon);
+
+                Point3df bbmin1 (bbi.first[0], bbi.first[1], 0.0),
+                        bbmax1 (bbi.second[0], bbi.second[1], 0.0),
                         bbmin2 (bbj.first[0], bbj.first[1], 0.0),
                         bbmax2 (bbj.second[0], bbj.second[1], 0.0) ;
-                        
-                uint no_overlap = 2;              
-                double overlap = getOverlap( bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap );
-  
-                
+
+                uint no_overlap = 2;
+                double overlap = getOverlapMeasure( bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap );
+
+
                 if (no_overlap == 0 ){
-                  
+
                   // If the current pair's overlap is maximal, then the glb indices are stored.
-                  
-  //                 cout << "bbi:" << bbi.first[0] << "-" << bbi.first[1] << " " <<
-  //                     bbi.second[0] << "-" << bbi.second[1] << " " <<
-  //                     "bbj:" << bbj.first[0] << " " << bbj.first[1] << " " <<
-  //                     bbj.second[0] << " " << bbj.second[1] << " over:" << overlap << endl;
-  //                 cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
-                  
+
+//                   cout << "bbi("<< (*itB1)->nodes_list.size() << "):" << bbi.first[0] << "-" << bbi.first[1] << " " <<
+//                       bbi.second[0] << "-" << bbi.second[1] << " " <<
+//                       "bbj("<< (*itB2)->nodes_list.size() << "):" << bbj.first[0] << " " << bbj.first[1] << " " <<
+//                       bbj.second[0] << " " << bbj.second[1] << " over:" << overlap << endl;
+//                   cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
+
                   if (overlap > overmax) {
                     overmax = overlap;
                     b1max = *itB1;
                     b2max = *itB2;
                   }
                 }
-            
+
               }
             }
-          
-          
+
+
             // Here all the possible glb pairs have been processed for the two current ssb
-            
-            if (overmax > 0.0 && 
+
+            if (overmax > 0.10 &&
                 !((ssblobs[j]->tmin > ssblobs[i]->tmax) || (ssblobs[i]->tmin > ssblobs[j]->tmax))){
-              
+
               // If the two scale-space blobs have at least one pair of grey-level
-              //   overlapping (bounding-boxes) (+ scales overlapping), then a clique 
+              //   overlapping (bounding-boxes) (+ scales overlapping), then a clique
               // is created between these two ssb and the max-overlapping pair of glb
               // is stored in "matchingblobs".
+
               
-              pair<Point2d, float> res;
-              res.first = Point2d(ssblobs[i]->index,ssblobs[j]->index);
-              res.second = overmax;
-              cliques.push_back(res);
-              assert(res.first[0] != res.first[1]);
-              matchingblobs[i].insert(b1max->index);
-              matchingblobs[j].insert(b2max->index);            
-//               cout << "max (" << res.first[0] <<","<< res.first[1] << ") between:" << b1max->index << " " 
+              
+              cliques.push_back(SSBClique(ssblobs[i], ssblobs[j], overmax));
+//               assert(!( res.first[0] == res.first[1] && ssblobs[i]->subject == ssblobs[j]->subject));
+              matchingblobs[i].push_back(b1max);
+              matchingblobs[j].push_back(b2max);
+//               cout << "max (" << ssblobs[i]->index <<","<< ssblobs[j]->index << ") between:" << b1max->index << " "
 //                    << b2max->index << " overmax:" << overmax << endl;
 //               cout << "scales: " << b1max->scale << " " << b1max->scale << endl;
-  
+
             }
           }
           
           // The next pair of scale-space blobs will now be processed.
         }
       }
-      cout << ssblobs.size() << "/" << ssblobs.size() << endl;
+      cout << ssblobs.size() << "/" << ssblobs.size() << "(" << cliques.size() << ")" << endl;
       // Construction of a representation blob for each scale-space blob
       for (uint i = 0 ; i < ssblobs.size() ; i++){
         
@@ -562,9 +687,9 @@ vector<pair<Point2d, float> > construireCliques ( vector<SSBlob *>   &ssblobs,
         if (matchingblobs[i].size()!=0) 
           cout << i << ":";
         
-        for (it = matchingblobs[i].begin() ; it != matchingblobs[i].end() ; it++){
-          
-          set<uint> blobNodes(blobs[*it]->nodes_list);
+//         for (it = matchingblobs[i].begin() ; it != matchingblobs[i].end() ; it++){
+        for (uint j = 0 ; j < matchingblobs[i].size() ; j++){
+          set<int> blobNodes(matchingblobs[i][j]->nodes_set);
           ssblobs[i]->representation.insert(blobNodes.begin(), blobNodes.end());
           cout << ssblobs[i]->representation.size() << " " << flush;
         }
@@ -579,152 +704,24 @@ vector<pair<Point2d, float> > construireCliques ( vector<SSBlob *>   &ssblobs,
 }
 
 
-//##############################################################################
-
-void construireGraph (  Graph                         *graph,
-                        vector<SSBlob *>              &ssblobs, 
-                        vector<pair<Point2d, float> > &cliques,
-                        AimsSurfaceTriangle           *objects ){
-
-  
-  Vertex *vert;
-  carto::rc_ptr<AimsSurfaceTriangle> ptr;
-  aims::GraphManip manip;
-  vector<Vertex *> listVertices;
-    
-      
-  for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
-        
-    // For every scale-space blob, we create a vertex in the Aims graph : we define
-    //   its properties and store a link between the created vertex and the blob index
-    
-    cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
-    vert = graph->addVertex("blob");
-    vert->setProperty("index", i);
-    vert->setProperty("name", i);
-    vert->setProperty("label", "0");
-    vert->setProperty("t", 100.0);
-    vert->setProperty("rank", i);
-    vert->setProperty( "subject", ssblobs[i]->subject);
-    vert->setProperty( "tmin", 1);
-    vert->setProperty( "tmax", 4);
-    vert->setProperty( "trep", 2);
-    vert->setProperty( "depth", 100.0);
-    vert->setProperty( "tValue", 100.0);
-    vert->setProperty("nodes_list", set2vector(ssblobs[i]->representation));
-      
-    
-    // We associate the proper mesh patch from "objects" to the vertex
-    ptr=carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-    (*ptr)[0]=(*objects)[i];
-    manip.storeAims(*graph, vert, "blob", ptr);
-    vert->setProperty("blob_label",i);
-    
-    listVertices.push_back(vert);
-  }
-
-  // CONSTRUIRE LES ARETES
-  cout << "Construction cliques" << endl;
-  for (uint i = 0 ; i < cliques.size() ; i++){
-    
-    // For every clique, we get the two corresponding vertices from listVertices
-    Vertex *v1, *v2;
-    v1 = listVertices[cliques[i].first[0]];
-    v2 = listVertices[cliques[i].first[1]];
-    int index1, index2;
-    v1->getProperty("index", index1);
-    v2->getProperty("index", index2);
-    cout << index1 << " " << index2 << endl;
-    
-    
-    Edge *edge= graph->addEdge(v1,v2,"b2b");
-//     edge->setProperty("blob_first", cliques[i].first[0]);
-//     edge->setProperty("blob_second", cliques[i].first[1]);
-    edge->setProperty("similarity", cliques[i].second);
-
-  }    
-}
 
 
 //##############################################################################
 
 // int main( int argc, const char **argv ){
-//   try {
-//   
-//     int mode=0;
-//     string outpath = "", 
-//            meshPath, 
-//            texPath, 
-//            latpath="", 
-//            lonpath="", 
-//            flatpath="", 
-//            sujet;
-// 
-//     AimsApplication app( argc, argv, "surfLabelsTex2Graph" );
-//     app.addOption( meshPath, "-m", "mesh");
-//     app.addOption( texPath, "-t", "texture");
-//     app.addOption( outpath, "-o", "output file");
-//     app.addOption( mode, "-M", "mode (0: normal - 1:barycenters (provide the lat/lon textures)",1);
-//     app.addOption( sujet,"-s", "sujet");
-//     app.addOption( latpath, "--lat", "latitude");
-//     app.addOption( lonpath, "--lon", "longitude");
-//     app.addOption( flatpath, "--flat", "flat",1);
-//     app.initialize();
-//     assert(latpath!="");
-//     assert(lonpath!="");
-//     
-//     // Read files (the mesh, the tex and the coordinates)
-//     Reader<AimsSurfaceTriangle> rdrMesh(meshPath);
-//     Reader<TimeTexture<float> > rdrTex(texPath),
-//                                 rdrLat(latpath),
-//                                 rdrLon(lonpath);
-//     AimsSurfaceTriangle mesh;
-//     TimeTexture<float> tex, lat, lon;
-//     rdrMesh.read(mesh);
-//     rdrTex.read(tex);
-//     rdrLat.read(lat);
-//     rdrLon.read(lon);
-//     
 //     // Computes a radius for the "barycenters" sphere-based representation mode
 //     mesh[0].setMini(); mesh[0].setMaxi();
 //     cerr << mesh[0].minimum()[0] << " " << mesh[0].minimum()[1] << " " << mesh[0].minimum()[2] << ";" << mesh[0].maximum()[0] << " " << mesh[0].maximum()[1] << " " << mesh[0].maximum()[2] << endl;    
 //     float dist = sqrt(pow(mesh[0].minimum()[0]-mesh[0].maximum()[0],2)+pow(mesh[0].minimum()[1]-mesh[0].maximum()[1],2)+pow(mesh[0].minimum()[2]-mesh[0].maximum()[2],2));
 //     float radius = dist / 300.0;
 //     
-//     // Definition of blobs, nodes lists and objects vectors..
-//     vector<vector<int> > nodes_lists;
-//     AimsSurfaceTriangle *objects;
-//     
-//     vector<SSBlob *> ssblobs;
-//     vector<Blob *> blobs;
-//     vector<pair<Point2d, float> > cliques;
-//     vector<set<uint> > matchingblobs;
-// 
 // 
 //     if (mode == 1){
 //       
 //       // Barycenters mode
 //       objects = new AimsSurfaceTriangle(getBarycenters(mesh,nodes_lists,radius));
 //     }
-//     else if (mode == 2){
-//       
-//       // Construction of a primal-sketch
-//       ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss(getScaleSpace(tex,mesh,lat,lon));
-// 
-//       PrimalSketch<AimsSurface<3, Void>, Texture<float> > sketch(sujet, &ss, SURFACE);
-// 
-//       // Launching the computation of the PS (tmin, tmax, statfile, intersection_criterium)
-//       sketch.ComputePrimalSketch(1.0, 8.0, "", 10);
-// 
-//       cout << "CONSTRUIRE BLOBS" << endl;
-//       construireBlobs(sketch, blobs, ssblobs);
-// 
-//       cliques = construireCliques(ssblobs, blobs, lat, lon, matchingblobs);
-//       
-//       
-// 
-//       
-//       cout << "FIN CONSTRUIRE BLOBS" << endl;
+
 //       
 //       // Extracting mesh patches before building the Aims graph
 //       objects = new AimsSurfaceTriangle(getBlobsMeshes(ssblobs,mesh,nodes_lists));
@@ -741,44 +738,7 @@ void construireGraph (  Graph                         *graph,
 // //       wflat.write(flat);
 // 
 // //     }
-// //     
-//     cerr << "construction graphe" << endl;
-//     Graph graph("BlobsArg");
-//     vector<float> resolution,bbmin2D,bbmax2D;
-//     vector<int> bbmin, bbmax;
-//     resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0);
-//     bbmin.push_back(mesh[0].minimum()[0]-1); bbmin.push_back(mesh[0].minimum()[1]-1); bbmin.push_back(mesh[0].minimum()[2]-1);
-//     bbmax.push_back(mesh[0].maximum()[0]+1); bbmax.push_back(mesh[0].maximum()[1]+1); bbmax.push_back(mesh[0].maximum()[2]+1);
-//     graph.setProperty( "filename_base", "*");
-// 
-//     graph.setProperty("voxel_size", resolution);
-//     graph.setProperty("boundingbox_min", bbmin);
-//     graph.setProperty("boundingbox_max", bbmax);
-//     graph.setProperty("mesh", meshPath);
-//     graph.setProperty("sujet", sujet);
-//     graph.setProperty("texture", texPath);
-//     
-//     
-//     construireGraph(&graph, ssblobs, cliques, objects);
-//     
-// 
-// 
-// 
-//     cerr << "graph.order:" << graph.order() << endl;
-//     cerr << "graph.edgesSize:" << graph.edgesSize() << endl;
-// 
-//     Writer<Graph> graphWtr(outpath);
-//     graphWtr.write(graph);
-//     
-//     return EXIT_SUCCESS;
-//   }
-//   catch( carto::user_interruption & )
-//   {
-//   }
-//   catch( exception & e )
-//   {
-//     cerr << e.what() << endl;
-//   }
+
 // }
 
 
@@ -832,17 +792,15 @@ void setupData( map<string, SubjectData> &data,
 //##############################################################################
 
 void ConstruireGraphe(Graph *graph,
-                      vector<Blob *> &blobs,
+//                       vector<Blob *> &blobs,
                       vector<SSBlob *> &ssblobs,
-                      vector<pair<Point2d, float> > &cliques,
-                      vector<set<uint> > &matchingblobs,
+                      vector<SSBClique> &cliques,
                       string texPaths,
                       string meshPaths,
                       string latPaths,
                       string lonPaths,
+                      string indivGraphPaths,
                       vector<string> &listSujets){
-
-  graph = new Graph("BlobsArg");
 
   cerr << "Construction du Graphe" << endl;
   vector<float> resolution,bbmin2D,bbmax2D;
@@ -862,19 +820,20 @@ void ConstruireGraphe(Graph *graph,
   graph->setProperty("textures", splitGraphFile(texPaths));
   graph->setProperty("latitudes", splitGraphFile(latPaths));
   graph->setProperty("longitudes", splitGraphFile(lonPaths));
+  graph->setProperty("indiv_graphs", splitGraphFile(indivGraphPaths));
 
   Vertex *vert;
   carto::rc_ptr<AimsSurfaceTriangle> ptr;
-  aims::GraphManip manip;
+//   aims::GraphManip manip;
   vector<Vertex *> listVertSSB( ssblobs.size() ), listVertGLB( ssblobs.size() );
-    
+  
       
   for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
         
     // For every scale-space blob, we create a vertex in the Aims graph : we define
     //   its properties and store a link between the created vertex and the blob index
     
-    cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush << endl ;
+    cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
     vert = graph->addVertex("ssb");
     int index1=ssblobs[i]->index;
     vert->setProperty("index", index1);
@@ -893,7 +852,7 @@ void ConstruireGraphe(Graph *graph,
 //     manip.storeAims(*graph, vert, "blob", ptr);
 //     vert->setProperty("blob_label",i);
     
-    listVertSSB[ ssblobs[i]->index ] = vert;
+    listVertSSB[ i ] = vert;
   }
 
   // CONSTRUIRE LES ARETES
@@ -902,53 +861,64 @@ void ConstruireGraphe(Graph *graph,
     
     // For every clique, we get the two corresponding vertices from listVertices
     Vertex *v1, *v2;
-    v1 = listVertSSB[cliques[i].first[0]];
-    v2 = listVertSSB[cliques[i].first[1]];
+    int aux1, aux2;
+    for (aux1 = 0 ;
+         aux1 < (int) ssblobs.size() &&
+             !(cliques[i].ssb1->index == ssblobs[aux1]->index &&
+                 cliques[i].ssb1->subject == ssblobs[aux1]->subject) ;
+         aux1++){  }
+    for (aux2 = 0 ;
+         aux2 < (int) ssblobs.size() &&
+             !(cliques[i].ssb2->index == ssblobs[aux2]->index &&
+             cliques[i].ssb2->subject == ssblobs[aux2]->subject) ;
+         aux2++){  }
+    v1 = listVertSSB[aux1];
+    v2 = listVertSSB[aux2];
     
     Edge *edge= graph->addEdge(v1, v2, "b2b");
 
 
 //     edge->setProperty("blob_first", cliques[i].first[0]);
 //     edge->setProperty("blob_second", cliques[i].first[1]);
-    edge->setProperty("similarity", cliques[i].second);
+    edge->setProperty("similarity", cliques[i].similarity);
 
   }
 
 
-  // AJOUTER LES GREY LEVEL BLOBS
-  for (int i = 0 ; i < (int) blobs.size() ; i++) {
-        
-    // For every scale-space blob, we create a vertex in the Aims graph : we define
-    //   its properties and store a link between the created vertex and the blob index
-    
-    cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
-    vert = graph->addVertex("glb");
-    vert->setProperty("index", blobs[i]->index);
-    vert->setProperty("t", blobs[i]->t);
-    vert->setProperty( "scale", blobs[i]->scale);
-    vert->setProperty( "nodes_list", blobs[i]->nodes_list);
-    listVertGLB.push_back(vert);
-    
-  }
-
-  // AJOUTER LES RELATIONS SSB -> GLB
-  
-  for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
-    
-    set<Blob *>::iterator itB1;
-    set<Blob *> &listGLB = ssblobs[i]->blobs;
-    for (itB1 = listGLB.begin(); itB1 != listGLB.end() ; itB1++) {
-      
-      Vertex *v1, *v2;
-      
-      v1 = listVertSSB[ssblobs[i]->index];
-      v2 = listVertGLB[(*itB1)->index];
-      Edge *edge= graph->addEdge(v1,v2,"s2g");
-//       edge->setProperty("ssb_index", ssblobs[i]->index);
-//       edge->setProperty("glb_index", (*itB1)->index);
-      
-    }
-  }
+//   // AJOUTER LES GREY LEVEL BLOBS
+//   for (int i = 0 ; i < (int) blobs.size() ; i++) {
+//         
+//     // For every scale-space blob, we create a vertex in the Aims graph : we define
+//     //   its properties and store a link between the created vertex and the blob index
+//     
+//     cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
+//     vert = graph->addVertex("glb");
+//     vert->setProperty("index", blobs[i]->index);
+//     vert->setProperty("t", blobs[i]->t);
+//     vert->setProperty( "scale", blobs[i]->scale);
+//     vert->setProperty( "nodes_list", blobs[i]->nodes_list);
+//     listVertGLB.push_back(vert);
+//     
+//   }
+// 
+//   // AJOUTER LES RELATIONS SSB -> GLB
+//   
+//   for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
+//     
+//     set<Blob *>::iterator itB1;
+//     set<Blob *> &listGLB = ssblobs[i]->blobs;
+//     for (itB1 = listGLB.begin(); itB1 != listGLB.end() ; itB1++) {
+//       
+//       Vertex *v1, *v2;
+//       
+//       v1 = listVertSSB[ssblobs[i]->index];
+//       v2 = listVertGLB[(*itB1)->index];
+//       Edge *edge= graph->addEdge(v1,v2,"s2g");
+// //       edge->setProperty("ssb_index", ssblobs[i]->index);
+// //       edge->setProperty("glb_index", (*itB1)->index);
+//       
+//     }
+//   }
 
 
 
@@ -991,7 +961,7 @@ void ConstruireIndividualGraph( Graph *graph,
 
   Vertex *vert;
   carto::rc_ptr<AimsSurfaceTriangle> ptr;
-  aims::GraphManip manip;
+//   aims::GraphManip manip;
   vector<Vertex *> listVertSSB( ssblobs.size() ), listVertGLB( blobs.size() );
     
       
@@ -1068,7 +1038,7 @@ void ConstruireIndividualGraph( Graph *graph,
       
       v1 = listVertSSB[ssblobs[i]->index];
       v2 = listVertGLB[(*itB1)->index];
-      Edge *edge= graph->addEdge(v1,v2,"s2g");
+      graph->addEdge(v1,v2,"s2g");
       iNbLinks++;
 //       edge->setProperty("ssb_index", ssblobs[i]->index);
 //       edge->setProperty("glb_index", (*itB1)->index);
@@ -1081,7 +1051,7 @@ void ConstruireIndividualGraph( Graph *graph,
 
 //##############################################################################
 
-void RecoverBlobsFromGraph( Graph *graph,
+void RecoverBlobsFromIndivGraph( Graph *graph,
                             SubjectData &subjData,
                             vector<Blob *> &blobs,
                             vector<SSBlob *> &ssblobs,
@@ -1091,7 +1061,10 @@ void RecoverBlobsFromGraph( Graph *graph,
       ssblobs.clear();                               
     }
                              
-    set<Vertex *>::iterator iv, jv;
+    set<Vertex *>::iterator iv;
+    Edge *e;
+    Vertex::iterator jv;
+    Edge::iterator kv;
     string meshPath, sujet, texPath, latPath, lonPath;
     
     graph->getProperty("mesh", meshPath);
@@ -1124,12 +1097,27 @@ void RecoverBlobsFromGraph( Graph *graph,
     
     cout << " done" << endl;
     vector<Vertex *> listVertSSB, listVertGLB;
-    vector< set<uint> > listGLBindices;
-    
+    map<int, set<int> > listGLBindices;
+    int iNbLinks = 0;
     for (iv = graph->vertices().begin() ; iv != graph->vertices().end() ; ++iv){
-      
-      if ((*iv)->getSyntax() == "ssb"){
+      if ((*iv)->getSyntax() == "glb"){
+        int index;
+        float scale, t;
+        vector<int> nodes_list;
+        (*iv)->getProperty("index", index);
+        (*iv)->getProperty("scale", scale);
+        (*iv)->getProperty("nodes_list", nodes_list);
+        (*iv)->getProperty("t", t);
+        blobs.push_back(new Blob());
+        Blob *blob = blobs[blobs.size()-1];
+        blob->index = index;
+        blob->nodes_list = nodes_list;
+        blob->nodes_set = vector2set(nodes_list);
+        blob->scale = scale;
+        blob->t = t;
         
+      }
+      else if ((*iv)->getSyntax() == "ssb"){
         int index;
         float tmax, tmin, t;
         (*iv)->getProperty("index", index);
@@ -1143,48 +1131,48 @@ void RecoverBlobsFromGraph( Graph *graph,
         ssblob->tmin = tmin;
         ssblob->t = t;                
         ssblob->subject = sujet;
-      }      
-      else if ((*iv)->getSyntax() == "glb"){
-        
-        int index;
-        float scale, t;
-        vector<int> nodes_list;
-        (*iv)->getProperty("index", index);
-        (*iv)->getProperty("scale", scale);
-        (*iv)->getProperty("nodes_list", nodes_list);
-        (*iv)->getProperty("t", t);
-        blobs.push_back(new Blob());
-        Blob *blob = blobs[blobs.size()-1];
-        blob->index = index;        
-        blob->nodes_list = vector2set(nodes_list);
-        blob->scale = scale;
-        blob->t = t;                
+        if (listGLBindices.find(index) == listGLBindices.end())
+          listGLBindices[index] = set<int>();
+            
+        for (jv = (*iv)->begin() ; jv != (*iv)->end() ; jv++){
+          e = *jv;
+          if (e->getSyntax() == "s2g"){
+            for (kv = e->begin() ; kv != e->end() ; kv++){
+              if ((*kv)->getSyntax() == "ssb"){
+
+              }
+              else if ((*kv)->getSyntax() == "glb"){
+                int iGLBindex;
+                (*kv)->getProperty("index", iGLBindex);
+                listGLBindices[index].insert(iGLBindex);
+                iNbLinks++;
+              }
+            }
+          }
+        }
+
       }
-      
+    }
+    cout << "Rebuilding links..." << endl;
+    for (uint i = 0 ; i < ssblobs.size() ; i++){
+      int index = ssblobs[i]->index;
+      set<int>::iterator it;
+      for (it = listGLBindices[index].begin() ; it != listGLBindices[index].end() ; it++){
+        ssblobs[i]->blobs.insert(blobs[*it]);
+        
+      }
     }
     
-//     int iNbLinks = 0;
-// 
-//     for (iv = graph->vertices().begin() ; iv != graph->vertices().end() ; ++iv){      
-//       if ((*iv)->getSyntax() == "ssb"){
-//     
-//         for (jv = (*iv)->neighbours().begin() ; jv != (*iv)->neighbours().end() ; jv++){
-//             if ((*jv)->getSyntax() == "ssb"){
-//               
-//             }
-//             else if ((*jv)->getSyntax() == "glb"){
-//                (*jv)->getProperty("index", index);
-//                
-//                ssblob->blobs.insert(index);
-//                iNbLinks++;
-//             } 
-//         }
-//       }
-//     }
+
+      
+            
+    
+    
+
     
     cout << blobs.size() << " blobs added" << endl;
     cout << ssblobs.size() << " ssblobs added " << endl;
-//     cout << iNbLinks << " links added" << endl;
+    cout << iNbLinks << " links added" << endl;
 
 
 
@@ -1192,12 +1180,244 @@ void RecoverBlobsFromGraph( Graph *graph,
 
 //##############################################################################
 
-void getSubjectBlobs( vector<Blob *> &blobs,
-                      vector<SSBlob *> &ssblobs,
-                      string sujet,
-                      vector<Blob *> &subjBlobs,
-                      vector<SSBlob *> &subjSsblobs){
+// void RecoverBlobsFromGroupGraph( Graph *graph,
+//                             vector<SubjectData> &data,
+//                             vector<Blob *> &blobs,
+//                             vector<SSBlob *> &ssblobs,
+//                             bool initNull = true){
+//     if (initNull){
+//       blobs.clear();
+//       ssblobs.clear();                               
+//     }
+//                              
+//     set<Vertex *>::iterator iv;
+//     Edge *e;
+//     Vertex::iterator jv;
+//     Edge::iterator kv;
+//     vector<string> listMeshPaths, listSujets, listTexPaths, listLatPaths, listLonPaths;
+//     
+//     graph->getProperty("mesh", listMeshPaths);
+//     graph->getProperty("sujet", listSujets);
+//     graph->getProperty("texture", listTexPaths);
+//     graph->getProperty("latitude", listLatPaths);
+//     graph->getProperty("longitude", listLonPaths);
+// 
+//     for (uint i = 0 ; i < listSujets.size() ; i++){
+//       data.push_back(SubjectData());
+//       SubjectData &subjData = data[data.size() - 1];
+//       subjData.subject = listSujets[i];
+//       
+//       cout << "Subject " << listSujets[i] << endl;
+//       cout << " mesh : " << listMeshPaths[i] << endl;
+//       cout << " tex : " << listTexPaths[i] << endl;
+//       cout << " lat : " << listLonPaths[i] << endl << endl;
+//       
+//       cout << "Reading files..." <<  flush;
+//       Reader<AimsSurfaceTriangle> rdrMesh(listMeshPaths[i]);
+//       rdrMesh.read(subjData.mesh);
+//       
+//       Reader<TimeTexture<float> > rdrTex(listTexPaths[i]);
+//       rdrTex.read(subjData.tex);
+//       
+//       Reader<TimeTexture<float> > rdrLat(listLatPaths[i]);
+//       rdrLat.read(subjData.lat);
+//       
+//       Reader<TimeTexture<float> > rdrLon(listLonPaths[i]);
+//       rdrLon.read(subjData.lon);
+//       
+//       
+//       cout << " done" << endl;
+//     }
+// //     vector<Vertex *> listVertSSB, listVertGLB;
+// //     map<int, set<int> > listGLBindices;
+// //     int iNbLinks = 0;
+// //     for (iv = graph->vertices().begin() ; iv != graph->vertices().end() ; ++iv){
+// //       if ((*iv)->getSyntax() == "glb"){
+// //         int index;
+// //         float scale, t;
+// //         vector<int> nodes_list;
+// //         (*iv)->getProperty("index", index);
+// //         (*iv)->getProperty("scale", scale);
+// //         (*iv)->getProperty("nodes_list", nodes_list);
+// //         (*iv)->getProperty("t", t);
+// //         blobs.push_back(new Blob());
+// //         Blob *blob = blobs[blobs.size()-1];
+// //         blob->index = index;
+// //         blob->nodes_list = nodes_list;
+// //         blob->nodes_set = vector2set(nodes_list);
+// //         blob->scale = scale;
+// //         blob->t = t;
+// //         
+// //       }
+// //       else if ((*iv)->getSyntax() == "ssb"){
+// //         int index;
+// //         float tmax, tmin, t;
+// //         (*iv)->getProperty("index", index);
+// //         (*iv)->getProperty("tmax", tmax);
+// //         (*iv)->getProperty("tmin", tmin);
+// //         (*iv)->getProperty("t", t);
+// //         ssblobs.push_back(new SSBlob());
+// //         SSBlob *ssblob = ssblobs[ssblobs.size()-1];
+// //         ssblob->index = index;
+// //         ssblob->tmax = tmax;
+// //         ssblob->tmin = tmin;
+// //         ssblob->t = t;                
+// //         ssblob->subject = sujet;
+// //         if (listGLBindices.find(index) == listGLBindices.end())
+// //           listGLBindices[index] = set<int>();
+// //             
+// //         for (jv = (*iv)->begin() ; jv != (*iv)->end() ; jv++){
+// //           e = *jv;
+// //           if (e->getSyntax() == "s2g"){
+// //             for (kv = e->begin() ; kv != e->end() ; kv++){
+// //               if ((*kv)->getSyntax() == "ssb"){
+// // 
+// //               }
+// //               else if ((*kv)->getSyntax() == "glb"){
+// //                 int iGLBindex;
+// //                 (*kv)->getProperty("index", iGLBindex);
+// //                 listGLBindices[index].insert(iGLBindex);
+// //                 iNbLinks++;
+// //               }
+// //             }
+// //           }
+// //         }
+// // 
+// //       }
+// //     }
+// //     cout << "Rebuilding links..." << endl;
+// //     for (uint i = 0 ; i < ssblobs.size() ; i++){
+// //       int index = ssblobs[i]->index;
+// //       set<int>::iterator it;
+// //       for (it = listGLBindices[index].begin() ; it != listGLBindices[index].end() ; it++){
+// //         ssblobs[i]->blobs.insert(blobs[*it]);
+// //         
+// //       }
+// //     }
+// //     
+// // 
+// //       
+// //             
+// //     
+// //     
+// // 
+// //     
+// //     cout << blobs.size() << " blobs added" << endl;
+// //     cout << ssblobs.size() << " ssblobs added " << endl;
+// //     cout << iNbLinks << " links added" << endl;
+// 
+// 
+// 
+// }
+
+
+//##############################################################################
+
+// void getSubjectBlobs( vector<Blob *> &blobs,
+//                       vector<SSBlob *> &ssblobs,
+//                       string sujet,
+//                       vector<Blob *> &subjBlobs,
+//                       vector<SSBlob *> &subjSsblobs){
+//   
+// 
+// 
+// }
+
+//##############################################################################
+
+void readGroupGraph(Graph *graph, vector<SSBlob *> &ssblobs, vector<SSBClique> &cliques){
+
+  set<Vertex *>::iterator iv;
+  // Recovering the scale-space blobs
+  string sujet;
+  int index;
+  cout << " Recovering the scale-space blobs..." << endl;
+  for (iv = graph->vertices().begin() ; iv != graph->vertices().end(); ++iv){
+    string label;
+    int newindex;
+    float t, tmin, tmax, tvalue;
+    vector<int> representation;
+
+    if ((*iv)->getSyntax() == "ssb"){
+      (*iv)->getProperty("index", index);
+      (*iv)->getProperty( "subject", sujet);
+//       (*iv)->getProperty("label", label);      
+      (*iv)->getProperty( "tmin", tmin);
+      (*iv)->getProperty( "tmax", tmax);
+      (*iv)->getProperty( "t", t);
+//       (*iv)->getProperty( "tValue", tvalue);
+//       (*iv)->getProperty( "rank", rank);
+      (*iv)->getProperty( "nodes_list", representation);      
+
+      ssblobs.push_back(new SSBlob());
+      SSBlob *s=ssblobs[ssblobs.size()-1];
+      
+//       s->label = atoi(label.data());    (*iv)->setProperty("label", label);
+//       (*iv)->setProperty("name", test);
+      (*iv)->getProperty("label", label);
+//       (*iv)->getProperty("name", test);
+      s->index = newindex++;
+      s->graph_index = index;
+      s->subject = sujet;
+      s->tmin = tmin;
+      s->tmax = tmax;
+      s->t = t;
+      for (uint i=0;i<representation.size();i++)
+        s->representation.insert(representation[i]);
+      (*iv)->setProperty( "sites_index", (int)(ssblobs.size()-1));
+//       index =0;
+//       (*iv)->getProperty( "sites_index", index);
+//       cout << "index:" << index << " " << flush;
+    }
+
+  }
+
+
+  cout << "ssblobs.size() :"<< ssblobs.size() << endl;
+
   
+  // Recovering the links...
+  Edge *e;
+  Vertex::iterator jv;
+  Edge::iterator kv;
+  
+  cout << " Recovering the similarity cliques..." << endl;
+  for (iv = graph->vertices().begin() ; iv!=graph->vertices().end(); ++iv){
+    if ((*iv)->getSyntax() == "ssb"){
+//         (*iv)->getProperty( "sites_index", index);
+//         cout << "idx:" << index << " " << flush;
+        (*iv)->getProperty("index", index);
+        (*iv)->getProperty( "subject", sujet);
+        for (jv = (*iv)->begin() ; jv != (*iv)->end() ; jv++){
+        e = *jv;
+        if (e->getSyntax() == "b2b"){
+          float similarity;
+          e->getProperty("similarity", similarity);
+          for (kv = e->begin() ; kv != e->end() ; kv++){
+            if ((*kv)->getSyntax() == "ssb"){
+              int indexB2;
+              string sujetB2;
+              (*kv)->getProperty("index", indexB2);
+              (*kv)->getProperty("subject", sujetB2);
+              if (!(indexB2 == index && sujetB2 == sujet)){
+                int blobs_index1, blobs_index2;
+                (*iv)->getProperty("sites_index", blobs_index1);
+                (*kv)->getProperty("sites_index", blobs_index2);
+//                 cout << cliques.size() << " " << ssblobs.size() << " " << blobs_index1 << " " << blobs_index2 << flush;
+                if (blobs_index1 < blobs_index2){
+                  cliques.push_back(SSBClique(ssblobs[blobs_index1], ssblobs[blobs_index2], similarity));
+                }
+                
+              }
+
+            }
+          }
+        }
+      }
+    }
+  }
+
+  cout << "cliques.size() :"<< cliques.size() << endl << endl;
 
 
 }
@@ -1307,12 +1527,13 @@ int main( int argc, const char **argv ){
     app.addOption( flatPaths, "--flat", "flat",1);
     app.initialize();
 
-    mode = 1;
+
     if (mode == 0){
-      FromRawTexturesToIndividualGraphsViaPrimalSketches ( sujets, indivGraphPaths, meshPaths, texPaths, latPaths, lonPaths);
+        FromRawTexturesToIndividualGraphsViaPrimalSketches
+            ( sujets, indivGraphPaths, meshPaths, texPaths, latPaths, lonPaths);
       
     }
-    else {
+    else if (mode == 1){
 
         vector<string> listSujets = splitGraphFile(sujets);
         vector<string> listGraphPaths = splitGraphFile(indivGraphPaths);
@@ -1327,30 +1548,51 @@ int main( int argc, const char **argv ){
           Reader<Graph> rdrIndivGraph(listGraphPaths[i]);
           Graph *graph = new Graph("BlobsArg");
           rdrIndivGraph.read(*graph);
-          cout << "test" << endl;
           pair<string, SubjectData> subjData;
           subjData.first = sujet;
-          RecoverBlobsFromGraph(graph, subjData.second, blobs, ssblobs);
+          RecoverBlobsFromIndivGraph(graph, subjData.second, blobs, ssblobs, false);
           data.insert(subjData);
             
         }
+
+        // Building the cliques...
+        vector<SSBClique> cliques;
+        vector<vector<Blob *> > matchingblobs;
+        cliques = construireCliques(ssblobs, blobs, data, matchingblobs);
+        cout << endl << cliques.size() << " cliques de similarité " << endl;
+    
+        // Building the group graph...
+        Graph *graph = new Graph("BlobsArg");
+        ConstruireGraphe(graph, /*blobs,*/ ssblobs, cliques, texPaths, meshPaths, latPaths, lonPaths, indivGraphPaths, listSujets);
+        
+        Writer<Graph> wtrGraph(groupGraphPath);
+        wtrGraph.write(*graph);
+    }
+    else if (mode == 2){
+        cout << "Reading the group graph..." << endl;
+        Graph *graph = new Graph("BlobsArg");
+        Reader<Graph> rdrGroupGraph(groupGraphPath);
+        rdrGroupGraph.read(*graph);
+        cout << "Recovering the sites and cliques..." << endl;
+        // Getting the sites and cliques
+        vector<SSBlob *> sites;
+        vector<SSBClique> cliques;
+        readGroupGraph(graph, sites, cliques);
+        
+        // faire l'analyse = étiquetter
+
+        // Sauvegarder les labels dans les graphes individuels
+        //  sur le modèle de comment on faisait avant
+
+        
         
 
-                
+
     }
       
-//       cliques = construireCliques(ssblobs, blobs, latitudes, longitudes, matchingblobs);
+      
   
-      // DEBUG PRINT
-//       cout << cliques.size() << " cliques de similarité " << endl;
-      
-      
-      
-//       Graph *graph;
-//       ConstruireGraphe(graph, blobs, ssblobs, cliques, matchingblobs, texPaths, meshPaths, latPaths, lonPaths, listSujets);
-  
-      
-      
+
       // On vient d'écrire le graphe pour l'analyse (à créer : une fonction qui lit
       //   ce graphe et qui récupère les sites et cliques)
           

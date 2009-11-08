@@ -29,7 +29,6 @@ vector<Site *> ConstruireSites(Graph &primal) { //map<float, vector<pair<float, 
     (*iv)->getProperty("index", index1);
     (*iv)->getProperty( "subject", subject1);
     (*iv)->getProperty("label",test);
-    (*iv)->getProperty( "subject", subject1 );
     (*iv)->getProperty( "gravity_center", bc1);
     (*iv)->getProperty( "tmin", tmin_1);
     (*iv)->getProperty( "tmax", tmax_1);
