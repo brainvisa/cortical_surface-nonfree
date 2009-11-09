@@ -27,7 +27,7 @@ class Site{
     uint node;
     Point3df boundingbox_max;
     Point3df boundingbox_min;
-    set<uint> nodes_list;
+    set<int> nodes_list;
 };
 
 vector<Site *> ConstruireSites(Graph &primal); //map<float, vector<pair<float, uint > > > &altmesh);

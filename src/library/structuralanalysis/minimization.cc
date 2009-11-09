@@ -29,33 +29,12 @@ struct ltstr_vec
   }
 };
 
+//###############################################################################################
 
 
-void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal){
-  cout << "Construction du vecteur de sites ..." << flush;
-
-  sites = ConstruireSites(primal); 
-  cout << "done (" << sites.size() << " sites)" << endl;
-
-  set<string> subjects;
-
-  cout << endl << "  done" << endl;
-  for (uint i=0;i<sites.size();i++)
-    subjects.insert(sites[i]->subject);
-  nbsujets = subjects.size();
-  cout << "Construction des cliques ... " << flush;
-  cliques = ConstruireCliquesLastChance(sites,cliquesDuSite); 
-  
-  
-  uint nb_cl_sim=0, nb_cl_dd=0, nb_cl_intraps=0, nb_cl_lower=0;
-  for (uint i=0;i<cliques.size();i++){
-    if (cliques[i].type == SIMILARITY) nb_cl_sim++;
-    else if (cliques[i].type == DATADRIVEN) nb_cl_dd++;
-    else if (cliques[i].type == BESTLOWERSCALE) nb_cl_lower++;
-    else if (cliques[i].type == INTRAPRIMALSKETCH) nb_cl_intraps++;
-  }
-  cout << " done (" << nb_cl_sim << " cliques de similarité ; " << nb_cl_dd << " cliques datadriven ; " << nb_cl_lower << " cliques lower ; " << nb_cl_intraps << " cliques intraps ; " << cliques.size() << " cliques en tout)" << endl;
- 
+void SurfaceBased_StructuralAnalysis::prepareLabelsZones () {/* vector<pair<Point2df,Point2df> > &labelsZones, 
+                                                           vector<set<uint> > &zonesListesBlobs,
+                                                           vector<set<uint> > &listeZones ){*/
   uint i=0;
  
   for (uint it=0;it<3;it++)
@@ -96,17 +75,45 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal){
     }
     labelscount[count]++;
     assert(listeZones[j].size()!=0);
-  }
+  } 
+  
   for (i=0;i<labelsZones.size()+1;i++)
     cout << zonescount[i] << " ";
   cout << endl;
   for (i=0;i<labelsZones.size()+1;i++)
     cout << labelscount[i] << " ";
   cout << endl;
+  
+}
 
+//###############################################################################################
 
+void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal){
+  cout << "Construction du vecteur de sites ..." << flush;
 
+  sites = ConstruireSites(primal); 
+  cout << "done (" << sites.size() << " sites)" << endl;
 
+  set<string> subjects;
+
+  cout << endl << "  done" << endl;
+  for (uint i=0;i<sites.size();i++)
+    subjects.insert(sites[i]->subject);
+  nbsujets = subjects.size();
+  cout << "Construction des cliques ... " << flush;
+  cliques = ConstruireCliquesLastChance(sites,cliquesDuSite); 
+  
+  
+  uint nb_cl_sim=0, nb_cl_dd=0, nb_cl_intraps=0, nb_cl_lower=0;
+  for (uint i=0;i<cliques.size();i++){
+    if (cliques[i].type == SIMILARITY) nb_cl_sim++;
+    else if (cliques[i].type == DATADRIVEN) nb_cl_dd++;
+    else if (cliques[i].type == BESTLOWERSCALE) nb_cl_lower++;
+    else if (cliques[i].type == INTRAPRIMALSKETCH) nb_cl_intraps++;
+  }
+  cout << " done (" << nb_cl_sim << " cliques de similarité ; " << nb_cl_dd << " cliques datadriven ; " << nb_cl_lower << " cliques lower ; " << nb_cl_intraps << " cliques intraps ; " << cliques.size() << " cliques en tout)" << endl;
+ 
+  prepareLabelsZones();
     
 }
 

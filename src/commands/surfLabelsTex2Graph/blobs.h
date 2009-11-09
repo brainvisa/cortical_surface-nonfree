@@ -35,7 +35,7 @@ class SSBlob{
     uint index;
     uint graph_index;
     float t;
-//     string label;
+    int label;
     string subject;
     float tmin;
     float tmax;

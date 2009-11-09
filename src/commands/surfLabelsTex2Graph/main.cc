@@ -1325,38 +1325,61 @@ void RecoverBlobsFromIndivGraph( Graph *graph,
 
 //##############################################################################
 
-void readGroupGraph(Graph *graph, vector<SSBlob *> &ssblobs, vector<SSBClique> &cliques){
+void readGroupGraph ( Graph &graph, 
+                      vector<SSBlob *> &ssblobs, 
+                      vector<SSBClique> &cliques,
+                      vector<Vertex *> &listVertex){
 
+
+  cout << "Recovering the data..." << endl;
+  if( graph.hasProperty( "sujets" ) )  {
+    Object slist = graph.getProperty( "sujets" ); // note the different getProperty() method
+    cout << "node with 'sujets' property:\n";
+    Object oit = slist->objectIterator();  // iterator on the list
+    while( oit->isValid() ) {
+      Object s = oit->currentValue(); // the list element, type Object
+      string ss = s->getString(); // extract as std::string or convert to string
+      cout << ss << ", ";
+      oit->next();
+    }
+    cout << endl;
+  }
+
+    
   set<Vertex *>::iterator iv;
   // Recovering the scale-space blobs
   string sujet;
   int index;
+  int newindex=0;
   cout << " Recovering the scale-space blobs..." << endl;
-  for (iv = graph->vertices().begin() ; iv != graph->vertices().end(); ++iv){
+  for (iv = graph.vertices().begin() ; iv != graph.vertices().end(); ++iv){
     string label;
-    int newindex;
+    
     float t, tmin, tmax, tvalue;
     vector<int> representation;
 
     if ((*iv)->getSyntax() == "ssb"){
       (*iv)->getProperty("index", index);
       (*iv)->getProperty( "subject", sujet);
-//       (*iv)->getProperty("label", label);      
+      (*iv)->getProperty("label", label);      
       (*iv)->getProperty( "tmin", tmin);
       (*iv)->getProperty( "tmax", tmax);
       (*iv)->getProperty( "t", t);
 //       (*iv)->getProperty( "tValue", tvalue);
 //       (*iv)->getProperty( "rank", rank);
+//       (*iv)->setProperty("label", label);
       (*iv)->getProperty( "nodes_list", representation);      
 
       ssblobs.push_back(new SSBlob());
       SSBlob *s=ssblobs[ssblobs.size()-1];
-      
-//       s->label = atoi(label.data());    (*iv)->setProperty("label", label);
-//       (*iv)->setProperty("name", test);
-      (*iv)->getProperty("label", label);
-//       (*iv)->getProperty("name", test);
+      listVertex.push_back(*iv);
+
+
+//       (*iv)->getProperty("label", label);
+
       s->index = newindex++;
+      s->label = atoi(label.data());    
+
       s->graph_index = index;
       s->subject = sujet;
       s->tmin = tmin;
@@ -1365,8 +1388,8 @@ void readGroupGraph(Graph *graph, vector<SSBlob *> &ssblobs, vector<SSBClique> &
       for (uint i=0;i<representation.size();i++)
         s->representation.insert(representation[i]);
       (*iv)->setProperty( "sites_index", (int)(ssblobs.size()-1));
-//       index =0;
-//       (*iv)->getProperty( "sites_index", index);
+      index =0;
+      (*iv)->getProperty( "sites_index", index);
 //       cout << "index:" << index << " " << flush;
     }
 
@@ -1382,7 +1405,7 @@ void readGroupGraph(Graph *graph, vector<SSBlob *> &ssblobs, vector<SSBClique> &
   Edge::iterator kv;
   
   cout << " Recovering the similarity cliques..." << endl;
-  for (iv = graph->vertices().begin() ; iv!=graph->vertices().end(); ++iv){
+  for (iv = graph.vertices().begin() ; iv!=graph.vertices().end(); ++iv){
     if ((*iv)->getSyntax() == "ssb"){
 //         (*iv)->getProperty( "sites_index", index);
 //         cout << "idx:" << index << " " << flush;
@@ -1417,10 +1440,61 @@ void readGroupGraph(Graph *graph, vector<SSBlob *> &ssblobs, vector<SSBClique> &
     }
   }
 
-  cout << "cliques.size() :"<< cliques.size() << endl << endl;
+  cout << "ssbcliques.size() :"<< cliques.size() << endl << endl;
 
 
 }
+
+//##############################################################################
+
+void convertSSBlobsToSites(vector<SSBlob *> &ssblobs, vector<Site *> &sites){
+    
+  for (uint i = 0 ; i < ssblobs.size() ; i++){     
+     sites.push_back(new Site());
+     Site *s = sites[sites.size() - 1];
+     s->index = ssblobs[i]->index;
+     s->subject = ssblobs[i]->subject;
+     s->label = ssblobs[i]->label;
+     s->tmin = ssblobs[i]->tmin;
+     s->tmax = ssblobs[i]->tmax;
+     s->t = ssblobs[i]->t;
+     s->nodes_list = ssblobs[i]->representation;    
+  }    
+    
+}
+
+//##############################################################################
+
+void getCliquesFromSSBCliques ( vector<SSBClique> &ssbcliques, 
+                                vector<Site *> &sites,
+                                vector<Clique> &cliques,
+                                vector<vector<int> > &cliquesDuSite){
+  
+ cliquesDuSite = vector<vector<int> >(sites.size()); 
+ 
+ for (uint i = 0 ; i < ssbcliques.size() ; i++){
+   Clique simc;
+   simc.type = SIMILARITY;
+   simc.rec = ssbcliques[i].similarity;
+   SSBlob *ssb1, *ssb2; 
+   int iSSB1, iSSB2;   
+   ssb1 = ssbcliques[i].ssb1;
+   ssb2 = ssbcliques[i].ssb2;
+   iSSB1 = ssb1->index;
+   iSSB2 = ssb2->index;
+
+   cliquesDuSite[sites[iSSB1]->index].push_back(i);
+   cliquesDuSite[sites[iSSB2]->index].push_back(i);
+   
+   simc.blobs.push_back(sites[ssbcliques[i].ssb1->index]);
+   simc.blobs.push_back(sites[ssbcliques[i].ssb2->index]);
+   cliques.push_back(simc);
+   
+ }
+  
+  
+}
+
 
 //##############################################################################
 
@@ -1570,24 +1644,31 @@ int main( int argc, const char **argv ){
     }
     else if (mode == 2){
         cout << "Reading the group graph..." << endl;
-        Graph *graph = new Graph("BlobsArg");
+        Graph graph; 
         Reader<Graph> rdrGroupGraph(groupGraphPath);
-        rdrGroupGraph.read(*graph);
+        rdrGroupGraph.read(graph);
         cout << "Recovering the sites and cliques..." << endl;
         // Getting the sites and cliques
-        vector<SSBlob *> sites;
-        vector<SSBClique> cliques;
-        readGroupGraph(graph, sites, cliques);
+        vector<SSBlob *> ssblobs;
+        vector<SSBClique> ssbcliques;
+        vector<Vertex *> listVertex;
+        readGroupGraph(graph, ssblobs, ssbcliques, listVertex);
         
         // faire l'analyse = étiquetter
-
+        vector<Site *> sites;
+        vector<Clique> cliques;
+        vector<vector<int> > cliquesDuSite;
         // Sauvegarder les labels dans les graphes individuels
         //  sur le modèle de comment on faisait avant
+        
+        convertSSBlobsToSites(ssblobs, sites);
+        cout << sites.size() << " sites generated" << endl;
 
+        getCliquesFromSSBCliques(ssbcliques, sites, cliques, cliquesDuSite);
+        cout << cliques.size() << " cliques created" << endl;
         
         
-
-
+ 
     }
       
       

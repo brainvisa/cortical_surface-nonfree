@@ -47,7 +47,7 @@ int main(int argc, const char **argv){
   app.initialize();
 
   LireGraphes(graphFile,primal);
-  set<string> sujets(RecupererSujets(primal));
+//   set<string> sujets(RecupererSujets(primal));
   Anneal swc(primal);
   
   swc.recuitpath = recuitpath;
