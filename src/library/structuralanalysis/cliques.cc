@@ -544,166 +544,151 @@ void Clique::updateLabelsCount(){
 
 double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bbmax2, uint *no_overlap){
 
-          float overlap_x,overlap_y,aux;
-          double rec=0.0;
-          
-            if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) < 0.0001) {bbmax1[0] += 0.5; /*cout << "bbmax10+ ";*/}
-            if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) < 0.0001) {bbmax1[1] += 0.5; /*cout << "bbmax11+ ";*/}
-            if (sqrt(pow(bbmin2[0]-bbmax2[0],2)) < 0.0001) {bbmax2[0] += 0.5; /*cout << "bbmax20+ ";*/}
-            if (sqrt(pow(bbmin2[1]-bbmax2[1],2)) < 0.0001) {bbmax2[1] += 0.5; /*cout << "bbmax21+ ";*/}
-//           if (bbmin1[1]>bbmax1[1] && bbmin2[1] < bbmax2[1] ) {//alors i a bouclé autour de 360/0
-            if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) <300){
-//             cout << "i boucle lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-//             ASSERT(bbmin1[1]>bbmax2[1]);
-              if (360-bbmax2[1]<bbmin2[1]){
-                aux = bbmax1[1];
-                bbmax1[1] = bbmin1[1] + 360.0;
-                bbmin1[1] = aux;
-              }
-              else {
-                aux = bbmin1[1];
-                bbmin1[1] = bbmax1[1] - 360.0;          
-                bbmax1[1] = aux;
-              }
-          }
-//           else if (bbmin1[1]<bbmax1[1] && bbmin2[1] > bbmax2[1] ) {//alors j a bouclé autour de 360/0 
-          else if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) <300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) >300){  
-//             cout << "j boucle lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-//             ASSERT(bbmin2[1]>bbmax1[1]);
-              if (360-bbmax1[1]<bbmin1[1]){
-                aux = bbmax2[1];
-                bbmax2[1] = bbmin2[1] + 360.0;
-                bbmin2[1] = aux;
-              }
-              else {
-                aux = bbmin2[1];
-                bbmin2[1] = bbmax2[1] - 360.0;          
-                bbmax2[1] = aux;
-              }
-          }
-//           else if (bbmin1[1]>bbmax1[1] && bbmin2[1]>bbmax2[1] ) {//alors i&j ont bouclé
-          else if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) >300){   
-//               cout << "i et j bouclent lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-                aux = bbmin1[1];
-                bbmin1[1] = bbmax1[1] - 360.0;
-                bbmax1[1] = aux;
-                aux = bbmin2[1];
-                bbmin2[1] = bbmax2[1] - 360.0;
-                bbmax2[1] = aux;
-          } 
-        // on s'occupe de la latitude
-//           if (bbmin1[0]>bbmax1[0] && bbmin2[0] < bbmax2[0] ) {//alors i a bouclé autour de 360/0 
-        if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) <150){  
-//             cout << "i boucle lat" << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-//             ASSERT(bbmin1[0]>bbmax2[0]);
-              if (180-bbmax2[0]<bbmin2[0]){
-                aux = bbmax1[0];
-                bbmax1[0] = bbmin1[0] + 180.0;
-                bbmin1[0] = aux;
-              }
-              else {
-                aux = bbmin1[0];
-                bbmin1[0] = bbmax1[0] - 180.0;          
-                bbmax1[0] = aux;
-              }
-          }
-//           else if (bbmin1[0]<bbmax1[0] && bbmin2[0] > bbmax2[0] ) {//alors j a bouclé autour de 360/0 
-        else if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) <150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) >150){  
-//             cout << "j boucle lat" << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-//             ASSERT(bbmin2[0]>bbmax1[0]);
-              if (180-bbmax1[0]<bbmin1[0]){
-                aux = bbmax2[0];
-                bbmax2[0] = bbmin2[0] + 180.0;
-                bbmin2[0] = aux;
-              }
-              else {
-                aux = bbmin2[0];
-                bbmin2[0] = bbmax2[0] - 180.0;          
-                bbmax2[0] = aux;
-              }
-            
-          }
-//           else if (bbmin1[0]>bbmax1[0] && bbmin2[0]>bbmax2[0] ) {//alors i&j ont bouclé
-        else if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) >150){  
-//               cout << "i et j bouclent lat" << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-                aux = bbmin1[0];
-                bbmin1[0] = bbmax1[0] - 360.0;
-                bbmax1[0] = aux;
-                aux = bbmin2[0];
-                bbmin2[0] = bbmax2[0] - 360.0;
-                bbmax2[0] = aux;
-          } 
-          // prétraitements effectués on calcule le recouvrement
-//           if (*no_overlap==0) cout << "rec: " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-          float margin=2.0;
-          bbmin1[0]-=margin;
-          bbmin2[0]-=margin;
-          bbmin1[1]-=margin/2.0;
-          bbmin2[1]-=margin/2.0;
-          bbmax1[0]+=margin;
-          bbmax2[0]+=margin;
-          bbmax1[1]+=margin/2.0;
-          bbmax2[1]+=margin/2.0;
-          *no_overlap=0;
-          if (bbmin1[0]<=bbmin2[0])
-            if (bbmax1[0]<bbmin2[0]) *no_overlap=1;
-          else overlap_x= (bbmax2[0] < bbmax1[0] ? bbmax2[0] : bbmax1[0]) - bbmin2[0] ;
-          else
-            if (bbmax2[0]<bbmin1[0]) *no_overlap=1;
-          else overlap_x= (bbmax1[0] < bbmax2[0] ? bbmax1[0] : bbmax2[0]) - bbmin1[0];
-          if (*no_overlap==0)
-          {
-            if (bbmin1[1]<=bbmin2[1])
-              if (bbmax1[1]<bbmin2[1]) *no_overlap=1;
-            else overlap_y= (bbmax2[1] < bbmax1[1] ? bbmax2[1] : bbmax1[1]) - bbmin2[1];
-            else
-              if (bbmax2[1]<bbmin1[1]) *no_overlap=1;
-            else overlap_y= (bbmax1[1] < bbmax2[1] ? bbmax1[1] : bbmax2[1]) - bbmin1[1];        
-            if (*no_overlap==0)
-            {
-              rec=overlap_x*overlap_y;
-              double div=( ((bbmax1[0]-bbmin1[0])*(bbmax1[1]-bbmin1[1]))
-                    + ((bbmax2[0]-bbmin2[0])*(bbmax2[1]-bbmin2[1])));
-      
-//           if (*no_overlap==0 && rec > div/2.0) {cout << "rec: " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl; cout << rec << " " << div << " " << 2*rec/div << endl;}
-//               assert((rec > div/2.0) || !(cout << bbmax1[0] << " " << bbmax1[1] << " " << bbmax1[2] << " "
-              rec=2 * rec / div;
-//                           cout << rec << " " ;
-//               assert(rec<1.0 || !(cout << "!" << rec << "!"<< flush));
+  float overlap_x,overlap_y,aux;
+  double rec=0.0;
 
-            }
-            
-          }
+  if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) < 0.0001) {bbmax1[0] += 0.5; /*cout << "bbmax10+ ";*/}
+  if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) < 0.0001) {bbmax1[1] += 0.5; /*cout << "bbmax11+ ";*/}
+  if (sqrt(pow(bbmin2[0]-bbmax2[0],2)) < 0.0001) {bbmax2[0] += 0.5; /*cout << "bbmax20+ ";*/}
+  if (sqrt(pow(bbmin2[1]-bbmax2[1],2)) < 0.0001) {bbmax2[1] += 0.5; /*cout << "bbmax21+ ";*/}
+  // if (bbmin1[1]>bbmax1[1] && bbmin2[1] < bbmax2[1] ) {//alors i a bouclé autour de 360/0
+  if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) <300){
+    //  cout << "i boucle lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+    //  ASSERT(bbmin1[1]>bbmax2[1]);
+      if (360-bbmax2[1]<bbmin2[1]){
+        aux = bbmax1[1];
+        bbmax1[1] = bbmin1[1] + 360.0;
+        bbmin1[1] = aux;
+      }
+      else {
+        aux = bbmin1[1];
+        bbmin1[1] = bbmax1[1] - 360.0;          
+        bbmax1[1] = aux;
+      }
+  }
+  //  else if (bbmin1[1]<bbmax1[1] && bbmin2[1] > bbmax2[1] ) {//alors j a bouclé autour de 360/0 
+  else if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) <300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) >300){  
+  //  cout << "j boucle lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+  //  ASSERT(bbmin2[1]>bbmax1[1]);
+      if (360-bbmax1[1]<bbmin1[1]){
+        aux = bbmax2[1];
+        bbmax2[1] = bbmin2[1] + 360.0;
+        bbmin2[1] = aux;
+      }
+      else {
+        aux = bbmin2[1];
+        bbmin2[1] = bbmax2[1] - 360.0;          
+        bbmax2[1] = aux;
+      }
+  }
+  // else if (bbmin1[1]>bbmax1[1] && bbmin2[1]>bbmax2[1] ) {//alors i&j ont bouclé
+  else if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) >300){   
+  // cout << "i et j bouclent lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+        aux = bbmin1[1];
+        bbmin1[1] = bbmax1[1] - 360.0;
+        bbmax1[1] = aux;
+        aux = bbmin2[1];
+        bbmin2[1] = bbmax2[1] - 360.0;
+        bbmax2[1] = aux;
+  } 
+// on s'occupe de la latitude
+// if (bbmin1[0]>bbmax1[0] && bbmin2[0] < bbmax2[0] ) {//alors i a bouclé autour de 360/0 
+if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) <150){  
+//  cout << "i boucle lat" << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+//  ASSERT(bbmin1[0]>bbmax2[0]);
+      if (180-bbmax2[0]<bbmin2[0]){
+        aux = bbmax1[0];
+        bbmax1[0] = bbmin1[0] + 180.0;
+        bbmin1[0] = aux;
+      }
+      else {
+        aux = bbmin1[0];
+        bbmin1[0] = bbmax1[0] - 180.0;          
+        bbmax1[0] = aux;
+      }
+  }
+//  else if (bbmin1[0]<bbmax1[0] && bbmin2[0] > bbmax2[0] ) {//alors j a bouclé autour de 360/0 
+else if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) <150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) >150){  
+//  cout << "j boucle lat" << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+//  ASSERT(bbmin2[0]>bbmax1[0]);
+      if (180-bbmax1[0]<bbmin1[0]){
+        aux = bbmax2[0];
+        bbmax2[0] = bbmin2[0] + 180.0;
+        bbmin2[0] = aux;
+      }
+      else {
+        aux = bbmin2[0];
+        bbmin2[0] = bbmax2[0] - 180.0;          
+        bbmax2[0] = aux;
+      }
+    
+  }
+// else if (bbmin1[0]>bbmax1[0] && bbmin2[0]>bbmax2[0] ) {//alors i&j ont bouclé
+else if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) >150){  
+// cout << "i et j bouclent lat" << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+        aux = bbmin1[0];
+        bbmin1[0] = bbmax1[0] - 360.0;
+        bbmax1[0] = aux;
+        aux = bbmin2[0];
+        bbmin2[0] = bbmax2[0] - 360.0;
+        bbmax2[0] = aux;
+  } 
+  // prétraitements effectués on calcule le recouvrement
+  // if (*no_overlap==0) cout << "rec: " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
+  float margin=2.0;
+  bbmin1[0]-=margin;
+  bbmin2[0]-=margin;
+  bbmin1[1]-=margin/2.0;
+  bbmin2[1]-=margin/2.0;
+  bbmax1[0]+=margin;
+  bbmax2[0]+=margin;
+  bbmax1[1]+=margin/2.0;
+  bbmax2[1]+=margin/2.0;
+  *no_overlap=0;
+  if (bbmin1[0]<=bbmin2[0])
+    if (bbmax1[0]<bbmin2[0]) *no_overlap=1;
+  else overlap_x= (bbmax2[0] < bbmax1[0] ? bbmax2[0] : bbmax1[0]) - bbmin2[0] ;
+  else
+    if (bbmax2[0]<bbmin1[0]) *no_overlap=1;
+  else overlap_x= (bbmax1[0] < bbmax2[0] ? bbmax1[0] : bbmax2[0]) - bbmin1[0];
+  
+  if (*no_overlap==0) {
+    
+    if (bbmin1[1]<=bbmin2[1])
+      if (bbmax1[1]<bbmin2[1]) 
+          *no_overlap=1;
+      else 
+          overlap_y= (bbmax2[1] < bbmax1[1] ? bbmax2[1] : bbmax1[1]) - bbmin2[1];
+    else
+      if (bbmax2[1]<bbmin1[1]) 
+          *no_overlap=1;
+      else 
+          overlap_y= (bbmax1[1] < bbmax2[1] ? bbmax1[1] : bbmax2[1]) - bbmin1[1];        
+      
+    if (*no_overlap==0) {
+      
+      rec=overlap_x*overlap_y;
+      double div=( ((bbmax1[0]-bbmin1[0])*(bbmax1[1]-bbmin1[1]))
+            + ((bbmax2[0]-bbmin2[0])*(bbmax2[1]-bbmin2[1])));
+
+  // if (*no_overlap==0 && rec > div/2.0) {cout << "rec: " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl; cout << rec << " " << div << " " << 2*rec/div << endl;}
+  // assert((rec > div/2.0) || !(cout << bbmax1[0] << " " << bbmax1[1] << " " << bbmax1[2] << " "
+      rec=2 * rec / div;
+  // cout << rec << " " ;
+  // assert(rec<1.0 || !(cout << "!" << rec << "!"<< flush));
+
+    }
+    
+  }
 
   return rec;
-
-
-
-
-
-
-
-
 }
 
-vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite)  {
-  uint temp=0,temp2=0,temp3=0,temp4=0;
-  cliquesDuSite = vector<vector<int> >(sites.size());
-  vector<Clique> cliques;
-  set<uint> v;
-  vector<string> subjects;
-  double rec;
-  set<uint> setnodes;
-  float x,y;
-  int mini=0; //,dep,arr;
-  map<string,vector<map<string,uint> > > matching;
-  set<uint>::iterator it;
-  map<string, AimsSurfaceTriangle>::iterator meshit,meshjt;  
-  float dist_thresh = 50.0;
-  cout << "Distance maps threshold : << " << dist_thresh <<" >>"<< endl;
-
-
+void ConstruireCliquesIntraPS(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<Clique> &cliques){
+  
   vector<Clique> intraps;
+  vector<string> subjects;
+
   for (uint i=0;i<sites.size(); i++){
     uint j=0;
     for (;j<subjects.size() && subjects[j] != sites[i]->subject;j++){}
@@ -716,22 +701,29 @@ vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<
     cliquesDuSite[sites[i]->index].push_back(j);
   }
   
-
-
   for (uint i=0;i<intraps.size();i++)
     cliques.push_back(intraps[i]);
+  
+}
 
+void ConstruireCliquesDataDriven(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<Clique> &cliques){
   for (uint i=0;i<sites.size(); i++){
-    Clique c;
-    c.type = DATADRIVEN; /*ls.type = BESTLOWERSCALE;*/
-    cliquesDuSite[sites[i]->index].push_back(cliques.size());
-    c.blobs.push_back(sites[i]);
-    cliques.push_back(c);
-//     cliquesDuSite[sites[i]->index].push_back(cliques.size());
-//     ls.blobs.push_back(sites[i]);
-//     cliques.push_back(ls);
+      Clique c;
+      c.type = DATADRIVEN; /*ls.type = BESTLOWERSCALE;*/
+      cliquesDuSite[sites[i]->index].push_back(cliques.size());
+      c.blobs.push_back(sites[i]);
+      cliques.push_back(c);
+  //     cliquesDuSite[sites[i]->index].push_back(cliques.size());
+  //     ls.blobs.push_back(sites[i]);
+  //     cliques.push_back(ls);
   }
-  set<uint> sitesaux,sitesindexes;
+}
+
+
+void ConstruireCliquesSimilarity(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<Clique> &cliques){
+  uint temp=0,temp2=0,temp3=0,temp4=0;
+  double rec;
+  set<uint> sitesaux, sitesindexes;
   float cliques_thresh=40.0;
   cout << "Similarity cliques distance limit : << " << cliques_thresh << " >>" << endl;
   for (uint i=0;i<sites.size();i++){
@@ -788,6 +780,23 @@ uint no_overlap=1;
       }
     } 
 
+
+}
+
+
+
+vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite)  {
+  
+  vector<Clique> cliques;
+
+  cliquesDuSite = vector<vector<int> >(sites.size());
+
+  ConstruireCliquesIntraPS(sites, cliquesDuSite, cliques);
+  
+  ConstruireCliquesDataDriven(sites, cliquesDuSite, cliques);
+
+  ConstruireCliquesSimilarity(sites, cliquesDuSite, cliques);
+    
   return cliques;
 }
 

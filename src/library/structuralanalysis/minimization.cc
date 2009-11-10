@@ -88,23 +88,25 @@ void SurfaceBased_StructuralAnalysis::prepareLabelsZones () {/* vector<pair<Poin
 
 //###############################################################################################
 
+
 void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal){
   cout << "Construction du vecteur de sites ..." << flush;
 
   sites = ConstruireSites(primal); 
   cout << "done (" << sites.size() << " sites)" << endl;
 
+
+  cout << "Construction des cliques ... " << flush;
+  cliques = ConstruireCliques(sites,cliquesDuSite); 
+  
   set<string> subjects;
 
   cout << endl << "  done" << endl;
   for (uint i=0;i<sites.size();i++)
     subjects.insert(sites[i]->subject);
   nbsujets = subjects.size();
-  cout << "Construction des cliques ... " << flush;
-  cliques = ConstruireCliquesLastChance(sites,cliquesDuSite); 
   
-  
-  uint nb_cl_sim=0, nb_cl_dd=0, nb_cl_intraps=0, nb_cl_lower=0;
+    uint nb_cl_sim=0, nb_cl_dd=0, nb_cl_intraps=0, nb_cl_lower=0;
   for (uint i=0;i<cliques.size();i++){
     if (cliques[i].type == SIMILARITY) nb_cl_sim++;
     else if (cliques[i].type == DATADRIVEN) nb_cl_dd++;

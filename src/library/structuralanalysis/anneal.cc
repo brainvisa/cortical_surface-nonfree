@@ -47,7 +47,10 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
           uint index=0;
           if (cliques[aux].blobs[0]->index==(uint)random[i]) index = 1;
           else if (cliques[aux].blobs[1]->index==(uint)random[i]) index = 0;
-          else ASSERT(false);
+          else {
+            cout << random[i] << " " << aux << " " << cliques[aux].blobs[0] << " " << cliques[aux].blobs[1] << endl;
+            ASSERT(false);
+          }
           if (cliques[aux].blobs[index]->label == zoneLab[k] && zoneLab[k] != 0) nclsim1++;
           if (cliques[aux].blobs[index]->label == old && old != 0) nclsim2++;
         }

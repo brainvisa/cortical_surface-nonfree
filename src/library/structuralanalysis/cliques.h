@@ -156,11 +156,13 @@ class Clique{
 
 double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bbmax2, uint *no_overlap);
 
-vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
+// vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
 
+void ConstruireCliquesIntraPS(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<Clique> &cliques);
+void ConstruireCliquesDataDriven(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<Clique> &cliques);
+void ConstruireCliquesSimilarity(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<Clique> &cliques);
 
-
-vector<Clique> ConstruireCliquesLastChance(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite);
+vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite);
 
 #endif
 

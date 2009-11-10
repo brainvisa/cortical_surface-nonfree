@@ -34,6 +34,8 @@ class SurfaceBased_StructuralAnalysis{
     uint run,save;
     void prepareLabelsZones(); //vector<pair<Point2df,Point2df> > &labelsZones, vector<set<uint> > &zonesListesBlobs, vector<set<uint> > &listeZones );
     void MinimizationSetup(Graph &primal);
+    
+
     SurfaceBased_StructuralAnalysis(){}
     SurfaceBased_StructuralAnalysis(Graph &primal);
 

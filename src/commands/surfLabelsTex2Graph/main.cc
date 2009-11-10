@@ -50,6 +50,7 @@
 #include <cortical_surface/structuralanalysis/representation.h>
 #include <cortical_surface/structuralanalysis/cliques.h>
 #include <cortical_surface/structuralanalysis/iograph.h>
+#include <cortical_surface/structuralanalysis/anneal.h>
 #include "blobs.h"
 
 
@@ -1655,19 +1656,50 @@ int main( int argc, const char **argv ){
         readGroupGraph(graph, ssblobs, ssbcliques, listVertex);
         
         // faire l'analyse = étiquetter
-        vector<Site *> sites;
-        vector<Clique> cliques;
-        vector<vector<int> > cliquesDuSite;
+        Anneal swc;
+//         vector<Site *> sites;
+//         vector<Clique> cliques;
+//         vector<vector<int> > cliquesDuSite;
+        
         // Sauvegarder les labels dans les graphes individuels
         //  sur le modèle de comment on faisait avant
         
-        convertSSBlobsToSites(ssblobs, sites);
-        cout << sites.size() << " sites generated" << endl;
+        convertSSBlobsToSites(ssblobs, swc.sites);
+        cout << swc.sites.size() << " sites generated" << endl;
 
-        getCliquesFromSSBCliques(ssbcliques, sites, cliques, cliquesDuSite);
-        cout << cliques.size() << " cliques created" << endl;
+        getCliquesFromSSBCliques(ssbcliques, swc.sites, swc.cliques, swc.cliquesDuSite);
+        cout << swc.cliques.size() << " cliques created" << endl;
+        ConstruireCliquesIntraPS(swc.sites, swc.cliquesDuSite, swc.cliques);
+        ConstruireCliquesDataDriven(swc.sites, swc.cliquesDuSite, swc.cliques);
+        
+        set<string> subjects;
+
+        cout << endl << "  done" << endl;
+        for (uint i=0;i< swc.sites.size();i++)
+          subjects.insert(swc.sites[i]->subject);
+        swc.nbsujets = subjects.size();
+        
+        uint nb_cl_sim=0, nb_cl_dd=0, nb_cl_intraps=0, nb_cl_lower=0;
+        for (uint i=0;i<swc.cliques.size();i++){
+          if (swc.cliques[i].type == SIMILARITY) nb_cl_sim++;
+          else if (swc.cliques[i].type == DATADRIVEN) nb_cl_dd++;
+          else if (swc.cliques[i].type == BESTLOWERSCALE) nb_cl_lower++;
+          else if (swc.cliques[i].type == INTRAPRIMALSKETCH) nb_cl_intraps++;
+        }
+        cout << " done (" << nb_cl_sim << " cliques de similarité ; " << nb_cl_dd << " cliques datadriven ; " << nb_cl_lower << " cliques lower ; " << nb_cl_intraps << " cliques intraps ; " << swc.cliques.size() << " cliques en tout)" << endl;
+      
+        swc.prepareLabelsZones();
         
         
+  
+        float _ddweight=0.8, _intrapsweight = 4.0, _simweight=1.0, _lsweight=1.0, _ddx1 = 8.0, _ddx2 = 4.0, _ddh=0.0001;
+        cout << _ddweight << "-" << _intrapsweight << "-" << _simweight << "-" << _lsweight << "-" << _ddx2 << "-" << _ddx1 << "-" << _ddh << endl;
+        swc.setModelParameters(_ddweight, _intrapsweight, _simweight, _lsweight, _ddx2, _ddx1, _ddh);
+        swc.run = 1;
+        swc.Initialization();
+      
+        swc.Run(1);
+        swc.SummaryLabels();
  
     }
       
