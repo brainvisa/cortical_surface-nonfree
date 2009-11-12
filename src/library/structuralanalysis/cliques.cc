@@ -698,11 +698,13 @@ void ConstruireCliquesIntraPS(vector<Site *> &sites, vector<vector<int> > &cliqu
       intraps[j].type = INTRAPRIMALSKETCH;
     }
     intraps[j].blobs.push_back(sites[i]);
-    cliquesDuSite[sites[i]->index].push_back(j);
+    
   }
   
-  for (uint i=0;i<intraps.size();i++)
+  for (uint i=0;i<intraps.size();i++){    
     cliques.push_back(intraps[i]);
+    cliquesDuSite[sites[i]->index].push_back(cliques.size()-1);
+  }
   
 }
 

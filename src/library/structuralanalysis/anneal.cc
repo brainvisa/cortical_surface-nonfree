@@ -19,19 +19,23 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
   int old;
   mod=0;
   set<uint>::iterator it;
+  
+  cout << "STEP" << flush;
+  
   for (uint i=0; i<random.size();i++){
     somme=0.0;
     
     old = sites[random[i]]->label;
     
     vector<int> zoneLab;
-    
+    cout << "[" << i << "] " << flush;
 
     for (it=listeZones[random[i]].begin();it!=listeZones[random[i]].end();it++)
       zoneLab.push_back(*it);
     vector<long double> globalenergieslabels(zoneLab.size()), expenergies(zoneLab.size()),total(zoneLab.size());
 
     for (uint k=0;k<zoneLab.size();k++){
+      cout << zoneLab[k] << " " << flush;
       sites[random[i]]->label = zoneLab[k];
       globalenergieslabels[k]=energy;
       
@@ -48,7 +52,7 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
           if (cliques[aux].blobs[0]->index==(uint)random[i]) index = 1;
           else if (cliques[aux].blobs[1]->index==(uint)random[i]) index = 0;
           else {
-            cout << random[i] << " " << aux << " " << cliques[aux].blobs[0] << " " << cliques[aux].blobs[1] << endl;
+            cout << random[i] << " " << aux << " " << cliques[aux].type << " " << cliques[aux].blobs.size() << " " << cliques[aux].blobs[0]->index << " " << cliques[aux].blobs[1]->index << endl;
             ASSERT(false);
           }
           if (cliques[aux].blobs[index]->label == zoneLab[k] && zoneLab[k] != 0) nclsim1++;
@@ -159,13 +163,10 @@ void Anneal::Run(int verbose){
   //   cin >> test;
   //   test=0;
 
-
-
   for (uint k=0;k<cliques.size();k++){
     cliques[k].updateLabelsCount();
     cliques[k].computeEnergy(true,nbsujets);
   }
-
 
   if (run==1){
       while (nb_under_threshold<5 || mod!=0){ 
@@ -173,7 +174,7 @@ void Anneal::Run(int verbose){
 
         if (mod!=0) nb_under_threshold=0;
         else nb_under_threshold++;
-        cout << " T=" << temp << " it="<< ite++ << " " ;
+        cout << " T=" << temp << " it="<< ite++ << " " << flush ;
 
         if (recuitpath!=""){
           for (uint i0=0;i0<sites.size();i0++){
@@ -188,11 +189,13 @@ void Anneal::Run(int verbose){
         }
         vector<int> indices(indices_start);
         vector<int> random;
+        cout << "test" << flush;
         for (uint i=0;i<sites.size();i++){
           int index = (int)(UniformRandom() * indices.size());
           random.push_back(indices[index]);
           indices.erase(indices.begin()+index);
         }
+        cout << "__ok__" << flush;
         ASSERT(random.size() == sites.size());
         Step(random, temp, mod);
 
