@@ -1325,7 +1325,7 @@ void RecoverBlobsFromIndivGraph( Graph *graph,
 // 
 // }
 
-vector<string> getVectorStringFromGraph(Graph &graph, char *graph_property){
+vector<string> getVectorStringFromGraph(Graph &graph, string graph_property){
   vector<string> v;
   if( graph.hasProperty( graph_property ) )  {
     Object slist = graph.getProperty( graph_property ); // note the different getProperty() method
@@ -1350,14 +1350,37 @@ vector<string> getVectorStringFromGraph(Graph &graph, char *graph_property){
 void recoverGroupData ( Graph &graph,
                         map<string, SubjectData> &data){
   vector<string> listSujets, listGraphPaths, listMeshPaths, listTexPaths, listLatPaths, listLonPaths;;
-  
+  listSujets = getVectorStringFromGraph(graph, "sujets");
+  listGraphPaths = getVectorStringFromGraph(graph, "indiv_graphs");
+  listTexPaths = getVectorStringFromGraph(graph, "textures");
+  listLatPaths = getVectorStringFromGraph(graph, "latitudes");
+  listLonPaths = getVectorStringFromGraph(graph, "longitudes");
+  listMeshPaths = getVectorStringFromGraph(graph, "meshes");
     
   
   for (uint i = 0 ; i < listSujets.size() ; i++){
-    pair<string, SubjectData> subjData;
-    subjData.first = listSujets[i];
+    pair<string, SubjectData> pSubjData;
+    pSubjData.first = listSujets[i];
+    Reader<TimeTexture<float> > texRdr ( listTexPaths[i] ) ;
+    texRdr.read(pSubjData.second.tex);
     
+    Reader<AimsSurfaceTriangle> meshRdr (listMeshPaths[i] ) ;
+    meshRdr.read(pSubjData.second.mesh);
     
+    Reader<TimeTexture<float> > latRdr ( listLatPaths[i] );
+    latRdr.read(pSubjData.second.lat);
+  
+    Reader<TimeTexture<float> > lonRdr ( listLonPaths[i] );
+    lonRdr.read(pSubjData.second.lon);
+    
+    // Checking the data
+    cout << " subject : " << pSubjData.second.subject << endl;
+    cout << "  texture : " << pSubjData.second.tex[0].nItem() << " values" << endl;
+    cout << "  mesh : " << pSubjData.second.mesh[0].vertex().size() << " nodes" << endl;
+    cout << "  lat : " << pSubjData.second.lat[0].nItem() << " values" << endl;
+    cout << "  lon : " << pSubjData.second.lon[0].nItem() << " values" << endl;
+    
+    data.insert(pSubjData); 
   }                          
                           
 }
@@ -1413,7 +1436,7 @@ void readGroupGraph ( Graph &graph,
       s->tmax = tmax;
       s->t = t;
       for (uint i=0;i<representation.size();i++)
-        s->representation.insert(representation[i]);
+        s->representation.insert(representation[i]);      
       (*iv)->setProperty( "sites_index", (int)(ssblobs.size()-1));
       index =0;
       (*iv)->getProperty( "sites_index", index);
@@ -1475,17 +1498,20 @@ void readGroupGraph ( Graph &graph,
 //##############################################################################
 
 void convertSSBlobsToSites(vector<SSBlob *> &ssblobs, vector<Site *> &sites){
-    
-  for (uint i = 0 ; i < ssblobs.size() ; i++){     
+//    int newindex= 0;
+  for (uint i = 0 ; i < ssblobs.size() ; i++){
+//     if (ssblobs[i]->t>2.0){
      sites.push_back(new Site());
      Site *s = sites[sites.size() - 1];
      s->index = ssblobs[i]->index;
+     s->graph_index = ssblobs[i]->index;
      s->subject = ssblobs[i]->subject;
      s->label = ssblobs[i]->label;
      s->tmin = ssblobs[i]->tmin;
      s->tmax = ssblobs[i]->tmax;
      s->t = ssblobs[i]->t;
      s->nodes_list = ssblobs[i]->representation;
+//     }
   }    
     
 }
@@ -1537,6 +1563,18 @@ void getCliquesFromSSBCliques ( vector<SSBClique> &ssbcliques,
   
 }
 
+//##############################################################################
+
+void computeSitesBoundingBoxes(vector<Site *> &sites, map<string, SubjectData> &data){
+
+  for (uint i = 0 ; i < sites.size() ; i++) {
+    vector<int> vTemp(set2vector(sites[i]->nodes_list));
+    pair<Point2df, Point2df> bb = getBoundingBox(vTemp, data[sites[i]->subject].lat, data[sites[i]->subject].lon);
+    sites[i]->boundingbox_min = Point3df(bb.first[0], bb.first[1], 0);
+    sites[i]->boundingbox_max = Point3df(bb.second[0], bb.second[1], 0);
+  }
+
+}
 
 //##############################################################################
 
@@ -1732,7 +1770,7 @@ int main( int argc, const char **argv ){
           else if (swc.cliques[i].type == INTRAPRIMALSKETCH) nb_cl_intraps++;
         }
         cout << " done (" << nb_cl_sim << " cliques de similarité ; " << nb_cl_dd << " cliques datadriven ; " << nb_cl_lower << " cliques lower ; " << nb_cl_intraps << " cliques intraps ; " << swc.cliques.size() << " cliques en tout)" << endl;
-      
+        computeSitesBoundingBoxes(swc.sites, data);
         swc.prepareLabelsZones();
         
         
