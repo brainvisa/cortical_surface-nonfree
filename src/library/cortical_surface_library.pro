@@ -28,6 +28,7 @@ HEADERS = \
   structuralanalysis/cluster.h \
   structuralanalysis/validation.h \
   structuralanalysis/representation.h \
+  structuralanalysis/blobs.h \
 
 
 SOURCES = \
@@ -51,4 +52,5 @@ SOURCES = \
   structuralanalysis/old_anneal.cc \
   structuralanalysis/cluster.cc \
   structuralanalysis/validation.cc \
-  structuralanalysis/representation.cc 
+  structuralanalysis/representation.cc \
+  structuralanalysis/blobs.cc 

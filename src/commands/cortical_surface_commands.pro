@@ -26,5 +26,8 @@ PSUBDIRS += \
   AimsSulcusNormalizeDepthProfile \
   AimsConformalMapping \
   AimsMeshCoordinatesToDecimated \
-  AimsExtractGyrus
+  AimsExtractGyrus \
+  surfMesh2Graph \
+  surfSubjectGraph2Group \
+  surfAnalyzeGroupGraph
   
