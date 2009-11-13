@@ -27,6 +27,10 @@ PSUBDIRS += \
   AimsConformalMapping \
   AimsMeshCoordinatesToDecimated \
   AimsExtractGyrus \
+  AimsMeshToMeshPoint \
+  AimsPlotCoordinatesOnMesh \ 
+  PlotFociForValidation \
+  AimsCoordinatesToIndex
   surfMesh2Graph \
   surfSubjectGraph2Group \
   surfAnalyzeGroupGraph
