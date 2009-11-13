@@ -564,7 +564,6 @@ void ConstruireGraphe(Graph *graph,
 int main( int argc, const char **argv ){
   try {
 
-    int mode=0;
     string indivGraphPaths = "",
            groupGraphPath = "",
            meshPaths = "",
@@ -574,19 +573,17 @@ int main( int argc, const char **argv ){
            flatPaths = "",
            sujets = "";
 
-    AimsApplication app( argc, argv, "surfLabelsTex2Graph" );
+    AimsApplication app( argc, argv, "surfSubjectGraph2Group" );
     app.addOption( meshPaths, "-m", "mesh");
     app.addOption( texPaths, "-t", "texture");
     app.addOption( indivGraphPaths, "-g", "indiv graphs");
     app.addOption( groupGraphPath, "-G", "group graph");
-    app.addOption( mode, "-M", "mode : 0 (compute the primal sketches) - 1 (take previously computed primal sketches)",1);
     app.addOption( sujets, "-s", "sujet");
     app.addOption( latPaths, "--lat", "latitude");
     app.addOption( lonPaths, "--lon", "longitude");
     app.addOption( flatPaths, "--flat", "flat",1);
     app.initialize();
     
-    if (mode == 1){
 
         vector<string> listSujets = splitGraphFile(sujets);
         vector<string> listGraphPaths = splitGraphFile(indivGraphPaths);
@@ -620,7 +617,6 @@ int main( int argc, const char **argv ){
         
         Writer<Graph> wtrGraph(groupGraphPath);
         wtrGraph.write(*graph);
-    }
     return EXIT_SUCCESS;
   }
   catch( carto::user_interruption & )

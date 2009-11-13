@@ -18,6 +18,8 @@ namespace surf{
     set<int> nodes;
   };
   
+  class ScaleSpaceBlob;
+  
   class GreyLevelBlob: public Blob{
     public :
       uint index;
@@ -28,6 +30,7 @@ namespace surf{
       float scale;      
       Point3df boundingbox_max;
       Point3df boundingbox_min;
+      ScaleSpaceBlob *ssb_parent;
   };
   
   class ScaleSpaceBlob: public Blob{

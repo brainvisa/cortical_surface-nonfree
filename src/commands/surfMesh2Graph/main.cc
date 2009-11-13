@@ -69,7 +69,7 @@ void construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch
       ssb = *itSSB;
       ssblobs.push_back(new surf::ScaleSpaceBlob());
       surf::ScaleSpaceBlob *ssblob = ssblobs[ssblobs.size() - 1];
-      ssblob->index = iSSblob;
+//       ssblob->index = iSSblob;
       ssblob->subject = sketch.Subject();
       ssblob->tmin = 999.0;
       ssblob->tmax = -999.0;
@@ -81,8 +81,8 @@ void construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch
         surf::GreyLevelBlob *blob = blobs[blobs.size()-1];
         
         // Each surf::GreyLevelBlob has a specific index iBlob, and a surf::ScaleSpaceBlob has an isurf::ScaleSpaceBlob
-        blob->index = iBlob++;
-        blob->parent = iSSblob;
+//         blob->index = iBlob++;
+        blob->ssb_parent = ssblob;
 //         blob->subject = sketch.Subject();
         blob->t = (*itGLB)->measurements.t;
         blob->scale = (*itGLB)->GetScale();
@@ -256,9 +256,8 @@ void ConstruireIndividualGraph( Graph *graph,
     
     cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
     vert = graph->addVertex("ssb");
-    iNbSSB++;
     
-    vert->setProperty("index", ssblobs[i]->index);
+//     vert->setProperty("index", ssblobs[i]->index);
     vert->setProperty("label", "0");
     vert->setProperty("t", ssblobs[i]->t);
     vert->setProperty( "subject", ssblobs[i]->subject);
@@ -274,8 +273,7 @@ void ConstruireIndividualGraph( Graph *graph,
     // manip.storeAims(*graph, vert, "blob", ptr);
     // vert->setProperty("blob_label",i);
         
-    assert(ssblobs[i]->index < ssblobs.size());
-    listVertSSB[ ssblobs[i]->index ] = vert;
+    listVertSSB[  i  ] = vert;
   }
   cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbSSB << " blobs added... done" << endl; 
     
@@ -291,14 +289,13 @@ void ConstruireIndividualGraph( Graph *graph,
     
     cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
     vert = graph->addVertex("glb");
-    iNbGLB++;
-    vert->setProperty("index", blobs[i]->index);
+    
+//     vert->setProperty("index", blobs[i]->index);
     vert->setProperty("t", blobs[i]->t);
     vert->setProperty( "scale", blobs[i]->scale);
     vert->setProperty( "nodes", blobs[i]->nodes);
 
-    assert( blobs[i]->index < blobs.size() );
-    listVertGLB[ blobs[i]->index ] = vert;
+    listVertGLB[ i ] = vert;
     
   }
   cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbGLB << " blobs added... done" << endl; 
@@ -316,7 +313,9 @@ void ConstruireIndividualGraph( Graph *graph,
       
       Vertex *v1, *v2;
       
-      v1 = listVertSSB[ssblobs[i]->index];
+      v1 = listVertSSB[ i ];
+      
+      //ATTENTION IL FAUT CORRIGER LES TRUCS ICI
       v2 = listVertGLB[(*itB1)->index];
       graph->addEdge(v1,v2,"s2g");
       iNbLinks++;
@@ -424,7 +423,7 @@ int main( int argc, const char **argv ){
            flatPaths = "",
            sujets = "";
 
-    AimsApplication app( argc, argv, "surfLabelsTex2Graph" );
+    AimsApplication app( argc, argv, "surfMesh2Graph" );
     app.addOption( meshPaths, "-m", "mesh");
     app.addOption( texPaths, "-t", "texture");
     app.addOption( indivGraphPaths, "-g", "indiv graphs");
