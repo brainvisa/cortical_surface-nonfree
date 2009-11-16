@@ -320,7 +320,7 @@ void ConstruireIndividualGraph( Graph *graph,
     
     
   }
-  cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbGLB << " blobs added... done" << endl; 
+  cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added... done" << endl;
    
   // Let's add the links between scale-space and grey-level blobs
   

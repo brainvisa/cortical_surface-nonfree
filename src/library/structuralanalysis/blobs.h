@@ -18,15 +18,7 @@ namespace surf{
       int index;
       int label;
       set<int> nodes;
-//       AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
-//       AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh, 
-//                                                    Texture<float> &lat,
-//                                                    Texture<float> &lon,
-//                                                    set<int> &nodes_list );
-//       AimsSurface<3, Void> getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh, 
-//                                                    Texture<float> &lat,
-//                                                    Texture<float> &lon, 
-//                                                    set<int> &nodes_list );
+
 
   }; 
   

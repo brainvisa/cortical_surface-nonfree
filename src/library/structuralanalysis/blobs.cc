@@ -13,9 +13,9 @@ Point3df Point3dfOnSphere ( int i, float radius,
                             Texture<float> &lat, 
                             Texture<float> &lon ){
   
-    return  Point3df ( radius * sin((lat.item(i)-90.)/180.0*3.1415957) * cos(lat.item(i)/180.0*3.1415957), 
-                    radius * sin((lat.item(i)-90.)/180.0*3.1415957) * sin(lon.item(i)/180.0*3.1415957), 
-                    radius + cos((lat.item(i)-90.)/180.0*3.1415957) );    //(float)(rand()/RAND_MAX) * 0.001 ));                                                                     
+    return  Point3df ( log(radius) * cos((lat.item(i)-90.)/180.0*3.1415957) * cos(lon.item(i)/180.0*3.1415957),
+                    log(radius) * cos((lat.item(i)-90.)/180.0*3.1415957) * sin(lon.item(i)/180.0*3.1415957),
+                    log(radius) * sin((lat.item(i)-90.)/180.0*3.1415957) );    //(float)(rand()/RAND_MAX) * 0.001 ));
 }
 
 Point3df Point3dfOnMesh ( int i, AimsSurface<3,Void> &mesh ) {
