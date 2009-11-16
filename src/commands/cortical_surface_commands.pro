@@ -30,7 +30,7 @@ PSUBDIRS += \
   AimsMeshToMeshPoint \
   AimsPlotCoordinatesOnMesh \ 
   PlotFociForValidation \
-  AimsCoordinatesToIndex
+  AimsCoordinatesToIndex \
   surfMesh2Graph \
   surfSubjectGraph2Group \
   surfAnalyzeGroupGraph
