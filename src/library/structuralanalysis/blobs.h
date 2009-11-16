@@ -14,15 +14,26 @@ namespace surf{
   // Of course, there is no info about the corresponding mesh but let's say the user is supposed to know that...
 
   class Blob{
-    public: 
-    set<int> nodes;
-  };
+    public:
+      int index;
+      int label;
+      set<int> nodes;
+//       AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
+//       AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh, 
+//                                                    Texture<float> &lat,
+//                                                    Texture<float> &lon,
+//                                                    set<int> &nodes_list );
+//       AimsSurface<3, Void> getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh, 
+//                                                    Texture<float> &lat,
+//                                                    Texture<float> &lon, 
+//                                                    set<int> &nodes_list );
+
+  }; 
   
   class ScaleSpaceBlob;
   
   class GreyLevelBlob: public Blob{
     public :
-      uint index;
   //     uint group_index;
       uint parent;
   //     string subject;
@@ -31,11 +42,20 @@ namespace surf{
       Point3df boundingbox_max;
       Point3df boundingbox_min;
       ScaleSpaceBlob *ssb_parent;
+      
+      AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
+      AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh, 
+                                                   Texture<float> &lat,
+                                                   Texture<float> &lon,
+                                                   set<int> &nodes_list );
+      AimsSurface<3, Void> getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh, 
+                                                   Texture<float> &lat,
+                                                   Texture<float> &lon, 
+                                                   set<int> &nodes_list );      
   };
   
   class ScaleSpaceBlob: public Blob{
     public :
-      uint index;
       uint graph_index;
       float t;
       int label;

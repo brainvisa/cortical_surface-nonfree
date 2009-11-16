@@ -38,8 +38,8 @@ class SubjectData{
 
 //##############################################################################
 
-// Function that builds a collection of surf::GreyLevelBlob and surf::ScaleSpaceBlob objects from a previously
-//   computed Primal Sketch
+// Function that builds a collection of surf::GreyLevelBlob and surf::ScaleSpaceBlob 
+// objects from a previously computed Primal Sketch
 void construireBlobs(PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch, 
                      vector<surf::GreyLevelBlob *> &blobs, vector<surf::ScaleSpaceBlob *> &ssblobs, bool initNull = true){
   
@@ -215,7 +215,8 @@ void ConstruireIndividualGraph( Graph *graph,
                                 string texPath,
                                 string latPath,
                                 string lonPath,
-                                string sujet){
+                                string sujet,
+                                string repMeshPath ){
   // From the two vectors, we build a graph containing the ssb, the glb and
   //  the links between ssb and glb                                 
 
@@ -237,10 +238,30 @@ void ConstruireIndividualGraph( Graph *graph,
   graph->setProperty("texture", texPath);
   graph->setProperty("latitude", latPath);
   graph->setProperty("longitude", lonPath);
-
+  
+  AimsSurfaceTriangle repMesh;
+  Reader<AimsSurfaceTriangle> rdrMesh ( repMeshPath );
+  rdrMesh.read(repMesh);
+  AimsSurfaceTriangle *objects = new AimsSurfaceTriangle();
+  vector<set<int> > nodes_lists;
+  TimeTexture<float> lat,lon;
+  Reader<TimeTexture<float> > rdrLat(latPath), rdrLon(lonPath);
+  rdrLat.read(lat);
+  rdrLon.read(lon);
+  
+  
+  // Extracting mesh patches for the graph
+  cout << "Extracting mesh patches for the graph... (from " << repMeshPath << ")" << endl;
+  cout << " vertex : " << repMesh[0].vertex().size() << endl;
+  cout << " polygon : " << repMesh[0].polygon().size() << endl;
+  cout << " size : " << repMesh.size() << endl;
+  *objects = getBlobsSphericalMeshes( blobs, repMesh[repMesh.size()-1], lat[0], lon[0], nodes_lists);
+  cout << " done" << endl;
+  
+  
   Vertex *vert;
   carto::rc_ptr<AimsSurfaceTriangle> ptr;
-//   aims::GraphManip manip;
+  aims::GraphManip manip;
   vector<Vertex *> listVertSSB( ssblobs.size() ), listVertGLB( blobs.size() );
     
       
@@ -248,7 +269,6 @@ void ConstruireIndividualGraph( Graph *graph,
   
   cout << "Adding scale-space blobs..." << endl;
   
-  int iNbSSB = 0;
   for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
         
     // For every scale-space blob, we create a vertex in the Aims graph : we define
@@ -257,25 +277,20 @@ void ConstruireIndividualGraph( Graph *graph,
     cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
     vert = graph->addVertex("ssb");
     
-//     vert->setProperty("index", ssblobs[i]->index);
-    vert->setProperty("label", "0");
-    vert->setProperty("t", ssblobs[i]->t);
+//     vert->setProperty("index", i );
+    vert->setProperty( "label", "0");
+    vert->setProperty( "t", ssblobs[i]->t);
     vert->setProperty( "subject", ssblobs[i]->subject);
     vert->setProperty( "tmin", ssblobs[i]->tmin);
     vert->setProperty( "tmax", ssblobs[i]->tmax);
-    vert->setProperty( "tValue", 100.0);
-
-      
+    ssblobs[i]->index = i;
+//     vert->setProperty( "tValue", 100.0);
      
-    // We associate the proper mesh patch from "objects" to the vertex
-    // ptr=carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-    // (*ptr)[0]=(*objects)[i];
-    // manip.storeAims(*graph, vert, "blob", ptr);
-    // vert->setProperty("blob_label",i);
+
         
     listVertSSB[  i  ] = vert;
   }
-  cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbSSB << " blobs added... done" << endl; 
+  cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added... done" << endl; 
     
   // Let's add the grey-level blobs
   
@@ -290,12 +305,19 @@ void ConstruireIndividualGraph( Graph *graph,
     cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
     vert = graph->addVertex("glb");
     
-//     vert->setProperty("index", blobs[i]->index);
+//     vert->setProperty("index", i );
     vert->setProperty("t", blobs[i]->t);
     vert->setProperty( "scale", blobs[i]->scale);
     vert->setProperty( "nodes", blobs[i]->nodes);
-
+    blobs[i]->index = i;
     listVertGLB[ i ] = vert;
+        
+    // We associate the proper mesh patch from "objects" to the vertex
+    ptr=carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+    (*ptr)[0]=(*objects)[i];
+    manip.storeAims(*graph, vert, "glb", ptr);
+    vert->setProperty("glb_label", i);
+    
     
   }
   cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbGLB << " blobs added... done" << endl; 
@@ -309,13 +331,12 @@ void ConstruireIndividualGraph( Graph *graph,
     
     set<surf::GreyLevelBlob *>::iterator itB1;
     set<surf::GreyLevelBlob *> &listGLB = ssblobs[i]->blobs;
+    
     for (itB1 = listGLB.begin(); itB1 != listGLB.end() ; itB1++) {
       
       Vertex *v1, *v2;
       
       v1 = listVertSSB[ i ];
-      
-      //ATTENTION IL FAUT CORRIGER LES TRUCS ICI
       v2 = listVertGLB[(*itB1)->index];
       graph->addEdge(v1,v2,"s2g");
       iNbLinks++;
@@ -335,7 +356,8 @@ void FromRawTexturesToIndividualGraphsViaPrimalSketches ( string sujets,
                                                           string meshPaths,
                                                           string texPaths,
                                                           string latPaths,
-                                                          string lonPaths){
+                                                          string lonPaths,
+                                                          string repMeshPaths){
   
   map<string, SubjectData> data;
   vector<string> listSujets = splitGraphFile(sujets);
@@ -344,6 +366,7 @@ void FromRawTexturesToIndividualGraphsViaPrimalSketches ( string sujets,
   vector<string> listTexPaths = splitGraphFile(texPaths);
   vector<string> listLatPaths = splitGraphFile(latPaths);
   vector<string> listLonPaths = splitGraphFile(lonPaths);
+  vector<string> listRepMeshPaths = splitGraphFile(repMeshPaths);
       
   cerr << "  split string sujets -> " << listSujets.size() << " sujets" << endl << endl;
 
@@ -387,7 +410,7 @@ void FromRawTexturesToIndividualGraphsViaPrimalSketches ( string sujets,
     
     // Converting the blobs into an Aims Graph
     Graph *tmpGraph = new Graph("BlobsArg");
-    ConstruireIndividualGraph(tmpGraph, blobs, ssblobs, listMeshPaths[i], listTexPaths[i], listLatPaths[i], listLonPaths[i], sujet);
+    ConstruireIndividualGraph(tmpGraph, blobs, ssblobs, listMeshPaths[i], listTexPaths[i], listLatPaths[i], listLonPaths[i], sujet, listRepMeshPaths[i] );
     
     // Storing the graph on the hard disk
     cout << "Writing graph .. " << listGraphPaths[i] << endl;
@@ -420,7 +443,7 @@ int main( int argc, const char **argv ){
            texPaths = "",
            latPaths = "",
            lonPaths = "",
-           flatPaths = "",
+           repMeshPaths = "",
            sujets = "";
 
     AimsApplication app( argc, argv, "surfMesh2Graph" );
@@ -431,12 +454,12 @@ int main( int argc, const char **argv ){
     app.addOption( sujets, "-s", "sujet");
     app.addOption( latPaths, "--lat", "latitude");
     app.addOption( lonPaths, "--lon", "longitude");
-    app.addOption( flatPaths, "--flat", "flat",1);
+    app.addOption( repMeshPaths, "--repM", "repMesh",1);
     app.initialize();
 
 
     FromRawTexturesToIndividualGraphsViaPrimalSketches
-        ( sujets, indivGraphPaths, meshPaths, texPaths, latPaths, lonPaths);
+        ( sujets, indivGraphPaths, meshPaths, texPaths, latPaths, lonPaths, repMeshPaths);
       
     
     
