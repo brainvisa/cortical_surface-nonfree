@@ -1,4 +1,4 @@
- 
+
 #include <aims/getopt/getopt2.h>
 #include <cortical_surface/structuralanalysis/representation.h>
 #include <cortical_surface/structuralanalysis/blobs.h>
@@ -6,14 +6,14 @@
 using namespace aims;
 using namespace carto;
 using namespace std;
- 
- 
+
+
 //##############################################################################
 
 // Function that extracts mesh patches from a "mesh", being given a "blobs" vector.
 //   On a sphere version
 
-AimsSurfaceTriangle getBlobsSphericalMeshes ( vector<surf::GreyLevelBlob *> &blobs, 
+AimsSurfaceTriangle getBlobsSphericalMeshes ( vector<surf::GreyLevelBlob *> &blobs,
                                      AimsSurface<3, Void> &mesh,
                                      Texture<float> &lat,
                                      Texture<float> &lon,
@@ -21,78 +21,95 @@ AimsSurfaceTriangle getBlobsSphericalMeshes ( vector<surf::GreyLevelBlob *> &blo
   AimsSurfaceTriangle objects;
   nodes_lists=vector<set<int> >(blobs.size());
 
-
   for (uint i = 0 ; i < blobs.size() ; i++){
-    
+
     cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
     objects[i] = blobs[i]->getAimsPatchOnASphere(mesh, lat, lon, nodes_lists[i]);
 
-    
-  }
-
-  cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
-  return objects;
-} 
- 
- 
-//##############################################################################
-// Function that extracts mesh patches from a "mesh", being given a "blobs" vector.
-//   All mesh patches are flat, belong to a same plane, and their z varies with 
-//   their scale
-AimsSurfaceTriangle getBlobs2DMeshes ( vector<surf::GreyLevelBlob *> &blobs, 
-                                     AimsSurface<3, Void> &mesh,
-                                     Texture<float> &lat,
-                                     Texture<float> &lon,
-                                     vector<set<int> > &nodes_lists){
-  AimsSurfaceTriangle objects;
-  nodes_lists=vector<set<int> >(blobs.size());
-
-
-  for (uint i = 0 ; i < blobs.size() ; i++){
-    
-    cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
-    objects[i] = blobs[i]->getAimsPatchOnAPlane(mesh, lat, lon, nodes_lists[i]);
-
-    
   }
 
   cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
   return objects;
 }
- 
- 
+
+AimsSurfaceTriangle getBlobsSphericalMeshes ( vector<surf::ScaleSpaceBlob *> &blobs,
+                                     AimsSurface<3, Void> &mesh,
+                                     Texture<float> &lat,
+                                     Texture<float> &lon,
+                                     vector<set<int> > &nodes_lists){
+  AimsSurfaceTriangle objects;
+  nodes_lists=vector<set<int> >(blobs.size());
+
+  for (uint i = 0 ; i < blobs.size() ; i++){
+
+    cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
+    objects[i] = blobs[i]->getAimsPatchOnASphere(mesh, lat, lon, nodes_lists[i]);
+
+  }
+
+  cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
+  return objects;
+}
+
+
+//##############################################################################
+// Function that extracts mesh patches from a "mesh", being given a "blobs" vector.
+//   All mesh patches are flat, belong to a same plane, and their z varies with
+//   their scale
+AimsSurfaceTriangle getBlobs2DMeshes ( vector<surf::GreyLevelBlob *> &blobs,
+                                     AimsSurface<3, Void> &mesh,
+                                     Texture<float> &lat,
+                                     Texture<float> &lon,
+                                     vector<set<int> > &nodes_lists){
+  AimsSurfaceTriangle objects;
+  nodes_lists=vector<set<int> >(blobs.size());
+
+
+  for (uint i = 0 ; i < blobs.size() ; i++){
+
+    cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
+    objects[i] = blobs[i]->getAimsPatchOnAPlane(mesh, lat, lon, nodes_lists[i]);
+
+
+  }
+
+  cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
+  return objects;
+}
+
+
 //##############################################################################
 
 // Function that extracts mesh patches from a "mesh", being given a "blobs" vector,
 //   and returning a collection of "objects" plus a vector of "nodes_lists".
-AimsSurfaceTriangle getBlobsMeshes ( vector<surf::GreyLevelBlob *> &blobs, 
-                                     AimsSurface<3, Void> &mesh, 
+AimsSurfaceTriangle getBlobsMeshes ( vector<surf::GreyLevelBlob *> &blobs,
+                                     AimsSurface<3, Void> &mesh,
                                      vector<set<int> > &nodes_lists){
   AimsSurfaceTriangle objects;
   nodes_lists=vector<set<int> >(blobs.size());
 
 
   for (uint i = 0 ; i < blobs.size() ; i++){
-    
+
     cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
     objects[i] = blobs[i]->getAimsMeshPatch(mesh, nodes_lists[i]);
 
-    
+
   }
 
   cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
   return objects;
 }
 
-//##############################################################################  
-  
+//##############################################################################
+
 
 // That function takes a vector of SSBlob and build mesh patches corresponding to
 //   previously computed representation blobs
-AimsSurfaceTriangle getBlobsMeshes ( vector<surf::ScaleSpaceBlob *> &blobs, 
-                                     AimsSurface<3, Void> &mesh, 
+AimsSurfaceTriangle getBlobsMeshes ( vector<surf::ScaleSpaceBlob *> &blobs,
+                                     AimsSurface<3, Void> &mesh,
                                      vector<vector<int> > &nodes_lists){
-                                      
+
     cout << "mesh.vertex:" << mesh.vertex().size() << endl;
     cout << "mesh.polygon:" << mesh.polygon().size() << endl;
     AimsSurfaceTriangle objects;
@@ -121,37 +138,37 @@ AimsSurfaceTriangle getBlobsMeshes ( vector<surf::ScaleSpaceBlob *> &blobs,
           tri.insert(j);
 
       }
-      
+
       cout << "t " << tri.size() << " " << flush;
-      
+
       for (it = tri.begin() ; it != tri.end() ; it++){
         p1=mesh.polygon()[*it][0];
         p2=mesh.polygon()[*it][1];
         p3=mesh.polygon()[*it][2];
         comp.insert(p1); comp.insert(p2); comp.insert(p3);
       }
-      
+
       corres = vector<uint>( mesh.vertex().size() );
-      
+
       for (it = comp.begin() ; it != comp.end() ; it++){
-        
+
         assert( *it < corres.size() );
         assert( *it < mesh.vertex().size() );
         assert( i < nodes_lists.size() );
-        
+
         (objects)[i].vertex().push_back( mesh.vertex()[*it] );
         corres[*it] = (objects)[i].vertex().size() - 1;
         nodes_lists[i].push_back( *it );
-        
+
       }
 
       for (it = tri.begin() ; it != tri.end() ; it++){
-        
+
         p1 = mesh.polygon()[*it][0];
         p2 = mesh.polygon()[*it][1];
         p3 = mesh.polygon()[*it][2];
         (objects)[i].polygon().push_back( AimsVector<uint,3>(corres[p1], corres[p2], corres[p3]) );
-        
+
       }
 
     }
@@ -162,10 +179,10 @@ AimsSurfaceTriangle getBlobsMeshes ( vector<surf::ScaleSpaceBlob *> &blobs,
 
 
 //##############################################################################
-  
-  
-pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list, 
-                                          TimeTexture<float> &lat, 
+
+
+pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,
+                                          TimeTexture<float> &lat,
                                           TimeTexture<float> &lon ){
   Point2df bbmin, bbmax;
   bbmin[0] = 181.0;
@@ -179,13 +196,13 @@ pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,
       bbmin[0]=lat[0].item(*it);
     if (lon[0].item(*it) < bbmin[1])
       bbmin[1]=lon[0].item(*it);
-    
+
     if (lat[0].item(*it) > bbmax[0])
       bbmax[0]=lat[0].item(*it);
     if (lon[0].item(*it) > bbmax[1])
       bbmax[1]=lon[0].item(*it);
   }
-  
+
   if (bbmax[1] > 300.0 && bbmin[1] < 60.0) {
     for (uint i=0;i<nodes_list.size();i++){
       if (lon[0].item(*it) >300.0 && lon[0].item(*it) < bbmax[1])
@@ -194,18 +211,18 @@ pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,
         bbmin[1]=lon[0].item(*it);
     }
   }
-  
+
   bb.first = bbmin;
   bb.second = bbmax;
   return bb;
 }
- 
-//##############################################################################  
+
+//##############################################################################
 
 
-AimsSurfaceTriangle getFlatMap ( vector<set<int> > &nodes_lists, 
-                                 TimeTexture<float> &lat, 
-                                 TimeTexture<float> &lon, 
+AimsSurfaceTriangle getFlatMap ( vector<set<int> > &nodes_lists,
+                                 TimeTexture<float> &lat,
+                                 TimeTexture<float> &lon,
                                  TimeTexture<float> &tex){
   AimsSurfaceTriangle objects;
   for (uint i=0;i<nodes_lists.size();i++){
@@ -234,3 +251,74 @@ AimsSurfaceTriangle getFlatMap ( vector<set<int> > &nodes_lists,
   return objects;
 }
 
+//##############################################################################
+
+// This function extracts normal mesh patches corresponding to the different label
+//   components existing in a texture. It returns a vector of nodes lists.
+AimsSurfaceTriangle getLabelObjectsOnASphere( TimeTexture<short> &tex,
+                                AimsSurface<3,Void> &mesh,
+                                Texture<float> &lat,
+                                Texture<float> &lon,
+                                vector<set<int> > &nodes_lists){
+
+    int labelmax=0;
+    for (uint i=0;i<tex[0].nItem();i++){
+      if (tex[0].item(i)>labelmax)
+        labelmax=tex[0].item(i);
+    }
+    AimsSurfaceTriangle objects;
+    nodes_lists=vector<set<int> >(labelmax+1);
+    vector<set<uint> > triangles(labelmax+1);
+
+    set<uint>::iterator it;
+    set<uint> tri,comp;
+    uint p1,p2,p3;  int L1,L2,L3;
+
+    for (uint i=0;i<mesh.polygon().size();i++){
+      p1=mesh.polygon()[i][0];
+      p2=mesh.polygon()[i][1];
+      p3=mesh.polygon()[i][2];
+
+      L1=tex[0].item(p1); L2=tex[0].item(p2); L3=tex[0].item(p3);
+
+      if (L1==L2 || L1==L3)
+        triangles[L1].insert(i);
+      else if (L2==L3)
+        triangles[L2].insert(i);
+    }
+    vector<uint> corres;
+
+    cout << "TRI:" << triangles.size() << endl;
+
+    for (uint i=0;i<triangles.size();i++){
+      tri = triangles[i];
+
+      comp.clear();
+      for (it=tri.begin();it!=tri.end();it++){
+        p1=mesh.polygon()[*it][0];
+        p2=mesh.polygon()[*it][1];
+        p3=mesh.polygon()[*it][2];
+        comp.insert(p1); comp.insert(p2); comp.insert(p3);
+      }
+      corres=vector<uint>(mesh.vertex().size());
+      for (it=comp.begin();it!=comp.end();it++){
+        assert(*it<corres.size());
+        assert(*it<mesh.vertex().size());
+        assert(i<nodes_lists.size());
+        (objects)[i].vertex().push_back(Point3df ( 1.0 * cos((lat.item(*it)-90.)/180.0*3.1415957) * cos(lon.item(*it)/180.0*3.1415957),
+                    1.0 * cos((lat.item(*it)-90.)/180.0*3.1415957) * sin(lon.item(*it)/180.0*3.1415957),
+                    1.0 * sin((lat.item(*it)-90.)/180.0*3.1415957) ));
+        corres[*it]=(objects)[i].vertex().size()-1;
+        nodes_lists[i].insert(*it);
+
+      }
+      cout << (objects)[i].vertex().size() << endl;
+      for (it=tri.begin();it!=tri.end();it++){
+        p1=mesh.polygon()[*it][0];
+        p2=mesh.polygon()[*it][1];
+        p3=mesh.polygon()[*it][2];
+        (objects)[i].polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
+      }
+    }
+    return objects;
+}
