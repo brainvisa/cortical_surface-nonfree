@@ -170,6 +170,7 @@ void ConstruireIndividualGraph( Graph *graph,
   cout << " polygon : " << repMesh[0].polygon().size() << endl;
   cout << " size : " << repMesh.size() << endl;
   *objects = getLabelObjectsOnASphere( texshort, repMesh[repMesh.size()-1], lat[0], lon[0], nodes_lists);
+//   *objects = getLabelObjectsOnAMesh( texshort, repMesh[repMesh.size()-1], nodes_lists);
   cout << " done" << endl;
 
 
@@ -366,7 +367,6 @@ int main( int argc, const char **argv ){
     app.addOption( meshPaths, "-m", "mesh");
     app.addOption( texPaths, "-t", "texture");
     app.addOption( indivGraphPaths, "-g", "indiv graphs");
-    app.addOption( groupGraphPath, "-G", "group graph");
     app.addOption( sujets, "-s", "sujet");
     app.addOption( latPaths, "--lat", "latitude");
     app.addOption( lonPaths, "--lon", "longitude");
