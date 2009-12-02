@@ -344,7 +344,7 @@ void ConstruireIndividualGraph( Graph *graph,
 
     }
   }
-    cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbLinks << " links added... done" << endl;
+  cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbLinks << " links added... done" << endl;
 
 }
 
@@ -413,6 +413,23 @@ void FromRawTexturesToIndividualGraphsViaPrimalSketches ( string sujets,
 
     // Storing the graph on the hard disk
     cout << "Writing graph .. " << listGraphPaths[i] << endl;
+    FILE *f;
+    string suj;
+    suj = "/volatile/operto/temp/" + sujet + "_temp.txt";
+    f = fopen(suj.data(), "w");
+    fprintf(f, "node_index, sujet, scale, lat, lon\n");
+    set<int>::iterator it;
+    
+    for (uint j = 0 ; j < blobs.size() ; j++){
+      for (it = blobs[j]->nodes.begin() ; it != blobs[j]->nodes.end() ; it++){
+        fprintf(f, "%i, %s, %.3f, %.3f, %.3f\n",
+          *it, sujet.data(), blobs[j]->scale, data[sujet].lat[0].item(*it), data[sujet].lon[0].item(*it));
+        
+      }
+
+    }
+    fclose(f);
+
     Writer<Graph> wtrGraph(listGraphPaths[i]);
     wtrGraph.write(*tmpGraph);
     cout << "done" << endl << endl;
