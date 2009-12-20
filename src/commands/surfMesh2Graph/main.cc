@@ -34,6 +34,8 @@ class SubjectData{
     TimeTexture<float> tex;
     TimeTexture<float> lat;
     TimeTexture<float> lon;
+    TimeTexture<float> lat_constraints;
+    TimeTexture<float> lon_constraints;
 };
 
 //##############################################################################
@@ -163,12 +165,16 @@ void setupData( map<string, SubjectData> &data,
                 vector<string> &listMeshPaths,
                 vector<string> &listLatPaths,
                 vector<string> &listLonPaths,
+                vector<string> &listLatConPaths,
+                vector<string> &listLonConPaths,
                 vector<string> &listSujets){
 
   assert( listLatPaths.size() == listSujets.size() );
   assert( listLonPaths.size() == listSujets.size() );
   assert( listMeshPaths.size() == listSujets.size() );
   assert( listTexPaths.size() == listSujets.size() );
+  assert( listLatConPaths.size() == listSujets.size() );
+  assert( listLonConPaths.size() == listSujets.size() );
 
   for ( uint i = 0 ; i < listSujets.size() ; i++ ) {
 
@@ -190,12 +196,20 @@ void setupData( map<string, SubjectData> &data,
     Reader<TimeTexture<float> > lonRdr ( listLonPaths[i] );
     lonRdr.read(pSubjData.second.lon);
 
+    Reader<TimeTexture<float> > latConRdr ( listLatConPaths[i] );
+    latConRdr.read(pSubjData.second.lat_constraints);
+
+    Reader<TimeTexture<float> > lonConRdr ( listLonConPaths[i] );
+    lonConRdr.read(pSubjData.second.lon_constraints);
+
     // Checking the data
     cout << " subject : " << pSubjData.second.subject << endl;
     cout << "  texture : " << pSubjData.second.tex[0].nItem() << " values" << endl;
     cout << "  mesh : " << pSubjData.second.mesh[0].vertex().size() << " nodes" << endl;
     cout << "  lat : " << pSubjData.second.lat[0].nItem() << " values" << endl;
     cout << "  lon : " << pSubjData.second.lon[0].nItem() << " values" << endl;
+    cout << "  latCon : " << pSubjData.second.lat_constraints[0].nItem() << " values" << endl;
+    cout << "  lonCon : " << pSubjData.second.lon_constraints[0].nItem() << " values" << endl;
 
     data.insert(pSubjData);
 
@@ -356,6 +370,8 @@ void FromRawTexturesToIndividualGraphsViaPrimalSketches ( string sujets,
                                                           string texPaths,
                                                           string latPaths,
                                                           string lonPaths,
+                                                          string latConPaths,
+                                                          string lonConPaths,
                                                           string repMeshPaths){
 
   map<string, SubjectData> data;
@@ -365,12 +381,14 @@ void FromRawTexturesToIndividualGraphsViaPrimalSketches ( string sujets,
   vector<string> listTexPaths = splitGraphFile(texPaths);
   vector<string> listLatPaths = splitGraphFile(latPaths);
   vector<string> listLonPaths = splitGraphFile(lonPaths);
+  vector<string> listLatConPaths = splitGraphFile(latConPaths);
+  vector<string> listLonConPaths = splitGraphFile(lonConPaths);
   vector<string> listRepMeshPaths = splitGraphFile(repMeshPaths);
 
   cerr << "  split string sujets -> " << listSujets.size() << " sujets" << endl << endl;
 
   cout << "Reading the data..." << endl;
-  setupData(data, listTexPaths, listMeshPaths, listLatPaths, listLonPaths, listSujets);
+  setupData(data, listTexPaths, listMeshPaths, listLatPaths, listLonPaths, listLatConPaths, listLonConPaths, listSujets);
   cout << "done" << endl<< endl;
 
 
@@ -389,6 +407,8 @@ void FromRawTexturesToIndividualGraphsViaPrimalSketches ( string sujets,
     cout << "  mesh : " << data[sujet].mesh[0].vertex().size() << " nodes" << endl;
     cout << "  lat : " << data[sujet].lat[0].nItem() << " values" << endl;
     cout << "  lon : " << data[sujet].lon[0].nItem() << " values" << endl;
+    cout << "  latCon : " << data[sujet].lat_constraints[0].nItem() << " values" << endl;
+    cout << "  lonCon : " << data[sujet].lon_constraints[0].nItem() << " values" << endl;
 
     // Generating a scale-space
     ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss(
@@ -415,17 +435,26 @@ void FromRawTexturesToIndividualGraphsViaPrimalSketches ( string sujets,
     cout << "Writing graph .. " << listGraphPaths[i] << endl;
     FILE *f;
     string suj;
-    suj = "/volatile/operto/temp/" + sujet + "_temp.txt";
+    suj = "/home/grg/temp/" + sujet + "_temp.txt";
     f = fopen(suj.data(), "w");
-    fprintf(f, "node_index, sujet, scale, lat, lon\n");
+    fprintf(f, "node_index, sujet, hasConstrainedNode, scale, lat, lon\n");
     set<int>::iterator it;
-    
+
     for (uint j = 0 ; j < blobs.size() ; j++){
+      // Let's test if the blob has some common node with constraints
+      bool hasNodeinCommon = false;
       for (it = blobs[j]->nodes.begin() ; it != blobs[j]->nodes.end() ; it++){
-        fprintf(f, "%i, %s, %.3f, %.3f, %.3f\n",
-          *it, sujet.data(), blobs[j]->scale, data[sujet].lat[0].item(*it), data[sujet].lon[0].item(*it));
-        
+        if (data[sujet].lat_constraints[0].item(*it) != 0 or data[sujet].lon_constraints[0].item(*it) != 0)
+          hasNodeinCommon = true;
       }
+
+//       if (!hasNodeinCommon){
+        for (it = blobs[j]->nodes.begin() ; it != blobs[j]->nodes.end() ; it++){
+          fprintf(f, "%i, %s, %i, %.3f, %.3f, %.3f\n",
+            *it, sujet.data(), hasNodeinCommon, blobs[j]->scale, data[sujet].lat[0].item(*it), data[sujet].lon[0].item(*it));
+
+        }
+//       }
 
     }
     fclose(f);
@@ -459,6 +488,8 @@ int main( int argc, const char **argv ){
            texPaths = "",
            latPaths = "",
            lonPaths = "",
+           latConPaths = "",
+           lonConPaths = "",
            repMeshPaths = "",
            sujets = "";
 
@@ -470,12 +501,14 @@ int main( int argc, const char **argv ){
     app.addOption( sujets, "-s", "sujet");
     app.addOption( latPaths, "--lat", "latitude");
     app.addOption( lonPaths, "--lon", "longitude");
+    app.addOption( latConPaths, "--latCon", "latitude constraints");
+    app.addOption( lonConPaths, "--lonCon", "longitude constraints");
     app.addOption( repMeshPaths, "--repM", "repMesh",1);
     app.initialize();
 
 
     FromRawTexturesToIndividualGraphsViaPrimalSketches
-        ( sujets, indivGraphPaths, meshPaths, texPaths, latPaths, lonPaths, repMeshPaths);
+        ( sujets, indivGraphPaths, meshPaths, texPaths, latPaths, lonPaths, latConPaths, lonConPaths, repMeshPaths);
 
 
 
