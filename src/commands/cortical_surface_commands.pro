@@ -29,6 +29,4 @@ PSUBDIRS += \
   AimsPlotCoordinatesOnMesh \ 
   AimsTextureLabelIntersection \
   PlotFociForValidation \
-  AimsCoordinatesToIndex \
-  AimsTextureLabelIntersection
-  
+  AimsCoordinatesToIndex  
