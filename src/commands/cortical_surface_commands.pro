@@ -19,8 +19,6 @@ PSUBDIRS += \
   AimsTextureToAtlas \
   surfTexActivationSimulation \
   surfStructuralAnalysis \
-  surfLabelsTex2Graph \
-  surfResultsSignificance \
   AimsCheck2DCoordinate \
   AimsMeshToAtlas \
   AimsSulcusNormalizeDepthProfile \
@@ -29,9 +27,8 @@ PSUBDIRS += \
   AimsExtractGyrus \
   AimsMeshToMeshPoint \
   AimsPlotCoordinatesOnMesh \ 
+  AimsTextureLabelIntersection \
   PlotFociForValidation \
   AimsCoordinatesToIndex \
-  surfMesh2Graph \
-  surfSubjectGraph2Group \
-  surfAnalyzeGroupGraph
+  AimsTextureLabelIntersection
   

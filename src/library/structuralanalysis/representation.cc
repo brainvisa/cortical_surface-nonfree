@@ -273,7 +273,7 @@ AimsSurfaceTriangle getLabelObjectsOnASphere( TimeTexture<short> &tex,
     set<uint>::iterator it;
     set<uint> tri,comp;
     uint p1,p2,p3;  int L1,L2,L3;
-
+    cout << "TEST" << endl;
     for (uint i=0;i<mesh.polygon().size();i++){
       p1=mesh.polygon()[i][0];
       p2=mesh.polygon()[i][1];
@@ -308,6 +308,73 @@ AimsSurfaceTriangle getLabelObjectsOnASphere( TimeTexture<short> &tex,
         (objects)[i].vertex().push_back(Point3df ( 1.0 * cos((lat.item(*it)-90.)/180.0*3.1415957) * cos(lon.item(*it)/180.0*3.1415957),
                     1.0 * cos((lat.item(*it)-90.)/180.0*3.1415957) * sin(lon.item(*it)/180.0*3.1415957),
                     1.0 * sin((lat.item(*it)-90.)/180.0*3.1415957) ));
+        corres[*it]=(objects)[i].vertex().size()-1;
+        nodes_lists[i].insert(*it);
+
+      }
+      cout << (objects)[i].vertex().size() << endl;
+      for (it=tri.begin();it!=tri.end();it++){
+        p1=mesh.polygon()[*it][0];
+        p2=mesh.polygon()[*it][1];
+        p3=mesh.polygon()[*it][2];
+        (objects)[i].polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
+      }
+    }
+    return objects;
+}
+
+//##############################################################################
+
+
+AimsSurfaceTriangle getLabelObjectsOnAMesh( TimeTexture<short> &tex,
+                                AimsSurface<3,Void> &mesh,
+                                vector<set<int> > &nodes_lists){
+
+    int labelmax=0;
+    for (uint i=0;i<tex[0].nItem();i++){
+      if (tex[0].item(i)>labelmax)
+        labelmax=tex[0].item(i);
+    }
+    AimsSurfaceTriangle objects;
+    nodes_lists=vector<set<int> >(labelmax+1);
+    vector<set<uint> > triangles(labelmax+1);
+
+    set<uint>::iterator it;
+    set<uint> tri,comp;
+    uint p1,p2,p3;  int L1,L2,L3;
+
+    for (uint i=0;i<mesh.polygon().size();i++){
+      p1=mesh.polygon()[i][0];
+      p2=mesh.polygon()[i][1];
+      p3=mesh.polygon()[i][2];
+
+      L1=tex[0].item(p1); L2=tex[0].item(p2); L3=tex[0].item(p3);
+
+      if (L1==L2 || L1==L3)
+        triangles[L1].insert(i);
+      else if (L2==L3)
+        triangles[L2].insert(i);
+    }
+    vector<uint> corres;
+
+    cout << "TRI:" << triangles.size() << endl;
+
+    for (uint i=0;i<triangles.size();i++){
+      tri = triangles[i];
+
+      comp.clear();
+      for (it=tri.begin();it!=tri.end();it++){
+        p1=mesh.polygon()[*it][0];
+        p2=mesh.polygon()[*it][1];
+        p3=mesh.polygon()[*it][2];
+        comp.insert(p1); comp.insert(p2); comp.insert(p3);
+      }
+      corres=vector<uint>(mesh.vertex().size());
+      for (it=comp.begin();it!=comp.end();it++){
+        assert(*it<corres.size());
+        assert(*it<mesh.vertex().size());
+        assert(i<nodes_lists.size());
+        (objects)[i].vertex().push_back(mesh.vertex()[*it]);
         corres[*it]=(objects)[i].vertex().size()-1;
         nodes_lists[i].insert(*it);
 

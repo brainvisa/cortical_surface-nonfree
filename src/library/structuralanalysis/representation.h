@@ -47,5 +47,9 @@ AimsSurfaceTriangle getLabelObjectsOnASphere( TimeTexture<short> &tex,
                                 Texture<float> &lon,
                                 vector<set<int> > &nodes_lists);
 
+AimsSurfaceTriangle getLabelObjectsOnAMesh( TimeTexture<short> &tex,
+                                AimsSurface<3,Void> &mesh,
+                                vector<set<int> > &nodes_lists);                                
+
 #endif
 
