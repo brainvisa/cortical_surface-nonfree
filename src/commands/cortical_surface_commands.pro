@@ -27,6 +27,5 @@ PSUBDIRS += \
   AimsExtractGyrus \
   AimsMeshToMeshPoint \
   AimsPlotCoordinatesOnMesh \ 
-  AimsTextureLabelIntersection \
   PlotFociForValidation \
   AimsCoordinatesToIndex  
