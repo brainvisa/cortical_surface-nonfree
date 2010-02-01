@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 
-PSUBDIRS += \
-  AimsConstraintCleaner \
+PSUBDIRS = AimsConstraintCleaner \
   AimsGyriStuff \
   AimsCorticalReferential \
   AimsMeshIsoLine \
@@ -28,4 +27,4 @@ PSUBDIRS += \
   AimsMeshToMeshPoint \
   AimsPlotCoordinatesOnMesh \ 
   PlotFociForValidation \
-  AimsCoordinatesToIndex  
+  AimsCoordinatesToIndex
