@@ -38,7 +38,7 @@ namespace surf{
   class GreyLevelBlob: public Blob{
     public :
   //     uint group_index;
-      uint parent;
+//       uint parent;
   //     string subject;
       float t;
       float scale;
