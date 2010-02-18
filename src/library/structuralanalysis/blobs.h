@@ -11,25 +11,25 @@ using namespace std;
 
 namespace surf{
 
-  // Of course, there is no info about the corresponding mesh but let's say the user is supposed to know that...
+    // Of course, there is no info about the corresponding mesh but let's say the user is supposed to know that...
 
-  class Blob{
-    public:
-      int index;
-      int label;
-      set<int> nodes;
+    class Blob{
+        public:
+            int index;
+            int label;
+            set<int> nodes;
 
-      AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
-      AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
-          Texture<float> &lat,
-          Texture<float> &lon,
-          float radius,
-          set<int> &nodes_list );
-      AimsSurface<3, Void> getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
-          Texture<float> &lat,
-          Texture<float> &lon,
-          float height,
-          set<int> &nodes_list );
+            AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
+            AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
+                Texture<float> &lat,
+                Texture<float> &lon,
+                float radius,
+                set<int> &nodes_list );
+            AimsSurface<3, Void> getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
+                Texture<float> &lat,
+                Texture<float> &lon,
+                float height,
+                set<int> &nodes_list );
 
   };
 
