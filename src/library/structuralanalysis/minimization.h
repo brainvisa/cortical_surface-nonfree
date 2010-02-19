@@ -32,7 +32,8 @@ class SurfaceBased_StructuralAnalysis{
 
     string energypath, recuitpath;
     uint run,save;
-    void prepareLabelsZones(); //vector<pair<Point2df,Point2df> > &labelsZones, vector<set<uint> > &zonesListesBlobs, vector<set<uint> > &listeZones );
+    void noLabelsZones();
+    void regionLabelsZones(); //vector<pair<Point2df,Point2df> > &labelsZones, vector<set<uint> > &zonesListesBlobs, vector<set<uint> > &listeZones );
     void MinimizationSetup(Graph &primal);
     
 

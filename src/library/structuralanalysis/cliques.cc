@@ -684,40 +684,53 @@ else if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2
   return rec;
 }
 
-void ConstruireCliquesIntraPS(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<Clique> &cliques){
-  
-  vector<Clique> intraps;
-  vector<string> subjects;
 
-  for (uint i=0;i<sites.size(); i++){
-    uint j=0;
-    for (;j<subjects.size() && subjects[j] != sites[i]->subject;j++){}
-    if (j==subjects.size()){
-      subjects.push_back(sites[i]->subject);
-      intraps.push_back(Clique());
-      intraps[j].type = INTRAPRIMALSKETCH;
-    }
-    intraps[j].blobs.push_back(sites[i]);
-    
-  }
+void ConstruireCliquesIntraPS( vector<Site *> &sites,
+                               vector<vector<int> > &cliquesDuSite,
+                               vector<Clique> &cliques ) {
   
-  for (uint i=0;i<intraps.size();i++){    
-    cliques.push_back(intraps[i]);
-    cliquesDuSite[sites[i]->index].push_back(cliques.size()-1);
-  }
+    vector< Clique > intraps;
+    vector< string > subjects;
+
+    for ( uint i = 0 ; i < sites.size() ; i++ ) {
+        uint j = 0;
+        
+        for ( ; j < subjects.size() && subjects[j] != sites[i]->subject ; j++ ) { }
+        
+        if ( j == subjects.size() ) {
+            subjects.push_back( sites[i]->subject );
+            intraps.push_back( Clique() );
+            intraps[j].type = INTRAPRIMALSKETCH;
+
+        }
+        
+        intraps[j].blobs.push_back( sites[i] );
+        
+    }
+    
+    for ( uint i = 0 ; i < intraps.size() ; i++ ) {
+        cliques.push_back( intraps[i] );
+        for ( uint j = 0 ; j < intraps[i].blobs.size() ; j++ ) {
+            cliquesDuSite[ intraps[i].blobs[j]->index ].push_back( cliques.size() - 1 );
+        }
+    }
   
 }
 
-void ConstruireCliquesDataDriven(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<Clique> &cliques){
-  for (uint i=0;i<sites.size(); i++){
+
+void ConstruireCliquesDataDriven( vector<Site *> &sites,
+                                  vector<vector<int> > &cliquesDuSite,
+                                  vector<Clique> &cliques ) {
+                                      
+  for ( uint i = 0 ; i < sites.size() ; i++ ){
       Clique c;
       c.type = DATADRIVEN; /*ls.type = BESTLOWERSCALE;*/
-      cliquesDuSite[sites[i]->index].push_back(cliques.size());
-      c.blobs.push_back(sites[i]);
-      cliques.push_back(c);
-  //     cliquesDuSite[sites[i]->index].push_back(cliques.size());
-  //     ls.blobs.push_back(sites[i]);
-  //     cliques.push_back(ls);
+      cliquesDuSite[ sites[i]->index ].push_back( cliques.size() );
+      c.blobs.push_back( sites[i] );
+      cliques.push_back( c );
+        // cliquesDuSite[sites[i]->index].push_back(cliques.size());
+        // ls.blobs.push_back(sites[i]);
+        // cliques.push_back(ls);
   }
 }
 

@@ -29,60 +29,99 @@ struct ltstr_vec
   }
 };
 
+
+
 //###############################################################################################
 
 
-void SurfaceBased_StructuralAnalysis::prepareLabelsZones () {/* vector<pair<Point2df,Point2df> > &labelsZones, 
+void SurfaceBased_StructuralAnalysis::noLabelsZones () {/* vector<pair<Point2df,Point2df> > &labelsZones,
                                                            vector<set<uint> > &zonesListesBlobs,
                                                            vector<set<uint> > &listeZones ){*/
-  uint i=0;
- 
-  for (uint it=0;it<3;it++)
-    for (float zonelat = -20;zonelat<180.0;zonelat += 36.0)
-      for ( float zonelon = -20;zonelon<360.0;zonelon += 72.0){
-  
-        pair<Point2df, Point2df> zone;
-        zone.first = Point2df(max(zonelat,0.0), max(zonelon, 0.0));
-        zone.second = Point2df(min(zonelat + 76.0, 180.0), min(zonelon + 112.0,360.0));
-//         cout << i << " " << zone.first[0] << ";" << zone.first[1] << " " << zone.second[0] << ";" << zone.second[1] << endl;
-        labelsZones.push_back(zone);
-        i++;
-      }
-  cout << labelsZones.size() << " zones" << endl;
-  for (i=0;i<labelsZones.size()+1;i++)
-    labels.push_back(i);
-  vector<int> zonescount, labelscount;
-  for (i=0;i<labelsZones.size()+1;i++){
-    zonescount.push_back(0);
-    labelscount.push_back(0);
-  }
-  zonesListesBlobs = vector<set<uint> >(labelsZones.size()+1);
-  listeZones = vector<set<uint> > (sites.size());
-  for (uint j=0;j<sites.size();j++){
-    uint count=0;
-    listeZones[j].insert(0);
-    zonesListesBlobs[0].insert(j);
-    for (uint k=0;k<labelsZones.size();k++){
-      Point3df bbmin1 = sites[j]->boundingbox_min, bbmax1 = sites[j]->boundingbox_max;
-      uint no_overlap=0;
-      getOverlap(bbmin1, bbmax1, Point3df(labelsZones[k].first[0],labelsZones[k].first[1],0.0), Point3df(labelsZones[k].second[0],labelsZones[k].second[1] ,0.0), &no_overlap);
-      if (no_overlap == 0){
-        zonescount[k+1]++;
-        zonesListesBlobs[k+1].insert(j);
-        listeZones[j].insert(k+1);
-        count++;
-      }
+    listeZones = vector<set<uint> > (sites.size());
+//     zonesListesBlobs = vector<set<uint> >(labelsZones.size()+1);
+//     labelsZones = vector<pair<Point2df,Point2df> > ();
+//     for (uint it=0;it<20;it++){
+//         pair<Point2df, Point2df> zone;
+//                 zone.first = Point2df(0.0, 0.0);
+//                 zone.second = Point2df(180.0,360.0);
+//         labelsZones.push_back(zone);
+//     }
+
+    for (uint i=0;i<21;i++)
+        labels.push_back(i);
+    
+    for (uint j=0;j<sites.size();j++){
+//         listeZones[j].insert(0);
+//         zonesListesBlobs[0].insert(j);
+        for (uint k=0;k<21;k++){
+            listeZones[j].insert(k);
+//             zonesListesBlobs[k+1].insert(j);
+
+
+        }
     }
-    labelscount[count]++;
-    assert(listeZones[j].size()!=0);
-  } 
   
-  for (i=0;i<labelsZones.size()+1;i++)
-    cout << zonescount[i] << " ";
-  cout << endl;
-  for (i=0;i<labelsZones.size()+1;i++)
-    cout << labelscount[i] << " ";
-  cout << endl;
+}
+
+//###############################################################################################
+
+
+void SurfaceBased_StructuralAnalysis::regionLabelsZones () {/* vector<pair<Point2df,Point2df> > &labelsZones,
+                                                           vector<set<uint> > &zonesListesBlobs,
+                                                           vector<set<uint> > &listeZones ){*/
+    uint i=0;
+    labelsZones = vector<pair<Point2df,Point2df> > ();
+
+    for (uint it=0;it<3;it++)
+        for (float zonelat = -20;zonelat<180.0;zonelat += 36.0)
+            for ( float zonelon = -20;zonelon<360.0;zonelon += 72.0){
+
+                pair<Point2df, Point2df> zone;
+                zone.first = Point2df(max(zonelat,0.0), max(zonelon, 0.0));
+                zone.second = Point2df(min(zonelat + 76.0, 180.0), min(zonelon + 112.0,360.0));
+        //         cout << i << " " << zone.first[0] << ";" << zone.first[1] << " " << zone.second[0] << ";" << zone.second[1] << endl;
+                labelsZones.push_back(zone);
+                i++;
+            }
+
+    cout << labelsZones.size() << " zones" << endl;
+    for (i=0;i<labelsZones.size()+1;i++)
+        labels.push_back(i);
+    vector<int> zonescount, labelscount;
+    
+    for (i=0;i<labelsZones.size()+1;i++){
+        zonescount.push_back(0);
+        labelscount.push_back(0);
+    }
+    
+    zonesListesBlobs = vector<set<uint> >(labelsZones.size()+1);
+    listeZones = vector<set<uint> > (sites.size());
+    
+    for (uint j=0;j<sites.size();j++){
+        uint count=0;
+        listeZones[j].insert(0);
+        zonesListesBlobs[0].insert(j);
+        for (uint k=0;k<labelsZones.size();k++){
+            Point3df bbmin1 = sites[j]->boundingbox_min, bbmax1 = sites[j]->boundingbox_max;
+            uint no_overlap=0;
+            getOverlap(bbmin1, bbmax1, Point3df(labelsZones[k].first[0],labelsZones[k].first[1],0.0), Point3df(labelsZones[k].second[0],labelsZones[k].second[1] ,0.0), &no_overlap);
+            if (no_overlap == 0){
+                zonescount[k+1]++;
+                zonesListesBlobs[k+1].insert(j);
+                listeZones[j].insert(k+1);
+                count++;
+            }
+        }
+        labelscount[count]++;
+        assert(listeZones[j].size()!=0);
+    } 
+    
+    for (i=0;i<labelsZones.size()+1;i++)
+        cout << zonescount[i] << " ";
+    cout << endl;
+    for (i=0;i<labelsZones.size()+1;i++)
+        cout << labelscount[i] << " ";
+    cout << endl;
   
 }
 
@@ -115,7 +154,7 @@ void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal){
   }
   cout << " done (" << nb_cl_sim << " cliques de similarité ; " << nb_cl_dd << " cliques datadriven ; " << nb_cl_lower << " cliques lower ; " << nb_cl_intraps << " cliques intraps ; " << cliques.size() << " cliques en tout)" << endl;
  
-  prepareLabelsZones();
+  regionLabelsZones();
     
 }
 
@@ -138,16 +177,19 @@ SurfaceBased_StructuralAnalysis::SurfaceBased_StructuralAnalysis(Graph &primal){
 
 void SurfaceBased_StructuralAnalysis::Initialization(){
   energy=0.0;
-  cout << "Initialisation :" << endl;
-//   for (uint i=0;i<sites.size();i++)
-//     sites[i]->label = labels[0];
-  for (uint k=0;k<cliques.size();k++){
+
+  // Initialization
+  cout << "Initialization..." << endl;
+  for ( uint i = 0 ; i < sites.size() ; i++ )
+    sites[i]->label = labels[0];
+  
+  for ( uint k = 0 ; k < cliques.size() ; k++ ){
     cliques[k].updateLabelsCount();
-    cliques[k].computeEnergy(true,nbsujets);
+    cliques[k].computeEnergy( true, nbsujets );
   }
 
-  for (uint i=0;i<cliques.size();i++)
-    if (cliques[i].type == INTRAPRIMALSKETCH)
+  for ( uint i = 0 ; i < cliques.size() ; i++ )
+    if ( cliques[i].type == INTRAPRIMALSKETCH )
       ipscliques.push_back(i);
 
   cout << ipscliques.size() << " cliques intraps" << endl;
