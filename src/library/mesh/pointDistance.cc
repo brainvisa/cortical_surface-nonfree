@@ -86,3 +86,42 @@ float MeshPointDistance::compute(uint p1, uint p2)
      exit(EXIT_FAILURE);
 }
 
+std::set<uint> MeshPointNeighborhoodFromDistance::compute(uint node, float distance)
+{
+	_liste=std::set<uint>();
+	_distance=distance;
+	_start=node;
+	_liste.insert(_start);
+
+	std::set<uint> vois=_neigh[node];
+	std::set<uint>::iterator voisIt=vois.begin();
+
+	for ( ; voisIt!=vois.end(); voisIt++)
+	{
+		includeNeighbors(*voisIt);
+	}
+
+	return(_liste);
+}
+
+void MeshPointNeighborhoodFromDistance::includeNeighbors(uint ind)
+{
+	if (_liste.find(ind)==_liste.end())
+	{
+		MeshPointDistance pointDist(_mesh);
+		float dist=pointDist.compute(_start, ind);
+		if (dist<=_distance)
+		{
+			_liste.insert(ind);
+			std::set<uint> vois=_neigh[ind];
+			std::set<uint>::iterator voisIt=vois.begin();
+
+			for ( ; voisIt!=vois.end(); voisIt++)
+			{
+				includeNeighbors(*voisIt);
+			}
+		}
+	}
+	return;
+}
+

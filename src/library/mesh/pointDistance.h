@@ -22,8 +22,28 @@ public:
 private:
      AimsSurfaceTriangle _mesh;
      std::vector<std::set<uint> >  _neigh; 
+};
 
-};  //fin du namespace
+class MeshPointNeighborhoodFromDistance
+{
+public:
+
+	 MeshPointNeighborhoodFromDistance(AimsSurfaceTriangle mesh) :
+     _mesh(mesh) {computeNeighbours();}
+     inline void computeNeighbours() {_neigh= SurfaceManip::surfaceNeighbours(_mesh);}
+     std::set<uint> compute(uint node, float distance);
+
+     void includeNeighbors(uint ind);
+
+private:
+     AimsSurfaceTriangle _mesh;
+     std::vector<std::set<uint> >  _neigh;
+     std::set<uint> _liste;
+     uint _start;
+     float _distance;
+};
+
+//fin du namespace
 
 }
 
