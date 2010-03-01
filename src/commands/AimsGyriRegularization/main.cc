@@ -35,6 +35,7 @@ using namespace std;
 int main( int argc, const char** argv )
 {
   string fileOut, fileMesh, fileLat, fileLon, adr_corl;
+  float bande;
 
   AimsApplication    app( argc, argv, "Build a regularized version of gyri from the 2D coordinate system" );
   try
@@ -47,6 +48,8 @@ int main( int argc, const char** argv )
      app.alias( "--ycoord", "-y" );
   	 app.addOption( adr_corl, "-a", "input Correspondance File");
 	 app.alias( "--inCor", "-a" );
+	 app.addOption( bande, "-b", "bandwidth");
+	 app.alias( "--band", "-b"),
      app.addOption( fileOut, "-o", "output gyri texture" );
      app.alias( "--out", "-o" );
      
@@ -65,7 +68,9 @@ int main( int argc, const char** argv )
      Reader<TimeTexture<float> > texLatR( fileLat );
      TimeTexture<float> texLat;
      texLatR >> texLat ;
-     cout << "done " << endl;   
+     cout << "done " << endl;
+
+     cout << "Bandwith: " << bande << endl;
      
      cout << "computing neighbours  " << endl;
      vector<set<uint> >  neigh = SurfaceManip::surfaceNeighbours(surface);
@@ -76,7 +81,7 @@ int main( int argc, const char** argv )
      for (uint i=0; i<size; i++)
     	 texOut[0].item(i)=0;
 
-     MeshPointNeighborhoodFromDistance testVoisinage(surface);
+    /* MeshPointNeighborhoodFromDistance testVoisinage(surface);
 
      cout << "doing node 5000  " << endl;
 
@@ -106,7 +111,7 @@ int main( int argc, const char** argv )
 	 cout << "OK. Writing texture test " << endl;
 	 Writer<TimeTexture<short> > texTestW( "testOlive.3.0" );
 	 texTestW << texOut ;
-	 return EXIT_SUCCESS;
+	 return EXIT_SUCCESS;    */
 
 
 //-------------------------------------------------------
@@ -209,10 +214,10 @@ int main( int argc, const char** argv )
 							it_lon2++;
 							if( it_lon2!=map_global["lon"].end() )
 							{
-								if ( ( (u>(*it_lat)-5.0) && (u<=(*it_lat)) && v>(*it_lon) && v<=(*it_lon2) )
-								||   ((u>(*it_lat2)) && (u<=(*it_lat2)+5.0) && v>(*it_lon) && v<=(*it_lon2))
-								||   ((u>(*it_lat)) && (u<=(*it_lat2)) && (v>(*it_lon)-5.0) && v<=(*it_lon))
-								||   ((u>(*it_lat)) && (u<=(*it_lat2)) && (v>(*it_lon2)) && (v<=(*it_lon)+5.0)) )
+								if ( ( (u>((*it_lat)-bande)) && (u<=(*it_lat)) && v>((*it_lon)-bande) && v<=((*it_lon2)+bande) )
+								||   ((u>(*it_lat2)) && (u<=((*it_lat2)+bande)) && v>((*it_lon)-bande) && v<=((*it_lon2)+bande))
+								||   ((u>((*it_lat)-bande)) && (u<=((*it_lat2)+bande)) && (v>((*it_lon)-bande)) && v<=(*it_lon))
+								||   ((u>((*it_lat)-bande)) && (u<=((*it_lat2)+bande)) && (v>(*it_lon2)) && (v<=((*it_lon2)+bande))) )
 								{
 									labelMap[i].insert(cpt);
 								}
