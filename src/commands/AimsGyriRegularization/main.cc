@@ -19,12 +19,14 @@
 #include <aims/io/io_g.h>
 #include <aims/mesh/surfaceOperation.h>
 #include <aims/mesh/surfacegen.h>
+#include <aims/mesh/geometric.h>
 #include <aims/distancemap/meshdistance.h>
 #include <aims/distancemap/meshmorphomat.h>
 #include <aims/distancemap/meshmorphomat_d.h>
 #include <aims/connectivity/meshcc.h>
 #include <aims/connectivity/meshcc_d.h>
 #include "mesh_operations.h"
+#include "gyriModel.h"
 
 using namespace aims;
 using namespace carto;
@@ -75,48 +77,66 @@ int main( int argc, const char** argv )
      cout << "computing neighbours  " << endl;
      vector<set<uint> >  neigh = SurfaceManip::surfaceNeighbours(surface);
      
-     uint i, size=surface.vertex().size();
+     uint size=surface.vertex().size();
      TimeTexture<short> texOut(1, size);
+
+
+     TimeTexture<float>	curvM, curvG, curvB, k1(1, size);
+
+     CurvatureFactory CF;
+     Curvature *cM = CF.createCurvature(surface,"boix");
+     Curvature *cG = CF.createCurvature(surface,"boixgaussian");
+     Curvature *cB = CF.createCurvature(surface,"barycenter");
+
+     float sig=0.2;
+
+     curvB[0] = cB->doIt();
+     cB->regularize(curvB[0], 0.98);
+     for (uint i=0; i<size; i++)
+     {
+    	 if (curvB[0].item(i) >=0)
+    		 k1[0].item(i)=1/sqrt(2*M_PI*sig*sig);
+    	 else
+    		 k1[0].item(i)=(1.0/sqrt(2*M_PI*sig*sig))*exp(-(curvB[0].item(i)*curvB[0].item(i))/(2*sig*sig));
+     }
+/*     cout << "processing curvatures" << flush;
+     curvM[0] = cM->doIt();
+     curvG[0] = cG->doIt();
+     cM->regularize(curvM[0], 0.95);
+     cG->regularize(curvG[0], 0.95);
+     std::cout << "Computing max curvature" << std::endl;
+     for (uint i=0; i<size; i++)
+     {
+    	 float H=curvM[0].item(i);
+    	 float G=curvG[0].item(i);
+    	 float det=(H*H)-G;
+    	 if (det>=0)
+    	 {
+    		 float kmax=H+sqrt(det);
+    		 float kmin=H-sqrt(det);
+    		 float keff;
+    		 if (fabs(kmax)>=fabs(kmin)) keff=kmax;
+    		 else keff=kmin;
+    		 k1[0].item(i)=keff;
+    //		 if (keff>=0)
+   // 			 k1[0].item(i)=0;
+    //		 else k1[0].item(i)=fabs(keff);
+    	 }
+    	 else
+    		 k1[0].item(i)=0.0;
+     } */
+
+
+     cout << "OK. Writing textures curvatureMap and curvatureValue " << endl;
+     Writer<TimeTexture<float> > texCurvW( "curvatureMap" );
+     texCurvW << k1 ;
+     Writer<TimeTexture<float> > texCurvBW( "curvatureValue" );
+	 texCurvBW << curvB ;
 
      for (uint i=0; i<size; i++)
     	 texOut[0].item(i)=0;
 
-    /* MeshPointNeighborhoodFromDistance testVoisinage(surface);
-
-     cout << "doing node 5000  " << endl;
-
-     set<uint> listeNoeuds=testVoisinage.compute( 5000, 3.0);
-     set<uint>::iterator listIt=listeNoeuds.begin();
-     for ( ; listIt!=listeNoeuds.end(); listIt++)
-     {
-    	 texOut[0].item(*listIt)=100;
-     }
-
-     cout << "doing node 10000  " << endl;
-
-     listeNoeuds=testVoisinage.compute( 10000, 3.0);
-	 listIt=listeNoeuds.begin();
-	 for ( ; listIt!=listeNoeuds.end(); listIt++)
-	 {
-		 texOut[0].item(*listIt)=200;
-	 }
-     cout << "doing node 15000  " << endl;
-
-	 listeNoeuds=testVoisinage.compute( 15000, 3.0);
-	 listIt=listeNoeuds.begin();
-	 for ( ; listIt!=listeNoeuds.end(); listIt++)
-	 {
-		 texOut[0].item(*listIt)=300;
-	 }
-	 cout << "OK. Writing texture test " << endl;
-	 Writer<TimeTexture<short> > texTestW( "testOlive.3.0" );
-	 texTestW << texOut ;
-	 return EXIT_SUCCESS;    */
-
-
-//-------------------------------------------------------
-
-			TimeTexture<int> gyri(1,size);
+			TimeTexture<int> gyri(1,size), bandeCh(1, size);
 			std::map<uint, std::set<int> > labelMap;
 
 			std::map< std::string, std::set<float> > map_global;
@@ -226,18 +246,26 @@ int main( int argc, const char** argv )
 						}
 					}
 				}
+				if(u<=30)
+				{
+					labelMap[i]=std::set<int>();
+					labelMap[i].insert(1);
+				}
 			}
 			
 
 //--------------------------------------------------------
 
+	GyriRegularization regul(surface, labelMap, gyri, k1);
+	regul.runICM();
+
 	for (uint i=0; i<size; i++)
-		gyri[0].item(i)=labelMap[i].size();	
+		bandeCh[0].item(i)=labelMap[i].size();
+
 		
-		
-     cout << "OK. Writing texture " << fileOut << endl;
-     Writer<TimeTexture<int> > texResultW( fileOut );
-     texResultW << gyri ;
+     cout << "OK. Writing texture bandeChanges" << endl;
+     Writer<TimeTexture<int> > texResultW( "bandeChanges" );
+     texResultW << bandeCh ;
      return EXIT_SUCCESS;
   }
   catch( user_interruption & )

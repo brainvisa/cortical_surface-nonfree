@@ -4,4 +4,9 @@ TARGET = AimsGyriRegularization
 #!include ../../../config-cpp-command
 
 SOURCES = \
-          main.cc
+          main.cc \
+          gyriModel.cc
+          
+HEADERS = \
+		  gyriModel.h
+		  
