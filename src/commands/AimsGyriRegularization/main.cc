@@ -25,7 +25,6 @@
 #include <aims/distancemap/meshmorphomat_d.h>
 #include <aims/connectivity/meshcc.h>
 #include <aims/connectivity/meshcc_d.h>
-#include "mesh_operations.h"
 #include "gyriModel.h"
 
 using namespace aims;
