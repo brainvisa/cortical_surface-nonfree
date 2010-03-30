@@ -57,7 +57,7 @@ int main( int argc, const char** argv )
      app.initialize();
      
 
-     std:cout << "Testing the uniform random draw" << std::endl;
+     std::cout << "Testing the uniform random draw" << std::endl;
 
      std::cout << UniformRandom() << std::endl;
      std::cout << UniformRandom() << std::endl;

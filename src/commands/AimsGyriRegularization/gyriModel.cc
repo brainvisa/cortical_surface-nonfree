@@ -2,6 +2,7 @@
 #include <aims/mesh/surface.h>
 #include <aims/math/random.h>
 #include <aims/primalsketch/finiteElementSmoother_d.h>
+#include <algorithm>
 #include "gyriModel.h"
 
 using namespace std;
