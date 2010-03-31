@@ -7,7 +7,7 @@
  *   91401 Orsay cedex
  *   France
  *
- *  Just my own little binary for various purposes
+ *
  */
 
 #include <cstdlib>
@@ -43,7 +43,8 @@ int main( int argc, const char** argv )
     app.alias( "--coord", "-c" );
     app.addOption( fileOut, "-o", "output mesh" );
     app.alias( "--out", "-o" );
-
+    app.addOption( diam, "-d", "tubes diameter (default=0.25)", 0.25);
+    app.alias( "-diameter", "-d");
     app.initialize();
 
     cout << "reading triangulation   : " << flush;
@@ -60,6 +61,8 @@ int main( int argc, const char** argv )
     TimeTexture<float> texLat;
     texLatR >> texLat ;
     cout << "done " << endl;
+
+    std::cout << "Tubes diameter : " << diam << std::endl;
 
 //   cout << "Parsing coordinate list from " << fileCoord << endl;
 //   std::list<int> latitude;
