@@ -33,13 +33,8 @@ namespace surf{
 
   };
 
-  class ScaleSpaceBlob;
-
   class GreyLevelBlob: public Blob{
     public :
-  //     uint group_index;
-//       uint parent;
-  //     string subject;
       float t;
       float scale;
       Point3df boundingbox_max;
@@ -59,7 +54,7 @@ namespace surf{
 
   class ScaleSpaceBlob: public Blob{
     public :
-      uint graph_index;
+//       uint graph_index;
       float t;
       int label;
       string subject;
