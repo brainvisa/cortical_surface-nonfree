@@ -33,6 +33,10 @@ namespace surf{
 
   };
 
+
+  class ScaleSpaceBlob;
+
+
   class GreyLevelBlob: public Blob{
     public :
       float t;
