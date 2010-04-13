@@ -63,7 +63,6 @@ namespace surf{
       float tmin;
       float tmax;
       set<GreyLevelBlob *> blobs;
-      set<ScaleSpaceBlob *>
 
       AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
       AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
@@ -91,7 +90,7 @@ namespace surf{
           set<ScaleSpaceBlob *> blobs_up;
           set<ScaleSpaceBlob *> blobs_down;
           string type;
-          SSBBifurcation ( set<ScaleSpaceBlob *> &s1, set< ScaleSpaceBlob *> &s2, string _type){ssb1 = set<ScaleSpaceBlob *>(s1); ssb2 = set<ScaleSpaceBlob *>(s2); type = _type;}
+          SSBBifurcation ( set<ScaleSpaceBlob *> &s1, set< ScaleSpaceBlob *> &s2, string _type){blobs_up = set<ScaleSpaceBlob *>(s1); blobs_down = set<ScaleSpaceBlob *>(s2); type = _type;}
           
   };
 }
