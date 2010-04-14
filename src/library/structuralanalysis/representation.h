@@ -37,8 +37,6 @@ AimsSurfaceTriangle getBlobsMeshes( vector<surf::ScaleSpaceBlob *> &blobs,
                                     AimsSurface<3, Void> &mesh,
                                     vector<set<int> > &nodes_lists);
 
-pair<Point2df, Point2df> getBoundingBox(set<int> &nodes_list, TimeTexture<float> &lat, TimeTexture<float> &lon);
-
 AimsSurfaceTriangle getFlatMap(vector<vector<int> > &nodes_lists, TimeTexture<float> &lat, TimeTexture<float> &lon, TimeTexture<float> &tex);
 
 AimsSurfaceTriangle getLabelObjectsOnASphere( TimeTexture<short> &tex,

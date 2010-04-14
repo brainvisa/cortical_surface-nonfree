@@ -18,6 +18,7 @@ namespace surf{
             int index;
             int label;
             set<int> nodes;
+            map<int, vector<float> > coordinates;
 
             AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
             AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
@@ -56,14 +57,13 @@ namespace surf{
 
   class ScaleSpaceBlob: public Blob{
     public :
-//       uint graph_index;
       float t;
       int label;
       string subject;
       float tmin;
       float tmax;
       set<GreyLevelBlob *> blobs;
-
+      set<ScaleSpaceBlob *> topBlobs, bottomBlobs;
       AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
       AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
           Texture<float> &lat,
@@ -87,13 +87,32 @@ namespace surf{
 
   class SSBBifurcation{
       public :
-          set<ScaleSpaceBlob *> blobs_up;
-          set<ScaleSpaceBlob *> blobs_down;
+          set<ScaleSpaceBlob *> topBlobs;
+          set<ScaleSpaceBlob *> bottomBlobs;
           string type;
-          SSBBifurcation ( set<ScaleSpaceBlob *> &s1, set< ScaleSpaceBlob *> &s2, string _type){blobs_up = set<ScaleSpaceBlob *>(s1); blobs_down = set<ScaleSpaceBlob *>(s2); type = _type;}
+          SSBBifurcation ( set<ScaleSpaceBlob *> &s1, set< ScaleSpaceBlob *> &s2, string _type){topBlobs = set<ScaleSpaceBlob *>(s1); bottomBlobs = set<ScaleSpaceBlob *>(s2); type = _type;}
           
   };
 }
+
+//##############################################################################
+
+double getOverlapMeasure( Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bbmax2, uint *no_overlap );
+
+void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
+                       vector<surf::GreyLevelBlob *> &filteredBlobs,
+                       vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
+                       Point3df bbmin2,
+                       Point3df bbmax2 );
+
+//##############################################################################
+
+pair<Point2df, Point2df> getBoundingBox(set<int> &nodes_list, TimeTexture<float> &lat, TimeTexture<float> &lon);
+
+pair<Point2df, Point2df> getBoundingBox(set<int> &nodes_list, map<int, float> &lat, map<int, float> &lon);
+
+pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,
+                                          map<int, vector<float> > &coordinates );
 
 
 #endif

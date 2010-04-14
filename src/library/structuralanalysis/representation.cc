@@ -178,46 +178,11 @@ AimsSurfaceTriangle getBlobsMeshes ( vector<surf::ScaleSpaceBlob *> &blobs,
   }
 
 
-//##############################################################################
-
-
-pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,
-                                          TimeTexture<float> &lat,
-                                          TimeTexture<float> &lon ){
-  Point2df bbmin, bbmax;
-  bbmin[0] = 181.0;
-  bbmin[1] = 361.0;
-  bbmax[0] = -1.0;
-  bbmax[1] = -1.0;
-  set<int>::iterator it;
-  pair<Point2df, Point2df> bb;
-  for (it = nodes_list.begin() ; it != nodes_list.end() ; it ++){
-    if (lat[0].item(*it) < bbmin[0])
-      bbmin[0]=lat[0].item(*it);
-    if (lon[0].item(*it) < bbmin[1])
-      bbmin[1]=lon[0].item(*it);
-
-    if (lat[0].item(*it) > bbmax[0])
-      bbmax[0]=lat[0].item(*it);
-    if (lon[0].item(*it) > bbmax[1])
-      bbmax[1]=lon[0].item(*it);
-  }
-
-  if (bbmax[1] > 300.0 && bbmin[1] < 60.0) {
-    for (uint i=0;i<nodes_list.size();i++){
-      if (lon[0].item(*it) >300.0 && lon[0].item(*it) < bbmax[1])
-        bbmax[1]=lon[0].item(*it);
-      if (lon[0].item(*it) < 60.0 && lon[0].item(*it) > bbmin[1])
-        bbmin[1]=lon[0].item(*it);
-    }
-  }
-
-  bb.first = bbmin;
-  bb.second = bbmax;
-  return bb;
-}
 
 //##############################################################################
+
+
+
 
 
 AimsSurfaceTriangle getFlatMap ( vector<set<int> > &nodes_lists,
