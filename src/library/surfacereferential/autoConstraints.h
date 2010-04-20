@@ -26,7 +26,6 @@
 #include <map>
 #include <vector>
 #include <iomanip>
-#include <assert.h>
 #include <aims/def/path.h>
 #include <aims/roi/hie.h>
 #include <stdio.h>
@@ -177,7 +176,7 @@ void autoConstraints::hie2gyr(const std::string & filename)
 	_stream = new ofstream( filename.c_str(), ios::out | ios::trunc );
 	(*_stream) << "/ "<<type<<" / ";
 	Tree::const_iterator	in, fn=tr->end();
-	//	éléments
+	//	ï¿½lï¿½ments
 	for( in=tr->begin(); in!=fn; ++in )
 	{
 		((Tree *)(*in))->getProperty("label", name);
@@ -192,7 +191,7 @@ inline
 bool autoConstraints::returnEmptyTexture(set<TimeTexture<float>*> textures, int value)
 {
 	set<Vertex*>::iterator	im, em = textures.end();
-	//Pour chaque texture, on regarde si la valeur "value" est utilisée
+	//Pour chaque texture, on regarde si la valeur "value" est utilisï¿½e
 	for( im=textures.begin(); im!=em; ++im )
 	{
 		for(int j=0;j<
@@ -212,7 +211,7 @@ TimeTexture<float> autoConstraints::argValues2TimeTexture(int number)
 	TimeTexture<float> tex5;
 	TimeTexture<float> result;
 	
-	//Pour chaque sulci, on crée une nouvelle dimension dans result
+	//Pour chaque sulci, on crï¿½e une nouvelle dimension dans result
 	for(int i=0;i<number;i++)
 	{
 	

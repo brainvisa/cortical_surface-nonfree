@@ -118,7 +118,7 @@ class Clique{
                     uint i;
                     for ( i = 0 ; i < blobs.size() && (uint) blobs[i]->index != (uint) node ; i++ )
                     {}
-                    assert(i<blobs.size());
+                    ASSERT(i<blobs.size());
                     if ( old == blobs[i]->label )
                         energy = 0.0;
                     else {
