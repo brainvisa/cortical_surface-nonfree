@@ -425,6 +425,7 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                 glb->boundingbox_max = (*itB1)->boundingbox_max;
                 glb->boundingbox_min = (*itB1)->boundingbox_min;
                 glb->nodes = (*itB1)->nodes;
+                glb->coordinates = (*itB1)->coordinates;
 
                 firstGLB = true;
 

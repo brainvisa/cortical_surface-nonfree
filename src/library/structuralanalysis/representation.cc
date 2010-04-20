@@ -2,6 +2,7 @@
 #include <aims/getopt/getopt2.h>
 #include <cortical_surface/structuralanalysis/representation.h>
 #include <cortical_surface/structuralanalysis/blobs.h>
+#include <aims/mesh/surfacegen.h>
 
 using namespace aims;
 using namespace carto;
@@ -353,4 +354,96 @@ AimsSurfaceTriangle getLabelObjectsOnAMesh( TimeTexture<short> &tex,
       }
     }
     return objects;
+}
+
+//##############################################################################
+
+Point3df getBlobBarycenterOnASphere( surf::GreyLevelBlob *glb ) {
+    float latMoy = 0.0, lonMoy = 0.0;
+    set<int>::iterator it;
+
+    for ( it = glb->nodes.begin() ; it != glb->nodes.end() ; it ++ ) {
+
+        latMoy += glb->coordinates[*it][0];
+        lonMoy += glb->coordinates[*it][1];
+    }
+    ASSERT(glb->nodes.size() == glb->coordinates.size());
+
+    latMoy /= glb->nodes.size();
+    lonMoy /= glb->nodes.size();
+    return Point3df( log(glb->scale) * cos((latMoy-90.)/180.0*3.1415957) * cos(lonMoy/180.0*3.1415957),
+                log(glb->scale) * cos((latMoy-90.)/180.0*3.1415957) * sin(lonMoy/180.0*3.1415957),
+                log(glb->scale) * sin((latMoy-90.)/180.0*3.1415957) );
+
+}
+
+
+float compareBlobsScales(const surf::GreyLevelBlob *s1, const surf::GreyLevelBlob *s2){
+    ASSERT(s1->scale != s2->scale);
+    return (s1->scale - s2->scale);
+}
+
+struct ltstr
+{
+  bool operator()(const surf::GreyLevelBlob * s1, const surf::GreyLevelBlob * s2) const
+  {
+    return compareBlobsScales(s1, s2) < 0.0;
+  }
+};
+
+
+
+
+
+AimsSurfaceTriangle getLinkMesh ( surf::ScaleSpaceBlob *ssb, vector< pair<uint, uint> > &blobsIndices ) {
+    AimsSurfaceTriangle mesh, *cyl;
+    set<surf::GreyLevelBlob *>::iterator itB;
+    set<surf::GreyLevelBlob *> &unsortedListGLB = ssb->blobs;
+    set<surf::GreyLevelBlob *, ltstr> listGLB;
+    set<surf::GreyLevelBlob *, ltstr>::iterator itB1, itB2;
+    for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
+        listGLB.insert(*itB);
+    
+    itB1 = listGLB.begin();
+    itB2 = itB1;
+    if ( itB2 != listGLB.end() )
+        itB2++;
+    else
+        ASSERT(false);
+    uint i = 0;
+    while ( itB2 != listGLB.end() ) {
+        surf::GreyLevelBlob *glb1, *glb2;
+        glb1 = (*itB1);
+        glb2 = (*itB2);
+        Point3df    p1 ( getBlobBarycenterOnASphere( glb1 ) ),
+                    p2 ( getBlobBarycenterOnASphere( glb2 ) ) ;
+        cout << glb1->index << ":" << p1[0] << " " << p1[1] << " " << p1[2] << ";" << glb2->index << ":" << p2[0] << " " << p2[1] << " " << p2[2] << endl;
+        cyl = SurfaceGenerator::cylinder(p1, p2, 0.001, 0.001, 10, true, true);
+        pair<uint, uint> ind ( glb1->index, glb2->index );
+        mesh[i] = (*cyl)[0];
+        blobsIndices.push_back( ind );
+        itB1++, itB2++, i++;
+    }
+
+    return mesh;
+}
+
+AimsSurfaceTriangle getG2GRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                            vector< pair<uint, uint> > &blobsIndices ) {
+    
+    AimsSurfaceTriangle meshes;
+    uint j = 0;
+
+    for ( uint i = 0 ; i < ssblobs.size() ; i ++ ) {
+        AimsSurfaceTriangle linkMesh ;
+        
+        linkMesh = getLinkMesh( ssblobs[i], blobsIndices );
+        cout << linkMesh.size() << " " << endl;
+        for ( uint k = 0 ; k < linkMesh.size() ; k++, j++ ) 
+            meshes[j] = linkMesh[k];
+        j = j + ssblobs[i]->blobs.size();
+    }
+    ASSERT( meshes.size() == blobsIndices.size() );
+    cout << "G2G : " << meshes.size() << flush;
+    return meshes;
 }
