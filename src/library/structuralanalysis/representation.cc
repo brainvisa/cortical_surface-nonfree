@@ -358,40 +358,6 @@ AimsSurfaceTriangle getLabelObjectsOnAMesh( TimeTexture<short> &tex,
 
 //##############################################################################
 
-Point3df getBlobBarycenterOnASphere( surf::GreyLevelBlob *glb ) {
-    float latMoy = 0.0, lonMoy = 0.0;
-    set<int>::iterator it;
-
-    for ( it = glb->nodes.begin() ; it != glb->nodes.end() ; it ++ ) {
-
-        latMoy += glb->coordinates[*it][0];
-        lonMoy += glb->coordinates[*it][1];
-    }
-    ASSERT(glb->nodes.size() == glb->coordinates.size());
-
-    latMoy /= glb->nodes.size();
-    lonMoy /= glb->nodes.size();
-    return Point3df( log(glb->scale) * cos((latMoy-90.)/180.0*3.1415957) * cos(lonMoy/180.0*3.1415957),
-                log(glb->scale) * cos((latMoy-90.)/180.0*3.1415957) * sin(lonMoy/180.0*3.1415957),
-                log(glb->scale) * sin((latMoy-90.)/180.0*3.1415957) );
-
-}
-
-
-float compareBlobsScales(const surf::GreyLevelBlob *s1, const surf::GreyLevelBlob *s2){
-    ASSERT(s1->scale != s2->scale);
-    return (s1->scale - s2->scale);
-}
-
-struct ltstr
-{
-  bool operator()(const surf::GreyLevelBlob * s1, const surf::GreyLevelBlob * s2) const
-  {
-    return compareBlobsScales(s1, s2) < 0.0;
-  }
-};
-
-
 
 
 
@@ -399,11 +365,11 @@ AimsSurfaceTriangle getLinkMesh ( surf::ScaleSpaceBlob *ssb, vector< pair<uint, 
     AimsSurfaceTriangle mesh, *cyl;
     set<surf::GreyLevelBlob *>::iterator itB;
     set<surf::GreyLevelBlob *> &unsortedListGLB = ssb->blobs;
-    set<surf::GreyLevelBlob *, ltstr> listGLB;
-    set<surf::GreyLevelBlob *, ltstr>::iterator itB1, itB2;
+    set<surf::GreyLevelBlob *, ltBlobs> listGLB;
+    set<surf::GreyLevelBlob *, ltBlobs>::iterator itB1, itB2;
     for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
         listGLB.insert(*itB);
-    
+    ASSERT( unsortedListGLB.size() == listGLB.size() );
     itB1 = listGLB.begin();
     itB2 = itB1;
     if ( itB2 != listGLB.end() )
@@ -411,20 +377,22 @@ AimsSurfaceTriangle getLinkMesh ( surf::ScaleSpaceBlob *ssb, vector< pair<uint, 
     else
         ASSERT(false);
     uint i = 0;
+    cout << ssb->blobs.size() << " blobs à relier" << endl;
+
     while ( itB2 != listGLB.end() ) {
         surf::GreyLevelBlob *glb1, *glb2;
         glb1 = (*itB1);
         glb2 = (*itB2);
-        Point3df    p1 ( getBlobBarycenterOnASphere( glb1 ) ),
-                    p2 ( getBlobBarycenterOnASphere( glb2 ) ) ;
-        cout << glb1->index << ":" << p1[0] << " " << p1[1] << " " << p1[2] << ";" << glb2->index << ":" << p2[0] << " " << p2[1] << " " << p2[2] << endl;
+        Point3df    p1 ( glb1->getBlobBarycenterOnASphere() ),
+                    p2 ( glb2->getBlobBarycenterOnASphere() ) ;
+        cout << glb1->index << "(" <<  glb1->nodes.size() << "):" << p1[0] << " " << p1[1] << " " << p1[2] << ";" << glb2->index << "(" <<  glb1->nodes.size() << "):" << p2[0] << " " << p2[1] << " " << p2[2] << endl;
         cyl = SurfaceGenerator::cylinder(p1, p2, 0.001, 0.001, 10, true, true);
         pair<uint, uint> ind ( glb1->index, glb2->index );
         mesh[i] = (*cyl)[0];
         blobsIndices.push_back( ind );
         itB1++, itB2++, i++;
     }
-
+    cout << blobsIndices.size() << " liens créés" << endl;
     return mesh;
 }
 
@@ -438,12 +406,72 @@ AimsSurfaceTriangle getG2GRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssbl
         AimsSurfaceTriangle linkMesh ;
         
         linkMesh = getLinkMesh( ssblobs[i], blobsIndices );
-        cout << linkMesh.size() << " " << endl;
-        for ( uint k = 0 ; k < linkMesh.size() ; k++, j++ ) 
+        for ( uint k = 0 ; k < linkMesh.size() ; k++, j++ )
             meshes[j] = linkMesh[k];
-        j = j + ssblobs[i]->blobs.size();
     }
     ASSERT( meshes.size() == blobsIndices.size() );
     cout << "G2G : " << meshes.size() << flush;
+    return meshes;
+}
+
+
+
+AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
+                                         surf::ScaleSpaceBlob *ssb2 ) {
+    AimsSurfaceTriangle mesh, *cyl;
+    set<surf::GreyLevelBlob *> &unsortedListGLB = ssb1->blobs;
+    set<surf::GreyLevelBlob *, ltBlobs> listGLB1, listGLB2;
+    set<surf::GreyLevelBlob *>::iterator itB;
+    set<surf::GreyLevelBlob *, ltBlobs>::iterator itB1, itB2;
+    for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
+        listGLB1.insert(*itB);
+    ASSERT( unsortedListGLB.size() == listGLB1.size() );
+    unsortedListGLB = ssb2->blobs;
+    for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
+        listGLB2.insert(*itB);
+    ASSERT( unsortedListGLB.size() == listGLB2.size() );
+    
+    if ( ssb2->tmin > ssb1->tmax ) { // RELIER LE GLB MAX DE SSB1 AU GLB MIN DE SSB2
+        itB1 = listGLB1.end();
+        itB1--;
+        itB2 = listGLB2.begin();
+    }
+    else if ( ssb1->tmin > ssb2->tmax ) { // RELIER LE GLB MIN DE SSB1 AU GLB MAX DE SSB2
+        itB1 = listGLB2.end();
+        itB1--;
+        itB2 = listGLB1.begin();
+    }
+    surf::GreyLevelBlob *glb1, *glb2;
+    glb1 = (*itB1);
+    glb2 = (*itB2);
+    Point3df    p1 ( glb1->getBlobBarycenterOnASphere() ),
+                p2 ( glb2->getBlobBarycenterOnASphere() ) ;
+    cyl = SurfaceGenerator::cylinder(p1, p2, 0.01, 0.01, 10, true, true);
+    mesh[0] = (*cyl)[0];
+    
+    return mesh;
+}
+
+
+AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                            vector< set<uint> > &bifurcIndices,
+                                            vector< pair<uint, uint> > &bifurcPairs) {
+    
+    AimsSurfaceTriangle meshes;
+    uint j = 0;
+    set<uint>::iterator it;
+    for ( uint i = 0 ; i < bifurcIndices.size() ; i++ ) {
+        if ( bifurcIndices[i].size() != 0 ) {
+            for ( it = bifurcIndices[i].begin() ; it != bifurcIndices[i].end() ; it++ ) {
+                AimsSurfaceTriangle linkMesh ;
+                linkMesh = getBifurcationMesh( ssblobs[i], ssblobs[*it] );
+                meshes[j] = linkMesh[0];
+                j++;
+                pair<uint, uint> p(i, *it);
+                bifurcPairs.push_back(p);
+            }
+        }
+    }
+    cout << "G2G : " << meshes.size() << endl;
     return meshes;
 }

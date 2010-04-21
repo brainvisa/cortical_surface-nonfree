@@ -49,10 +49,9 @@ AimsSurfaceTriangle getLabelObjectsOnAMesh( TimeTexture<short> &tex,
                                 AimsSurface<3,Void> &mesh,
                                 vector<set<int> > &nodes_lists);
 
-// Point3df getBlobBarycenterOnASphere( surf::GreyLevelBlob *glb ) ;
-
 AimsSurfaceTriangle getG2GRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs, vector< pair<uint, uint> > &blobsIndices );
 
+AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs, vector< set<uint> > &bifurcIndices, vector< pair<uint, uint> > &bifurcPairs );
 
 #endif
 

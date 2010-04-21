@@ -7,6 +7,13 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
+
+float compareBlobsScales(const surf::GreyLevelBlob *s1, const surf::GreyLevelBlob *s2){
+    ASSERT(s1->scale != s2->scale);
+    return (s1->scale - s2->scale);
+}
+
+
 //##############################################################################
 
 Point3df Point3dfOnSphere ( int i, float radius,
@@ -198,6 +205,7 @@ AimsSurface<3, Void> surf::Blob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
   return patch;
 }
 
+
 //##############################################################################
 
 AimsSurface<3, Void> surf::GreyLevelBlob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
@@ -223,6 +231,71 @@ AimsSurface<3, Void> surf::GreyLevelBlob::getAimsPatchOnASphere ( AimsSurface<3,
 
   return surf::Blob::getAimsPatchOnASphere(mesh, lat, lon, scale, nodes_list);
 
+}
+
+int getEcartMaxIndice( set<float> &longitudes ) {
+
+    uint i = 0, imax = -1 ;
+    set<float>::iterator itf, itf2;
+
+    itf = longitudes.begin();
+    itf2 = longitudes.end();
+    itf2--;
+    
+    if ( *itf2 - *itf > 300.0 ) {
+        imax = 0;
+        itf2 = itf;
+        itf2 ++;
+        float ecart = *itf2 - *itf;
+        for ( ; itf2 != longitudes.end() ; ) {
+            if ( *itf2 - *itf > ecart ) {
+                imax = i;
+                ecart = *itf2 - *itf;
+            }
+            i++, itf++, itf2++;
+        }
+    }
+    return imax;
+
+}
+
+Point3df surf::GreyLevelBlob::getBlobBarycenterOnASphere( void ) {
+    surf::GreyLevelBlob *glb;
+    glb = this;
+    float latMoy = 0.0, lonMoy = 0.0;
+    
+    set<float> latitudes, longitudes;
+    
+    set<int>::iterator it;
+    set<float>::iterator itf, itf2;
+    ASSERT( glb->nodes.size() >= 1 );
+    it = glb->nodes.begin();
+    
+    if ( glb->nodes.size() == 1 ) {
+        latMoy = glb->coordinates[*it][0];
+        lonMoy = glb->coordinates[*it][1];
+    }
+    else {
+        
+        for ( it = glb->nodes.begin() ; it != glb->nodes.end() ; it ++ ) {
+            latMoy += glb->coordinates[*it][0];
+            lonMoy += glb->coordinates[*it][1];
+//             cout << "(" << glb->coordinates[*it][0] << ";" <<glb->coordinates[*it][1] << ") " << flush;
+            latitudes.insert( glb->coordinates[*it][0] );
+            longitudes.insert( glb->coordinates[*it][1] );
+        }
+//         cout << endl;
+        uint imax = getEcartMaxIndice( longitudes );
+        lonMoy += ( imax + 1) * 360.0;
+        
+        ASSERT(glb->nodes.size() == glb->coordinates.size());
+
+        latMoy /= glb->nodes.size();
+        lonMoy /= glb->nodes.size();
+    }
+    return Point3df( log(glb->scale) * cos((latMoy-90.)/180.0*3.1415957) * cos(lonMoy/180.0*3.1415957),
+                log(glb->scale) * cos((latMoy-90.)/180.0*3.1415957) * sin(lonMoy/180.0*3.1415957),
+                log(glb->scale) * sin((latMoy-90.)/180.0*3.1415957) );
 }
 
 //##############################################################################
@@ -254,127 +327,134 @@ AimsSurface<3, Void> surf::ScaleSpaceBlob::getAimsPatchOnASphere ( AimsSurface<3
 
 //##############################################################################
 
-double getOverlapMeasure( Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bbmax2, uint *no_overlap ){
 
-  float overlap_x,overlap_y,aux;
-  double rec=0.0;
 
-  if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) < 0.0001) {bbmax1[0] += 0.5; /*cout << "bbmax10+ ";*/}
-  if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) < 0.0001) {bbmax1[1] += 0.5; /*cout << "bbmax11+ ";*/}
-  if (sqrt(pow(bbmin2[0]-bbmax2[0],2)) < 0.0001) {bbmax2[0] += 0.5; /*cout << "bbmax20+ ";*/}
-  if (sqrt(pow(bbmin2[1]-bbmax2[1],2)) < 0.0001) {bbmax2[1] += 0.5; /*cout << "bbmax21+ ";*/}
-//           if (bbmin1[1]>bbmax1[1] && bbmin2[1] < bbmax2[1] ) {//alors i a bouclé autour de 360/0
-  if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) <300){
-//             cout << "i boucle lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-//             ASSERT(bbmin1[1]>bbmax2[1]);
-    if (360-bbmax2[1]<bbmin2[1]){
-      aux = bbmax1[1];
-      bbmax1[1] = bbmin1[1] + 360.0;
-      bbmin1[1] = aux;
-    }
-    else {
-      aux = bbmin1[1];
-      bbmin1[1] = bbmax1[1] - 360.0;
-      bbmax1[1] = aux;
-    }
-  }
-//           else if (bbmin1[1]<bbmax1[1] && bbmin2[1] > bbmax2[1] ) {//alors j a bouclé autour de 360/0
-  else if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) <300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) >300){
-//             cout << "j boucle lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-//             ASSERT(bbmin2[1]>bbmax1[1]);
-    if (360-bbmax1[1]<bbmin1[1]){
-      aux = bbmax2[1];
-      bbmax2[1] = bbmin2[1] + 360.0;
-      bbmin2[1] = aux;
-    }
-    else {
-      aux = bbmin2[1];
-      bbmin2[1] = bbmax2[1] - 360.0;
-      bbmax2[1] = aux;
-    }
-  }
-//           else if (bbmin1[1]>bbmax1[1] && bbmin2[1]>bbmax2[1] ) {//alors i&j ont bouclé
-  else if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) >300){
-//               cout << "i et j bouclent lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-    aux = bbmin1[1];
-    bbmin1[1] = bbmax1[1] - 360.0;
-    bbmax1[1] = aux;
-    aux = bbmin2[1];
-    bbmin2[1] = bbmax2[1] - 360.0;
-    bbmax2[1] = aux;
-  }
-        // on s'occupe de la latitude
-//           if (bbmin1[0]>bbmax1[0] && bbmin2[0] < bbmax2[0] ) {//alors i a bouclé autour de 360/0
-  if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) <150){
-//             cout << "i boucle lat" << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-//             ASSERT(bbmin1[0]>bbmax2[0]);
-    if (180-bbmax2[0]<bbmin2[0]){
-      aux = bbmax1[0];
-      bbmax1[0] = bbmin1[0] + 180.0;
-      bbmin1[0] = aux;
-    }
-    else {
-      aux = bbmin1[0];
-      bbmin1[0] = bbmax1[0] - 180.0;
-      bbmax1[0] = aux;
-    }
-  }
-//           else if (bbmin1[0]<bbmax1[0] && bbmin2[0] > bbmax2[0] ) {//alors j a bouclé autour de 360/0
-  else if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) <150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) >150){
-//             cout << "j boucle lat" << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
-//             ASSERT(bbmin2[0]>bbmax1[0]);
-    if (180-bbmax1[0]<bbmin1[0]){
-      aux = bbmax2[0];
-      bbmax2[0] = bbmin2[0] + 180.0;
-      bbmin2[0] = aux;
-    }
-    else {
-      aux = bbmin2[0];
-      bbmin2[0] = bbmax2[0] - 180.0;
-      bbmax2[0] = aux;
+double getOverlapMeasure( Point3df bbmin1,
+                          Point3df bbmax1,
+                          Point3df bbmin2,
+                          Point3df bbmax2,
+                          uint *no_overlap ){
+
+    float overlap_x, overlap_y, aux;
+    double rec = 0.0;
+
+    if ( sqrt(pow( bbmin1[0] - bbmax1[0], 2) ) < 0.0001 )  bbmax1[0] += 0.5; 
+    if ( sqrt(pow( bbmin1[1] - bbmax1[1], 2) ) < 0.0001 )  bbmax1[1] += 0.5; 
+    if ( sqrt(pow( bbmin2[0] - bbmax2[0], 2) ) < 0.0001 )  bbmax2[0] += 0.5; 
+    if ( sqrt(pow( bbmin2[1] - bbmax2[1], 2) ) < 0.0001 )  bbmax2[1] += 0.5; 
+  
+    if (sqrt(pow(bbmin1[1] - bbmax1[1], 2)) > 300 && sqrt(pow( bbmin2[1] - bbmax2[1], 2)) < 300) {
+
+        if ( 360 - bbmax2[1] < bbmin2[1] ) {
+            aux = bbmax1[1];
+            bbmax1[1] = bbmin1[1] + 360.0;
+            bbmin1[1] = aux;
+        }
+        else {
+            aux = bbmin1[1];
+            bbmin1[1] = bbmax1[1] - 360.0;
+            bbmax1[1] = aux;
+        }
     }
 
-  }
-//           else if (bbmin1[0]>bbmax1[0] && bbmin2[0]>bbmax2[0] ) {//alors i&j ont bouclé
-  else if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) >150){
+    else if (sqrt(pow( bbmin1[1] - bbmax1[1], 2)) < 300 && sqrt(pow( bbmin2[1] - bbmax2[1], 2)) > 300) {
 
-    aux = bbmin1[0];
-    bbmin1[0] = bbmax1[0] - 360.0;
-    bbmax1[0] = aux;
-    aux = bbmin2[0];
-    bbmin2[0] = bbmax2[0] - 360.0;
-    bbmax2[0] = aux;
-  }
-          // prétraitements effectués on calcule le recouvrement
-  *no_overlap=0;
-  if (bbmin1[0]<=bbmin2[0])
-    if (bbmax1[0]<bbmin2[0]) *no_overlap=1;
-  else overlap_x= (bbmax2[0] < bbmax1[0] ? bbmax2[0] : bbmax1[0]) - bbmin2[0] ;
-  else
-    if (bbmax2[0]<bbmin1[0]) *no_overlap=1;
-  else overlap_x= (bbmax1[0] < bbmax2[0] ? bbmax1[0] : bbmax2[0]) - bbmin1[0];
-  if (*no_overlap==0)
-  {
-    if (bbmin1[1]<=bbmin2[1])
-      if (bbmax1[1]<bbmin2[1]) *no_overlap=1;
-    else overlap_y= (bbmax2[1] < bbmax1[1] ? bbmax2[1] : bbmax1[1]) - bbmin2[1];
+        if ( 360 - bbmax1[1] < bbmin1[1] ) {
+            aux = bbmax2[1];
+            bbmax2[1] = bbmin2[1] + 360.0;
+            bbmin2[1] = aux;
+        }
+        else {
+            aux = bbmin2[1];
+            bbmin2[1] = bbmax2[1] - 360.0;
+            bbmax2[1] = aux;
+        }
+    }
+    else if (sqrt(pow( bbmin1[1] - bbmax1[1], 2)) > 300 && sqrt(pow( bbmin2[1] - bbmax2[1], 2)) > 300) {
+
+        aux = bbmin1[1];
+        bbmin1[1] = bbmax1[1] - 360.0;
+        bbmax1[1] = aux;
+        aux = bbmin2[1];
+        bbmin2[1] = bbmax2[1] - 360.0;
+        bbmax2[1] = aux;
+    }
+  
+    // ON S'OCCUPE DE LA LATITUDE
+    if (sqrt(pow( bbmin1[0] - bbmax1[0], 2)) > 150 && sqrt(pow( bbmin2[0] - bbmax2[0], 2)) < 150) {
+
+        if ( 180 - bbmax2[0] < bbmin2[0] ) {
+            aux = bbmax1[0];
+            bbmax1[0] = bbmin1[0] + 180.0;
+            bbmin1[0] = aux;
+        }
+        else {
+            aux = bbmin1[0];
+            bbmin1[0] = bbmax1[0] - 180.0;
+            bbmax1[0] = aux;
+        }
+    }
+    else if (sqrt(pow( bbmin1[0] - bbmax1[0], 2)) < 150 && sqrt(pow( bbmin2[0] - bbmax2[0], 2)) > 150){
+
+        if ( 180 - bbmax1[0] < bbmin1[0] ) {
+            aux = bbmax2[0];
+            bbmax2[0] = bbmin2[0] + 180.0;
+            bbmin2[0] = aux;
+        }
+        else {
+            aux = bbmin2[0];
+            bbmin2[0] = bbmax2[0] - 180.0;
+            bbmax2[0] = aux;
+        }
+
+    }
+
+    else if (sqrt(pow( bbmin1[0] - bbmax1[0], 2)) > 150 && sqrt(pow( bbmin2[0] - bbmax2[0], 2)) > 150){
+
+        aux = bbmin1[0];
+        bbmin1[0] = bbmax1[0] - 360.0;
+        bbmax1[0] = aux;
+        aux = bbmin2[0];
+        bbmin2[0] = bbmax2[0] - 360.0;
+        bbmax2[0] = aux;
+    }
+    
+    // PRÉTRAITEMENTS EFFECTUÉS ON CALCULE LE RECOUVREMENT
+
+    *no_overlap = 0;
+    if ( bbmin1[0] <= bbmin2[0] )
+        if ( bbmax1[0] < bbmin2[0] )
+            *no_overlap = 1;
+        else
+            overlap_x = ( bbmax2[0] < bbmax1[0] ? bbmax2[0] : bbmax1[0] ) - bbmin2[0];
     else
-      if (bbmax2[1]<bbmin1[1]) *no_overlap=1;
-    else overlap_y= (bbmax1[1] < bbmax2[1] ? bbmax1[1] : bbmax2[1]) - bbmin1[1];
-    if (*no_overlap==0)
-    {
-//       cout << "overlap_x :" << overlap_x << " overlap_y :" << overlap_y << endl;
-      rec=overlap_x*overlap_y;
-      double div=( ((bbmax1[0]-bbmin1[0])*(bbmax1[1]-bbmin1[1]))
-            + ((bbmax2[0]-bbmin2[0])*(bbmax2[1]-bbmin2[1])));
+        if ( bbmax2[0] < bbmin1[0] )
+            *no_overlap = 1;
+        else
+            overlap_x = ( bbmax1[0] < bbmax2[0] ? bbmax1[0] : bbmax2[0] ) - bbmin1[0];
 
-      rec=2 * rec / div;
+    if ( *no_overlap == 0 ) {
 
+        if ( bbmin1[1] <= bbmin2[1] )
+            if ( bbmax1[1] < bbmin2[1] )
+                *no_overlap = 1;
+            else
+                overlap_y = ( bbmax2[1] < bbmax1[1] ? bbmax2[1] : bbmax1[1] ) - bbmin2[1];
+        else
+            if ( bbmax2[1] < bbmin1[1] )
+                *no_overlap = 1;
+            else
+                overlap_y = ( bbmax1[1] < bbmax2[1] ? bbmax1[1] : bbmax2[1] ) - bbmin1[1];
+        if ( *no_overlap == 0 ) {
+            rec = overlap_x * overlap_y;
+            double div=  ( bbmax1[0] - bbmin1[0] ) * ( bbmax1[1] - bbmin1[1] )
+                + ( bbmax2[0] - bbmin2[0] ) * ( bbmax2[1] - bbmin2[1] ) ;
+
+            rec = 2 * rec / div;
+        }
     }
 
-  }
-
-  return rec;
+    return rec;
 }
 
 
