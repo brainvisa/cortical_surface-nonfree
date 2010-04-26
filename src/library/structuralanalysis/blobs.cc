@@ -25,9 +25,11 @@ Point3df Point3dfOnSphere ( int i, float radius,
                     log(radius) * sin((lat.item(i)-90.)/180.0*3.1415957) );    //(float)(rand()/RAND_MAX) * 0.001 ));
 }
 
-Point3df Point3dfOnMesh ( int i, AimsSurface<3,Void> &mesh ) {
+Point3df Point3dfOnMesh ( int i, AimsSurface<3,Void> &mesh, float radius = 1.0) {
 
-    return mesh.vertex()[i];
+    return Point3df( log(radius) * mesh.vertex()[i][0],
+                     log(radius) * mesh.vertex()[i][1],
+                     log(radius) * mesh.vertex()[i][2] );
 
 }
 
@@ -156,7 +158,8 @@ AimsSurface<3, Void> surf::Blob::getAimsPatchOnASphere ( AimsSurface<3, Void> &m
 
 
 AimsSurface<3, Void> surf::Blob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
-                                                    set<int> &nodes_list ){
+                                                    set<int> &nodes_list,
+                                                    float radius){
 
   AimsSurface<3, Void> patch;
   uint p1,p2,p3;
@@ -190,7 +193,7 @@ AimsSurface<3, Void> surf::Blob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
     assert(*it<corres.size());
     assert(*it<mesh.vertex().size());
 
-    patch.vertex().push_back( Point3dfOnMesh(*it, mesh) );
+    patch.vertex().push_back( Point3dfOnMesh(*it, mesh, radius) );
 
     corres[*it] = patch.vertex().size()-1;
     nodes_list.insert(*it);
@@ -211,7 +214,7 @@ AimsSurface<3, Void> surf::Blob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
 AimsSurface<3, Void> surf::GreyLevelBlob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
                                                               set<int> &nodes_list ){
 
-  return surf::Blob::getAimsMeshPatch(mesh, nodes_list);
+  return surf::Blob::getAimsMeshPatch(mesh, nodes_list, scale);
 
 }
 
@@ -263,6 +266,7 @@ Point3df surf::GreyLevelBlob::getBlobBarycenterOnASphere( void ) {
     surf::GreyLevelBlob *glb;
     glb = this;
     float latMoy = 0.0, lonMoy = 0.0;
+    ASSERT(glb->nodes.size() == glb->coordinates.size());
     
     set<float> latitudes, longitudes;
     
@@ -280,15 +284,11 @@ Point3df surf::GreyLevelBlob::getBlobBarycenterOnASphere( void ) {
         for ( it = glb->nodes.begin() ; it != glb->nodes.end() ; it ++ ) {
             latMoy += glb->coordinates[*it][0];
             lonMoy += glb->coordinates[*it][1];
-//             cout << "(" << glb->coordinates[*it][0] << ";" <<glb->coordinates[*it][1] << ") " << flush;
             latitudes.insert( glb->coordinates[*it][0] );
             longitudes.insert( glb->coordinates[*it][1] );
         }
-//         cout << endl;
         uint imax = getEcartMaxIndice( longitudes );
         lonMoy += ( imax + 1) * 360.0;
-        
-        ASSERT(glb->nodes.size() == glb->coordinates.size());
 
         latMoy /= glb->nodes.size();
         lonMoy /= glb->nodes.size();
@@ -296,6 +296,71 @@ Point3df surf::GreyLevelBlob::getBlobBarycenterOnASphere( void ) {
     return Point3df( log(glb->scale) * cos((latMoy-90.)/180.0*3.1415957) * cos(lonMoy/180.0*3.1415957),
                 log(glb->scale) * cos((latMoy-90.)/180.0*3.1415957) * sin(lonMoy/180.0*3.1415957),
                 log(glb->scale) * sin((latMoy-90.)/180.0*3.1415957) );
+}
+
+Point3df surf::GreyLevelBlob::getBlobBarycenter( void ) {
+    surf::GreyLevelBlob *glb;
+    glb = this;
+    float xMoy = 0.0, yMoy = 0.0, zMoy = 0.0;
+    ASSERT(glb->nodes.size() == glb->raw_coordinates.size());    
+    
+    set<float> latitudes, longitudes;
+    
+    set<int>::iterator it;
+    set<float>::iterator itf;
+    ASSERT( glb->nodes.size() >= 1 );
+            
+    for ( it = glb->nodes.begin() ; it != glb->nodes.end() ; it ++ ) {
+        ASSERT( glb->raw_coordinates[*it].size() == 3 );
+        xMoy += glb->raw_coordinates[*it][0];
+        yMoy += glb->raw_coordinates[*it][1];
+        zMoy += glb->raw_coordinates[*it][2];
+    }
+
+    xMoy /= glb->nodes.size();
+    yMoy /= glb->nodes.size();
+    zMoy /= glb->nodes.size();
+    return Point3df( log(glb->scale) * xMoy,
+                     log(glb->scale) * yMoy,
+                     log(glb->scale) * zMoy );
+}
+
+// PAS VERIFIEE
+Point3df surf::GreyLevelBlob::getBlobBarycenterOnAPlane( void ) {
+    surf::GreyLevelBlob *glb;
+    glb = this;
+    float latMoy = 0.0, lonMoy = 0.0;
+    ASSERT(glb->nodes.size() == glb->coordinates.size());
+    
+    set<float> latitudes, longitudes;
+    
+    set<int>::iterator it;
+    set<float>::iterator itf, itf2;
+    ASSERT( glb->nodes.size() >= 1 );
+    it = glb->nodes.begin();
+    
+    if ( glb->nodes.size() == 1 ) {
+        latMoy = glb->coordinates[*it][0];
+        lonMoy = glb->coordinates[*it][1];
+    }
+    else {
+        
+        for ( it = glb->nodes.begin() ; it != glb->nodes.end() ; it ++ ) {
+            latMoy += glb->coordinates[*it][0];
+            lonMoy += glb->coordinates[*it][1];
+            latitudes.insert( glb->coordinates[*it][0] );
+            longitudes.insert( glb->coordinates[*it][1] );
+        }
+        uint imax = getEcartMaxIndice( longitudes );
+        lonMoy += ( imax + 1) * 360.0;
+        
+        
+        latMoy /= glb->nodes.size();
+        lonMoy /= glb->nodes.size();
+    }
+    return Point3df( log(glb->scale) * latMoy,
+                     log(glb->scale) * lonMoy,
+                     log(glb->scale) * 1.0 );
 }
 
 //##############################################################################
@@ -466,11 +531,11 @@ double getOverlapMeasure( Point3df bbmin1,
 void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                        vector<surf::GreyLevelBlob *> &filteredBlobs,
                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-                       Point3df bbmin2,
-                       Point3df bbmax2  ){
+                       Point2df bbmin,
+                       Point2df bbmax  ){
                            
     // Filtering according to positions
-
+    Point3df bbmin2( bbmin[0], bbmin[1], 0.0 ), bbmax2( bbmax[0], bbmax[1], 0.0 );
     for (uint i = 0 ; i < ssblobs.size() ; i++ ){
         string subject;
         subject = ssblobs[i]->subject;
@@ -492,8 +557,7 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
 
             Point3df bbmin1 (bbi.first[0], bbi.first[1], 0.0),
                 bbmax1 (bbi.second[0], bbi.second[1], 0.0);
-//                 bbmin2 (105.0, 256.0, 0.0), // SUPERIOR TEMPORAL SULCUS
-//                 bbmax2 (107.0, 306.0, 0.0) ;  // STS
+
 
             uint no_overlap = 2;
             double overlap = getOverlapMeasure( bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap );
@@ -506,6 +570,8 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                 glb->boundingbox_min = (*itB1)->boundingbox_min;
                 glb->nodes = (*itB1)->nodes;
                 glb->coordinates = (*itB1)->coordinates;
+                glb->raw_coordinates = (*itB1)->raw_coordinates;
+                
 
                 firstGLB = true;
 
@@ -544,6 +610,83 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
 
 }
 
+void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
+                       vector<surf::GreyLevelBlob *> &filteredBlobs,
+                       vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
+                       set<int> &nodes  ){
+    
+    // Filtering according to positions
+    for (uint i = 0 ; i < ssblobs.size() ; i++ ){
+        string subject;
+        subject = ssblobs[i]->subject;
+        bool firstGLB = false;
+        
+        surf::ScaleSpaceBlob *ssb;
+        ssb = new surf::ScaleSpaceBlob();
+        ssb->index = ssblobs[i]->index;
+        ssb->t = ssblobs[i]->t;
+        ssb->label = ssblobs[i]->label;
+        ssb->subject = ssblobs[i]->subject;
+        ssb->tmin = ssblobs[i]->tmin;
+        ssb->tmax = ssblobs[i]->tmax;
+        
+        set<surf::GreyLevelBlob *>::iterator itB1;
+        for (itB1 = ssblobs[i]->blobs.begin() ; itB1 != ssblobs[i]->blobs.end() ; itB1++){
+            
+            set<int>::iterator it;
+            set<int> intersection;
+            for ( it = (*itB1)->nodes.begin() ; it != (*itB1)->nodes.end() ; it++ )
+                if ( nodes.find(*it) != nodes.end() )
+                    intersection.insert(*it);
+            
+            if ( intersection.size() != 0 ){
+                surf::GreyLevelBlob *glb;
+                glb = new surf::GreyLevelBlob();
+                glb->t = (*itB1)->t;
+                glb->scale = (*itB1)->scale;
+                glb->boundingbox_max = (*itB1)->boundingbox_max;
+                glb->boundingbox_min = (*itB1)->boundingbox_min;
+                glb->nodes = (*itB1)->nodes;
+                glb->coordinates = (*itB1)->coordinates;
+                glb->raw_coordinates = (*itB1)->raw_coordinates;
+                
+                
+                firstGLB = true;
+                
+                glb->ssb_parent = ssb;
+                ssb->blobs.insert(glb);
+                filteredBlobs.push_back(glb);
+            }
+            
+        }
+        if (firstGLB)
+            filteredSsblobs.push_back(ssb);
+        else
+            delete(ssb);
+    }
+    
+    // Now that the blobs are filtered, we add the correct bifurcations
+    set< uint > filteredIndices;
+    for ( uint i = 0 ; i < filteredSsblobs.size() ; i ++ ) {
+        filteredIndices.insert ( filteredSsblobs[i]->index ) ;
+    }
+    for ( uint i = 0 ; i < filteredSsblobs.size() ; i ++ ) {
+        set<surf::ScaleSpaceBlob *> auxTop( filteredSsblobs[i]->topBlobs );
+        set<surf::ScaleSpaceBlob *>::iterator it;
+        filteredSsblobs[i]->topBlobs.clear();
+        for ( it = auxTop.begin() ; it != auxTop.end() ; it ++ ) {
+            if (filteredIndices.find((*it)->index) != filteredIndices.end())
+                filteredSsblobs[i]->topBlobs.insert(*it);
+        }
+        set<surf::ScaleSpaceBlob *> auxBot( filteredSsblobs[i]->bottomBlobs );
+        filteredSsblobs[i]->bottomBlobs.clear();
+        for ( it = auxBot.begin() ; it != auxBot.end() ; it ++ ) {
+            if (filteredIndices.find((*it)->index) != filteredIndices.end())
+                filteredSsblobs[i]->bottomBlobs.insert(*it);
+        }
+    }
+    
+}
 // #############################################################################
 
 pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,

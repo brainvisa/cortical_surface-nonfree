@@ -4,7 +4,9 @@
 #include <aims/mesh/texture.h>
 #include <cortical_surface/structuralanalysis/blobs.h>
 
-
+enum typesRepresentation {
+    RAW, SPHERE, FLAT
+};
 
 using namespace aims;
 using namespace carto;
@@ -49,9 +51,14 @@ AimsSurfaceTriangle getLabelObjectsOnAMesh( TimeTexture<short> &tex,
                                 AimsSurface<3,Void> &mesh,
                                 vector<set<int> > &nodes_lists);
 
-AimsSurfaceTriangle getG2GRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs, vector< pair<uint, uint> > &blobsIndices );
+AimsSurfaceTriangle getG2GRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                            vector< pair<uint, uint> > &blobsIndices,
+                                            int representation_mode = SPHERE );
 
-AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs, vector< set<uint> > &bifurcIndices, vector< pair<uint, uint> > &bifurcPairs );
+AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                                    vector< set<uint> > &bifurcIndices,
+                                                    vector< pair<uint, uint> > &bifurcPairs,
+                                                    int representation_mode = SPHERE );
 
 #endif
 

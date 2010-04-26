@@ -21,8 +21,11 @@ namespace surf{
             int label;
             set<int> nodes;
             map<int, vector<float> > coordinates;
+            map<int, vector<float> > raw_coordinates;
 
-            AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
+            AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
+                                                    set<int> &nodes_list,
+                                                    float radius = 1.0);
             AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
                 Texture<float> &lat,
                 Texture<float> &lon,
@@ -55,6 +58,8 @@ namespace surf{
                                                         Texture<float> &lon,
                                                         set<int> &nodes_list );
             Point3df getBlobBarycenterOnASphere( );
+            Point3df getBlobBarycenter( );
+            Point3df getBlobBarycenterOnAPlane( );
 
     };
 
@@ -105,8 +110,13 @@ double getOverlapMeasure( Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Poi
 void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                        vector<surf::GreyLevelBlob *> &filteredBlobs,
                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-                       Point3df bbmin2,
-                       Point3df bbmax2 );
+                       Point2df bbmin2,
+                       Point2df bbmax2 );
+
+void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
+                        vector<surf::GreyLevelBlob *> &filteredBlobs,
+                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
+                        set< int > &nodes );
 
 //##############################################################################
 

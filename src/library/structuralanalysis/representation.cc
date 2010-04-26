@@ -184,8 +184,6 @@ AimsSurfaceTriangle getBlobsMeshes ( vector<surf::ScaleSpaceBlob *> &blobs,
 
 
 
-
-
 AimsSurfaceTriangle getFlatMap ( vector<set<int> > &nodes_lists,
                                  TimeTexture<float> &lat,
                                  TimeTexture<float> &lon,
@@ -202,12 +200,10 @@ AimsSurfaceTriangle getFlatMap ( vector<set<int> > &nodes_lists,
         tex[0].push_back(area);
         tex[0].push_back(area);
         tex[0].push_back(area);
-//         cerr << tex[0].nItem() << " " << flush;
         objects[0].vertex().push_back(Point3df(bb.first[0],bb.first[1],0.001));
         objects[0].vertex().push_back(Point3df(bb.first[0],bb.second[1],0.002));
         objects[0].vertex().push_back(Point3df(bb.second[0],bb.second[1],0.003));
         objects[0].vertex().push_back(Point3df(bb.second[0],bb.first[1],0.0005));
-//         cerr << objects[0].vertex().size() << endl;
         objects[0].polygon().push_back(AimsVector<uint,3>(objects[0].vertex().size()-4,objects[0].vertex().size()-3,objects[0].vertex().size()-2));
         objects[0].polygon().push_back(AimsVector<uint,3>(objects[0].vertex().size()-2,objects[0].vertex().size()-1,objects[0].vertex().size()-4));
       }
@@ -361,7 +357,9 @@ AimsSurfaceTriangle getLabelObjectsOnAMesh( TimeTexture<short> &tex,
 
 
 
-AimsSurfaceTriangle getLinkMesh ( surf::ScaleSpaceBlob *ssb, vector< pair<uint, uint> > &blobsIndices ) {
+AimsSurfaceTriangle getLinkMesh ( surf::ScaleSpaceBlob *ssb,
+                                  vector< pair<uint, uint> > &blobsIndices,
+                                  int representation_mode = SPHERE ) {
     AimsSurfaceTriangle mesh, *cyl;
     set<surf::GreyLevelBlob *>::iterator itB;
     set<surf::GreyLevelBlob *> &unsortedListGLB = ssb->blobs;
@@ -383,8 +381,23 @@ AimsSurfaceTriangle getLinkMesh ( surf::ScaleSpaceBlob *ssb, vector< pair<uint, 
         surf::GreyLevelBlob *glb1, *glb2;
         glb1 = (*itB1);
         glb2 = (*itB2);
-        Point3df    p1 ( glb1->getBlobBarycenterOnASphere() ),
-                    p2 ( glb2->getBlobBarycenterOnASphere() ) ;
+        
+        Point3df    p1, p2;
+        switch (representation_mode){
+            case SPHERE :                
+                p1 = glb1->getBlobBarycenterOnASphere();
+                p2 = glb2->getBlobBarycenterOnASphere();
+            break;
+            case RAW :
+                p1 = glb1->getBlobBarycenter();
+                p2 = glb2->getBlobBarycenter();
+            break;
+            case FLAT :
+                p1 = glb1->getBlobBarycenterOnAPlane();
+                p2 = glb2->getBlobBarycenterOnAPlane();
+            break;
+        }
+            
         cout << glb1->index << "(" <<  glb1->nodes.size() << "):" << p1[0] << " " << p1[1] << " " << p1[2] << ";" << glb2->index << "(" <<  glb1->nodes.size() << "):" << p2[0] << " " << p2[1] << " " << p2[2] << endl;
         cyl = SurfaceGenerator::cylinder(p1, p2, 0.001, 0.001, 10, true, true);
         pair<uint, uint> ind ( glb1->index, glb2->index );
@@ -397,15 +410,16 @@ AimsSurfaceTriangle getLinkMesh ( surf::ScaleSpaceBlob *ssb, vector< pair<uint, 
 }
 
 AimsSurfaceTriangle getG2GRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                            vector< pair<uint, uint> > &blobsIndices ) {
+                                            vector< pair<uint, uint> > &blobsIndices,
+                                            int representation_mode ) {
     
     AimsSurfaceTriangle meshes;
     uint j = 0;
 
     for ( uint i = 0 ; i < ssblobs.size() ; i ++ ) {
         AimsSurfaceTriangle linkMesh ;
-        
-        linkMesh = getLinkMesh( ssblobs[i], blobsIndices );
+        linkMesh = getLinkMesh( ssblobs[i], blobsIndices, representation_mode );
+                
         for ( uint k = 0 ; k < linkMesh.size() ; k++, j++ )
             meshes[j] = linkMesh[k];
     }
@@ -414,10 +428,11 @@ AimsSurfaceTriangle getG2GRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssbl
     return meshes;
 }
 
-
+//##############################################################################
 
 AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
-                                         surf::ScaleSpaceBlob *ssb2 ) {
+                                         surf::ScaleSpaceBlob *ssb2,
+                                         int representation_mode  = SPHERE) {
     AimsSurfaceTriangle mesh, *cyl;
     set<surf::GreyLevelBlob *> &unsortedListGLB = ssb1->blobs;
     set<surf::GreyLevelBlob *, ltBlobs> listGLB1, listGLB2;
@@ -444,8 +459,22 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
     surf::GreyLevelBlob *glb1, *glb2;
     glb1 = (*itB1);
     glb2 = (*itB2);
-    Point3df    p1 ( glb1->getBlobBarycenterOnASphere() ),
-                p2 ( glb2->getBlobBarycenterOnASphere() ) ;
+    Point3df    p1, p2;
+    switch ( representation_mode ) {
+        case SPHERE :
+            p1 = glb1->getBlobBarycenterOnASphere();
+            p2 = glb2->getBlobBarycenterOnASphere();
+        break;
+        case RAW :
+            p1 = glb1->getBlobBarycenter();
+            p2 = glb2->getBlobBarycenter();
+        break;
+        case FLAT :
+            p1 = glb1->getBlobBarycenterOnAPlane();
+            p2 = glb2->getBlobBarycenterOnAPlane();
+        break;
+        
+    }
     cyl = SurfaceGenerator::cylinder(p1, p2, 0.01, 0.01, 10, true, true);
     mesh[0] = (*cyl)[0];
     
@@ -455,7 +484,8 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
 
 AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs,
                                             vector< set<uint> > &bifurcIndices,
-                                            vector< pair<uint, uint> > &bifurcPairs) {
+                                            vector< pair<uint, uint> > &bifurcPairs,
+                                            int representation_mode ) {
     
     AimsSurfaceTriangle meshes;
     uint j = 0;
@@ -464,7 +494,7 @@ AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector<surf::ScaleSpaceBlob 
         if ( bifurcIndices[i].size() != 0 ) {
             for ( it = bifurcIndices[i].begin() ; it != bifurcIndices[i].end() ; it++ ) {
                 AimsSurfaceTriangle linkMesh ;
-                linkMesh = getBifurcationMesh( ssblobs[i], ssblobs[*it] );
+                linkMesh = getBifurcationMesh( ssblobs[i], ssblobs[*it], representation_mode );
                 meshes[j] = linkMesh[0];
                 j++;
                 pair<uint, uint> p(i, *it);
