@@ -21,22 +21,24 @@ public:
 class CurvClique // curv that includes a node and the two neighbours in the max and min curvature direction
 {
 public:
-	CurvClique(uint node, uint min, uint max, uint max2, float kmin, float kmax) :
-		_center(node), _min(min), _max(max), _max2(max2), _kmin(kmin), _kmax(kmax) {};
+	CurvClique(uint node, uint min, uint min2, uint max, uint max2, float kmin, float kmax, float kmax2) :
+		_center(node), _min(min), _min2(min2), _max(max), _max2(max2), _kmin(kmin), _kmax(kmax), _kmax2(kmax2) {};
 	uint _center;
 	uint _min;
+	uint _min2;
 	uint _max;
 	uint _max2; // the direction opposite the one of max curvature
 	float _kmin;
 	float _kmax;
+	float _kmax2;
 };
 
 class GyriRegularization
 {
 public:
 
-     GyriRegularization(AimsSurfaceTriangle mesh, TimeTexture<int> gyriTexture, TimeTexture<float> curvMap, double weightData) :
-     _mesh(mesh), _gyriTexture(gyriTexture), _curvMap(curvMap), _weightData(weightData) {_offset=0; _size=mesh.vertex().size(); computeNeighbours(); computeGyriProba(); computeCurvCliquesAndNodes();  /*compute2ndOrderCliquesAndNodes(); value2ndOrderCliques();*/ computeGraphEnergy(); initializeGyriEvolution();}
+     GyriRegularization(AimsSurfaceTriangle mesh, TimeTexture<int> gyriTexture, TimeTexture<float> curvMap, double weightData, int smooth) :
+     _mesh(mesh), _gyriTexture(gyriTexture), _curvMap(curvMap), _weightData(weightData), _smooth(smooth) {_offset=0; _size=mesh.vertex().size(); computeNeighbours(); computeGyriProba(); computeCurvCliquesAndNodes();  /*compute2ndOrderCliquesAndNodes(); value2ndOrderCliques();*/ computeGraphEnergy(); initializeGyriEvolution();}
 
      void computeGraphEnergy(); // global energy
      double computeLocalEnergyChange(uint node, int label);  // energy change when changing node label
@@ -49,6 +51,8 @@ public:
 
      void runICM();
      void runAnnealing(float T, float kT);
+
+     void writeGyri(string fileOut);
 
 private:
      uint _size;
@@ -70,6 +74,7 @@ private:
      double _dataDrivenE;
      double _curvE;
      int _offset; //just to know how many annealing steps there was before starting ICM
+     int _smooth; // nb of iterations for smoothing the proba maps
 
      std::vector<double> _evolutionE;
 

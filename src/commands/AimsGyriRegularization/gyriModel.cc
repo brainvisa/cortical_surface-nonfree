@@ -2,11 +2,16 @@
 #include <aims/mesh/surface.h>
 #include <aims/math/random.h>
 #include <aims/primalsketch/finiteElementSmoother_d.h>
+#include <aims/distancemap/meshdistance.h>
+#include <aims/distancemap/meshmorphomat.h>
 #include <algorithm>
 #include "gyriModel.h"
+#include <algorithm>
 
 using namespace std;
 using namespace aims;
+using namespace aims::meshdistance;
+
 
 void GyriRegularization::compute2ndOrderCliquesAndNodes()
 {
@@ -93,6 +98,9 @@ void GyriRegularization::computeCurvCliquesAndNodes()
 
 	std::map<int, std::set<int> > labelVois;
 
+	float likeliT=0.00001; // threshold on likelihood (P=-log(likeliT))
+							// below this, nodes are not included in the optimization loop
+
 	for (uint i=0; i<_size; i++)
 	{
 		std::set<uint> vois=_neigh[i];
@@ -134,15 +142,15 @@ void GyriRegularization::computeCurvCliquesAndNodes()
 	uint count=0;
 	for (uint i=0; i<_size; i++)
 	{
-		if ((_gyriTexture[0].item(i) > 1) || (_gyriProba[_gyriTexture[0].item(i)].item(i)<0.95))
-			// cingular pole excluded as well as points with too high a prior
+		if ((_gyriTexture[0].item(i) > 1) && (_gyriProba[_gyriTexture[0].item(i)].item(i)>likeliT))
+			// cingular pole excluded as well as points with too high a likelyhood.
 		{
 			if (_nodes.find(i) == _nodes.end())
 				_nodes[i]=std::set<uint>(); // if node does not exist yet it is created
 			std::set<uint> neigh=_neigh[i];
 			std::set<uint>::iterator neighIt=neigh.begin();
 			float k, kmin=10000.0, kmax=-10000.0;
-			uint imax, imin, imax2;
+			uint imax, imin, imax2, imin2;
 			for (; neighIt!=neigh.end(); neighIt++)
 			{
 				float nx, ny, nz, vx, vy, vz;
@@ -159,10 +167,10 @@ void GyriRegularization::computeCurvCliquesAndNodes()
 			}
 
 			// now trying to look for the neighbor opposite the direction of max curvature.
-			float pmax=0.0;
+			float pmax=0.0; float pmax2=0.0;
 			for (neighIt=neigh.begin(); neighIt!=neigh.end(); neighIt++)
 			{
-				float mx, my, mz, vx, vy, vz, sum;
+				float mx, my, mz, vx, vy, vz, sum, mx2, my2, mz2;
 				int p=*neighIt;
 				if ((p!=imax) && (p!=imin))
 				{
@@ -178,26 +186,57 @@ void GyriRegularization::computeCurvCliquesAndNodes()
 					sum = sqrt(mx*mx + my*my + mz*mz);
 					mx/=sum; my/=sum; mz/=sum;
 
-					float ps=vx*mx + vy*my +vz*mz;
+					mx2=((_mesh.vertex())[imin])[0] - ((_mesh.vertex())[i])[0];
+					my2=((_mesh.vertex())[imin])[1] - ((_mesh.vertex())[i])[1];
+					mz2=((_mesh.vertex())[imin])[2] - ((_mesh.vertex())[i])[2];
+					sum = sqrt(mx2*mx2 + my2*my2 + mz2*mz2);
+					mx2/=sum; my2/=sum; mz2/=sum;
+
+					float ps=vx*mx + vy*my + vz*mz;
+					float ps2=vx*mx2 + vy*my2 + vz*mz2;
 					if (ps<pmax)
 					{
 						pmax=ps;
 						imax2=p;
 					}
+					if (ps2<pmax2)
+					{
+						pmax2=ps2;
+						imin2=p;
+					}
 				}
 			}
 
-			_curvCliques.push_back(CurvClique(i, imin, imax, imax2, kmin, kmax));
+			// computing curvature in the imax2 direction
+			float nx, ny, nz, vx, vy, vz;
+			nx=((_mesh.normal())[i])[0];
+			ny=((_mesh.normal())[i])[1];
+			nz=((_mesh.normal())[i])[2];
+			vx=((_mesh.vertex())[imax2])[0] - ((_mesh.vertex())[i])[0];
+			vy=((_mesh.vertex())[imax2])[1] - ((_mesh.vertex())[i])[1];
+			vz=((_mesh.vertex())[imax2])[2] - ((_mesh.vertex())[i])[2];
+			float kmax2=(float) 2*((nx*vx)+(ny*vy)+(nz*vz))/float(vx*vx + vy*vy + vz*vz);
+
+			_curvCliques.push_back(CurvClique(i, imin, imin2, imax, imax2, kmin, kmax, kmax2));
 			_nodes[i].insert(cliqueNb);
-			if (_nodes.find(imin)==_nodes.end())
-				_nodes[imin]=std::set<uint>();
-			_nodes[imin].insert(cliqueNb);
-			if (_nodes.find(imax)==_nodes.end())
-				_nodes[imax]=std::set<uint>();
-			_nodes[imax].insert(cliqueNb);
-			if (_nodes.find(imax2)==_nodes.end())
-				_nodes[imax2]=std::set<uint>();
-			_nodes[imax2].insert(cliqueNb);
+			if ((_gyriTexture[0].item(imin) > 1) && (_gyriProba[_gyriTexture[0].item(imin)].item(imin)>likeliT))
+			{
+				if (_nodes.find(imin)==_nodes.end())
+					_nodes[imin]=std::set<uint>();
+				_nodes[imin].insert(cliqueNb);
+			}
+			if ((_gyriTexture[0].item(imax) > 1) && (_gyriProba[_gyriTexture[0].item(imax)].item(imax)>likeliT))
+			{
+				if (_nodes.find(imax)==_nodes.end())
+					_nodes[imax]=std::set<uint>();
+				_nodes[imax].insert(cliqueNb);
+			}
+			if ((_gyriTexture[0].item(imax2) > 1) && (_gyriProba[_gyriTexture[0].item(imax2)].item(imax2)>likeliT))
+			{
+				if (_nodes.find(imax2)==_nodes.end())
+					_nodes[imax2]=std::set<uint>();
+				_nodes[imax2].insert(cliqueNb);
+			}
 			cliqueNb++;
 
 		}
@@ -209,15 +248,19 @@ void GyriRegularization::computeCurvCliquesAndNodes()
 	for (uint i=0; i< _size; i++)
 		debugCurv[0].item(i)=0;
 
-	for (uint i=0; i<_curvCliques.size(); i=i+1000)
+//	for (uint i=0; i<_curvCliques.size(); i=i+1000)
+//	{
+//		debugCurv[0].item(_curvCliques[i]._center)=100;
+//		debugCurv[0].item(_curvCliques[i]._min)=1;
+//		debugCurv[0].item(_curvCliques[i]._max2)=200;
+//		debugCurv[0].item(_curvCliques[i]._max)=300;
+//	}
+	std::map<uint, std::set<uint> >::iterator nodeIt;
+	for (nodeIt=_nodes.begin(); nodeIt!=_nodes.end(); nodeIt++)
 	{
-		debugCurv[0].item(_curvCliques[i]._center)=100;
-		debugCurv[0].item(_curvCliques[i]._min)=1;
-		debugCurv[0].item(_curvCliques[i]._max2)=200;
-		debugCurv[0].item(_curvCliques[i]._max)=300;
+		debugCurv[0].item((*nodeIt).first)=1;
 	}
-
-	Writer<TimeTexture<int> > texDebugW( "debugCurv" );
+	Writer<TimeTexture<int> > texDebugW( "debugNodes" );
     texDebugW << debugCurv ;
 
 	std::cout << "Built " << _curvCliques.size() << " cliques" << std::endl;
@@ -285,25 +328,42 @@ double GyriRegularization::compute2ndOrderCliquePotential(uint cl, int l1, int l
 
 double GyriRegularization::computeCurvCliquePotential(uint cl, int l, int lmin, int lmax, int lmax2)
 {
+
+	double epsilon=0.1;
+	double T0=0.3;
+	double a, c;
+
+	a=(1.0 - epsilon)/(T0*T0);
+	c=epsilon;
+
 	// max curvature
 	float kmax=_curvCliques[cl]._kmax;
+	float kmax2=_curvCliques[cl]._kmax2;
 	if (lmin!=l)
 		return(1.0);
 	else
 	{
-		if ((lmax==l) && (lmax2==l))
-			return(0.0);
-		else if ((lmax==lmax2) && (lmax!=l))
+		if ((lmax!=l) && (lmax2!=l))
 			return(1.0);
-		else // on peut encore differencier des cas si necessaire
+		else if ((l==lmax2) && (l!=lmax))
 		{
 			if (kmax<=0)
 				return(1.0);
-			else if (kmax<=0.4)
-				return( (double) 6.25*(kmax-0.4)*(kmax-0.4) );
+			else if (kmax<=T0)
+				return( (double) a*(kmax-T0)*(kmax-T0) + epsilon);
 			else
-				return(0.0);
+				return(epsilon);
 		}
+		else if ((l==lmax) && (l!=lmax2))
+		{
+			if (kmax2<=0)
+				return(1.0);
+			else if (kmax2<=T0)
+				return( (double) a*(kmax2-T0)*(kmax2-T0) + epsilon);
+			else
+				return(epsilon);
+		}
+		else return(0.0);
 	}
 //	if (lmin!=l)
 //		return(1.0);
@@ -420,14 +480,26 @@ void GyriRegularization::computeGyriProba()
 	_gyriProba=TimeTexture<float>(lmax+1, _size);
 
 	// proba equal 0 to start with
-	TimeTexture<float> tempProba(lmax+1, _size);
+	TimeTexture<float> tempProba(lmax+1, _size), tempProbaDil(lmax+1, _size);
 	for (j=0; j<=lmax; j++)
 		for (i=0; i<_size; i++)
 			tempProba[j].item(i)=0.0;
+
 	// then proba(label)=100.0 for the region that has this label
 	for (i=0; i<_size; i++)
 			tempProba[_gyriTexture[0].item(i)].item(i)=100.0;
 
+	// dilation of the gyri to extend their possible localization a bit
+	std::cout << "Dilating likelihood maps before smoothing" << std::endl;
+	for (j=0; j<=lmax; j++)
+	{
+		tempProbaDil[j]=MeshDilation<float>( _mesh[0], tempProba[j], 0.0, -1, 3.0, true);
+	}
+
+	Writer<TimeTexture<float > > tprobW("tempProba");
+	tprobW << tempProba;
+	Writer<TimeTexture<float > > tprobdW("tempProbaDil");
+	tprobdW << tempProbaDil;
 
 	//Smoothing of the textures
 	FiniteElementSmoother<3, float> *smooth;
@@ -435,7 +507,7 @@ void GyriRegularization::computeGyriProba()
 	std::cout << "Smoothing probability maps" << std::endl;
 	for (j=0; j<=lmax; j++)
 	{
-		_gyriProba[j]=smooth->doSmoothing(tempProba[j], 80, false);
+		_gyriProba[j]=smooth->doSmoothing(tempProbaDil[j], _smooth, false);
 	}
 
 
@@ -504,7 +576,7 @@ void GyriRegularization::computeGyriProba()
 
 void GyriRegularization::initializeGyriEvolution()
 {
-	int nb=250;
+	int nb=2000;
 	_gyriEvolution=TimeTexture<int>(nb, _size);
 	for (int j=0; j<nb; j++)
 		for (int i=0; i<_size; i++)
@@ -685,9 +757,10 @@ void GyriRegularization::runAnnealing(float T, float kT)
 				nbCh++;
 				_currentE += computeLocalEnergyChange(i, bestL); // does, but so far it's more efficient not to call it.
 				_gyriTexture[0].item(i)=bestL; // this two line do what updateLabelAndEnergy()
+				_gyriEvolution[iter].item(i)=bestL;
 			}
-			if ((iter%10)==0)
-					_gyriEvolution[iter/10].item(i)=_gyriTexture[0].item(i);
+			else
+				_gyriEvolution[iter].item(i)=currentL;
 		}
 //		for (uint j=0; j<size_cliques; j++)
 //		{
@@ -702,14 +775,14 @@ void GyriRegularization::runAnnealing(float T, float kT)
 			nbZero++;
 		if (nbZero == 10)
 		{
-			_offset=iter/10 + 1;
+			_offset=iter;
 			iter=20000;
 		}
 		T=T*kT;
 	}
-	if (iter != 20000) _offset=iter/10 + 1;
+	if (iter < 20000) _offset=iter;
 	std::cout << "Offset : " << _offset << std::endl;
-	//runICM();
+	runICM();
 	std::cout << "Finished" << std::endl;
 
 
@@ -735,6 +808,11 @@ void GyriRegularization::runAnnealing(float T, float kT)
 //	texEnergyW << energyEvolution ;
 }
 
+void GyriRegularization::writeGyri(string fileOut)
+{
+	Writer<TimeTexture<int> > texResultW( fileOut );
+	texResultW << _gyriTexture ;
+}
 
 
 

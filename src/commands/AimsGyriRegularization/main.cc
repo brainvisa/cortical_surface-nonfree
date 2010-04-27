@@ -39,6 +39,7 @@ int main( int argc, const char** argv )
   string fileOut, fileMesh, gyriIn;
   float weight=1.0;
   int opti=1;
+  int smooth=80;
 
   AimsApplication    app( argc, argv, "Build a regularized version of gyri from the 2D coordinate system" );
   try
@@ -52,10 +53,12 @@ int main( int argc, const char** argv )
      app.addOption( weight, "-w", "data-driven term weight", 1.0);
      app.alias( "--weight", "-w" );
      app.addOption( opti, "-a", "annealing (0=no, ICM; 1=yes", 1);
-     app.alias( "--anneal", "-a"),
-     
+     app.alias( "--anneal", "-a");
+     app.addOption(smooth, "-s", "Smoothing of probability maps (default=80)", 80);
+     app.alias( "--smooth", "-s");
      app.initialize();
      
+
 
      std::cout << "Testing the uniform random draw" << std::endl;
 
@@ -140,141 +143,19 @@ int main( int argc, const char** argv )
      Writer<TimeTexture<float> > maxW( "normalMaxCurvatureMap" );
      maxW << normalMax ;
 
- 	GyriRegularization regul(surface, texGyri, normalMax, weight);
+ 	GyriRegularization regul(surface, texGyri, normalMax, weight, smooth);
  	if (opti==1) regul.runAnnealing(2000.0, 0.99);
  	else regul.runICM();
 
-
-//     for (uint i=0; i<size; i++)
-//    	 texOut[0].item(i)=0;
-//
-//			TimeTexture<int> gyri(1,size), bandeCh(1, size);
-//			std::map<uint, std::set<int> > labelMap;
-//
-//			std::map< std::string, std::set<float> > map_global;
-//
-//			const char *adr_cor= adr_corl.c_str();
-//
-//			FILE *corres; //correspondance between contraints names and real values
-//
-//			if ((corres=fopen(adr_cor, "r")) == NULL)
-//			{
-//				cerr << "Cannot open file " << adr_cor << endl;
-//				exit(EXIT_FAILURE);
-//			}
-//
-//			std::string arg1;
-//
-//			//int val_contraint;
-//			int val_projection;
-//
-//			while (!feof(corres))
-//			{
-//				char c[40];
-//				char a[5];
-//				fscanf(corres, "%s %s %i\n", a, c, &val_projection);
-//				arg1=a;
-//				map_global[a].insert(val_projection);
-//			}
-//
-//			float u=0;
-//			float v=0;
-//
-//			std::set<float>::const_iterator it_lon, it_lat, it_lon2, it_lat2;
-//
-//			for(uint i=0;i<size;i++)
-//			{
-//				gyri[0].item(i)=0;
-//				int cpt=2;
-//
-//				u=texLat[0].item(i);
-//				v=texLon[0].item(i);
-//
-//				it_lat=map_global["lat"].begin();
-//				for(; it_lat!=map_global["lat"].end(); ++it_lat)
-//				{
-//					it_lat2=it_lat;
-//					it_lat2++;
-//					if( it_lat2!=map_global["lat"].end() )
-//					{
-//						it_lon=map_global["lon"].begin();
-//						for(; it_lon!=map_global["lon"].end(); ++it_lon)
-//						{
-//							it_lon2=it_lon;
-//							it_lon2++;
-//							if( it_lon2!=map_global["lon"].end() )
-//							{
-//
-//
-//								if( u>(*it_lat) && u<=(*it_lat2) && v>(*it_lon) && v<=(*it_lon2) )
-//								{
-//									gyri[0].item(i)=cpt;
-//								}
-//								cpt++;
-//							}
-//						}
-//					}
-//				}
-//
-//				//Pole cingulaire
-//
-//				if(u<=30)
-//					gyri[0].item(i)=1;
-//
-//			}
-//
-//			// deuxième passe pour augmenter la liste des labels possibles.
-//			for(uint i=0;i<size;i++)
-//			{
-//				int cpt=2;
-//				labelMap[i]=std::set<int>();
-//				labelMap[i].insert(gyri[0].item(i));
-//				u=texLat[0].item(i);
-//				v=texLon[0].item(i);
-//
-//				it_lat=map_global["lat"].begin();
-//				for(; it_lat!=map_global["lat"].end(); ++it_lat)
-//				{
-//					it_lat2=it_lat;
-//					it_lat2++;
-//					if( it_lat2!=map_global["lat"].end() )
-//					{
-//						it_lon=map_global["lon"].begin();
-//						for(; it_lon!=map_global["lon"].end(); ++it_lon)
-//						{
-//							it_lon2=it_lon;
-//							it_lon2++;
-//							if( it_lon2!=map_global["lon"].end() )
-//							{
-//								if ( ( (u>((*it_lat)-bande)) && (u<=(*it_lat)) && v>((*it_lon)-bande) && v<=((*it_lon2)+bande) )
-//								||   ((u>(*it_lat2)) && (u<=((*it_lat2)+bande)) && v>((*it_lon)-bande) && v<=((*it_lon2)+bande))
-//								||   ((u>((*it_lat)-bande)) && (u<=((*it_lat2)+bande)) && (v>((*it_lon)-bande)) && v<=(*it_lon))
-//								||   ((u>((*it_lat)-bande)) && (u<=((*it_lat2)+bande)) && (v>(*it_lon2)) && (v<=((*it_lon2)+bande))) )
-//								{
-//									labelMap[i].insert(cpt);
-//								}
-//								cpt++;
-//							}
-//						}
-//					}
-//				}
-//				if(u<=30)
-//				{
-//					labelMap[i]=std::set<int>();
-//					labelMap[i].insert(1);
-//				}
-//			}
-//
-//
-////--------------------------------------------------------
+	std::cout << "Writing texture " << fileOut << std::endl;
+ 	regul.writeGyri(fileOut);
 
 
 //	for (uint i=0; i<size; i++)
 //		bandeCh[0].item(i)=labelMap[i].size();
 //
 //     cout << "OK. Writing texture bandeChanges" << endl;
-//     Writer<TimeTexture<int> > texResultW( "bandeChanges" );
-//     texResultW << bandeCh ;
+//     x
      return EXIT_SUCCESS;
   }
   catch( user_interruption & )
