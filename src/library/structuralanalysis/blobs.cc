@@ -2,6 +2,8 @@
 #include <aims/getopt/getopt2.h>
 #include <cortical_surface/structuralanalysis/blobs.h>
 #include <time.h>
+#include <aims/mesh/surfacegen.h>
+
 
 using namespace aims;
 using namespace carto;
@@ -49,53 +51,64 @@ AimsSurface<3, Void> surf::Blob::getAimsPatchOnAPlane ( AimsSurface<3, Void> &me
                                               Texture<float> &lon,
                                               float height,
                                               set<int> &nodes_list ) {
-  srand( (unsigned)time( NULL ) );
+    srand( (unsigned)time( NULL ) );
 
-  AimsSurface<3, Void> patch;
-  uint p1,p2,p3;
+    AimsSurface<3, Void> patch;
+    ASSERT ( mesh.vertex().size() != 0 ) ;
+    if ( mesh.vertex().size() > 1 ) {
+        uint p1,p2,p3;
 
-  set<uint>::iterator it;
-  set<uint> tri, comp;
-  vector<uint> corres;
+        set<uint>::iterator it;
+        set<uint> tri, comp;
+        vector<uint> corres;
 
-  for (uint j = 0 ; j < mesh.polygon().size() ; j++){
+        for (uint j = 0 ; j < mesh.polygon().size() ; j++){
 
-    p1=mesh.polygon()[j][0];
-    p2=mesh.polygon()[j][1];
-    p3=mesh.polygon()[j][2];
+            p1=mesh.polygon()[j][0];
+            p2=mesh.polygon()[j][1];
+            p3=mesh.polygon()[j][2];
 
-    if ( nodes.find(p1) != nodes.end() &&
-            nodes.find(p2) != nodes.end() &&
-            nodes.find(p3) != nodes.end() )
-      tri.insert(j);
-  }
+            if ( nodes.find(p1) != nodes.end() &&
+                nodes.find(p2) != nodes.end() &&
+                nodes.find(p3) != nodes.end() )
+            tri.insert(j);
+        }
 
-  for (it=tri.begin();it!=tri.end();it++){
-    p1=mesh.polygon()[*it][0];
-    p2=mesh.polygon()[*it][1];
-    p3=mesh.polygon()[*it][2];
-    comp.insert(p1); comp.insert(p2); comp.insert(p3);
-  }
+        for (it=tri.begin();it!=tri.end();it++){
+            p1=mesh.polygon()[*it][0];
+            p2=mesh.polygon()[*it][1];
+            p3=mesh.polygon()[*it][2];
+            comp.insert(p1); comp.insert(p2); comp.insert(p3);
+        }
 
-  corres = vector<uint>(mesh.vertex().size());
+        corres = vector<uint>(mesh.vertex().size());
 
-  for (it = comp.begin() ; it != comp.end() ; it++){
-    assert(*it<corres.size());
-    assert(*it<mesh.vertex().size());
+        for (it = comp.begin() ; it != comp.end() ; it++){
+            assert(*it<corres.size());
+            assert(*it<mesh.vertex().size());
 
-    patch.vertex().push_back( Point3dfOnPlane(*it, height, lat, lon) );
+            patch.vertex().push_back( Point3dfOnPlane(*it, height, lat, lon) );
 
-    corres[*it] = patch.vertex().size()-1;
-    nodes_list.insert(*it);
-  }
+            corres[*it] = patch.vertex().size()-1;
+            nodes_list.insert(*it);
+        }
 
-  for (it=tri.begin();it!=tri.end();it++){
-    p1=mesh.polygon()[*it][0];
-    p2=mesh.polygon()[*it][1];
-    p3=mesh.polygon()[*it][2];
-    patch.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
-  }
-  return patch;
+        for (it=tri.begin();it!=tri.end();it++){
+            p1=mesh.polygon()[*it][0];
+            p2=mesh.polygon()[*it][1];
+            p3=mesh.polygon()[*it][2];
+            patch.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
+        }
+    }
+    else {
+        AimsSurfaceTriangle *sphere;
+        Point3df p1 ( mesh.vertex()[0] );
+        for ( uint i = 0 ; i < 2 ; i ++ )
+            p1[i] *= height;
+        sphere = SurfaceGenerator::sphere(p1, 0.02, 10, true);
+        patch = (*sphere)[0];
+    }
+    return patch;
 
 }
 
@@ -106,51 +119,62 @@ AimsSurface<3, Void> surf::Blob::getAimsPatchOnASphere ( AimsSurface<3, Void> &m
                                               Texture<float> &lon,
                                               float radius,
                                               set<int> &nodes_list ) {
-  AimsSurface<3, Void> patch;
-  uint p1,p2,p3;
+    AimsSurface<3, Void> patch;
+    ASSERT ( mesh.vertex().size() != 0 ) ;
+    if ( mesh.vertex().size() > 1 ) {
+        uint p1,p2,p3;
 
-  set<uint>::iterator it;
-  set<uint> tri, comp;
-  vector<uint> corres;
+        set<uint>::iterator it;
+        set<uint> tri, comp;
+        vector<uint> corres;
 
-  for (uint j = 0 ; j < mesh.polygon().size() ; j++){
+        for (uint j = 0 ; j < mesh.polygon().size() ; j++){
 
-    p1=mesh.polygon()[j][0];
-    p2=mesh.polygon()[j][1];
-    p3=mesh.polygon()[j][2];
+            p1=mesh.polygon()[j][0];
+            p2=mesh.polygon()[j][1];
+            p3=mesh.polygon()[j][2];
 
-    if ( nodes.find(p1) != nodes.end() &&
-            nodes.find(p2) != nodes.end() &&
-            nodes.find(p3) != nodes.end() )
-      tri.insert(j);
-  }
+            if ( nodes.find(p1) != nodes.end() &&
+                nodes.find(p2) != nodes.end() &&
+                nodes.find(p3) != nodes.end() )
+            tri.insert(j);
+        }
 
-  for (it=tri.begin();it!=tri.end();it++){
-    p1=mesh.polygon()[*it][0];
-    p2=mesh.polygon()[*it][1];
-    p3=mesh.polygon()[*it][2];
-    comp.insert(p1); comp.insert(p2); comp.insert(p3);
-  }
+        for (it=tri.begin();it!=tri.end();it++){
+            p1=mesh.polygon()[*it][0];
+            p2=mesh.polygon()[*it][1];
+            p3=mesh.polygon()[*it][2];
+            comp.insert(p1); comp.insert(p2); comp.insert(p3);
+        }
 
-  corres = vector<uint>(mesh.vertex().size());
+        corres = vector<uint>(mesh.vertex().size());
 
-  for (it = comp.begin() ; it != comp.end() ; it++){
-    assert(*it<corres.size());
-    assert(*it<mesh.vertex().size());
+        for (it = comp.begin() ; it != comp.end() ; it++){
+            assert(*it<corres.size());
+            assert(*it<mesh.vertex().size());
 
-    patch.vertex().push_back( Point3dfOnSphere(*it, radius, lat, lon) );
+            patch.vertex().push_back( Point3dfOnSphere(*it, radius, lat, lon) );
 
-    corres[*it] = patch.vertex().size()-1;
-    nodes_list.insert(*it);
-  }
+            corres[*it] = patch.vertex().size()-1;
+            nodes_list.insert(*it);
+        }
 
-  for (it=tri.begin();it!=tri.end();it++){
-    p1=mesh.polygon()[*it][0];
-    p2=mesh.polygon()[*it][1];
-    p3=mesh.polygon()[*it][2];
-    patch.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
-  }
-  return patch;
+        for (it=tri.begin();it!=tri.end();it++){
+            p1=mesh.polygon()[*it][0];
+            p2=mesh.polygon()[*it][1];
+            p3=mesh.polygon()[*it][2];
+            patch.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
+        }
+    }
+    else {
+        AimsSurfaceTriangle *sphere;
+        Point3df p1 ( mesh.vertex()[0] );
+        for ( uint i = 0 ; i < 2 ; i ++ )
+            p1[i] *= radius;
+        sphere = SurfaceGenerator::sphere(p1, 0.02, 10);
+        patch = (*sphere)[0];
+    }
+    return patch;
 
 }
 
@@ -160,52 +184,66 @@ AimsSurface<3, Void> surf::Blob::getAimsPatchOnASphere ( AimsSurface<3, Void> &m
 AimsSurface<3, Void> surf::Blob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
                                                     set<int> &nodes_list,
                                                     float radius){
+    
+    AimsSurface<3, Void> patch;
+    ASSERT ( mesh.vertex().size() != 0 ) ;
+        
+    uint p1,p2,p3;
 
-  AimsSurface<3, Void> patch;
-  uint p1,p2,p3;
+    set<uint>::iterator it;
+    set<uint> tri, comp;
+    vector<uint> corres;
 
-  set<uint>::iterator it;
-  set<uint> tri, comp;
-  vector<uint> corres;
+    for (uint j = 0 ; j < mesh.polygon().size() ; j++){
 
-  for (uint j = 0 ; j < mesh.polygon().size() ; j++){
+        p1=mesh.polygon()[j][0];
+        p2=mesh.polygon()[j][1];
+        p3=mesh.polygon()[j][2];
 
-    p1=mesh.polygon()[j][0];
-    p2=mesh.polygon()[j][1];
-    p3=mesh.polygon()[j][2];
-
-    if ( nodes.find(p1) != nodes.end() &&
+        if ( nodes.find(p1) != nodes.end() &&
             nodes.find(p2) != nodes.end() &&
             nodes.find(p3) != nodes.end() )
-      tri.insert(j);
-  }
+        tri.insert(j);
+    }
+    if ( tri.size() >= 1 ) {
 
-  for (it=tri.begin();it!=tri.end();it++){
-    p1=mesh.polygon()[*it][0];
-    p2=mesh.polygon()[*it][1];
-    p3=mesh.polygon()[*it][2];
-    comp.insert(p1); comp.insert(p2); comp.insert(p3);
-  }
+        for (it=tri.begin();it!=tri.end();it++){
+            p1=mesh.polygon()[*it][0];
+            p2=mesh.polygon()[*it][1];
+            p3=mesh.polygon()[*it][2];
+            comp.insert(p1); comp.insert(p2); comp.insert(p3);
+        }
 
-  corres = vector<uint>(mesh.vertex().size());
+        corres = vector<uint>(mesh.vertex().size());
 
-  for (it = comp.begin() ; it != comp.end() ; it++){
-    assert(*it<corres.size());
-    assert(*it<mesh.vertex().size());
+        for (it = comp.begin() ; it != comp.end() ; it++){
+            assert(*it<corres.size());
+            assert(*it<mesh.vertex().size());
 
-    patch.vertex().push_back( Point3dfOnMesh(*it, mesh, radius) );
+            patch.vertex().push_back( Point3dfOnMesh(*it, mesh, radius) );
 
-    corres[*it] = patch.vertex().size()-1;
-    nodes_list.insert(*it);
-  }
+            corres[*it] = patch.vertex().size()-1;
+            nodes_list.insert(*it);
+        }
 
-  for (it=tri.begin();it!=tri.end();it++){
-    p1=mesh.polygon()[*it][0];
-    p2=mesh.polygon()[*it][1];
-    p3=mesh.polygon()[*it][2];
-    patch.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
-  }
-  return patch;
+        for (it=tri.begin();it!=tri.end();it++){
+            p1=mesh.polygon()[*it][0];
+            p2=mesh.polygon()[*it][1];
+            p3=mesh.polygon()[*it][2];
+            patch.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
+        }
+    }
+    else {
+        AimsSurfaceTriangle *sphere;
+        
+        Point3df p1 ( mesh.vertex()[*(nodes.begin())] );
+        for ( uint i = 0 ; i < 3 ; i ++ )
+            p1[i] *= log( radius );
+        sphere = SurfaceGenerator::sphere(p1, 0.2, 10);
+        patch = (*sphere)[0];
+
+    }
+    return patch;
 }
 
 
@@ -214,7 +252,7 @@ AimsSurface<3, Void> surf::Blob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
 AimsSurface<3, Void> surf::GreyLevelBlob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
                                                               set<int> &nodes_list ){
 
-  return surf::Blob::getAimsMeshPatch(mesh, nodes_list, scale);
+  return surf::Blob::getAimsMeshPatch(mesh, nodes_list, scale + 1.0);
 
 }
 
@@ -262,6 +300,8 @@ int getEcartMaxIndice( set<float> &longitudes ) {
 
 }
 
+//##############################################################################
+
 Point3df surf::GreyLevelBlob::getBlobBarycenterOnASphere( void ) {
     surf::GreyLevelBlob *glb;
     glb = this;
@@ -293,9 +333,9 @@ Point3df surf::GreyLevelBlob::getBlobBarycenterOnASphere( void ) {
         latMoy /= glb->nodes.size();
         lonMoy /= glb->nodes.size();
     }
-    return Point3df( log(glb->scale) * cos((latMoy-90.)/180.0*3.1415957) * cos(lonMoy/180.0*3.1415957),
-                log(glb->scale) * cos((latMoy-90.)/180.0*3.1415957) * sin(lonMoy/180.0*3.1415957),
-                log(glb->scale) * sin((latMoy-90.)/180.0*3.1415957) );
+    return Point3df( log(glb->scale + 1) * cos((latMoy-90.)/180.0*3.1415957) * cos(lonMoy/180.0*3.1415957),
+                log(glb->scale + 1) * cos((latMoy-90.)/180.0*3.1415957) * sin(lonMoy/180.0*3.1415957),
+                log(glb->scale + 1) * sin((latMoy-90.)/180.0*3.1415957) );
 }
 
 Point3df surf::GreyLevelBlob::getBlobBarycenter( void ) {
@@ -320,9 +360,9 @@ Point3df surf::GreyLevelBlob::getBlobBarycenter( void ) {
     xMoy /= glb->nodes.size();
     yMoy /= glb->nodes.size();
     zMoy /= glb->nodes.size();
-    return Point3df( log(glb->scale) * xMoy,
-                     log(glb->scale) * yMoy,
-                     log(glb->scale) * zMoy );
+    return Point3df( log(glb->scale + 1) * xMoy,
+                     log(glb->scale + 1) * yMoy,
+                     log(glb->scale + 1) * zMoy );
 }
 
 // PAS VERIFIEE
@@ -358,9 +398,9 @@ Point3df surf::GreyLevelBlob::getBlobBarycenterOnAPlane( void ) {
         latMoy /= glb->nodes.size();
         lonMoy /= glb->nodes.size();
     }
-    return Point3df( log(glb->scale) * latMoy,
-                     log(glb->scale) * lonMoy,
-                     log(glb->scale) * 1.0 );
+    return Point3df( log(glb->scale + 1) * latMoy,
+                     log(glb->scale + 1) * lonMoy,
+                     log(glb->scale + 1) * 1.0 );
 }
 
 //##############################################################################
@@ -613,7 +653,7 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
 void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                        vector<surf::GreyLevelBlob *> &filteredBlobs,
                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-                       set<int> &nodes  ){
+                       set<int> &nodes  ) {
     
     // Filtering according to positions
     for (uint i = 0 ; i < ssblobs.size() ; i++ ){
@@ -649,7 +689,7 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                 glb->nodes = (*itB1)->nodes;
                 glb->coordinates = (*itB1)->coordinates;
                 glb->raw_coordinates = (*itB1)->raw_coordinates;
-                
+                glb->index = (*itB1)->index;
                 
                 firstGLB = true;
                 
