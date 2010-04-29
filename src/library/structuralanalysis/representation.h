@@ -51,13 +51,10 @@ AimsSurfaceTriangle getLabelObjectsOnAMesh( TimeTexture<short> &tex,
                                 AimsSurface<3,Void> &mesh,
                                 vector<set<int> > &nodes_lists);
 
-AimsSurfaceTriangle getG2GRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                            vector< pair<uint, uint> > &blobsIndices,
+AimsSurfaceTriangle getG2GRelationsMeshes ( vector< pair<surf::GreyLevelBlob *, surf::GreyLevelBlob *> > &blobsPairs,
                                             int representation_mode = SPHERE );
 
-AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                                    vector< set<uint> > &bifurcIndices,
-                                                    vector< pair<uint, uint> > &bifurcPairs,
+AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector< pair< surf::ScaleSpaceBlob *, surf::ScaleSpaceBlob *> > & bifurcPairs,
                                                     int representation_mode = SPHERE );
 
 #endif

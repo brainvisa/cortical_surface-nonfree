@@ -18,29 +18,32 @@ namespace surf{
     class Blob{
         public:
             int index;
-            int label;
             set<int> nodes;
             map<int, vector<float> > coordinates;
             map<int, vector<float> > raw_coordinates;
+            AimsSurface<3, Void> mesh;
 
-            AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
+
+            void getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
                                                     set<int> &nodes_list,
                                                     float radius = 1.0);
-            AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
+            void getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
                 Texture<float> &lat,
                 Texture<float> &lon,
                 float radius,
                 set<int> &nodes_list );
-            AimsSurface<3, Void> getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
+            void getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
                 Texture<float> &lat,
                 Texture<float> &lon,
                 float height,
                 set<int> &nodes_list );
+            Blob(){}
+            ~Blob(){}
     };
     class ScaleSpaceBlob;
   
 
-    class GreyLevelBlob: public Blob{
+    class GreyLevelBlob: public Blob {
         public :
             float t;
             float scale;
@@ -48,18 +51,35 @@ namespace surf{
             Point3df boundingbox_min;
             ScaleSpaceBlob *ssb_parent;
 
-            AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
-            AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
+            void getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
+            void getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
                                                         Texture<float> &lat,
                                                         Texture<float> &lon,
                                                         set<int> &nodes_list );
-            AimsSurface<3, Void> getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
+            void getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
                                                         Texture<float> &lat,
                                                         Texture<float> &lon,
                                                         set<int> &nodes_list );
             Point3df getBlobBarycenterOnASphere( );
             Point3df getBlobBarycenter( );
             Point3df getBlobBarycenterOnAPlane( );
+            GreyLevelBlob(){}
+            ~GreyLevelBlob(){}
+            GreyLevelBlob( GreyLevelBlob *glb ) {
+                index = glb->index;
+                nodes = glb->nodes;
+                coordinates = glb->coordinates;
+                raw_coordinates = glb->raw_coordinates;
+                ssb_parent = glb->ssb_parent;
+                mesh = glb->mesh;
+                t = glb->t;
+                scale = glb->scale;
+                for ( uint i = 0 ; i < 3 ; i ++ ) {
+                    boundingbox_min[i] = glb->boundingbox_min[i];
+                    boundingbox_max[i] = glb->boundingbox_max[i];
+                }
+            }
+                
 
     };
 
@@ -72,15 +92,31 @@ namespace surf{
             float tmax;
             set<GreyLevelBlob *> blobs;
             set<ScaleSpaceBlob *> topBlobs, bottomBlobs;
-            AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
-            AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
-                Texture<float> &lat,
-                Texture<float> &lon,
-                set<int> &nodes_list );
-                AimsSurface<3, Void> getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
-                    Texture<float> &lat,
-                    Texture<float> &lon,
-                    set<int> &nodes_list );
+//             AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
+//             AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
+//                 Texture<float> &lat,
+//                 Texture<float> &lon,
+//                 set<int> &nodes_list );
+//             AimsSurface<3, Void> getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
+//                     Texture<float> &lat,
+//                     Texture<float> &lon,
+//                     set<int> &nodes_list );
+            ScaleSpaceBlob(){}
+            ~ScaleSpaceBlob(){}
+            ScaleSpaceBlob( ScaleSpaceBlob *ssb ) {
+                index = ssb->index;
+                label = ssb->label;
+                subject = ssb->subject;
+                nodes = ssb->nodes;
+                coordinates = ssb->coordinates;
+                raw_coordinates = ssb->raw_coordinates;
+                t = ssb->t;
+                tmin = ssb->tmin;
+                tmax = ssb->tmax;
+                blobs = ssb->blobs;
+                topBlobs = ssb->topBlobs;
+                bottomBlobs = ssb->bottomBlobs;
+            }
 
     };
 
