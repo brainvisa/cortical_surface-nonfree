@@ -588,7 +588,7 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
         ssb->label = ssblobs[i]->label;
         ssb->subject = ssblobs[i]->subject;
         ssb->tmin = ssblobs[i]->tmin;
-        ssb->tmax = ssblobs[i]->tmax;
+        ssb->tmax = ssblobs[i]->tmax;        
  
         set<surf::GreyLevelBlob *>::iterator itB1;
         for (itB1 = ssblobs[i]->blobs.begin() ; itB1 != ssblobs[i]->blobs.end() ; itB1++){
@@ -633,14 +633,14 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
         filteredIndices.insert ( filteredSsblobs[i]->index ) ;
     }
     for ( uint i = 0 ; i < filteredSsblobs.size() ; i ++ ) {
-        set<surf::ScaleSpaceBlob *> auxTop( filteredSsblobs[i]->topBlobs );
+        set<surf::ScaleSpaceBlob *> auxTop( ssblobs[filteredSsblobs[i]->index]->topBlobs );
         set<surf::ScaleSpaceBlob *>::iterator it;
         filteredSsblobs[i]->topBlobs.clear();
         for ( it = auxTop.begin() ; it != auxTop.end() ; it ++ ) {
             if (filteredIndices.find((*it)->index) != filteredIndices.end())
                filteredSsblobs[i]->topBlobs.insert(*it);
         }
-        set<surf::ScaleSpaceBlob *> auxBot( filteredSsblobs[i]->bottomBlobs );
+        set<surf::ScaleSpaceBlob *> auxBot( ssblobs[filteredSsblobs[i]->index]->bottomBlobs );
         filteredSsblobs[i]->bottomBlobs.clear();
         for ( it = auxBot.begin() ; it != auxBot.end() ; it ++ ) {
             if (filteredIndices.find((*it)->index) != filteredIndices.end())
@@ -706,24 +706,31 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
     }
     
     // Now that the blobs are filtered, we add the correct bifurcations
+    cout << " CHECK" << endl;
+    for ( uint i = 0 ; i < ssblobs.size() ; i ++ ) {
+        cout << "topbot :" << ssblobs[i]->topBlobs.size() << " " << ssblobs[i]->bottomBlobs.size() << endl;
+    }
+    
     set< uint > filteredIndices;
     for ( uint i = 0 ; i < filteredSsblobs.size() ; i ++ ) {
         filteredIndices.insert ( filteredSsblobs[i]->index ) ;
     }
     for ( uint i = 0 ; i < filteredSsblobs.size() ; i ++ ) {
-        set<surf::ScaleSpaceBlob *> auxTop( filteredSsblobs[i]->topBlobs );
+        set<surf::ScaleSpaceBlob *> auxTop( ssblobs[filteredSsblobs[i]->index]->topBlobs );
         set<surf::ScaleSpaceBlob *>::iterator it;
-        filteredSsblobs[i]->topBlobs.clear();
+        assert(filteredSsblobs[i]->topBlobs.size()==0);
         for ( it = auxTop.begin() ; it != auxTop.end() ; it ++ ) {
             if (filteredIndices.find((*it)->index) != filteredIndices.end())
                 filteredSsblobs[i]->topBlobs.insert(*it);
         }
-        set<surf::ScaleSpaceBlob *> auxBot( filteredSsblobs[i]->bottomBlobs );
+        set<surf::ScaleSpaceBlob *> auxBot( ssblobs[filteredSsblobs[i]->index]->bottomBlobs );
         filteredSsblobs[i]->bottomBlobs.clear();
         for ( it = auxBot.begin() ; it != auxBot.end() ; it ++ ) {
             if (filteredIndices.find((*it)->index) != filteredIndices.end())
                 filteredSsblobs[i]->bottomBlobs.insert(*it);
         }
+        cout << "check aux:" << auxTop.size() << " " << auxBot.size() << endl;
+        cout << "check bif:" << filteredSsblobs[i]->topBlobs.size() << " " << filteredSsblobs[i]->bottomBlobs.size() << endl;
     }
     
 }

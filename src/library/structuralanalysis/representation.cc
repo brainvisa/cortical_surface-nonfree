@@ -434,10 +434,14 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
                                          surf::ScaleSpaceBlob *ssb2,
                                          int representation_mode  = SPHERE) {
     AimsSurfaceTriangle mesh, *cyl;
+    cout << "FOLLOW1" << endl;
+    
     set<surf::GreyLevelBlob *> &unsortedListGLB = ssb1->blobs;
     set<surf::GreyLevelBlob *, ltBlobs> listGLB1, listGLB2;
     set<surf::GreyLevelBlob *>::iterator itB;
     set<surf::GreyLevelBlob *, ltBlobs>::iterator itB1, itB2;
+    cout << "FOLLOW" << endl;
+    
     for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
         listGLB1.insert(*itB);
     ASSERT( unsortedListGLB.size() == listGLB1.size() );
@@ -445,6 +449,7 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
     for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
         listGLB2.insert(*itB);
     ASSERT( unsortedListGLB.size() == listGLB2.size() );
+    cout << "FOLLOW" << endl;
     
     if ( ssb2->tmin > ssb1->tmax ) { // RELIER LE GLB MAX DE SSB1 AU GLB MIN DE SSB2
         itB1 = listGLB1.end();
@@ -460,6 +465,7 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
     glb1 = (*itB1);
     glb2 = (*itB2);
     Point3df    p1, p2;
+    cout << "FOLLOW" << endl;
     switch ( representation_mode ) {
         case SPHERE :
             p1 = glb1->getBlobBarycenterOnASphere();
@@ -492,12 +498,21 @@ AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector<surf::ScaleSpaceBlob 
     set<uint>::iterator it;
     for ( uint i = 0 ; i < bifurcIndices.size() ; i++ ) {
         if ( bifurcIndices[i].size() != 0 ) {
+            cout << i << " " << flush;
+            
             for ( it = bifurcIndices[i].begin() ; it != bifurcIndices[i].end() ; it++ ) {
                 AimsSurfaceTriangle linkMesh ;
-                linkMesh = getBifurcationMesh( ssblobs[i], ssblobs[*it], representation_mode );
+                cout << ssblobs.size() << " " << i << "|" << *it << "C" << flush;
+                uint i1=0, i2=0;
+                for ( i1 ; i != ssblobs[i1]->index ; i1++) { cout << ssblobs[i1]->index <<"="<<i<< " " << flush;}
+                for ( i2 ; *it != ssblobs[i2]->index ; i2++) {cout << ssblobs[i2]->index <<"="<<*it<< " " << flush;}
+                cout << "C" << flush;
+                cout << ssblobs.size() << " " <<i1 << i2 << " " << flush;
+                linkMesh = getBifurcationMesh( ssblobs[i1], ssblobs[i2], representation_mode );
+                cout << "I" << flush;
                 meshes[j] = linkMesh[0];
                 j++;
-                pair<uint, uint> p(i, *it);
+                pair<uint, uint> p ( ssblobs[i1]->index, ssblobs[i2]->index );
                 bifurcPairs.push_back(p);
             }
         }
