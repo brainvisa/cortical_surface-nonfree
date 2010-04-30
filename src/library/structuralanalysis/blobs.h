@@ -8,8 +8,9 @@ using namespace carto;
 using namespace std;
 
 
-
-
+enum typesRepresentation {
+    RAW, SPHERE, FLAT, NODES_BARYCENTERS
+};
 
 namespace surf{
 
@@ -23,20 +24,17 @@ namespace surf{
             map<int, vector<float> > raw_coordinates;
             AimsSurface<3, Void> mesh;
 
+            void getAimsMesh (  AimsSurface<3, Void> &mesh,
+                                float radius,
+                                int representation_mode );
+            void getAimsEllipsoid ( float abscissa, float height, float area );
 
             void getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
-                                                    set<int> &nodes_list,
-                                                    float radius = 1.0);
+                                    float radius = 1.0 );
             void getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
-                Texture<float> &lat,
-                Texture<float> &lon,
-                float radius,
-                set<int> &nodes_list );
+                float radius);
             void getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
-                Texture<float> &lat,
-                Texture<float> &lon,
-                float height,
-                set<int> &nodes_list );
+                float height );
             Blob(){}
             ~Blob(){}
     };
@@ -47,25 +45,28 @@ namespace surf{
         public :
             float t;
             float scale;
+            float area;
+
             Point3df boundingbox_max;
             Point3df boundingbox_min;
             ScaleSpaceBlob *ssb_parent;
 
-            void getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
-            void getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
-                                                        Texture<float> &lat,
-                                                        Texture<float> &lon,
-                                                        set<int> &nodes_list );
-            void getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
-                                                        Texture<float> &lat,
-                                                        Texture<float> &lon,
-                                                        set<int> &nodes_list );
+            void getAimsMesh (  AimsSurface<3, Void> &mesh,
+                                int representation_mode );
+            void getAimsEllipsoid ( void );
+
+            void getAimsMeshPatch ( AimsSurface<3, Void> &mesh );
+            void getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh );
+            void getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh );
             Point3df getBlobBarycenterOnASphere( );
             Point3df getBlobBarycenter( );
+            Point3df getBlobBarycenterFromMesh( );
+
             Point3df getBlobBarycenterOnAPlane( );
             GreyLevelBlob(){}
             ~GreyLevelBlob(){}
             GreyLevelBlob( GreyLevelBlob *glb ) {
+                area = glb->area;
                 index = glb->index;
                 nodes = glb->nodes;
                 coordinates = glb->coordinates;
@@ -92,15 +93,7 @@ namespace surf{
             float tmax;
             set<GreyLevelBlob *> blobs;
             set<ScaleSpaceBlob *> topBlobs, bottomBlobs;
-//             AimsSurface<3, Void> getAimsMeshPatch ( AimsSurface<3, Void> &mesh, set<int> &nodes_list );
-//             AimsSurface<3, Void> getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
-//                 Texture<float> &lat,
-//                 Texture<float> &lon,
-//                 set<int> &nodes_list );
-//             AimsSurface<3, Void> getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
-//                     Texture<float> &lat,
-//                     Texture<float> &lon,
-//                     set<int> &nodes_list );
+
             ScaleSpaceBlob(){}
             ~ScaleSpaceBlob(){}
             ScaleSpaceBlob( ScaleSpaceBlob *ssb ) {
