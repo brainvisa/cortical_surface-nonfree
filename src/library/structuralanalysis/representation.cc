@@ -309,36 +309,36 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
     set<surf::GreyLevelBlob *, ltBlobs> listGLB1, listGLB2;
     set<surf::GreyLevelBlob *>::iterator itB;
     set<surf::GreyLevelBlob *, ltBlobs>::iterator itB1, itB2;
-    cout << "bifMesh" << endl;
+//     cout << "bifMesh" << endl;
     for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
         listGLB1.insert(*itB);
     ASSERT( unsortedListGLB.size() == listGLB1.size() );
     unsortedListGLB = ssb2->blobs;
     for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
         listGLB2.insert(*itB);
-    cout << ssb1->index << ":";
-    for ( itB1 = listGLB1.begin(); itB1 != listGLB1.end() ; itB1++){
-        cout << (*itB1)->scale << " " << flush;
-    }
-    cout << "/";
-    cout << ssb2->index << ":";
+//     cout << ssb1->index << ":";
+//     for ( itB1 = listGLB1.begin(); itB1 != listGLB1.end() ; itB1++){
+//         cout << (*itB1)->scale << " " << flush;
+//     }
+//     cout << "/";
+//     cout << ssb2->index << ":";
     for ( itB1 = listGLB2.begin(); itB1 != listGLB2.end() ; itB1++){
         cout << (*itB1)->scale << " " << flush;
     }
-    cout << endl;
+//     cout << endl;
     ASSERT( unsortedListGLB.size() == listGLB2.size() );
-    cout << ssb1->index << " " << ssb1->blobs.size() << " " << ssb1->tmin << "-" << ssb1->tmax << " " << ssb2->index << " " << ssb2->blobs.size() << " " << ssb2->tmin << "-" << ssb2->tmax << endl;
+//     cout << ssb1->index << " " << ssb1->blobs.size() << " " << ssb1->tmin << "-" << ssb1->tmax << " " << ssb2->index << " " << ssb2->blobs.size() << " " << ssb2->tmin << "-" << ssb2->tmax << endl;
     if ( ssb2->tmin > ssb1->tmax  ) { // RELIER LE GLB MAX DE SSB1 AU GLB MIN DE SSB2
         itB1 = listGLB1.end();
         itB1--;
         itB2 = listGLB2.begin();
-        cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
+//         cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
     }
     else if ( ssb1->tmin > ssb2->tmax ) { // RELIER LE GLB MIN DE SSB1 AU GLB MAX DE SSB2
         itB1 = listGLB2.end();
         itB1--;
         itB2 = listGLB1.begin();
-        cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
+//         cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
     }
     else {
         ASSERT(false);

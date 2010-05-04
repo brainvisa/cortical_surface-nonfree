@@ -24,6 +24,8 @@ namespace surf{
             map<int, vector<float> > raw_coordinates;
             AimsSurface<3, Void> mesh;
 
+            pair<Point2df, Point2df> get2DBoundingBox ( );
+
             void getAimsMesh (  AimsSurface<3, Void> &mesh,
                                 float radius,
                                 int representation_mode );
@@ -45,7 +47,12 @@ namespace surf{
         public :
             float t;
             float scale;
-            float area;
+//             float area;
+            // Spatial dispersion : to describe if the blob is isolated are 
+//             float dispersion;
+            // Coordinate defined along an anatomical (possibly defined by user) axis.
+            // It is used to measure the alignment of structures along axes.
+            float x_along_axis;
 
             Point3df boundingbox_max;
             Point3df boundingbox_min;
@@ -61,16 +68,19 @@ namespace surf{
             Point3df getBlobBarycenterOnASphere( );
             Point3df getBlobBarycenter( );
             Point3df getBlobBarycenterFromMesh( );
-
             Point3df getBlobBarycenterOnAPlane( );
+
+            pair<Point2df, Point2df> get2DBoundingBox ( );
+            
             GreyLevelBlob(){}
             ~GreyLevelBlob(){}
             GreyLevelBlob( GreyLevelBlob *glb ) {
-                area = glb->area;
+//                 area = glb->area;
                 index = glb->index;
-                nodes = glb->nodes;
-                coordinates = glb->coordinates;
-                raw_coordinates = glb->raw_coordinates;
+                nodes = set<int>(glb->nodes);
+                x_along_axis = glb->x_along_axis;
+                coordinates = map<int, vector<float> >(glb->coordinates);
+                raw_coordinates = map<int, vector<float> >(glb->raw_coordinates);
                 ssb_parent = glb->ssb_parent;
                 mesh = glb->mesh;
                 t = glb->t;
@@ -134,7 +144,11 @@ namespace surf{
 
 //##############################################################################
 
-double getOverlapMeasure( Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bbmax2, uint *no_overlap );
+void computeBlobsDispersion( vector<surf::ScaleSpaceBlob *> & ssblobs );
+
+double getOverlapMeasure( Point2df bbmin1, Point2df bbmax1, Point2df bbmin2, Point2df bbmax2, uint *no_overlap );
+
+bool isInside2DBox( Point2df p1, Point2df bbmin, Point2df bbmax);
 
 void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                        vector<surf::GreyLevelBlob *> &filteredBlobs,
@@ -149,12 +163,8 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
 
 //##############################################################################
 
-pair<Point2df, Point2df> getBoundingBox(set<int> &nodes_list, TimeTexture<float> &lat, TimeTexture<float> &lon);
 
-pair<Point2df, Point2df> getBoundingBox(set<int> &nodes_list, map<int, float> &lat, map<int, float> &lon);
-
-pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,
-                                          map<int, vector<float> > &coordinates );
+// pair<Point2df, Point2df> getBoundingBox(set<int> &nodes_list, map<int, float> &lat, map<int, float> &lon);
 
 float compareBlobsScales(const surf::GreyLevelBlob *s1, const surf::GreyLevelBlob *s2);
 

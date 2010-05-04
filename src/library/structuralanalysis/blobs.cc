@@ -267,7 +267,9 @@ Point3df surf::GreyLevelBlob::getBlobBarycenter( void ) {
     return Point3df(  xMoy, yMoy, zMoy );
 }
 
+
 // PAS VERIFIEE
+
 Point3df surf::GreyLevelBlob::getBlobBarycenterOnAPlane( void ) {
     surf::GreyLevelBlob *glb;
     glb = this;
@@ -315,10 +317,10 @@ Point3df surf::GreyLevelBlob::getBlobBarycenterFromMesh( void ) {
 
 
 
-double getOverlapMeasure( Point3df bbmin1,
-                          Point3df bbmax1,
-                          Point3df bbmin2,
-                          Point3df bbmax2,
+double getOverlapMeasure( Point2df bbmin1,
+                          Point2df bbmax1,
+                          Point2df bbmin2,
+                          Point2df bbmax2,
                           uint *no_overlap ){
 
     float overlap_x, overlap_y, aux;
@@ -451,21 +453,34 @@ double getOverlapMeasure( Point3df bbmin1,
 
 
 
+bool isInside2DBox( Point2df p1, Point2df bbmin, Point2df bbmax) {
+    uint no_overlap = 2;
+
+    Point2df bbmin1 (p1[0] - 0.0001, p1[1] - 0.0001),
+        bbmax1 (p1[0] + 0.0001, p1[1] + 0.0001),
+        bbmin2 (bbmin[0], bbmin[1]),
+        bbmax2 (bbmax[0], bbmax[1]);
+
+    getOverlapMeasure( bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap );
+    if (no_overlap == 0)
+        return true;
+    else if (no_overlap == 1)
+        return false;
+}
+
+
 void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                        vector<surf::GreyLevelBlob *> &filteredBlobs,
                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-                       Point2df bbmin,
-                       Point2df bbmax,
+                       Point2df bbminZone,
+                       Point2df bbmaxZone,
                        set<int> &nodes,
                        int filteringMode){
 
     for (uint i = 0 ; i < ssblobs.size() ; i++ )
         ssblobs[i]->index = i;
     set< uint > filteredIndices;
-
-                           
     // Filtering according to positions
-    Point3df bbmin2( bbmin[0], bbmin[1], 0.0 ), bbmax2( bbmax[0], bbmax[1], 0.0 );
     for (uint i = 0 ; i < ssblobs.size() ; i++ ){
         string subject;
         subject = ssblobs[i]->subject;
@@ -482,13 +497,12 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
             uint no_overlap = 2;
 
             if (filteringMode == 0){
-                pair<Point2df,Point2df> bbi = getBoundingBox( (*itB1)->nodes, (*itB1)->coordinates );
+                pair<Point2df,Point2df> bbi = (*itB1)->get2DBoundingBox();/* (*itB1)->nodes, (*itB1)->coordinates );*/
 
-                Point3df bbmin1 (bbi.first[0], bbi.first[1], 0.0),
-                    bbmax1 (bbi.second[0], bbi.second[1], 0.0);
+                Point2df bbminBlob (bbi.first[0], bbi.first[1]),
+                    bbmaxBlob (bbi.second[0], bbi.second[1]);
 
-
-                double overlap = getOverlapMeasure( bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap );
+                double overlap = getOverlapMeasure( bbminBlob, bbmaxBlob, bbminZone, bbmaxZone, &no_overlap );
             }
             else {
                 set<int>::iterator it;
@@ -496,7 +510,7 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                 for ( it = (*itB1)->nodes.begin() ; it != (*itB1)->nodes.end() ; it++ )
                     if ( nodes.find(*it) != nodes.end() )
                         intersection.insert(*it);
-            
+
                 if ( intersection.size() != 0 )
                     no_overlap = 0;
                 else
@@ -504,13 +518,13 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
             }
             if (no_overlap == 0)
                 firstGLB = true;
-        }        
+        }
+
         if (firstGLB) {
             for ( itB1 = ssblobs[i]->blobs.begin() ; itB1 != ssblobs[i]->blobs.end() ; itB1++ ) {
-                
+
                 surf::GreyLevelBlob *glb;
                 glb = new surf::GreyLevelBlob( *itB1 );
-//                 cout << glb->nodes.size() << " " <<  glb->raw_coordinates.size() << endl;
                 ASSERT(glb->nodes.size() == glb->raw_coordinates.size());
                 glb->ssb_parent = ssb;
                 ssb->blobs.insert(glb);
@@ -522,9 +536,8 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
         else
             delete(ssb);
     }
-    cout << filteredBlobs.size() << " filtered blobs - " << filteredSsblobs.size() << " filtered ssblobs" << endl;
-    
-    
+    cerr << filteredBlobs.size() << " filtered blobs - " << filteredSsblobs.size() << " filtered ssblobs" << endl;
+
 
     // Now that the blobs are filtered, we add the correct bifurcations
 
@@ -546,13 +559,7 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                 filteredSsblobs[i]->bottomBlobs.insert(filteredSsblobs[i1]);
             }
         }
-//     }
-//     cout << "VERIF"<< endl;
-//     for ( uint i = 0 ; i < filteredSsblobs.size() ; i ++ ) {
-//         cout << "a" << filteredSsblobs[i]->topBlobs.size() << " " << filteredSsblobs[i]->bottomBlobs.size() << endl;
-//         cout << "b" << ssblobs[filteredSsblobs[i]->index]->topBlobs.size() << " " << ssblobs[filteredSsblobs[i]->index]->bottomBlobs.size() << endl;
     }
-
 }
 
 
@@ -563,8 +570,8 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                        Point2df bbmax){
     set<int> nodes;
     filteringBlobs ( ssblobs, filteredBlobs, filteredSsblobs, bbmin, bbmax, nodes, 0 );
-
 }
+
 
 void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                        vector<surf::GreyLevelBlob *> &filteredBlobs,
@@ -572,13 +579,19 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                        set<int> &nodes ) {
     Point2df p1(0.0, 0.0), p2(0.0, 0.0);
     filteringBlobs ( ssblobs, filteredBlobs, filteredSsblobs, p1, p2, nodes, 1 );
+}
+
+
+void computeBlobsDispersion( vector<surf::ScaleSpaceBlob *> & ssblobs ) {
+    
 
 }
+
+
 // #############################################################################
 
-pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,
-                                          map<int, float> &lat,
-                                          map<int, float> &lon ){
+
+pair<Point2df, Point2df> surf::Blob::get2DBoundingBox ( void ){
   Point2df bbmin, bbmax;
   bbmin[0] = 181.0;
   bbmin[1] = 361.0;
@@ -586,24 +599,24 @@ pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,
   bbmax[1] = -1.0;
   set<int>::iterator it;
   pair<Point2df, Point2df> bb;
-  for (it = nodes_list.begin() ; it != nodes_list.end() ; it ++){
-    if (lat[*it] < bbmin[0])
-      bbmin[0] = lat[*it];
-    if (lon[*it] < bbmin[1])
-      bbmin[1] = lon[*it];
+  for (it = nodes.begin() ; it != nodes.end() ; it ++){
+    if (coordinates[*it][0] < bbmin[0])
+      bbmin[0] = coordinates[*it][0];
+    if (coordinates[*it][1] < bbmin[1])
+      bbmin[1] = coordinates[*it][1];
 
-    if (lat[*it] > bbmax[0])
-      bbmax[0] = lat[*it];
-    if (lon[*it] > bbmax[1])
-      bbmax[1] = lon[*it];
+    if (coordinates[*it][0] > bbmax[0])
+      bbmax[0] = coordinates[*it][0];
+    if (coordinates[*it][1] > bbmax[1])
+      bbmax[1] = coordinates[*it][1];
   }
 
   if ( bbmax[1] > 300.0 && bbmin[1] < 60.0 ) {
-    for ( uint i = 0 ; i < nodes_list.size() ; i++ ) {
-      if ( lon[*it] >300.0 && lon[*it] < bbmax[1])
-        bbmax[1] = lon[*it];
-      if (lon[*it] < 60.0 && lon[*it] > bbmin[1])
-        bbmin[1] = lon[*it];
+    for ( uint i = 0 ; i < nodes.size() ; i++ ) {
+      if ( coordinates[*it][1] >300.0 && coordinates[*it][1] < bbmax[1])
+        bbmax[1] = coordinates[*it][1];
+      if (coordinates[*it][1] < 60.0 && coordinates[*it][1] > bbmin[1])
+        bbmin[1] = coordinates[*it][1];
     }
   }
 
@@ -613,28 +626,11 @@ pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,
 }
 
 
-pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,
-                                          TimeTexture<float> &lat,
-                                          TimeTexture<float> &lon ){
-    map<int, float> mapLat, mapLon;
-    set<int>::iterator it;
-    for (it = nodes_list.begin() ; it != nodes_list.end() ; it ++){
-        mapLat[*it] = lat[0].item(*it);
-        mapLon[*it] = lon[0].item(*it);
-    }
-    return getBoundingBox( nodes_list, mapLat, mapLon );
+pair<Point2df, Point2df> surf::GreyLevelBlob::get2DBoundingBox ( void ) {
+    return surf::Blob::get2DBoundingBox ( );
 }
 
-pair<Point2df, Point2df> getBoundingBox ( set<int> &nodes_list,
-                                          map<int, vector<float> > &coordinates ){
-    map<int, float> mapLat, mapLon;
-    set<int>::iterator it;
-    for (it = nodes_list.begin() ; it != nodes_list.end() ; it ++){
-        mapLat[*it] = coordinates[*it][0];
-        mapLon[*it] = coordinates[*it][1];
-    }
-    return getBoundingBox( nodes_list, mapLat, mapLon );
-}
+
 
 //##############################################################################
 
