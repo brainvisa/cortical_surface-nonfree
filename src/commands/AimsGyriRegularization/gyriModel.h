@@ -38,7 +38,7 @@ class GyriRegularization
 public:
 
      GyriRegularization(AimsSurfaceTriangle mesh, TimeTexture<int> gyriTexture, TimeTexture<float> curvMap, double weightData, int smooth) :
-     _mesh(mesh), _gyriTexture(gyriTexture), _curvMap(curvMap), _weightData(weightData), _smooth(smooth) {_offset=0; _size=mesh.vertex().size(); computeNeighbours(); computeGyriProba(); computeCurvCliquesAndNodes();  /*compute2ndOrderCliquesAndNodes(); value2ndOrderCliques();*/ computeGraphEnergy(); initializeGyriEvolution();}
+     _mesh(mesh), _gyriTexture(gyriTexture), _curvMap(curvMap), _weightData(weightData), _smooth(smooth) {_offset=0; _size=mesh.vertex().size(); computeNeighbours(); computeGyriProba(); /*computeCurvCliquesAndNodes();*/  compute2ndOrderCliquesAndNodes(); value2ndOrderCliques(); computeGraphEnergy(); initializeGyriEvolution();}
 
      void computeGraphEnergy(); // global energy
      double computeLocalEnergyChange(uint node, int label);  // energy change when changing node label
@@ -46,13 +46,15 @@ public:
 // function above is not used at the moment. Commented in the .cc as well
 
      double compute2ndOrderCliquePotential(uint cl, int l1, int l2);
-     double computeCurvCliquePotential(uint cl, int l, int lmin, int lmax, int lmax2);
+     double computeCurvCliquePotential(uint cl, int l, int lmin, int lmin2, int lmax, int lmax2);
      double computeDataDrivenPotential(uint i, int l);
 
      void runICM();
      void runAnnealing(float T, float kT);
-
+     void runICMdebug(uint node);
      void writeGyri(string fileOut);
+
+     void debugCliques();
 
 private:
      uint _size;
@@ -73,6 +75,7 @@ private:
      double _currentE;
      double _dataDrivenE;
      double _curvE;
+     double _2ndE;
      int _offset; //just to know how many annealing steps there was before starting ICM
      int _smooth; // nb of iterations for smoothing the proba maps
 
@@ -87,6 +90,8 @@ private:
      void value2ndOrderCliques();
      void computeGyriProba();
      void initializeGyriEvolution();
+
+     double computeLocalEnergyChangeDebug(uint node, int label);
 };
 
 

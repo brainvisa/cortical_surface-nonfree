@@ -15,26 +15,67 @@ using namespace aims::meshdistance;
 
 void GyriRegularization::compute2ndOrderCliquesAndNodes()
 {
-	std::cout << "Building cliques and node list" << std::endl;
+	std::cout << "Building 2nd order cliques and node list" << std::endl;
 	_2ndOrderCliques=std::vector<std::pair<uint, uint> >();
 	uint cliqueNb=0;
+	float likeliT=0.1; // threshold on likelihood (P=-log(likeliT))
+							// below this, nodes are not included in the optimization loop
+
+	// construire le labelMap pour connaitre les relations de voisinage entre gyri
+	// et les labels possibles pour chaque noeud.
+
+	std::map<int, std::set<int> > labelVois;
+
 	for (uint i=0; i<_size; i++)
 	{
-		if (_labelMap[i].size() >= 1) // ATTENTION C'est 2 pour :// only nodes that have to or can be changed label
+		std::set<uint> vois=_neigh[i];
+		std::set<uint>::iterator voisIt;
+		int l=_gyriTexture[0].item(i);
+		if (labelVois.find(l)==labelVois.end())
+			labelVois[l]=std::set<int>();
+		for (voisIt=vois.begin(); voisIt!=vois.end(); voisIt++)
+		{
+			if (_gyriTexture[0].item(*voisIt) != l)
+				labelVois[l].insert(_gyriTexture[0].item(*voisIt));
+		}
+	}
+
+	for (uint i=0; i<_size; i++)
+	{
+		_labelMap[i]=std::set<int>();
+		_labelMap[i].insert(_gyriTexture[0].item(i));
+		std::set<int> setVois=labelVois[_gyriTexture[0].item(i)];
+		std::set<int>::iterator setVoisIt=setVois.begin();
+		for (; setVoisIt != setVois.end(); setVoisIt++)
+		{
+			_labelMap[i].insert(*setVoisIt);
+		}
+	}
+
+	//--------------------------
+
+
+
+	for (uint i=0; i<_size; i++)
+	{
+		if ((_gyriTexture[0].item(i) > 1) && (_gyriProba[_gyriTexture[0].item(i)].item(i)>likeliT))
 		{
 			if (_nodes.find(i) == _nodes.end())
+			{
 				_nodes[i]=std::set<uint>(); // if node does not exist yet it is created
+			}
 			std::set<uint> neigh=_neigh[i];
 			std::set<uint>::iterator neighIt=neigh.begin();
 			for (; neighIt!=neigh.end(); neighIt++)
 			{
-				if ((*neighIt) > i) // clique has not been sen previously
+				if ((*neighIt) > i) // clique has not been seen previously
 				{
 					_2ndOrderCliques.push_back(std::pair<uint, uint>(i, *neighIt) ); //clique created
 					_nodes[i].insert(cliqueNb); // clique added to node
-					if (_labelMap[*neighIt].size() >=1) // ATTENTION 2 aussi // clique added to other node if necessary
+					if ((_gyriTexture[0].item(*neighIt) > 1) && (_gyriProba[_gyriTexture[0].item(*neighIt)].item(*neighIt)>likeliT))
 					{
-						_nodes[*neighIt]=std::set<uint>();
+						if (_nodes.find(*neighIt) == _nodes.end())
+							_nodes[*neighIt]=std::set<uint>();
 						_nodes[*neighIt].insert(cliqueNb);
 					}
 					cliqueNb++;
@@ -52,7 +93,7 @@ void GyriRegularization::compute2ndOrderCliquesAndNodes()
 
 void GyriRegularization::computeRingCliquesAndNodes()
 {
-	std::cout << "Building cliques and node list" << std::endl;
+	std::cout << "Building ring cliques and node list" << std::endl;
 //	_ringCliques=std::vector<std::set<uint> >();
 //
 //	uint cliqueNb=0;
@@ -90,7 +131,7 @@ void GyriRegularization::computeRingCliquesAndNodes()
 
 void GyriRegularization::computeCurvCliquesAndNodes()
 {
-	std::cout << "Building cliques, node list, and everything necessary" << std::endl;
+	std::cout << "Building curv cliques, node list, and everything necessary" << std::endl;
 	_curvCliques=std::vector<CurvClique>();
 
 	// construire le labelMap pour connaitre les relations de voisinage entre gyri
@@ -105,7 +146,7 @@ void GyriRegularization::computeCurvCliquesAndNodes()
 	{
 		std::set<uint> vois=_neigh[i];
 		std::set<uint>::iterator voisIt;
-		uint l=_gyriTexture[0].item(i);
+		int l=_gyriTexture[0].item(i);
 		if (labelVois.find(l)==labelVois.end())
 			labelVois[l]=std::set<int>();
 		for (voisIt=vois.begin(); voisIt!=vois.end(); voisIt++)
@@ -149,7 +190,7 @@ void GyriRegularization::computeCurvCliquesAndNodes()
 				_nodes[i]=std::set<uint>(); // if node does not exist yet it is created
 			std::set<uint> neigh=_neigh[i];
 			std::set<uint>::iterator neighIt=neigh.begin();
-			float k, kmin=10000.0, kmax=-10000.0;
+			float kmin=10000.0, kmax=-10000.0;
 			uint imax, imin, imax2, imin2;
 			for (; neighIt!=neigh.end(); neighIt++)
 			{
@@ -171,7 +212,7 @@ void GyriRegularization::computeCurvCliquesAndNodes()
 			for (neighIt=neigh.begin(); neighIt!=neigh.end(); neighIt++)
 			{
 				float mx, my, mz, vx, vy, vz, sum, mx2, my2, mz2;
-				int p=*neighIt;
+				uint p=*neighIt;
 				if ((p!=imax) && (p!=imin))
 				{
 					vx=((_mesh.vertex())[p])[0] - ((_mesh.vertex())[i])[0];
@@ -248,18 +289,19 @@ void GyriRegularization::computeCurvCliquesAndNodes()
 	for (uint i=0; i< _size; i++)
 		debugCurv[0].item(i)=0;
 
-//	for (uint i=0; i<_curvCliques.size(); i=i+1000)
-//	{
-//		debugCurv[0].item(_curvCliques[i]._center)=100;
-//		debugCurv[0].item(_curvCliques[i]._min)=1;
-//		debugCurv[0].item(_curvCliques[i]._max2)=200;
-//		debugCurv[0].item(_curvCliques[i]._max)=300;
-//	}
-	std::map<uint, std::set<uint> >::iterator nodeIt;
-	for (nodeIt=_nodes.begin(); nodeIt!=_nodes.end(); nodeIt++)
+	for (uint i=0; i<_curvCliques.size(); i=i+1000)
 	{
-		debugCurv[0].item((*nodeIt).first)=1;
+		debugCurv[0].item(_curvCliques[i]._center)=100;
+		debugCurv[0].item(_curvCliques[i]._min)=1;
+		debugCurv[0].item(_curvCliques[i]._min2)=1;
+		debugCurv[0].item(_curvCliques[i]._max2)=200;
+		debugCurv[0].item(_curvCliques[i]._max)=200;
 	}
+//	std::map<uint, std::set<uint> >::iterator nodeIt;
+//	for (nodeIt=_nodes.begin(); nodeIt!=_nodes.end(); nodeIt++)
+//	{
+//		debugCurv[0].item((*nodeIt).first)=1;
+//	}
 	Writer<TimeTexture<int> > texDebugW( "debugNodes" );
     texDebugW << debugCurv ;
 
@@ -270,10 +312,17 @@ void GyriRegularization::computeCurvCliquesAndNodes()
 
 void GyriRegularization::value2ndOrderCliques()
 {
+
+	double epsilon=0.1;
+	double T0=0.3;
+	double a;
+
+	a=(1.0 - epsilon)/(T0*T0);
+
 	int sC=_2ndOrderCliques.size();
 	std::cout << "Computing clique values" << std::endl;
 	_mesh.updateNormals();
-	float sig=0.3;
+
 	float min=100.0, max=-100.0;
 	for (int i=0; i<sC; i++)
 	{
@@ -303,9 +352,12 @@ void GyriRegularization::value2ndOrderCliques()
 		float k=(k1+k2)/2.0;
 		if (k<min) min=k;
 		if (k>max) max=k;
-		if (k>0)
-			val=exp(-(k*k)/(2*sig*sig));
-		else val=1.0;
+
+		if (k<0) val=1.0;
+		else if (k<=T0)
+			val=(double) (a*(k-T0)*(k-T0) + epsilon);
+		else
+			val=epsilon;
 		_cliqueValues.push_back(val);
 	}
 	std::cout << "OK. Min=" << min << " and Max=" << max << std::endl;
@@ -326,20 +378,19 @@ double GyriRegularization::compute2ndOrderCliquePotential(uint cl, int l1, int l
 	}
 }
 
-double GyriRegularization::computeCurvCliquePotential(uint cl, int l, int lmin, int lmax, int lmax2)
+double GyriRegularization::computeCurvCliquePotential(uint cl, int l, int lmin, int lmin2, int lmax, int lmax2)
 {
 
 	double epsilon=0.1;
 	double T0=0.3;
-	double a, c;
+	double a;
 
 	a=(1.0 - epsilon)/(T0*T0);
-	c=epsilon;
 
 	// max curvature
 	float kmax=_curvCliques[cl]._kmax;
 	float kmax2=_curvCliques[cl]._kmax2;
-	if (lmin!=l)
+	if ((lmin!=l) || (lmin2!=l))
 		return(1.0);
 	else
 	{
@@ -396,26 +447,39 @@ void GyriRegularization::computeGraphEnergy()
 {
 
 	std::cout << "Computing global energy" << std::endl;
-	uint nbCliques=_curvCliques.size();
+	//uint nbCliques=_curvCliques.size();
+	uint nbCliques=_2ndOrderCliques.size();
 	_currentE=0.0;
 	_dataDrivenE=0.0;
 	_curvE=0.0;
-	for (uint i=0; i<_size; i++)
+	_2ndE=0.0;
+
+	std::map<uint, std::set<uint> >::iterator nodeIt;
+	for (nodeIt=_nodes.begin(); nodeIt!=_nodes.end(); nodeIt++)
 	{
-		_dataDrivenE+=computeDataDrivenPotential(i, _gyriTexture[0].item(i));
+		_dataDrivenE+=computeDataDrivenPotential((*nodeIt).first, _gyriTexture[0].item((*nodeIt).first));
 	}
+//
+//	for (uint i=0; i<_size; i++)
+//	{
+//		_dataDrivenE+=computeDataDrivenPotential(i, _gyriTexture[0].item(i));
+//	}
+
 	for (uint i=0; i<nbCliques; i++)
-		_curvE+=computeCurvCliquePotential(i,_gyriTexture[0].item(_curvCliques[i]._center),_gyriTexture[0].item(_curvCliques[i]._min) ,_gyriTexture[0].item(_curvCliques[i]._max), _gyriTexture[0].item(_curvCliques[i]._max2) );
+		//_curvE+=computeCurvCliquePotential(i,_gyriTexture[0].item(_curvCliques[i]._center),_gyriTexture[0].item(_curvCliques[i]._min), _gyriTexture[0].item(_curvCliques[i]._min2) ,_gyriTexture[0].item(_curvCliques[i]._max), _gyriTexture[0].item(_curvCliques[i]._max2) );
+		_2ndE+=compute2ndOrderCliquePotential(i, _gyriTexture[0].item(_2ndOrderCliques[i].first), _gyriTexture[0].item(_2ndOrderCliques[i].second));
+	//_currentE = _dataDrivenE + _curvE;
+	_currentE = _dataDrivenE + _2ndE;
+//	std::cout << "Found : E=" << _currentE << ", with dataDrivenE=" << _dataDrivenE << ", and cliquesE=" << _curvE << std::endl;
+	std::cout << "Found : E=" << _currentE << ", with dataDrivenE=" << _dataDrivenE << ", and cliquesE=" << _2ndE << std::endl;
 
-	_currentE = _dataDrivenE + _curvE;
-
-	std::cout << "Found : E=" << _currentE << ", with dataDrivenE=" << _dataDrivenE << ", and curvE=" << _curvE << std::endl;
 }
 
 double GyriRegularization::computeLocalEnergyChange(uint node, int label)
 {
 	int oldLabel=_gyriTexture[0].item(node);
 	double oldLocalEnergy=0.0, localEnergy=0.0;
+	double change;
 	std::set<uint> cliqueSet=_nodes[node];
 	std::set<uint>::iterator cliqueIt=cliqueSet.begin();
 
@@ -428,38 +492,61 @@ double GyriRegularization::computeLocalEnergyChange(uint node, int label)
 
 	for (; cliqueIt!=cliqueSet.end(); cliqueIt++)
 	{
-		int l=_gyriTexture[0].item(_curvCliques[*cliqueIt]._center);
-		int l1=_gyriTexture[0].item(_curvCliques[*cliqueIt]._min);
-		int l2=_gyriTexture[0].item(_curvCliques[*cliqueIt]._max);
-		int l3=_gyriTexture[0].item(_curvCliques[*cliqueIt]._max2);
+		int l1 = _gyriTexture[0].item(_2ndOrderCliques[*cliqueIt].first);
+		int l2 = _gyriTexture[0].item(_2ndOrderCliques[*cliqueIt].second);
 
-		if (node==_curvCliques[*cliqueIt]._center)
+		if (node == _2ndOrderCliques[*cliqueIt].first)
 		{
-			oldLocalEnergy+=computeCurvCliquePotential(*cliqueIt, oldLabel, l1, l2, l3);
-			localEnergy+=computeCurvCliquePotential(*cliqueIt, label, l1, l2, l3);
+			oldLocalEnergy+=compute2ndOrderCliquePotential(*cliqueIt, oldLabel, l2);
+			localEnergy+=compute2ndOrderCliquePotential(*cliqueIt, label, l2);
 		}
-		else if (node==_curvCliques[*cliqueIt]._min)
+		else if (node == _2ndOrderCliques[*cliqueIt].second)
 		{
-			oldLocalEnergy+=computeCurvCliquePotential(*cliqueIt, l, oldLabel, l2, l3);
-			localEnergy+=computeCurvCliquePotential(*cliqueIt, l, label, l2, l3);
-		}
-		else if (node==_curvCliques[*cliqueIt]._max)
-		{
-			oldLocalEnergy+=computeCurvCliquePotential(*cliqueIt, l, l1, oldLabel, l3);
-			localEnergy+=computeCurvCliquePotential(*cliqueIt, l, l1, label, l3);
-		}
-		else if (node==_curvCliques[*cliqueIt]._max2)
-		{
-			oldLocalEnergy+=computeCurvCliquePotential(*cliqueIt, l, l1, l2, oldLabel);
-			localEnergy+=computeCurvCliquePotential(*cliqueIt, l, l1, l2, label);
+			oldLocalEnergy+=compute2ndOrderCliquePotential(*cliqueIt, l1, oldLabel);
+			localEnergy+=compute2ndOrderCliquePotential(*cliqueIt, l1, label);
 		}
 		else
-		{
-			std::cerr << "ComputeLocalEnergyChange(node=" << node << ", label=" << label << ") : node not in clique" << std::endl;
-			exit(EXIT_FAILURE);
-		}
+			std::cerr << "WARNING : node " <<  node << " not into its own cliques !" << std::endl;
+
+//		int l=_gyriTexture[0].item(_curvCliques[*cliqueIt]._center);
+//		int l1=_gyriTexture[0].item(_curvCliques[*cliqueIt]._min);
+//		int l2=_gyriTexture[0].item(_curvCliques[*cliqueIt]._min2);
+//		int l3=_gyriTexture[0].item(_curvCliques[*cliqueIt]._max);
+//		int l4=_gyriTexture[0].item(_curvCliques[*cliqueIt]._max2);
+//
+//		if (node==_curvCliques[*cliqueIt]._center)
+//		{
+//			oldLocalEnergy+=computeCurvCliquePotential(*cliqueIt, oldLabel, l1, l2, l3, l4);
+//			localEnergy+=computeCurvCliquePotential(*cliqueIt, label, l1, l2, l3, l4);
+//		}
+//		else if (node==_curvCliques[*cliqueIt]._min)
+//		{
+//			oldLocalEnergy+=computeCurvCliquePotential(*cliqueIt, l, oldLabel, l2, l3, l4);
+//			localEnergy+=computeCurvCliquePotential(*cliqueIt, l, label, l2, l3, l4);
+//		}
+//		else if (node==_curvCliques[*cliqueIt]._min2)
+//		{
+//			oldLocalEnergy+=computeCurvCliquePotential(*cliqueIt, l, l1, oldLabel, l3, l4);
+//			localEnergy+=computeCurvCliquePotential(*cliqueIt, l, l1, label, l3, l4);
+//		}
+//		else if (node==_curvCliques[*cliqueIt]._max)
+//		{
+//			oldLocalEnergy+=computeCurvCliquePotential(*cliqueIt, l, l1, l2, oldLabel, l4);
+//			localEnergy+=computeCurvCliquePotential(*cliqueIt, l, l1, l2, label, l4);
+//		}
+//		else if (node==_curvCliques[*cliqueIt]._max2)
+//		{
+//			oldLocalEnergy+=computeCurvCliquePotential(*cliqueIt, l, l1, l2, l3, oldLabel);
+//			localEnergy+=computeCurvCliquePotential(*cliqueIt, l, l1, l2, l3, label);
+//		}
+//		else
+//		{
+//			std::cerr << "ComputeLocalEnergyChange(node=" << node << ", label=" << label << ") : node not in clique" << std::endl;
+//			exit(EXIT_FAILURE);
+//		}
 	}
-	return(localEnergy - oldLocalEnergy);
+	change=localEnergy - oldLocalEnergy;
+	return(change);
 }
 
 
@@ -493,7 +580,7 @@ void GyriRegularization::computeGyriProba()
 	std::cout << "Dilating likelihood maps before smoothing" << std::endl;
 	for (j=0; j<=lmax; j++)
 	{
-		tempProbaDil[j]=MeshDilation<float>( _mesh[0], tempProba[j], 0.0, -1, 3.0, true);
+		tempProbaDil[j]=MeshDilation<float>( _mesh[0], tempProba[j], 0.0, -1, 5.0, true);
 	}
 
 	Writer<TimeTexture<float > > tprobW("tempProba");
@@ -530,7 +617,6 @@ void GyriRegularization::computeGyriProba()
 	Writer<TimeTexture<float > > probW("gyriProbaMaps");
 	probW << _gyriProba;
 }
-
 
 
 //double GyriRegularization::computeLocalEnergyChange(uint node, int label)
@@ -579,7 +665,7 @@ void GyriRegularization::initializeGyriEvolution()
 	int nb=2000;
 	_gyriEvolution=TimeTexture<int>(nb, _size);
 	for (int j=0; j<nb; j++)
-		for (int i=0; i<_size; i++)
+		for (uint i=0; i<_size; i++)
 		{
 			_gyriEvolution[j].item(i)=_gyriTexture[0].item(i);
 		}
@@ -591,23 +677,26 @@ void GyriRegularization::runICM()
 	TimeTexture<float> energyEvolution(nb, _size);
 	uint i;
 	int iter=1;
-	for (int j=0; j<nb; j++)
-		for (i=0; i<_size; i++)
-		{
-			energyEvolution[j].item(i)=0.0;
-		}
-	uint size_cliques=_curvCliques.size();
+//	for (int j=0; j<nb; j++)
+//		for (i=0; i<_size; i++)
+//		{
+//			energyEvolution[j].item(i)=0.0;
+//		}
+	//uint size_cliques=_curvCliques.size();
+	uint size_cliques=_2ndOrderCliques.size();
 
 	std::cout << "Running ICM..." << std::endl;
+	double dEG=0.0;
 
-	for (uint j=0; j<size_cliques; j++)
-	{
-		int l=_gyriTexture[0].item(_curvCliques[j]._center);
-		int l1=_gyriTexture[0].item(_curvCliques[j]._min);
-		int l2=_gyriTexture[0].item(_curvCliques[j]._max);
-		int l3=_gyriTexture[0].item(_curvCliques[j]._max2);
-		energyEvolution[0].item(_curvCliques[j]._center)=(float) computeCurvCliquePotential(j, l, l1, l2, l3);
-	}
+//	for (uint j=0; j<size_cliques; j++)
+//	{
+//		int l=_gyriTexture[0].item(_curvCliques[j]._center);
+//		int l1=_gyriTexture[0].item(_curvCliques[j]._min);
+//		int l2=_gyriTexture[0].item(_curvCliques[j]._min2);
+//		int l3=_gyriTexture[0].item(_curvCliques[j]._max);
+//		int l4=_gyriTexture[0].item(_curvCliques[j]._max2);
+//		energyEvolution[0].item(_curvCliques[j]._center)=(float) computeCurvCliquePotential(j, l, l1, l2, l3, l4);
+//	}
 
 	std::map<uint, std::set<uint> >::iterator nodeIt;
 
@@ -620,10 +709,13 @@ void GyriRegularization::runICM()
 	std::random_shuffle(reorder.begin(), reorder.end());
 	uint size_nodes=reorder.size();
 
+	std::cout << "DEBUG : nodes: " << reorder.size() << " and was : " << _nodes.size() << std::endl;
+
 	for ( ; iter<100; iter++)      // iterations
 	{
 		std::cout << "Iteration " << iter << ": " << std::flush;
 		uint nbCh=0;
+		dEG=0.0;
 		for (uint j=0; j<size_nodes; j++)  // parcours des noeuds concernŽs
 		{
 			i=reorder[j];
@@ -645,34 +737,41 @@ void GyriRegularization::runICM()
 				nbCh++;
 				_gyriTexture[0].item(i)=bestL; // this two line do what updateLabelAndEnergy()
 				_currentE += deMin; // does, but so far it's more efficient not to call it.
+				dEG+=deMin;
 			}
 			_gyriEvolution[iter+_offset].item(i)=_gyriTexture[0].item(i);
 		}
-		for (uint j=0; j<size_cliques; j++)
-		{
-			int l=_gyriTexture[0].item(_curvCliques[j]._center);
-			int l1=_gyriTexture[0].item(_curvCliques[j]._min);
-			int l2=_gyriTexture[0].item(_curvCliques[j]._max);
-			int l3=_gyriTexture[0].item(_curvCliques[j]._max);
-			energyEvolution[iter].item(_curvCliques[j]._center)=(float) computeCurvCliquePotential(j, l, l1, l2, l3);
-		}
-		std::cout << "nb changes : " << nbCh << "; Energy =" << _currentE << std::endl;
+//		for (uint j=0; j<size_cliques; j++)
+//		{
+//			int l=_gyriTexture[0].item(_curvCliques[j]._center);
+//			int l1=_gyriTexture[0].item(_curvCliques[j]._min);
+//			int l2=_gyriTexture[0].item(_curvCliques[j]._min2);
+//			int l3=_gyriTexture[0].item(_curvCliques[j]._max);
+//			int l4=_gyriTexture[0].item(_curvCliques[j]._max2);
+//			energyEvolution[iter].item(_curvCliques[j]._center)=(float) computeCurvCliquePotential(j, l, l1, l2, l3, l4);
+//		}
+		std::cout << "nb changes : " << nbCh << "; Energy =" << _currentE << "; global change =" << dEG << std::endl;
 		if (nbCh==0)
 			iter=20000;
+
+//		computeGraphEnergy();
 	}
 	std::cout << "Finished" << std::endl;
+
+	std::cout << "Computing Global Energy" << std::endl;
+	computeGraphEnergy();
+
 	std::cout << "Writing texture gyriEvolution..." << std::endl;
     Writer<TimeTexture<int> > texResultW( "gyriEvolution" );
     texResultW << _gyriEvolution ;
-    std::cout << "and texture curvEvolution." << std::endl;
-	Writer<TimeTexture<float> > texEnergyW( "energyEvolution" );
-	texEnergyW << energyEvolution ;
+//    std::cout << "and texture curvEvolution." << std::endl;
+//	Writer<TimeTexture<float> > texEnergyW( "energyEvolution" );
+//	texEnergyW << energyEvolution ;
 }
 
 
 void GyriRegularization::runAnnealing(float T, float kT)
 {
-	int nb=200;
 	//TimeTexture<float> energyEvolution(nb, _size);
 	uint i;
 	int iter=1;
@@ -682,7 +781,6 @@ void GyriRegularization::runAnnealing(float T, float kT)
 //			//gyriEvolution[j].item(i)=0;
 //			energyEvolution[j].item(i)=0.0;
 //		}
-	uint size_cliques=_curvCliques.size();
 
 //	for (uint j=0; j<size_cliques; j++)
 //	{
@@ -704,10 +802,12 @@ void GyriRegularization::runAnnealing(float T, float kT)
 
 	std::random_shuffle(reorder.begin(), reorder.end());
 	uint size_nodes=reorder.size();
-
+	std::cout << "size_nodes=" << size_nodes << std::endl;
+	double dEG;
 	uint nbZero=0;
 	for ( ; iter<2000; iter++)      // iterations
 	{
+		dEG=0.0;
 		std::cout << "Iteration " << iter << "-> T=" << T << " : " << std::flush;
 		uint nbCh=0;
 		for (uint j=0; j<size_nodes; j++)  // parcours des noeuds concernŽs
@@ -755,8 +855,9 @@ void GyriRegularization::runAnnealing(float T, float kT)
 			if (bestL != currentL)
 			{
 				nbCh++;
-				_currentE += computeLocalEnergyChange(i, bestL); // does, but so far it's more efficient not to call it.
-				_gyriTexture[0].item(i)=bestL; // this two line do what updateLabelAndEnergy()
+				dEG+=computeLocalEnergyChange(i, bestL);
+				_currentE += computeLocalEnergyChange(i, bestL); // this two line do what updateLabelAndEnergy()
+				_gyriTexture[0].item(i)=bestL;  // does, but so far it's more efficient not to call it.
 				_gyriEvolution[iter].item(i)=bestL;
 			}
 			else
@@ -769,7 +870,7 @@ void GyriRegularization::runAnnealing(float T, float kT)
 //			int l2=_gyriTexture[0].item(_curvCliques[j]._max);
 //			energyEvolution[iter].item(_curvCliques[j]._center)=(float) computeCurvCliquePotential(j, l, l1, l2);
 //		}
-		std::cout << "nb changes : " << nbCh << "; Energy =" << _currentE << "\r" << std::endl;
+		std::cout << "nb changes : " << nbCh << "; Energy =" << _currentE << "; Global change =" << dEG << std::endl;
 		_evolutionE.push_back(_currentE);
 		if (nbCh==0)
 			nbZero++;
@@ -779,6 +880,8 @@ void GyriRegularization::runAnnealing(float T, float kT)
 			iter=20000;
 		}
 		T=T*kT;
+
+//		computeGraphEnergy();
 	}
 	if (iter < 20000) _offset=iter;
 	std::cout << "Offset : " << _offset << std::endl;
@@ -786,7 +889,9 @@ void GyriRegularization::runAnnealing(float T, float kT)
 	std::cout << "Finished" << std::endl;
 
 
-	std::cout << "Computing data-driven local energy" << std::endl;
+	std::cout << "Computing Global Energy" << std::endl;
+	computeGraphEnergy();
+
 	Writer<TimeTexture<int> > resultW( "resultGyri" );
 	resultW << _gyriTexture ;
 	TimeTexture<float> dataD(1, _size);
@@ -815,13 +920,198 @@ void GyriRegularization::writeGyri(string fileOut)
 }
 
 
+void GyriRegularization::runICMdebug(uint node)
+{
+	int nb=100;
+	TimeTexture<float> energyEvolution(nb, _size);
+	uint i;
+	int iter=1;
+//	for (int j=0; j<nb; j++)
+//		for (i=0; i<_size; i++)
+//		{
+//			energyEvolution[j].item(i)=0.0;
+//		}
+	//uint size_cliques=_curvCliques.size();
+	uint size_cliques=_2ndOrderCliques.size();
+
+	std::cout << "Running ICM Debug for one node " << node << std::endl;
+	double dEG=0.0;
+
+//	for (uint j=0; j<size_cliques; j++)
+//	{
+//		int l=_gyriTexture[0].item(_curvCliques[j]._center);
+//		int l1=_gyriTexture[0].item(_curvCliques[j]._min);
+//		int l2=_gyriTexture[0].item(_curvCliques[j]._min2);
+//		int l3=_gyriTexture[0].item(_curvCliques[j]._max);
+//		int l4=_gyriTexture[0].item(_curvCliques[j]._max2);
+//		energyEvolution[0].item(_curvCliques[j]._center)=(float) computeCurvCliquePotential(j, l, l1, l2, l3, l4);
+//	}
+
+	std::map<uint, std::set<uint> >::iterator nodeIt;
+
+	std::vector<uint> reorder;				// This is for a random order during optimisation
+	for (nodeIt=_nodes.begin(); nodeIt!=_nodes.end(); nodeIt++)
+	{
+		reorder.push_back((*nodeIt).first);
+	}
+
+	std::random_shuffle(reorder.begin(), reorder.end());
+	uint size_nodes=reorder.size();
+
+	std::cout << "DEBUG : nodes: " << reorder.size() << " and was : " << _nodes.size() << std::endl;
+
+	for ( ; iter<100; iter++)      // iterations
+	{
+		std::cout << "Iteration " << iter << ": " << std::flush;
+		uint nbCh=0;
+		dEG=0.0;
+
+			i=node;
+			double deMin=0, dE;
+			int bestL=_gyriTexture[0].item(i), currentL=bestL;
+			std::cout << "\tCurrent label : " << currentL << std::endl;
+			std::set<int> labelSet=_labelMap[i];
+			std::set<int>::iterator labelIt=labelSet.begin();
+			for (; labelIt!=labelSet.end(); labelIt++)
+			{
+				std::cout << "\t\t trying out label " << (*labelIt) << std::endl;
+				if ((*labelIt)!=currentL) dE=computeLocalEnergyChangeDebug(i, (*labelIt));
+				std::cout << "\t\t dE=" << dE << std::endl;
+				if (dE<deMin)
+				{
+					deMin=dE;
+					bestL=(*labelIt);
+				}
+			}
+			if (bestL != currentL)
+			{
+				nbCh++;
+				_gyriTexture[0].item(i)=bestL; // this two line do what updateLabelAndEnergy()
+				_currentE += deMin; // does, but so far it's more efficient not to call it.
+				dEG+=deMin;
+			}
+			_gyriEvolution[iter+_offset].item(i)=_gyriTexture[0].item(i);
+
+		std::cout << "nb changes : " << nbCh << "; Energy =" << _currentE << "; global change =" << dEG << std::endl;
+		if (nbCh==0)
+			iter=20000;
+
+		computeGraphEnergy();
+	}
+	std::cout << "Finished" << std::endl;
+
+	std::cout << "Computing Global Energy" << std::endl;
+	computeGraphEnergy();
+
+	std::cout << "Writing texture gyriEvolution..." << std::endl;
+    Writer<TimeTexture<int> > texResultW( "gyriEvolution" );
+    texResultW << _gyriEvolution ;
+//    std::cout << "and texture curvEvolution." << std::endl;
+//	Writer<TimeTexture<float> > texEnergyW( "energyEvolution" );
+//	texEnergyW << energyEvolution ;
+}
+
+double GyriRegularization::computeLocalEnergyChangeDebug(uint node, int label)
+{
+	int oldLabel=_gyriTexture[0].item(node);
+	double oldLocalEnergy=0.0, localEnergy=0.0;
+	double change;
+	std::set<uint> cliqueSet=_nodes[node];
+	std::set<uint>::iterator cliqueIt=cliqueSet.begin();
+
+	// first the data-driven term
+
+	oldLocalEnergy+=computeDataDrivenPotential(node, oldLabel);
+	localEnergy+=computeDataDrivenPotential(node, label);
+
+//	Testons les cliques
+	std::cout << "Testing all cliques" << std::endl;
+	std::vector<std::pair<uint, uint> >::iterator clIt=_2ndOrderCliques.begin();
+	for (; clIt!=_2ndOrderCliques.end(); clIt++)
+	{
+		uint k=(*clIt).first;
+		uint l=(*clIt).second;
+		if ((k==node) || (l==node))
+			std::cout << "\t(" << k << ", " << l << ")" << std::endl;
+	}
 
 
 
+	// then the list of cliques the node is involved in
+	std::cout << "Testing relevant cliques" << std::endl;
 
 
+	for (; cliqueIt!=cliqueSet.end(); cliqueIt++)
+	{
+		int l1 = _gyriTexture[0].item(_2ndOrderCliques[*cliqueIt].first);
+		int l2 = _gyriTexture[0].item(_2ndOrderCliques[*cliqueIt].second);
+		std::cout << "\t(" << _2ndOrderCliques[*cliqueIt].first << ", " << _2ndOrderCliques[*cliqueIt].second << ")" << std::endl;
+		if (node == _2ndOrderCliques[*cliqueIt].first)
+		{
+			oldLocalEnergy+=compute2ndOrderCliquePotential(*cliqueIt, oldLabel, l2);
+			localEnergy+=compute2ndOrderCliquePotential(*cliqueIt, label, l2);
+		}
+		else if (node == _2ndOrderCliques[*cliqueIt].second)
+		{
+			oldLocalEnergy+=compute2ndOrderCliquePotential(*cliqueIt, l1, oldLabel);
+			localEnergy+=compute2ndOrderCliquePotential(*cliqueIt, l1, label);
+		}
+		else
+			std::cerr << "WARNING : node " <<  node << " not into its own cliques !" << std::endl;
 
+	}
+	change=localEnergy - oldLocalEnergy;
+	return(change);
+}
 
+void GyriRegularization::debugCliques()
+{
+//	TimeTexture<short> texNull(1,_size);
+//	int nbT=0;
+//
+//	for (uint i=0; i<_size; i++)
+//	{
+//		texNull[0].item(i)=0;
+//	}
+//	std::map<uint, std::set<uint> >::iterator nodeIt=_nodes.begin();
+//	for (; nodeIt!=_nodes.end(); nodeIt++)
+//	{
+//		uint i=(*nodeIt).first;
+//		std::set<uint> cliqueSet=_nodes[i];
+//		int nb=cliqueSet.size();
+//		if (nb==0)
+//		{
+//			std::cout << i << " | " << flush;
+//			texNull[0].item(i)=100;
+//			nbT++;
+//		}
+//	}
+//	std::cout << std::endl;
+//	std::cout << " nb of nodes without a clique : " << nbT << std::endl;
+//	Writer<TimeTexture<short> > texD( "debugCliques" );
+//	texD << texNull ;
+//
+	int nbC=_2ndOrderCliques.size();
+	for (int c=0; c<nbC; c++)
+	{
+		int i1=_2ndOrderCliques[c].first;
+		int i2=_2ndOrderCliques[c].second;
+		if ((i1==14644) || (i2==14644))
+		{
+			std::cout << "Clique " << c << ": (" << i1 << "," << i2 << "), (" << _gyriTexture[0].item(i1) << "," <<  _gyriTexture[0].item(i2)
+																		<< "), (" << _gyriProba[_gyriTexture[0].item(i1)].item(i1) << "," <<  _gyriProba[_gyriTexture[0].item(i2)].item(i2) << ")" << std::endl;
+
+		}
+	}
+	std::set<uint> cliqueSet=_nodes[14644];
+	std::set<uint>::iterator cIt;
+	std::cout << "Liste des cliques enregistrŽes pour le noeud 14644:" << std::endl;
+	for (cIt=cliqueSet.begin(); cIt!=cliqueSet.end(); cIt++)
+	{
+		std::cout << (*cIt) << std::endl;
+	}
+	exit(EXIT_SUCCESS);
+}
 
 
 

@@ -57,23 +57,6 @@ int main( int argc, const char** argv )
      app.addOption(smooth, "-s", "Smoothing of probability maps (default=80)", 80);
      app.alias( "--smooth", "-s");
      app.initialize();
-     
-
-
-     std::cout << "Testing the uniform random draw" << std::endl;
-
-     std::cout << UniformRandom() << std::endl;
-     std::cout << UniformRandom() << std::endl;
-     std::cout << UniformRandom() << std::endl;
-     std::cout << UniformRandom() << std::endl;
-     std::cout << UniformRandom() << std::endl;
-     std::cout << UniformRandom() << std::endl;
-     std::cout << UniformRandom() << std::endl;
-     std::cout << UniformRandom() << std::endl;
-     std::cout << UniformRandom() << std::endl;
-     std::cout << UniformRandom() << std::endl;
-
-
 
      std::cout << "Data-driven potential weight : " << weight << std::endl;
      cout << "reading triangulation   : " << flush;
@@ -146,6 +129,10 @@ int main( int argc, const char** argv )
  	GyriRegularization regul(surface, texGyri, normalMax, weight, smooth);
  	if (opti==1) regul.runAnnealing(2000.0, 0.99);
  	else regul.runICM();
+
+// 	regul.debugCliques();
+//
+// 	regul.runICMdebug(14644);
 
 	std::cout << "Writing texture " << fileOut << std::endl;
  	regul.writeGyri(fileOut);
