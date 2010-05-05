@@ -52,7 +52,7 @@ namespace surf{
 //             float dispersion;
             // Coordinate defined along an anatomical (possibly defined by user) axis.
             // It is used to measure the alignment of structures along axes.
-            float x_along_axis;
+            map<int, float> x_along_axis;
 
             Point3df boundingbox_max;
             Point3df boundingbox_min;
@@ -78,7 +78,7 @@ namespace surf{
 //                 area = glb->area;
                 index = glb->index;
                 nodes = set<int>(glb->nodes);
-                x_along_axis = glb->x_along_axis;
+                x_along_axis = map<int, float>(glb->x_along_axis);
                 coordinates = map<int, vector<float> >(glb->coordinates);
                 raw_coordinates = map<int, vector<float> >(glb->raw_coordinates);
                 ssb_parent = glb->ssb_parent;
