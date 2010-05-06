@@ -79,6 +79,8 @@ private:
      int _offset; //just to know how many annealing steps there was before starting ICM
      int _smooth; // nb of iterations for smoothing the proba maps
 
+     std::set<int> _seeds; // one node per gyri that keeps its original label;
+
      std::vector<double> _evolutionE;
 
      TimeTexture<float> _gyriProba;

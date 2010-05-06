@@ -58,7 +58,7 @@ void GyriRegularization::compute2ndOrderCliquesAndNodes()
 
 	for (uint i=0; i<_size; i++)
 	{
-		if ((_gyriTexture[0].item(i) > 1) && (_gyriProba[_gyriTexture[0].item(i)].item(i)>likeliT))
+		if ((_gyriTexture[0].item(i) > 1) && (_seeds.find(i)==_seeds.end()) && (_gyriProba[_gyriTexture[0].item(i)].item(i)>likeliT))
 		{
 			if (_nodes.find(i) == _nodes.end())
 			{
@@ -72,7 +72,7 @@ void GyriRegularization::compute2ndOrderCliquesAndNodes()
 				{
 					_2ndOrderCliques.push_back(std::pair<uint, uint>(i, *neighIt) ); //clique created
 					_nodes[i].insert(cliqueNb); // clique added to node
-					if ((_gyriTexture[0].item(*neighIt) > 1) && (_gyriProba[_gyriTexture[0].item(*neighIt)].item(*neighIt)>likeliT))
+					if ((_gyriTexture[0].item(*neighIt) > 1) && (_seeds.find(*neighIt)==_seeds.end()) && (_gyriProba[_gyriTexture[0].item(*neighIt)].item(*neighIt)>likeliT))
 					{
 						if (_nodes.find(*neighIt) == _nodes.end())
 							_nodes[*neighIt]=std::set<uint>();
@@ -563,7 +563,8 @@ void GyriRegularization::computeGyriProba()
 		if (_gyriTexture[0].item(i) > lmax)
 			lmax=_gyriTexture[0].item(i);
 
-
+	std::vector<int> seedsV;
+	for (j=0; j<=lmax; j++) seedsV.push_back(1);
 	_gyriProba=TimeTexture<float>(lmax+1, _size);
 
 	// proba equal 0 to start with
@@ -576,17 +577,18 @@ void GyriRegularization::computeGyriProba()
 	for (i=0; i<_size; i++)
 			tempProba[_gyriTexture[0].item(i)].item(i)=100.0;
 
+//	Writer<TimeTexture<float > > prob1W("probaInit");
+//	prob1W << tempProba;
+
 	// dilation of the gyri to extend their possible localization a bit
 	std::cout << "Dilating likelihood maps before smoothing" << std::endl;
 	for (j=0; j<=lmax; j++)
 	{
-		tempProbaDil[j]=MeshDilation<float>( _mesh[0], tempProba[j], 0.0, -1, 5.0, true);
+		tempProbaDil[j]=MeshDilation<float>( _mesh[0], tempProba[j], 0.0, -1, 3.0, true);
 	}
 
-	Writer<TimeTexture<float > > tprobW("tempProba");
-	tprobW << tempProba;
-	Writer<TimeTexture<float > > tprobdW("tempProbaDil");
-	tprobdW << tempProbaDil;
+//	Writer<TimeTexture<float > > prob2W("probaDil");
+//	prob2W << tempProbaDil;
 
 	//Smoothing of the textures
 	FiniteElementSmoother<3, float> *smooth;
@@ -596,7 +598,12 @@ void GyriRegularization::computeGyriProba()
 	{
 		_gyriProba[j]=smooth->doSmoothing(tempProbaDil[j], _smooth, false);
 	}
+//	Writer<TimeTexture<float > > prob3W("probaSmooth");
+//	prob3W << _gyriProba;
 
+
+	std::vector<float> max;
+	for (j=0; j<=lmax; j++) max.push_back(0.0);
 
 	for (i=0; i<_size; i++)
 	{
@@ -607,6 +614,7 @@ void GyriRegularization::computeGyriProba()
 		for (j=0; j<=lmax; j++)
 		{
 			float p=_gyriProba[j].item(i)/float(sum);
+			if (p>max[j]) {max[j]=p; seedsV[j]=i;}
 			if (p<0.0000000001)
 				_gyriProba[j].item(i)=-log(0.0000000001);
 			else
@@ -614,8 +622,12 @@ void GyriRegularization::computeGyriProba()
 		}
 	}
 
-	Writer<TimeTexture<float > > probW("gyriProbaMaps");
-	probW << _gyriProba;
+	for (j=0; j<=lmax; j++) _seeds.insert(seedsV[j]);
+//	Writer<TimeTexture<float > > prob4W("probaLog");
+//	prob4W << _gyriProba;
+//
+//	Writer<TimeTexture<float > > probW("gyriProbaMaps");
+//	probW << _gyriProba;
 }
 
 
