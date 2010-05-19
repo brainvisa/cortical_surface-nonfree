@@ -127,7 +127,7 @@ int main( int argc, const char** argv )
      maxW << normalMax ;
 
  	GyriRegularization regul(surface, texGyri, normalMax, weight, smooth);
- 	if (opti==1) regul.runAnnealing(2000.0, 0.99);
+ 	if (opti==1) regul.runAnnealing(2000.0, 0.999);
  	else regul.runICM();
 
 // 	regul.debugCliques();

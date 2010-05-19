@@ -58,7 +58,7 @@ void GyriRegularization::compute2ndOrderCliquesAndNodes()
 
 	for (uint i=0; i<_size; i++)
 	{
-		if ((_gyriTexture[0].item(i) > 1) && (_seeds.find(i)==_seeds.end()) && (_gyriProba[_gyriTexture[0].item(i)].item(i)>likeliT))
+		if ((_gyriTexture[0].item(i) > 1) && (_gyriTexture[0].item(i) < 50) && (_seeds.find(i)==_seeds.end()) && (_gyriProba[_gyriTexture[0].item(i)].item(i)>likeliT))
 		{
 			if (_nodes.find(i) == _nodes.end())
 			{
@@ -72,7 +72,7 @@ void GyriRegularization::compute2ndOrderCliquesAndNodes()
 				{
 					_2ndOrderCliques.push_back(std::pair<uint, uint>(i, *neighIt) ); //clique created
 					_nodes[i].insert(cliqueNb); // clique added to node
-					if ((_gyriTexture[0].item(*neighIt) > 1) && (_seeds.find(*neighIt)==_seeds.end()) && (_gyriProba[_gyriTexture[0].item(*neighIt)].item(*neighIt)>likeliT))
+					if ((_gyriTexture[0].item(*neighIt) > 1) && (_gyriTexture[0].item(i) < 50) && (_seeds.find(*neighIt)==_seeds.end()) && (_gyriProba[_gyriTexture[0].item(*neighIt)].item(*neighIt)>likeliT))
 					{
 						if (_nodes.find(*neighIt) == _nodes.end())
 							_nodes[*neighIt]=std::set<uint>();
@@ -584,7 +584,7 @@ void GyriRegularization::computeGyriProba()
 	std::cout << "Dilating likelihood maps before smoothing" << std::endl;
 	for (j=0; j<=lmax; j++)
 	{
-		tempProbaDil[j]=MeshDilation<float>( _mesh[0], tempProba[j], 0.0, -1, 3.0, true);
+		tempProbaDil[j]=MeshDilation<float>( _mesh[0], tempProba[j], 0.0, -1, 1.0, true);
 	}
 
 //	Writer<TimeTexture<float > > prob2W("probaDil");
@@ -622,7 +622,43 @@ void GyriRegularization::computeGyriProba()
 		}
 	}
 
-	for (j=0; j<=lmax; j++) _seeds.insert(seedsV[j]);
+
+	// Here we are keeping seeds for each region.
+	// easier to optimize and guarantees that we do not 'lose' any region
+
+	for (j=0; j<=lmax; j++)
+	{
+		_seeds.insert(seedsV[j]);
+		std::set<uint> voisins=_neigh[seedsV[j]];
+		std::set<uint>::iterator vIt=voisins.begin();
+		for (; vIt!=voisins.end(); vIt++)
+			_seeds.insert(*vIt);
+	}
+
+	//debug
+	TimeTexture<short> deb(lmax+1, _size);
+	for (j=0; j<=lmax; j++)
+		for (i=0; i<_size; i++)
+			deb[j].item(i)=0;
+	for (i=0; i<_size; i++)
+	{
+		deb[_gyriTexture[0].item(i)].item(i)=100;
+	}
+	std::set<int>::iterator sIt=_seeds.begin();
+
+	for (j=0; j<=lmax; j++)
+	{
+		deb[j].item(seedsV[j])=200;
+	}
+
+	Writer<TimeTexture<short > > seedsW("seedsAndGyri");
+	seedsW << deb;
+
+
+
+
+
+
 //	Writer<TimeTexture<float > > prob4W("probaLog");
 //	prob4W << _gyriProba;
 //
@@ -674,7 +710,7 @@ void GyriRegularization::computeGyriProba()
 
 void GyriRegularization::initializeGyriEvolution()
 {
-	int nb=2000;
+	int nb=20000;
 	_gyriEvolution=TimeTexture<int>(nb, _size);
 	for (int j=0; j<nb; j++)
 		for (uint i=0; i<_size; i++)
@@ -689,12 +725,7 @@ void GyriRegularization::runICM()
 	TimeTexture<float> energyEvolution(nb, _size);
 	uint i;
 	int iter=1;
-//	for (int j=0; j<nb; j++)
-//		for (i=0; i<_size; i++)
-//		{
-//			energyEvolution[j].item(i)=0.0;
-//		}
-	//uint size_cliques=_curvCliques.size();
+
 	uint size_cliques=_2ndOrderCliques.size();
 
 	std::cout << "Running ICM..." << std::endl;
@@ -751,7 +782,7 @@ void GyriRegularization::runICM()
 				_currentE += deMin; // does, but so far it's more efficient not to call it.
 				dEG+=deMin;
 			}
-			_gyriEvolution[iter+_offset].item(i)=_gyriTexture[0].item(i);
+			//_gyriEvolution[iter+_offset].item(i)=_gyriTexture[0].item(i);
 		}
 //		for (uint j=0; j<size_cliques; j++)
 //		{
@@ -773,9 +804,9 @@ void GyriRegularization::runICM()
 	std::cout << "Computing Global Energy" << std::endl;
 	computeGraphEnergy();
 
-	std::cout << "Writing texture gyriEvolution..." << std::endl;
-    Writer<TimeTexture<int> > texResultW( "gyriEvolution" );
-    texResultW << _gyriEvolution ;
+//	std::cout << "Writing texture gyriEvolution..." << std::endl;
+//    Writer<TimeTexture<int> > texResultW( "gyriEvolution" );
+//    texResultW << _gyriEvolution ;
 //    std::cout << "and texture curvEvolution." << std::endl;
 //	Writer<TimeTexture<float> > texEnergyW( "energyEvolution" );
 //	texEnergyW << energyEvolution ;
@@ -817,7 +848,7 @@ void GyriRegularization::runAnnealing(float T, float kT)
 	std::cout << "size_nodes=" << size_nodes << std::endl;
 	double dEG;
 	uint nbZero=0;
-	for ( ; iter<2000; iter++)      // iterations
+	for ( ; iter<20000; iter++)      // iterations
 	{
 		dEG=0.0;
 		std::cout << "Iteration " << iter << "-> T=" << T << " : " << std::flush;
@@ -870,10 +901,10 @@ void GyriRegularization::runAnnealing(float T, float kT)
 				dEG+=computeLocalEnergyChange(i, bestL);
 				_currentE += computeLocalEnergyChange(i, bestL); // this two line do what updateLabelAndEnergy()
 				_gyriTexture[0].item(i)=bestL;  // does, but so far it's more efficient not to call it.
-				_gyriEvolution[iter].item(i)=bestL;
+//				_gyriEvolution[iter].item(i)=bestL;
 			}
-			else
-				_gyriEvolution[iter].item(i)=currentL;
+//			else
+//				_gyriEvolution[iter].item(i)=currentL;
 		}
 //		for (uint j=0; j<size_cliques; j++)
 //		{
@@ -1002,7 +1033,7 @@ void GyriRegularization::runICMdebug(uint node)
 				_currentE += deMin; // does, but so far it's more efficient not to call it.
 				dEG+=deMin;
 			}
-			_gyriEvolution[iter+_offset].item(i)=_gyriTexture[0].item(i);
+//			_gyriEvolution[iter+_offset].item(i)=_gyriTexture[0].item(i);
 
 		std::cout << "nb changes : " << nbCh << "; Energy =" << _currentE << "; global change =" << dEG << std::endl;
 		if (nbCh==0)
@@ -1015,9 +1046,9 @@ void GyriRegularization::runICMdebug(uint node)
 	std::cout << "Computing Global Energy" << std::endl;
 	computeGraphEnergy();
 
-	std::cout << "Writing texture gyriEvolution..." << std::endl;
-    Writer<TimeTexture<int> > texResultW( "gyriEvolution" );
-    texResultW << _gyriEvolution ;
+//	std::cout << "Writing texture gyriEvolution..." << std::endl;
+//    Writer<TimeTexture<int> > texResultW( "gyriEvolution" );
+//    texResultW << _gyriEvolution ;
 //    std::cout << "and texture curvEvolution." << std::endl;
 //	Writer<TimeTexture<float> > texEnergyW( "energyEvolution" );
 //	texEnergyW << energyEvolution ;
