@@ -710,13 +710,13 @@ void GyriRegularization::computeGyriProba()
 
 void GyriRegularization::initializeGyriEvolution()
 {
-	int nb=20000;
-	_gyriEvolution=TimeTexture<int>(nb, _size);
-	for (int j=0; j<nb; j++)
-		for (uint i=0; i<_size; i++)
-		{
-			_gyriEvolution[j].item(i)=_gyriTexture[0].item(i);
-		}
+//	int nb=20000;
+//	_gyriEvolution=TimeTexture<int>(nb, _size);
+//	for (int j=0; j<nb; j++)
+//		for (uint i=0; i<_size; i++)
+//		{
+//			_gyriEvolution[j].item(i)=_gyriTexture[0].item(i);
+//		}
 }
 
 void GyriRegularization::runICM()
