@@ -6,12 +6,21 @@
 #include <QImage>
 #include <QPen>
 #include <QGLWidget>
-//#include <QTimer>
 #include <QTime>
 #include <QWheelEvent>
+#include <iostream>
+#include <QtGui>
+#include <QDrag>
+#include <QtOpenGL>
+#include <stdlib.h>
+#include <math.h>
+#include <aims/getopt/getopt2.h>
+#include <aims/io/reader.h>
+#include <aims/io/writer.h>
+#include <aims/io/process.h>
+#include <aims/io/finder.h>
 #include <aims/mesh/surface.h>
 #include <aims/mesh/texture.h>
-//#include <aims/vector/vector.h>
 #include <aims/def/path.h>
 #include <aims/def/general.h>
 #include <cartobase/stream/fileutil.h>
@@ -19,26 +28,13 @@
 #include <cartobase/config/paths.h>
 #include <cartobase/config/version.h>
 #include <aims/config/aimsdata_config.h>
-#include <aims/def/path.h>
 #include <cmath>
-
 #include <anatomist/surface/texture.h>
 #include <aims/utility/converter_texture.h>
-
-//#include <stdio.h>
-//#include <ctype.h>
-//#include <assert.h>
-//#include <string.h>
-//#include <limits.h>
 #include <float.h>
-//#include <stdarg.h>
-//#include <stdlib.h>
-//#include <stddef.h>
-
 #include "trackball.h"
-//#ifndef CALLBACK
-//#define CALLBACK
-//#endif
+
+
 using namespace carto;
 using namespace aims;
 using namespace std;
@@ -56,8 +52,16 @@ class GLWidget : public QGLWidget
     Q_OBJECT
 
 public:
-    GLWidget (QWidget *parent, AimsSurfaceTriangle as,TimeTexture<float> tex, string colorMap);
-    ~GLWidget ();
+    GLWidget (QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent){};
+    ~GLWidget (){};
+};
+
+template<typename T>
+class myGLWidget : public GLWidget
+{
+public:
+    myGLWidget (QWidget *parent, string adressTexIn,string adressMeshIn,string adressTexOut,string colorMap,string dataType);
+    ~myGLWidget ();
 
     int getMode () const { return _mode; }
     float getZoom () const { return _zoom; }
@@ -75,10 +79,9 @@ public:
     void drawColorMap (void);
     void keyPressEvent (QKeyEvent *event);
 
-public slots:
     void setZoom(float z);
     void setTranslate(float t);
-
+//
 protected:
     void initializeGL ();
     void paintGL ();
@@ -101,9 +104,9 @@ protected:
     void drawPrimitivePicked (void);
 
 private:
-    void drawInfos (QPainter *painter, string t);
+//    void drawInfos (QPainter *painter, string t);
     void setupViewport (int width, int height);
-
+//
     int _mode;
     float _zoom ;
     float _trans;
@@ -113,13 +116,21 @@ private:
     int _frames;
     QTime _time;
 
+    string _dataType;
     AimsSurfaceTriangle _mesh;
-    TimeTexture<float> _tex;
+    TimeTexture<T> _tex;
+
+    string _adressTexIn;
+    string _adressMeshIn;
+    string _adressTexOut;
+    string _colorMap;
 
     TrackBall _trackBall;
 
     GLuint _listMeshRender;
     GLuint _listMeshPicking;
+    GLuint _listMeshParcelation;
+    GLuint _listMeshSmooth;
 
     Point3df _meshCenter;
     float _meshScale;
@@ -127,15 +138,16 @@ private:
     std::vector<int> _indexTexture;
     GLubyte *backBufferTexture;
 
+    unsigned char* dataColorMap;
+
     Point3df _point3Dpicked;
     Point3df _vertexNearestpicked;
     GLuint _indexPolygon;
     GLuint _indexVertex;
     float _textureValue;
-
     bool _wireframe;
+    bool _parcelation;
 
-    string _colorMap;
     GLuint _IDcolorMap;
 };
 

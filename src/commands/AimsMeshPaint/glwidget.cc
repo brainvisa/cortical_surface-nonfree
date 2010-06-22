@@ -1,9 +1,3 @@
-#include <iostream>
-#include <QtGui>
-#include <QDrag>
-#include <QtOpenGL>
-#include <stdlib.h>
-#include <math.h>
 #include "glwidget.h"
 
 /* enums */
@@ -12,8 +6,9 @@ enum
   X, Y, Z, W
 };
 
-GLWidget::GLWidget(QWidget *parent, AimsSurfaceTriangle as,TimeTexture<float> tex, string colorMap) :
-QGLWidget(QGLFormat(QGL::SampleBuffers), parent), _mesh(as), _tex(tex), _colorMap(colorMap)
+template<typename T>
+myGLWidget<T>::myGLWidget(QWidget *parent, string adressTexIn,string adressMeshIn,string adressTexOut,string colorMap, string dataType)
+:GLWidget(parent), _adressTexIn(adressTexIn),_adressMeshIn(adressMeshIn),_adressTexOut(adressTexOut),_colorMap(colorMap),_dataType(dataType)
 {
   _zoom = -2.0;
   _trans = 0.0;
@@ -22,23 +17,34 @@ QGLWidget(QGLFormat(QGL::SampleBuffers), parent), _mesh(as), _tex(tex), _colorMa
   _listMeshPicking = 0;
   _indexVertex = 0;
   _indexPolygon = 0;
-
+  _parcelation = false;
   _wireframe = false;
 
-  //_trackBall = TrackBall(0.05f, gfx::Vector3f::vector(0, 1, 0), TrackBall::Sphere);
+  std::cout << "Reading mesh and texture" << endl;
+
+  Reader < AimsSurfaceTriangle > rmeshIn(adressMeshIn);
+  rmeshIn.read( _mesh );
+
+  Reader < TimeTexture<T> > rtexIn(adressTexIn);
+  rtexIn.read( _tex );
+
+  _trackBall = TrackBall(0.05f, gfx::Vector3f::vector(0, 1, 0), TrackBall::Sphere);
   _trackBall = TrackBall(0.0f, gfx::Vector3f::vector(0, 1, 0),TrackBall::Plane);
   setAutoFillBackground(false);
-  setMinimumSize(800, 600);
+  setMinimumSize(640, 480);
+
   setWindowTitle(tr("painting on the mesh"));
   setAutoBufferSwap(false);
   setAcceptDrops(true);
 }
 
-GLWidget::~GLWidget()
+template<typename T>
+myGLWidget<T>::~myGLWidget()
 {
 }
 
-void GLWidget::unitize(AimsSurfaceTriangle as, Point3df *meshCenter, float *meshScale)
+template<typename T>
+void myGLWidget<T>::unitize(AimsSurfaceTriangle as, Point3df *meshCenter, float *meshScale)
 {
   GLfloat maxx, minx, maxy, miny, maxz, minz;
   GLfloat w, h, d;
@@ -77,7 +83,8 @@ void GLWidget::unitize(AimsSurfaceTriangle as, Point3df *meshCenter, float *mesh
   /* translate around center then scale */
 }
 
-int GLWidget::buildDisplayList(AimsSurfaceTriangle as, int mode)
+template<typename T>
+int myGLWidget<T>::buildDisplayList(AimsSurfaceTriangle as, int mode)
 {
   int j;
   GLuint list = 0;
@@ -90,7 +97,7 @@ int GLWidget::buildDisplayList(AimsSurfaceTriangle as, int mode)
   vector<AimsVector<uint, 3> > & tri = as.polygon();
 
   rc_ptr<Texture1d>	tex( new Texture1d );
-  Converter<TimeTexture<float>, Texture1d>	c;
+  Converter<TimeTexture<T>, Texture1d>	c;
   c.convert( _tex, *tex );
   ATexture	*ao = new ATexture;
   ao->setTexture( tex );
@@ -106,16 +113,30 @@ int GLWidget::buildDisplayList(AimsSurfaceTriangle as, int mode)
       vert[j][X] *= (_meshScale);
       vert[j][Y] *= (_meshScale);
       vert[j][Z] *= (_meshScale);
+      //vert[j][Z] *= -1 ;
     }
 
   glBegin( GL_TRIANGLES);
   for (j = 0; j < (int) tri.size(); ++j)
   {
-	if (mode)
+	if (mode == 2)
+	{
+	if (t[tri[j][0]] == t[tri[j][1]] && t[tri[j][0]]== t[tri[j][2]])
+	  {
+		glColor3ub((int)dataColorMap[3*(int)(256*t[tri[j][0]])],
+				(int)dataColorMap[3*(int)(256*t[tri[j][0]])+1],
+				(int)dataColorMap[3*(int)(256*t[tri[j][0]])+2]);
+	  }
+	else
+	  glColor3ub(255, 255, 255);
+	}
+
+	if (mode == 1)
 	  glColor3ub(_indexTexture[3 * j],
 			  _indexTexture[3 * j + 1],
 				  _indexTexture[3 * j + 2]);
-	else
+
+	if (mode == 0)
       glColor3ub(255, 255, 255);
 
 	glTexCoord2d(t[tri[j][0]],0);
@@ -143,22 +164,33 @@ int GLWidget::buildDisplayList(AimsSurfaceTriangle as, int mode)
   return list;
 }
 
-void GLWidget::setZoom(float z)
+template<typename T>
+void myGLWidget<T>::setZoom(float z)
 {
   _zoom = z;
   updateGL();
 }
 
-void GLWidget::setTranslate(float t) {
+template<typename T>
+void myGLWidget<T>::setTranslate(float t) {
 	_trans = t;
 	updateGL();
 }
 
-void GLWidget::changeMode(int mode) {
-	_mode = mode;
+
+template<typename T>
+void myGLWidget<T>::changeMode(int mode)
+{
+  _mode = mode;
+  cout << "mode = " << mode << endl;
+
+  if (mode==2)
+    copyBackBuffer2Texture();
+
 }
 
-void GLWidget::initializeGL()
+template<typename T>
+void myGLWidget<T>::initializeGL()
 {
   glEnable( GL_LIGHTING);
   glEnable( GL_LIGHT0);
@@ -179,15 +211,16 @@ void GLWidget::initializeGL()
   cout << "nb triangle = " << _mesh.polygon().size() << endl;
   cout << "nb vertex = " << _mesh.vertex().size() << endl;
 
-  _listMeshRender = buildDisplayList(_mesh,0);
+  _listMeshSmooth= buildDisplayList(_mesh,0);
   _listMeshPicking = buildDisplayList(_mesh,1);
+  _listMeshParcelation = buildDisplayList(_mesh,2);
 
-//  for(std::size_t i=0;i<_indexTexture.size();++i)
-//	  std::cout << _indexTexture[i] << " " << std::endl;
+  _listMeshRender = _listMeshSmooth;
 
 }
 
-void GLWidget::dragEnterEvent(QDragEnterEvent *event)
+template<typename T>
+void myGLWidget<T>::dragEnterEvent(QDragEnterEvent *event)
 {
   if (event->mimeData()->hasUrls())
   {
@@ -205,7 +238,8 @@ void GLWidget::dragEnterEvent(QDragEnterEvent *event)
   }
 }
 
-void GLWidget::dragMoveEvent(QDragMoveEvent *event)
+template<typename T>
+void myGLWidget<T>::dragMoveEvent(QDragMoveEvent *event)
 {
   if (event->mimeData()->hasText())
   {
@@ -214,7 +248,8 @@ void GLWidget::dragMoveEvent(QDragMoveEvent *event)
   event->accept();
 }
 
-void GLWidget::dropEvent(QDropEvent *event)
+template<typename T>
+void myGLWidget<T>::dropEvent(QDropEvent *event)
 {
   QString fName;
 
@@ -234,12 +269,14 @@ void GLWidget::dropEvent(QDropEvent *event)
   }
 }
 
-QPointF GLWidget::pixelPosToViewPos(const QPointF& p)
+template<typename T>
+QPointF myGLWidget<T>::pixelPosToViewPos(const QPointF& p)
 {
   return QPointF(2.0 * float(p.x()) / width() - 1.0, 1.0 - 2.0 * float(p.y())/ height());
 }
 
-Point3df GLWidget::check3DpointPicked (int x, int y)
+template<typename T>
+Point3df myGLWidget<T>::check3DpointPicked (int x, int y)
 {
   Point3df p;
 
@@ -278,7 +315,8 @@ Point3df GLWidget::check3DpointPicked (int x, int y)
   return p;
 }
 
-GLuint GLWidget::checkIDpolygonPicked (int x, int y)
+template<typename T>
+GLuint myGLWidget<T>::checkIDpolygonPicked (int x, int y)
 {
   GLuint r,g,b;
   r = backBufferTexture[3 * (height() - y) * width() + 3 * x];
@@ -288,7 +326,8 @@ GLuint GLWidget::checkIDpolygonPicked (int x, int y)
   return (GLuint)(b + 256 * g + 256 * 256 * r);
 }
 
-void GLWidget::mousePressEvent(QMouseEvent *event)
+template<typename T>
+void myGLWidget<T>::mousePressEvent(QMouseEvent *event)
 {
   if (event->buttons()==Qt::LeftButton & _mode == 1)
   {
@@ -300,14 +339,17 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
   if (event->buttons()==Qt::LeftButton & _mode == 2)
   {
-	int indexPolygon = checkIDpolygonPicked (event->x(),event->y());
-    //cout << "ID polygon : " << indexPolygon << endl;
+    if (backBufferTexture == NULL)
+      copyBackBuffer2Texture();
+
+    int indexPolygon = checkIDpolygonPicked (event->x(),event->y());
     _point3Dpicked = check3DpointPicked(event->x(),event->y());
     _trackBall.stop();
   }
 }
 
-void GLWidget::mouseReleaseEvent(QMouseEvent *event)
+template<typename T>
+void myGLWidget<T>::mouseReleaseEvent(QMouseEvent *event)
 {
   if (event->isAccepted())
     return;
@@ -326,12 +368,13 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
   }
 }
 
-void GLWidget::mouseMoveEvent(QMouseEvent *event)
+template<typename T>
+void myGLWidget<T>::mouseMoveEvent(QMouseEvent *event)
 {
   if (event->buttons()==Qt::LeftButton && _mode == 1)
   {
     _trackBall.move(pixelPosToViewPos(event->pos()),gfx::Quaternionf::identity());
-    event->accept();
+    //event->accept();
     updateGL();
   }
 
@@ -356,7 +399,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
   }
 }
 
-void GLWidget::keyPressEvent(QKeyEvent *event)
+template<typename T>
+void myGLWidget<T>::keyPressEvent(QKeyEvent *event)
 {
   switch (event->key())
   {
@@ -375,7 +419,15 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_W :
       _wireframe = !_wireframe;
       break;
+    case Qt::Key_P :
+      _parcelation = !_parcelation;
 
+      if (_parcelation)
+      _listMeshRender = _listMeshParcelation;
+      else
+        _listMeshRender = _listMeshSmooth;
+
+      break;
     default:
       QWidget::keyPressEvent(event);
   }
@@ -383,7 +435,8 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
   updateGL();
 }
 
-void GLWidget::wheelEvent(QWheelEvent *event)
+template<typename T>
+void myGLWidget<T>::wheelEvent(QWheelEvent *event)
 {
   int numDegrees = event->delta() / 8;
   float numSteps = (float) (numDegrees / 300.);
@@ -405,7 +458,8 @@ void GLWidget::wheelEvent(QWheelEvent *event)
   }
 }
 
-void GLWidget::drawColorMap (void)
+template<typename T>
+void myGLWidget<T>::drawColorMap (void)
 {
   glPushAttrib( GL_ALL_ATTRIB_BITS );
 
@@ -442,7 +496,8 @@ void GLWidget::drawColorMap (void)
   glPopAttrib();
 }
 
-void GLWidget::drawPrimitivePicked (void)
+template<typename T>
+void myGLWidget<T>::drawPrimitivePicked (void)
 {
   glPushAttrib( GL_ALL_ATTRIB_BITS );
 
@@ -486,7 +541,8 @@ void GLWidget::drawPrimitivePicked (void)
   glPopAttrib();
 }
 
-void GLWidget::projectionOrtho()
+template<typename T>
+void myGLWidget<T>::projectionOrtho()
 {
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -496,7 +552,8 @@ void GLWidget::projectionOrtho()
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void GLWidget::projectionPerspective()
+template<typename T>
+void myGLWidget<T>::projectionPerspective()
 {
   glMatrixMode( GL_PROJECTION);
   glLoadIdentity();
@@ -505,7 +562,8 @@ void GLWidget::projectionPerspective()
   glLoadIdentity();
 }
 
-void GLWidget::trackBallTransformation(void)
+template<typename T>
+void myGLWidget<T>::trackBallTransformation(void)
 {
   glTranslatef(_trans, 0.0, _zoom);
   gfx::Matrix4x4f m;
@@ -513,9 +571,11 @@ void GLWidget::trackBallTransformation(void)
   glMultMatrixf(m.bits());
 }
 
-void GLWidget::paintGL()
+template<typename T>
+void myGLWidget<T>::paintGL()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
   projectionPerspective();
 
@@ -524,25 +584,36 @@ void GLWidget::paintGL()
 
 
   glPushMatrix();
-    trackBallTransformation();
+  trackBallTransformation();
 
+  if (_listMeshRender==_listMeshSmooth)
+  {
     glEnable( GL_TEXTURE_2D );
-    glEnable (GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset (1., 1.);
-	if (_listMeshRender != 0)
-	      glCallList(_listMeshRender);
-	glDisable(GL_POLYGON_OFFSET_FILL);
+  }
+  else
+  {
+    glEnable(GL_COLOR_MATERIAL);
+    glDisable( GL_TEXTURE_2D );
+  }
 
-	glDisable( GL_TEXTURE_2D );
-	glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_LINE_SMOOTH);
+  glEnable (GL_POLYGON_OFFSET_FILL);
+  glPolygonOffset (1., 1.);
 
-	if (_listMeshRender != 0 && _wireframe)
-	      glCallList(_listMeshRender);
-	glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+  if (_listMeshRender != 0)
+    glCallList(_listMeshRender);
 
+  glDisable(GL_POLYGON_OFFSET_FILL);
+
+  glDisable( GL_TEXTURE_2D );
+  glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_LINE_SMOOTH);
+
+  if (_listMeshRender != 0 && _wireframe)
+    glCallList(_listMeshRender);
+
+  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 
   glPopMatrix();
 
@@ -576,7 +647,12 @@ void GLWidget::paintGL()
 
   QString textureValue;
   if (_indexVertex < _mesh.vertex().size())
-    textureValue.setNum(_tex[0].item((int)_indexVertex), 'f', 4);
+    {
+	if (_dataType == "FLOAT")
+      textureValue.setNum((float)_tex[0].item((int)_indexVertex), 'f', 4);
+	if (_dataType == "S16")
+      textureValue.setNum((int)_tex[0].item((int)_indexVertex),10);
+    }
   painter.drawText(30, height()-40, "texture value = " + textureValue);
 
   painter.end();
@@ -591,17 +667,26 @@ void GLWidget::paintGL()
   _frames++;
 }
 
-void GLWidget::resizeGL(int width, int height)
+
+template<typename T>
+void myGLWidget<T>::resizeGL(int width, int height)
 {
+  if (backBufferTexture != NULL)
+    free(backBufferTexture);
+
+  backBufferTexture = NULL;
+
   setupViewport(width, height);
 }
 
-void GLWidget::setupViewport(int width, int height)
+template<typename T>
+void myGLWidget<T>::setupViewport(int width, int height)
 {
   glViewport(0, 0, width, height);
 }
 
-int GLWidget::computeNearestVertexFromPolygonPoint( Point3df position, int poly, AimsSurfaceTriangle as)
+template<typename T>
+int myGLWidget<T>::computeNearestVertexFromPolygonPoint( Point3df position, int poly, AimsSurfaceTriangle as)
 {
   int index_nearest_vertex,index_min= 0;
   Point3df			pt[3];
@@ -656,7 +741,8 @@ int GLWidget::computeNearestVertexFromPolygonPoint( Point3df position, int poly,
   return index_nearest_vertex;
 }
 
-void GLWidget::computeIndexColor (AimsSurfaceTriangle as)
+template<typename T>
+void myGLWidget<T>::computeIndexColor (AimsSurfaceTriangle as)
 {
   int i;
   int r, g, b;
@@ -674,7 +760,8 @@ void GLWidget::computeIndexColor (AimsSurfaceTriangle as)
   }
 }
 
-void GLWidget::drawScenetoBackBuffer (void)
+template<typename T>
+void myGLWidget<T>::drawScenetoBackBuffer (void)
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -694,11 +781,12 @@ void GLWidget::drawScenetoBackBuffer (void)
   glPopAttrib();
 }
 
-void GLWidget::copyBackBuffer2Texture (void)
+template<typename T>
+void myGLWidget<T>::copyBackBuffer2Texture (void)
 {
   drawScenetoBackBuffer();
   glReadBuffer(GL_BACK);
-
+  glFinish();
   if (backBufferTexture != NULL)
     free(backBufferTexture);
 
@@ -707,13 +795,14 @@ void GLWidget::copyBackBuffer2Texture (void)
   glFinish();
 }
 
-GLuint GLWidget::loadColorMap( const char * filename)
+template<typename T>
+GLuint myGLWidget<T>::loadColorMap( const char * filename)
 {
 
   int i;
   int width, height;
   unsigned char* data;
-  unsigned char* data2;
+
 
   FILE * file;
   char textureName[256];
@@ -735,7 +824,7 @@ GLuint GLWidget::loadColorMap( const char * filename)
 
   height = 1;
   data = (unsigned char *) malloc( width * height * 3 * sizeof(unsigned char)  );
-  data2 = (unsigned char *) malloc( width * height * 3 * sizeof(unsigned char)  );
+  dataColorMap = (unsigned char *) malloc( width * height * 3 * sizeof(unsigned char)  );
 
   for (i = 0 ; i < width ; i++)
     fscanf(file,"%d ",&data[i]);
@@ -751,9 +840,9 @@ GLuint GLWidget::loadColorMap( const char * filename)
 
   for (i = 0 ; i < width ; i++)
   {
-    data2[3*i] = data[i];
-    data2[3*i+1] = data[256 + i ];
-    data2[3*i+2] = data[512 + i ];
+	dataColorMap[3*i] = data[i];
+	dataColorMap[3*i+1] = data[256 + i ];
+	dataColorMap[3*i+2] = data[512 + i ];
   }
 
   fclose( file );
@@ -763,13 +852,21 @@ GLuint GLWidget::loadColorMap( const char * filename)
 
   // select our current texture
   glBindTexture( GL_TEXTURE_2D,_IDcolorMap);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+
   glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+
   // select modulate to mix texture with color for shading
   glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-  glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, width, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
+  glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, width, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, dataColorMap);
 
   return 1;
 }
+
+template class myGLWidget<float>;
+template class myGLWidget<short>;

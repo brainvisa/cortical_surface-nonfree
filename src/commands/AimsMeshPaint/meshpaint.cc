@@ -1,51 +1,47 @@
 #include "meshpaint.h"
 
-MeshPaint::MeshPaint(AimsSurfaceTriangle mesh,TimeTexture<float> tex, string colorMap)
-	:_mesh(mesh),_tex(tex),_colorMap(colorMap)
+template<typename T>
+myMeshPaint<T>::myMeshPaint(string adressTexIn,string adressMeshIn,string adressTexOut,string colorMap, string dataType)
+	:_adressTexIn(adressTexIn),_adressMeshIn(adressMeshIn),_adressTexOut(adressTexOut),_colorMap(colorMap),_dataType(dataType)
+{
+  QRect r = geometry();
+  r.moveCenter(QApplication::desktop()->availableGeometry().center());
+  setGeometry(r);
+
+  glWidget = new myGLWidget<T> (this,adressTexIn,adressMeshIn,adressTexOut,colorMap,dataType);
+
+  //glWidget->setFocusPolicy(Qt::StrongFocus);
+
+  setCentralWidget(glWidget);
+}
+
+template<typename T>
+myMeshPaint<T>::~myMeshPaint()
+{
+}
+
+MeshPaint::MeshPaint()
 {
   createActions();
   createToolBars();
-
-  glWidget = new GLWidget(this,_mesh,_tex,_colorMap);
-
-  setCentralWidget(glWidget);
+  show();
 }
 
 MeshPaint::~MeshPaint()
 {
 }
 
-void MeshPaint::trackball()
+template<typename T>
+void myMeshPaint<T>::changeMode(int mode)
 {
-  std::cout << "trackball" << std::endl;
-  colorPickerAction->setChecked(false);
-  paintBrushAction->setChecked(false);
-
-  glWidget->changeMode(1);
+  cout << "mode = " << mode << endl;
+  glWidget->changeMode(mode);
 }
 
-void MeshPaint::colorPicker()
+template<typename T>
+void myMeshPaint<T>::keyPressEvent( QKeyEvent* event )
 {
-  std::cout << "color picker" << std::endl;
-  paintBrushAction->setChecked(false);
-  trackballAction->setChecked(false);
-
-  glWidget->changeMode(2);
-  glWidget->copyBackBuffer2Texture();
-}
-
-void MeshPaint::paintBrush()
-{
-  std::cout << "paint brush" << std::endl;
-  colorPickerAction->setChecked(false);
-  trackballAction->setChecked(false);
-
-  glWidget->changeMode(3);
-}
-
-void MeshPaint::keyPressEvent( QKeyEvent* _event )
-{
-  glWidget->keyPressEvent( _event );
+  glWidget->keyPressEvent( event );
 }
 
 void MeshPaint::createActions()
@@ -74,8 +70,6 @@ void MeshPaint::createActions()
   trackballAction->setCheckable(true);
   trackballAction->setChecked(true);
   connect(trackballAction, SIGNAL(triggered()), this, SLOT(trackball()));
-
-
 }
 
 void MeshPaint::createToolBars()
@@ -86,3 +80,7 @@ void MeshPaint::createToolBars()
   paintToolBar->addAction(colorPickerAction);
   paintToolBar->addAction(paintBrushAction);
 }
+
+template class myMeshPaint<float>;
+template class myMeshPaint<short>;
+

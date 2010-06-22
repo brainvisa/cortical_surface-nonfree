@@ -6,18 +6,12 @@
 #include "glwidget.h"
 #include <cstdlib>
 #include <iostream>
-#include <aims/getopt/getopt2.h>
-#include <aims/io/reader.h>
-#include <aims/io/writer.h>
-#include <aims/io/process.h>
-#include <aims/io/finder.h>
-#include <aims/mesh/surface.h>
-#include <aims/mesh/texture.h>
 #include <string.h>
 #include <aims/mesh/surfaceOperation.h>
 #include <anatomist/application/globalConfig.h>
 #include <anatomist/application/settings.h>
-#include <QMainWindow>
+#include <aims/io/process.h>
+#include <aims/io/finder.h>
 
 using namespace anatomist;
 using namespace aims;
@@ -26,30 +20,68 @@ using namespace std;
 
 class MeshPaint : public QMainWindow
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    MeshPaint(AimsSurfaceTriangle mesh,TimeTexture<float> tex,string colorMap);
-    ~MeshPaint();
+  MeshPaint();
+  ~MeshPaint();
+
+  virtual void changeMode(int mode){};
+  //virtual void keyPressEvent( QKeyEvent* _event ){};
 
 private slots:
-    void paintBrush();
-    void colorPicker();
-    void trackball();
-    void keyPressEvent( QKeyEvent* _event );
-private:
-    void createActions();
-    void createToolBars();
 
-    AimsSurfaceTriangle _mesh;
-    TimeTexture<float> _tex;
+  void trackball()
+  {
+    std::cout << "trackball" << std::endl;
+    paintBrushAction->setChecked(false);
+  	colorPickerAction->setChecked(false);
+  	changeMode(1);
+  }
+
+  void colorPicker()
+  {
+    std::cout << "color picker" << std::endl;
+    paintBrushAction->setChecked(false);
+    trackballAction->setChecked(false);
+    changeMode(2);
+  }
+
+  void paintBrush()
+  {
+    std::cout << "paint brush" << std::endl;
+    colorPickerAction->setChecked(false);
+    trackballAction->setChecked(false);
+    changeMode(3);
+  }
+
+private :
+  void createActions();
+  void createToolBars();
+  QToolBar *paintToolBar;
+  QAction *colorPickerAction;
+  QAction *paintBrushAction;
+  QAction *trackballAction;
+};
+
+template<typename T>
+class myMeshPaint : public MeshPaint
+{
+public:
+    myMeshPaint(string adressTexIn,string adressMeshIn,string adressTexOut,string colorMap, string dataType);
+    ~myMeshPaint();
+
+    void changeMode(int mode);
+    void keyPressEvent( QKeyEvent* event );
+
+private :
+    string _adressTexIn;
+    string _adressMeshIn;
+    string _adressTexOut;
     string _colorMap;
+    string _dataType;
 
-    GLWidget *glWidget;
-    QToolBar *paintToolBar;
-    QAction *colorPickerAction;
-    QAction *paintBrushAction;
-    QAction *trackballAction;
+    myGLWidget<T> *glWidget;
 };
 
 #endif // MESHPAINT_H
