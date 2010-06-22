@@ -19,6 +19,7 @@ myGLWidget<T>::myGLWidget(QWidget *parent, string adressTexIn,string adressMeshI
   _indexPolygon = 0;
   _parcelation = false;
   _wireframe = false;
+  backBufferTexture = NULL;
 
   std::cout << "Reading mesh and texture" << endl;
 
@@ -339,9 +340,6 @@ void myGLWidget<T>::mousePressEvent(QMouseEvent *event)
 
   if (event->buttons()==Qt::LeftButton & _mode == 2)
   {
-    if (backBufferTexture == NULL)
-      copyBackBuffer2Texture();
-
     int indexPolygon = checkIDpolygonPicked (event->x(),event->y());
     _point3Dpicked = check3DpointPicked(event->x(),event->y());
     _trackBall.stop();
@@ -671,10 +669,12 @@ void myGLWidget<T>::paintGL()
 template<typename T>
 void myGLWidget<T>::resizeGL(int width, int height)
 {
+  //cout << "resize window\n";
   if (backBufferTexture != NULL)
-    free(backBufferTexture);
-
-  backBufferTexture = NULL;
+  {
+	free(backBufferTexture);
+	backBufferTexture = NULL;
+  }
 
   setupViewport(width, height);
 }
@@ -785,14 +785,22 @@ template<typename T>
 void myGLWidget<T>::copyBackBuffer2Texture (void)
 {
   drawScenetoBackBuffer();
+  glFinish();
   glReadBuffer(GL_BACK);
-  glFinish();
-  if (backBufferTexture != NULL)
-    free(backBufferTexture);
 
-  backBufferTexture = (GLubyte*) malloc((width()*height()) * 3* sizeof(GLubyte));
+//  if (backBufferTexture != NULL)
+//    {
+//	  cout << "realloc texture\n" << width() << " " << height() << endl;
+//	  free(backBufferTexture);
+//    }
+//
+  if (backBufferTexture == NULL)
+    {
+	  cout << "realloc texture\n" << width() << " " << height() << endl;
+	  backBufferTexture = (GLubyte*) malloc((width()*height()) * 3* sizeof(GLubyte));
+    }
+
   glReadPixels(0, 0, width(), height(), GL_RGB,GL_UNSIGNED_BYTE, backBufferTexture);
-  glFinish();
 }
 
 template<typename T>
