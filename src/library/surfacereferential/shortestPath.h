@@ -52,7 +52,7 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
      uint ns=initmesh.vertex().size();
 
 
-     std::cerr << "Shortest Path In" << std::endl;
+//     std::cerr << "Shortest Path In" << std::endl;
 
      // ici on construit la carte de distance avec le fast marching à la cathier
 //      typedef std::vector<std::vector<std::size_t> > CNeighborhoods;
@@ -166,7 +166,7 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
           result[0].item(i)=(Val) value;
      }
      while (i!=dep);
-     std::cerr << "Shortest Path Out" << std::endl;
+//     std::cerr << "Shortest Path Out" << std::endl;
 
      return(result);
      
