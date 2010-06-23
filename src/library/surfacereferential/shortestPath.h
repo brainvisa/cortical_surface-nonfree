@@ -179,6 +179,7 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
 template<typename Val>
 float GraphPath<Val>::getLongueur(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr)
 {
+	 longueur=0;
      process(tex, initmesh, value, dep, arr);
      return longueur;
 }
