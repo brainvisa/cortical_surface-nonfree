@@ -34,7 +34,7 @@ MeshPaint::~MeshPaint()
 template<typename T>
 void myMeshPaint<T>::changeMode(int mode)
 {
-  cout << "mode = " << mode << endl;
+  //cout << "mode = " << mode << endl;
   glWidget->changeMode(mode);
 }
 

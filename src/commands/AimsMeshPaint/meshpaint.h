@@ -33,7 +33,7 @@ private slots:
 
   void trackball()
   {
-    std::cout << "trackball" << std::endl;
+    //std::cout << "trackball" << std::endl;
     paintBrushAction->setChecked(false);
   	colorPickerAction->setChecked(false);
   	changeMode(1);
@@ -41,7 +41,7 @@ private slots:
 
   void colorPicker()
   {
-    std::cout << "color picker" << std::endl;
+    //std::cout << "color picker" << std::endl;
     paintBrushAction->setChecked(false);
     trackballAction->setChecked(false);
     changeMode(2);
@@ -49,7 +49,7 @@ private slots:
 
   void paintBrush()
   {
-    std::cout << "paint brush" << std::endl;
+    //std::cout << "paint brush" << std::endl;
     colorPickerAction->setChecked(false);
     trackballAction->setChecked(false);
     changeMode(3);

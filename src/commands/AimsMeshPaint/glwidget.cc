@@ -19,7 +19,18 @@ myGLWidget<T>::myGLWidget(QWidget *parent, string adressTexIn,string adressMeshI
   _indexPolygon = 0;
   _parcelation = false;
   _wireframe = false;
+  _resized = false;
+
   backBufferTexture = NULL;
+
+  QDesktopWidget *desktop = QApplication::desktop();
+
+  int screenWidth = desktop->width();
+  int screenHeight = desktop->height();
+
+  cout << screenWidth << " " << screenHeight << endl;
+
+  backBufferTexture = (GLubyte*) malloc((screenWidth*screenHeight) * 3* sizeof(GLubyte));
 
   std::cout << "Reading mesh and texture" << endl;
 
@@ -32,7 +43,7 @@ myGLWidget<T>::myGLWidget(QWidget *parent, string adressTexIn,string adressMeshI
   _trackBall = TrackBall(0.05f, gfx::Vector3f::vector(0, 1, 0), TrackBall::Sphere);
   _trackBall = TrackBall(0.0f, gfx::Vector3f::vector(0, 1, 0),TrackBall::Plane);
   setAutoFillBackground(false);
-  setMinimumSize(640, 480);
+  setMinimumSize(320, 240);
 
   setWindowTitle(tr("painting on the mesh"));
   setAutoBufferSwap(false);
@@ -183,7 +194,7 @@ template<typename T>
 void myGLWidget<T>::changeMode(int mode)
 {
   _mode = mode;
-  cout << "mode = " << mode << endl;
+  //cout << "mode = " << mode << endl;
 
   if (mode==2)
     copyBackBuffer2Texture();
@@ -340,6 +351,9 @@ void myGLWidget<T>::mousePressEvent(QMouseEvent *event)
 
   if (event->buttons()==Qt::LeftButton & _mode == 2)
   {
+    if (_resized)
+      copyBackBuffer2Texture();
+
     int indexPolygon = checkIDpolygonPicked (event->x(),event->y());
     _point3Dpicked = check3DpointPicked(event->x(),event->y());
     _trackBall.stop();
@@ -553,9 +567,13 @@ void myGLWidget<T>::projectionOrtho()
 template<typename T>
 void myGLWidget<T>::projectionPerspective()
 {
+  float ratio = (float)width()/(float)height();
+
+  //cout << "ratio = " << ratio << endl;
+
   glMatrixMode( GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(50, (float) (width() / height()), 0.001, 5);
+  gluPerspective(45, ratio, 0.01, 10);
   glMatrixMode( GL_MODELVIEW);
   glLoadIdentity();
 }
@@ -573,7 +591,6 @@ template<typename T>
 void myGLWidget<T>::paintGL()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
   projectionPerspective();
 
@@ -669,13 +686,8 @@ void myGLWidget<T>::paintGL()
 template<typename T>
 void myGLWidget<T>::resizeGL(int width, int height)
 {
-  //cout << "resize window\n";
-  if (backBufferTexture != NULL)
-  {
-	free(backBufferTexture);
-	backBufferTexture = NULL;
-  }
-
+//cout << "w " << width << "h " << height << endl;
+  _resized = true;
   setupViewport(width, height);
 }
 
@@ -785,22 +797,10 @@ template<typename T>
 void myGLWidget<T>::copyBackBuffer2Texture (void)
 {
   drawScenetoBackBuffer();
-  glFinish();
   glReadBuffer(GL_BACK);
-
-//  if (backBufferTexture != NULL)
-//    {
-//	  cout << "realloc texture\n" << width() << " " << height() << endl;
-//	  free(backBufferTexture);
-//    }
-//
-  if (backBufferTexture == NULL)
-    {
-	  cout << "realloc texture\n" << width() << " " << height() << endl;
-	  backBufferTexture = (GLubyte*) malloc((width()*height()) * 3* sizeof(GLubyte));
-    }
-
+  glFinish();
   glReadPixels(0, 0, width(), height(), GL_RGB,GL_UNSIGNED_BYTE, backBufferTexture);
+  _resized = false;
 }
 
 template<typename T>
@@ -861,6 +861,7 @@ GLuint myGLWidget<T>::loadColorMap( const char * filename)
   // select our current texture
   glBindTexture( GL_TEXTURE_2D,_IDcolorMap);
   glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+  glPixelStorei( GL_PACK_ALIGNMENT, 1 );
 
   glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

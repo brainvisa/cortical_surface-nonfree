@@ -110,6 +110,7 @@ private:
     int _mode;
     float _zoom ;
     float _trans;
+    bool _resized;
 
     GLUquadricObj *_qobj_cursor;
 
