@@ -630,6 +630,9 @@ pair<Point2df, Point2df> surf::GreyLevelBlob::get2DBoundingBox ( void ) {
     return surf::Blob::get2DBoundingBox ( );
 }
 
+pair<Point2df, Point2df> surf::ScaleSpaceBlob::get2DBoundingBox ( void ) {
+    return surf::Blob::get2DBoundingBox ( );
+}
 
 
 //##############################################################################

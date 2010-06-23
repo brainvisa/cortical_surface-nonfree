@@ -121,6 +121,9 @@ namespace surf{
                 bottomBlobs = ssb->bottomBlobs;
             }
 
+            pair<Point2df, Point2df> get2DBoundingBox ( );
+
+
     };
 
     class SSBClique{
