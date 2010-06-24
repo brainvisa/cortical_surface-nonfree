@@ -102,6 +102,7 @@ protected:
     void projectionOrtho (void);
     void trackBallTransformation(void);
     void drawPrimitivePicked (void);
+    void drawTexturePaint (void);
 
 private:
 //    void drawInfos (QPainter *painter, string t);
@@ -138,11 +139,14 @@ private:
 
     std::vector<int> _indexTexture;
     GLubyte *backBufferTexture;
+    ATexture	*_ao;
 
     unsigned char* dataColorMap;
 
     Point3df _point3Dpicked;
     Point3df _vertexNearestpicked;
+    Point3d _colorpicked;
+
     GLuint _indexPolygon;
     GLuint _indexVertex;
     float _textureValue;
@@ -150,6 +154,8 @@ private:
     bool _parcelation;
 
     GLuint _IDcolorMap;
+
+    std::map< int,Point3d > _listTriangleSelect;
 };
 
 #endif

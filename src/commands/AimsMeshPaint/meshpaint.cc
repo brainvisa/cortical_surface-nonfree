@@ -8,6 +8,8 @@ myMeshPaint<T>::myMeshPaint(string adressTexIn,string adressMeshIn,string adress
   r.moveCenter(QApplication::desktop()->availableGeometry().center());
   setGeometry(r);
 
+  resize(640,480);
+
   glWidget = new myGLWidget<T> (this,adressTexIn,adressMeshIn,adressTexOut,colorMap,dataType);
 
   //glWidget->setFocusPolicy(Qt::StrongFocus);

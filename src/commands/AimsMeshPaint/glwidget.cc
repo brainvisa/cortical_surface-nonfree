@@ -21,6 +21,10 @@ myGLWidget<T>::myGLWidget(QWidget *parent, string adressTexIn,string adressMeshI
   _wireframe = false;
   _resized = false;
 
+  _colorpicked[0] = 255;
+  _colorpicked[1] = 255;
+  _colorpicked[2] = 255;
+
   backBufferTexture = NULL;
 
   QDesktopWidget *desktop = QApplication::desktop();
@@ -44,7 +48,6 @@ myGLWidget<T>::myGLWidget(QWidget *parent, string adressTexIn,string adressMeshI
   _trackBall = TrackBall(0.0f, gfx::Vector3f::vector(0, 1, 0),TrackBall::Plane);
   setAutoFillBackground(false);
   setMinimumSize(320, 240);
-
   setWindowTitle(tr("painting on the mesh"));
   setAutoBufferSwap(false);
   setAcceptDrops(true);
@@ -108,14 +111,7 @@ int myGLWidget<T>::buildDisplayList(AimsSurfaceTriangle as, int mode)
 
   vector<AimsVector<uint, 3> > & tri = as.polygon();
 
-  rc_ptr<Texture1d>	tex( new Texture1d );
-  Converter<TimeTexture<T>, Texture1d>	c;
-  c.convert( _tex, *tex );
-  ATexture	*ao = new ATexture;
-  ao->setTexture( tex );
-  ao->normalize();
-
-  const float* t = ao->textureCoords();
+  const float* t = _ao->textureCoords();
 
   for (j = 0; j < (int) vert.size(); ++j)
     {
@@ -133,14 +129,14 @@ int myGLWidget<T>::buildDisplayList(AimsSurfaceTriangle as, int mode)
   {
 	if (mode == 2)
 	{
-	if (t[tri[j][0]] == t[tri[j][1]] && t[tri[j][0]]== t[tri[j][2]])
+	  if (t[tri[j][0]] == t[tri[j][1]] && t[tri[j][0]]== t[tri[j][2]])
 	  {
-		glColor3ub((int)dataColorMap[3*(int)(256*t[tri[j][0]])],
+	    glColor3ub((int)dataColorMap[3*(int)(256*t[tri[j][0]])],
 				(int)dataColorMap[3*(int)(256*t[tri[j][0]])+1],
 				(int)dataColorMap[3*(int)(256*t[tri[j][0]])+2]);
 	  }
-	else
-	  glColor3ub(255, 255, 255);
+	  else
+	    glColor3ub(255, 255, 255);
 	}
 
 	if (mode == 1)
@@ -151,15 +147,18 @@ int myGLWidget<T>::buildDisplayList(AimsSurfaceTriangle as, int mode)
 	if (mode == 0)
       glColor3ub(255, 255, 255);
 
-	glTexCoord2d(t[tri[j][0]],0);
+	if (mode == 0)
+	  glTexCoord2d(t[tri[j][0]],0);
     glNormal3f(norm[tri[j][0]][0], norm[tri[j][0]][1], norm[tri[j][0]][2]);
     glVertex3f(vert[tri[j][0]][0], vert[tri[j][0]][1], vert[tri[j][0]][2]);
 
-    glTexCoord2d(t[tri[j][1]],0);
+    if (mode == 0)
+      glTexCoord2d(t[tri[j][1]],0);
     glNormal3f(norm[tri[j][1]][0], norm[tri[j][1]][1], norm[tri[j][1]][2]);
     glVertex3f(vert[tri[j][1]][0], vert[tri[j][1]][1], vert[tri[j][1]][2]);
 
-    glTexCoord2d(t[tri[j][2]],0);
+    if (mode == 0)
+      glTexCoord2d(t[tri[j][2]],0);
     glNormal3f(norm[tri[j][2]][0], norm[tri[j][2]][1], norm[tri[j][2]][2]);
     glVertex3f(vert[tri[j][2]][0], vert[tri[j][2]][1], vert[tri[j][2]][2]);
   }
@@ -228,7 +227,6 @@ void myGLWidget<T>::initializeGL()
   _listMeshParcelation = buildDisplayList(_mesh,2);
 
   _listMeshRender = _listMeshSmooth;
-
 }
 
 template<typename T>
@@ -406,6 +404,38 @@ void myGLWidget<T>::mouseMoveEvent(QMouseEvent *event)
 	_indexVertex = computeNearestVertexFromPolygonPoint( p, _indexPolygon, _mesh);
 
 	//cout << "3D coord vertex value = " << _vertexNearestpicked[X] << " " << _vertexNearestpicked[Y] << " " << _vertexNearestpicked[Z] << "\n" ;
+	const float* t = _ao->textureCoords();
+	if (_indexVertex < _mesh.vertex().size() )
+	{
+	  _colorpicked[0] = (int)dataColorMap[3*(int)(256*t[_indexVertex])];
+	  _colorpicked[1] = (int)dataColorMap[3*(int)(256*t[_indexVertex])+1];
+	  _colorpicked[2] = (int)dataColorMap[3*(int)(256*t[_indexVertex])+2];
+	}
+	else
+	{
+	  _colorpicked[0] = 255;
+	  _colorpicked[1] = 255;
+	  _colorpicked[2] = 255;
+	}
+
+	updateGL();
+  }
+
+  if (_mode == 3)
+  {
+	_trackBall.stop();
+	_indexPolygon = checkIDpolygonPicked (event->x(),event->y());
+    _point3Dpicked = check3DpointPicked(event->x(),event->y());
+
+//	Point3df p;
+//	p[0] = _meshCenter[0] + (float)_point3Dpicked[0]/_meshScale;
+//	p[1] = _meshCenter[1] + (float)_point3Dpicked[1]/_meshScale;
+//	p[2] = _meshCenter[2] + (float)_point3Dpicked[2]/_meshScale;
+//
+//	_indexVertex = computeNearestVertexFromPolygonPoint( p, _indexPolygon, _mesh);
+
+  if (_indexPolygon >=0 && _indexPolygon < _mesh.polygon().size())
+    _listTriangleSelect[_indexPolygon] = _colorpicked;
 
 	updateGL();
   }
@@ -433,12 +463,14 @@ void myGLWidget<T>::keyPressEvent(QKeyEvent *event)
       break;
     case Qt::Key_P :
       _parcelation = !_parcelation;
-
       if (_parcelation)
       _listMeshRender = _listMeshParcelation;
       else
         _listMeshRender = _listMeshSmooth;
-
+      break;
+    case Qt::Key_Space :
+    	cout << "clear paint\n";
+      _listTriangleSelect.clear();
       break;
     default:
       QWidget::keyPressEvent(event);
@@ -490,6 +522,23 @@ void myGLWidget<T>::drawColorMap (void)
       glVertex2d(5,105);
   glEnd();
 
+  //const float* t = _ao->textureCoords();
+
+  glBegin( GL_QUADS );
+
+//  glColor3ub((int)dataColorMap[3*(int)(256*t[_indexVertex])],
+//  		   				(int)dataColorMap[3*(int)(256*t[_indexVertex])+1],
+//  		   				(int)dataColorMap[3*(int)(256*t[_indexVertex])+2]);
+//
+  glColor3ub(_colorpicked[0],_colorpicked[1],_colorpicked[2]);
+
+      glVertex2d(165,60);
+      glVertex2d(190,60);
+      glVertex2d(190,85);
+      glVertex2d(165,85);
+    glEnd();
+
+  glColor3f(1,1,1);
   glEnable( GL_TEXTURE_2D );
   glBindTexture( GL_TEXTURE_2D,_IDcolorMap );
 
@@ -508,6 +557,112 @@ void myGLWidget<T>::drawColorMap (void)
   glPopAttrib();
 }
 
+template<typename T>
+void myGLWidget<T>::drawTexturePaint (void)
+{
+  glPushAttrib( GL_ALL_ATTRIB_BITS );
+
+  std::map<int,Point3d>::const_iterator
+       mit (_listTriangleSelect.begin()),
+       mend(_listTriangleSelect.end());
+
+  vector<Point3df> & vert = _mesh.vertex();
+  const vector<Point3df> & norm = _mesh.normal();
+  vector<AimsVector<uint, 3> > & tri = _mesh.polygon();
+
+
+//  for (j = 0; j < (int) vert.size(); ++j)
+//	  cout << vert[j][0] << " " << vert[j][1] << " " << vert[j][2] << " " << endl;
+
+
+  int v1,v2,v3;
+
+  glBegin( GL_TRIANGLES );
+
+  for(;mit!=mend;++mit)
+  {
+
+//	     v1 = (int)tri[mit->first][0];
+//	     v2 = (int)tri[mit->first][1];
+//	     v3 = (int)tri[mit->first][2];
+
+    glColor3ub(mit->second[0],mit->second[1],mit->second[2]);
+
+    glNormal3f(norm[tri[mit->first][0]][0], norm[tri[mit->first][0]][1], norm[tri[mit->first][0]][2]);
+    glVertex3f(_meshScale*(vert[tri[mit->first][0]][0] -_meshCenter[0]),
+    		_meshScale*(vert[tri[mit->first][0]][1] -_meshCenter[1]),
+    		_meshScale*(vert[tri[mit->first][0]][2] -_meshCenter[2]) );
+
+    		//vert[tri[mit->first][0]][0], vert[tri[mit->first][0]][1], vert[tri[mit->first][0]][2]);
+    glNormal3f(norm[tri[mit->first][1]][0], norm[tri[mit->first][1]][1], norm[tri[mit->first][1]][2]);
+    glVertex3f(_meshScale*(vert[tri[mit->first][1]][0] -_meshCenter[0]),
+        		_meshScale*(vert[tri[mit->first][1]][1] -_meshCenter[1]),
+        		_meshScale*(vert[tri[mit->first][1]][2] -_meshCenter[2]) );
+
+    //glVertex3f(vert[tri[mit->first][1]][0], vert[tri[mit->first][1]][1], vert[tri[mit->first][1]][2]);
+    glNormal3f(norm[tri[mit->first][2]][0], norm[tri[mit->first][2]][1], norm[tri[mit->first][2]][2]);
+    glVertex3f(_meshScale*(vert[tri[mit->first][2]][0] -_meshCenter[0]),
+        		_meshScale*(vert[tri[mit->first][2]][1] -_meshCenter[1]),
+        		_meshScale*(vert[tri[mit->first][2]][2] -_meshCenter[2]) );
+
+    //glVertex3f(vert[tri[mit->first][2]][0], vert[tri[mit->first][2]][1], vert[tri[mit->first][2]][2]);
+
+//
+//    cout << mit->first << endl;
+////    cout << a << " " << z << " " << e << " " << endl;
+//    cout << tri[mit->first][0] << " " << tri[mit->first][1] << " " << tri[mit->first][2] << " " << endl;
+////
+////
+////
+//    cout << _meshScale*(vert[tri[mit->first][0]][0] -_meshCenter[0])
+//    		<< " " << _meshScale*(vert[tri[mit->first][0]][1]-_meshCenter[1])
+//    		<< " " << _meshScale*(vert[tri[mit->first][0]][2]-_meshCenter[2]) <<  endl;
+
+  }
+  glEnd();
+
+
+//  vector<AimsVector<uint, 3> > & tri = _mesh.polygon();
+//  const float* t = _ao->textureCoords();
+//  //
+//  //  if (t[tri[j][0]] == t[tri[_index][1]] && t[tri[j][0]]== t[tri[j][2]])
+//  //  	  {
+//  //  	    glColor3ub((int)dataColorMap[3*(int)(256*t[tri[j][0]])],
+//  //  				(int)dataColorMap[3*(int)(256*t[tri[j][0]])+1],
+//  //  				(int)dataColorMap[3*(int)(256*t[tri[j][0]])+2]);
+//  //
+//
+//
+//  glBegin( GL_QUADS );
+//
+//  glColor3ub((int)dataColorMap[3*(int)(256*t[_indexVertex])],
+//		   				(int)dataColorMap[3*(int)(256*t[_indexVertex])+1],
+//		   				(int)dataColorMap[3*(int)(256*t[_indexVertex])+2]);
+//      //glColor4f(1,1,1,0.75);
+//      glVertex2d(165,60);
+//      glVertex2d(190,60);
+//      glVertex2d(190,85);
+//      glVertex2d(165,85);
+//    glEnd();
+//
+//  glColor3f(1,1,1);
+//  glEnable( GL_TEXTURE_2D );
+//  glBindTexture( GL_TEXTURE_2D,_IDcolorMap );
+//
+//  glBegin( GL_QUADS );
+//    glColor4f(1,1,1,0.75);
+//    glTexCoord2d(0,0);
+//    glVertex2d(10,10);
+//    glTexCoord2d(0,0);
+//    glVertex2d(20,10);
+//    glTexCoord2d(1,0);
+//    glVertex2d(20,100);
+//    glTexCoord2d(1,0);
+//    glVertex2d(10,100);
+//  glEnd();
+
+  glPopAttrib();
+}
 template<typename T>
 void myGLWidget<T>::drawPrimitivePicked (void)
 {
@@ -601,18 +756,31 @@ void myGLWidget<T>::paintGL()
   glPushMatrix();
   trackBallTransformation();
 
+
+
+
   if (_listMeshRender==_listMeshSmooth)
   {
-    glEnable( GL_TEXTURE_2D );
-  }
-  else
-  {
-    glEnable(GL_COLOR_MATERIAL);
-    glDisable( GL_TEXTURE_2D );
+	glEnable( GL_TEXTURE_2D );
   }
 
+  if (_listMeshRender==_listMeshParcelation)
+    {
+	glDisable( GL_TEXTURE_2D );
+    }
+
   glEnable (GL_POLYGON_OFFSET_FILL);
+  glEnable(GL_COLOR_MATERIAL);
   glPolygonOffset (1., 1.);
+
+  //  glPushMatrix();
+  //    trackBallTransformation();
+  //    glTranslatef(-_meshCenter[0],-_meshCenter[1],-_meshCenter[2]);
+  //    glScalef(_meshScale,_meshScale,_meshScale);
+      drawTexturePaint();
+  //  glPopMatrix();
+
+
 
   if (_listMeshRender != 0)
     glCallList(_listMeshRender);
@@ -625,10 +793,20 @@ void myGLWidget<T>::paintGL()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_LINE_SMOOTH);
 
+  glDisable( GL_COLOR_MATERIAL );
+  glDisable( GL_TEXTURE_2D );
+
+
+
   if (_listMeshRender != 0 && _wireframe)
     glCallList(_listMeshRender);
 
   glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+
+  glDisable( GL_DEPTH_TEST);
+  glDisable( GL_TEXTURE_2D );
+  glEnable( GL_COLOR_MATERIAL );
+
 
   glPopMatrix();
 
@@ -654,11 +832,9 @@ void myGLWidget<T>::paintGL()
 
   QString indexPolygon;
   indexPolygon.setNum((int)_indexPolygon,10);
-  painter.drawText(30, height()-80, "ID polygon = " + indexPolygon);
 
   QString indexVertex;
   indexVertex.setNum((int)_indexVertex,10);
-  painter.drawText(30, height()-60, "ID vertex = " + indexVertex);
 
   QString textureValue;
   if (_indexVertex < _mesh.vertex().size())
@@ -668,6 +844,15 @@ void myGLWidget<T>::paintGL()
 	if (_dataType == "S16")
       textureValue.setNum((int)_tex[0].item((int)_indexVertex),10);
     }
+  else
+  {
+	  indexVertex.setNum(0,1);
+	  indexPolygon.setNum(0,1);
+	  textureValue.setNum(0,1);
+  }
+
+  painter.drawText(30, height()-80, "ID polygon = " + indexPolygon);
+  painter.drawText(30, height()-60, "ID vertex = " + indexVertex);
   painter.drawText(30, height()-40, "texture value = " + textureValue);
 
   painter.end();
@@ -874,6 +1059,12 @@ GLuint myGLWidget<T>::loadColorMap( const char * filename)
   glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
   glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, width, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, dataColorMap);
 
+  rc_ptr<Texture1d>	tex( new Texture1d );
+  Converter<TimeTexture<T>, Texture1d>	c;
+  c.convert( _tex, *tex );
+  _ao = new ATexture;
+  _ao->setTexture( tex );
+  _ao->normalize();
   return 1;
 }
 
