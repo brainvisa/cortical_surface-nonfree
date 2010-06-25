@@ -244,12 +244,46 @@ void myGLWidget<T>::setTranslate(float t) {
 	updateGL();
 }
 
+
+
+template<typename T>
+void myGLWidget<T>::saveTexture(void) {
+
+	cout << "save Texture on disk " << endl;
+
+	typename std::map<int,T>::const_iterator mit(_listVertexSelect.begin()),mend(_listVertexSelect.end());
+
+	TimeTexture<T> out(1,_mesh.vertex().size() );
+    for (uint i=0;  i<_mesh.vertex().size(); i++)
+    {
+    if (_dataType == "FLOAT")
+    	{
+    	out[0].item(i)= (float)(_tex[0].item(i));
+    	}
+
+    if (_dataType == "S16")
+    	{
+    	out[0].item(i)=  (int)(_tex[0].item(i));
+    	}
+
+    }
+
+    for (; mit != mend; ++mit)
+	{
+    //cout << (int)mit->first << " " << mit->second << endl;
+    out[0].item(mit->first) = mit->second;
+	}
+
+    Writer< TimeTexture<T> > wt(_adressTexOut);
+    wt.write( out );
+}
+
 template<typename T>
 void myGLWidget<T>::changeMode(int mode) {
 	_mode = mode;
 	//cout << "mode = " << mode << endl;
 
-	if (mode == 2)
+	if (mode == 2 || _mode == 3)
 		copyBackBuffer2Texture();
 
 }
@@ -452,7 +486,13 @@ void myGLWidget<T>::mouseMoveEvent(QMouseEvent *event) {
 					* t[_indexVertex]) + 1];
 			_colorpicked[2] = (int) dataColorMap[3 * (int) (256
 					* t[_indexVertex]) + 2];
+
+			_textureValue = _tex[0].item(_indexVertex);
+
+			//cout << "texture value " << _textureValue << endl;
+
 		} else {
+			_textureValue = 0;
 			_colorpicked[0] = 255;
 			_colorpicked[1] = 255;
 			_colorpicked[2] = 255;
@@ -472,11 +512,14 @@ void myGLWidget<T>::mouseMoveEvent(QMouseEvent *event) {
 		p[2] = _meshCenter[2] + (float) _point3Dpicked[2] / _meshScale;
 
 		_indexVertex = computeNearestVertexFromPolygonPoint(p,_indexPolygon, _mesh);
-		_listVertexSelect[_indexVertex] = _colorpicked;
 
+		if (_indexVertex >= 0 && _indexVertex < 3*_mesh.vertex().size()){
 		_colors[3 * _indexVertex] = _colorpicked[0];
 		_colors[3 * _indexVertex + 1] = _colorpicked[1];
 		_colors[3 * _indexVertex + 2] = _colorpicked[2];
+
+		_listVertexSelect[_indexVertex] = _textureValue;
+		}
 		/*
 		if (_parcelation) {
 			if (_indexPolygon >= 0 && _indexPolygon < _mesh.polygon().size()) {
@@ -615,40 +658,41 @@ template<typename T>
 void myGLWidget<T>::drawTexturePaint(void) {
 	glPushAttrib( GL_ALL_ATTRIB_BITS);
 
-	std::map<int, Point3d>::const_iterator mit(_listVertexSelect.begin()),
-			mend(_listVertexSelect.end());
-	vector<Point3df> & vert = _mesh.vertex();
-	const vector<Point3df> & norm = _mesh.normal();
-	vector<AimsVector<uint, 3> > & tri = _mesh.polygon();
+//	std::map<int, int>::const_iterator mit(_listVertexSelect.begin()),
+//			mend(_listVertexSelect.end());
 
-	int v1, v2, v3;
+//	vector<Point3df> & vert = _mesh.vertex();
+//	const vector<Point3df> & norm = _mesh.normal();
+//	vector<AimsVector<uint, 3> > & tri = _mesh.polygon();
 
-	glBegin( GL_TRIANGLES);
-
-	for (; mit != mend; ++mit) {
-		glColor3ub(mit->second[0], mit->second[1], mit->second[2]);
-
-		glNormal3f(norm[tri[mit->first][0]][0], norm[tri[mit->first][0]][1],
-				norm[tri[mit->first][0]][2]);
-		glVertex3f(_meshScale * (vert[tri[mit->first][0]][0] - _meshCenter[0]),
-				_meshScale * (vert[tri[mit->first][0]][1] - _meshCenter[1]),
-				_meshScale * (vert[tri[mit->first][0]][2] - _meshCenter[2]));
-
-		//vert[tri[mit->first][0]][0], vert[tri[mit->first][0]][1], vert[tri[mit->first][0]][2]);
-		glNormal3f(norm[tri[mit->first][1]][0], norm[tri[mit->first][1]][1],
-				norm[tri[mit->first][1]][2]);
-		glVertex3f(_meshScale * (vert[tri[mit->first][1]][0] - _meshCenter[0]),
-				_meshScale * (vert[tri[mit->first][1]][1] - _meshCenter[1]),
-				_meshScale * (vert[tri[mit->first][1]][2] - _meshCenter[2]));
-
-		//glVertex3f(vert[tri[mit->first][1]][0], vert[tri[mit->first][1]][1], vert[tri[mit->first][1]][2]);
-		glNormal3f(norm[tri[mit->first][2]][0], norm[tri[mit->first][2]][1],
-				norm[tri[mit->first][2]][2]);
-		glVertex3f(_meshScale * (vert[tri[mit->first][2]][0] - _meshCenter[0]),
-				_meshScale * (vert[tri[mit->first][2]][1] - _meshCenter[1]),
-				_meshScale * (vert[tri[mit->first][2]][2] - _meshCenter[2]));
-	}
-	glEnd();
+//	int v1, v2, v3;
+//
+//	glBegin( GL_TRIANGLES);
+//
+//	for (; mit != mend; ++mit) {
+//		glColor3ub(mit->second[0], mit->second[1], mit->second[2]);
+//
+//		glNormal3f(norm[tri[mit->first][0]][0], norm[tri[mit->first][0]][1],
+//				norm[tri[mit->first][0]][2]);
+//		glVertex3f(_meshScale * (vert[tri[mit->first][0]][0] - _meshCenter[0]),
+//				_meshScale * (vert[tri[mit->first][0]][1] - _meshCenter[1]),
+//				_meshScale * (vert[tri[mit->first][0]][2] - _meshCenter[2]));
+//
+//		//vert[tri[mit->first][0]][0], vert[tri[mit->first][0]][1], vert[tri[mit->first][0]][2]);
+//		glNormal3f(norm[tri[mit->first][1]][0], norm[tri[mit->first][1]][1],
+//				norm[tri[mit->first][1]][2]);
+//		glVertex3f(_meshScale * (vert[tri[mit->first][1]][0] - _meshCenter[0]),
+//				_meshScale * (vert[tri[mit->first][1]][1] - _meshCenter[1]),
+//				_meshScale * (vert[tri[mit->first][1]][2] - _meshCenter[2]));
+//
+//		//glVertex3f(vert[tri[mit->first][1]][0], vert[tri[mit->first][1]][1], vert[tri[mit->first][1]][2]);
+//		glNormal3f(norm[tri[mit->first][2]][0], norm[tri[mit->first][2]][1],
+//				norm[tri[mit->first][2]][2]);
+//		glVertex3f(_meshScale * (vert[tri[mit->first][2]][0] - _meshCenter[0]),
+//				_meshScale * (vert[tri[mit->first][2]][1] - _meshCenter[1]),
+//				_meshScale * (vert[tri[mit->first][2]][2] - _meshCenter[2]));
+//	}
+//	glEnd();
 
 	glPopAttrib();
 }

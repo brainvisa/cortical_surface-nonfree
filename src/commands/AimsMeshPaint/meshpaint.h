@@ -35,6 +35,7 @@ protected :
   }
 
   virtual void changeMode(int mode){};
+  virtual void saveTexture(void){};
 
 private slots:
 
@@ -62,6 +63,11 @@ private slots:
     changeMode(3);
   }
 
+  void save()
+    {
+    saveTexture();
+    }
+
 private :
   void createActions();
   void createToolBars();
@@ -69,6 +75,7 @@ private :
   QAction *colorPickerAction;
   QAction *paintBrushAction;
   QAction *trackballAction;
+  QAction *saveAction;
 };
 
 template<typename T>
@@ -79,6 +86,7 @@ public:
     ~myMeshPaint();
 
     void changeMode(int mode);
+    void saveTexture(void);
     void keyPressEvent( QKeyEvent* event );
 
 private :

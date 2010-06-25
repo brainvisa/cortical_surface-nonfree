@@ -40,6 +40,16 @@ void myMeshPaint<T>::changeMode(int mode)
   glWidget->changeMode(mode);
 }
 
+
+template<typename T>
+void myMeshPaint<T>::saveTexture(void)
+{
+  //cout << "mode = " << mode << endl;
+  glWidget->saveTexture();
+}
+
+
+
 template<typename T>
 void myMeshPaint<T>::keyPressEvent( QKeyEvent* event )
 {
@@ -67,20 +77,31 @@ void MeshPaint::createActions()
   iconname = Settings::globalPath() + "/icons/meshPaint/zoom.png";
 
   trackballAction = new QAction(QIcon(iconname.c_str()), tr("&trackballAction"), this);
-  trackballAction->setShortcut(tr("s"));
+  trackballAction->setShortcut(tr("t"));
   trackballAction->setStatusTip(tr("trackball"));
   trackballAction->setCheckable(true);
   trackballAction->setChecked(true);
   connect(trackballAction, SIGNAL(triggered()), this, SLOT(trackball()));
+
+  iconname = Settings::globalPath() + "/icons/meshPaint/save.png";
+
+  saveAction = new QAction(QIcon(iconname.c_str()), tr("&tsaveAction"), this);
+  saveAction->setShortcut(tr("s"));
+  saveAction->setStatusTip(tr("save"));
+  //saveAction->setCheckable(true);
+  //saveAction->setChecked(false);
+  connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
 }
 
 void MeshPaint::createToolBars()
 {
   paintToolBar = addToolBar(tr("PaintToolBar"));
   paintToolBar->setIconSize(QSize(32, 32));
+
   paintToolBar->addAction(trackballAction);
   paintToolBar->addAction(colorPickerAction);
   paintToolBar->addAction(paintBrushAction);
+  paintToolBar->addAction(saveAction);
 }
 
 template class myMeshPaint<float>;

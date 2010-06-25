@@ -82,6 +82,7 @@ public:
     float getTranslate () const { return _trans; }
 
     void changeMode (int mode);
+    void saveTexture (void);
 
     void unitize (AimsSurfaceTriangle as, Point3df *meshCenter, float *meshScale);
     int buildDisplayList (AimsSurfaceTriangle as,int mode);
@@ -164,14 +165,14 @@ private:
 
     GLuint _indexPolygon;
     GLuint _indexVertex;
-    float _textureValue;
+    T _textureValue;
     bool _wireframe;
     bool _parcelation;
 
     GLuint _IDcolorMap;
 
     //std::map< int,Point3d > _listTriangleSelect;
-    std::map< int,Point3d > _listVertexSelect;
+    map<int,T> _listVertexSelect;
 
     // function pointer to OpenGL extensions
     //PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements;
