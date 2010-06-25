@@ -26,8 +26,15 @@ public:
   MeshPaint();
   ~MeshPaint();
 
+protected :
+  void resizeEvent(QResizeEvent *event ) {
+	  event->accept();
+	  trackballAction->setChecked(true);
+	  paintBrushAction->setChecked(false);
+	  colorPickerAction->setChecked(false);
+  }
+
   virtual void changeMode(int mode){};
-  //virtual void keyPressEvent( QKeyEvent* _event ){};
 
 private slots:
 

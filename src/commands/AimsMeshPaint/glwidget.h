@@ -34,6 +34,20 @@
 #include <float.h>
 #include "trackball.h"
 
+#if defined(__APPLE__)
+# include <OpenGL/gl.h>
+# include <OpenGL/glu.h>
+# ifdef HAS_GLEXT
+#  include <OpenGL/glext.h>
+# endif
+#else
+# include <GL/gl.h>
+# include <GL/glu.h>
+# ifdef HAS_GLEXT
+#  include <GL/glext.h>
+# endif
+#endif
+
 
 using namespace carto;
 using namespace aims;
@@ -71,6 +85,7 @@ public:
 
     void unitize (AimsSurfaceTriangle as, Point3df *meshCenter, float *meshScale);
     int buildDisplayList (AimsSurfaceTriangle as,int mode);
+    void buildDataArray(void);
     int computeNearestVertexFromPolygonPoint (Point3df position, int poly, AimsSurfaceTriangle as);
     void computeIndexColor (AimsSurfaceTriangle as);
     void copyBackBuffer2Texture (void);
@@ -129,10 +144,10 @@ private:
 
     TrackBall _trackBall;
 
-    GLuint _listMeshRender;
+    //GLuint _listMeshRender;
     GLuint _listMeshPicking;
-    GLuint _listMeshParcelation;
-    GLuint _listMeshSmooth;
+    //GLuint _listMeshParcelation;
+    //GLuint _listMeshSmooth;
 
     Point3df _meshCenter;
     float _meshScale;
@@ -155,7 +170,17 @@ private:
 
     GLuint _IDcolorMap;
 
-    std::map< int,Point3d > _listTriangleSelect;
+    //std::map< int,Point3d > _listTriangleSelect;
+    std::map< int,Point3d > _listVertexSelect;
+
+    // function pointer to OpenGL extensions
+    //PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements;
+
+    GLfloat *_vertices;
+    GLfloat *_normals;
+    GLubyte *_colors;
+    GLuint *_indices;
+    //GLfloat *_textures;
 };
 
 #endif
