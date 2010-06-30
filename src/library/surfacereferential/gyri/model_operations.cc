@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 #include <aims/vector/vector.h>
-#include "vector_operations.h"
+#include <cortical_surface/surfacereferential/gyri/vector_operations.h>
 
 using namespace aims;
 using namespace std;

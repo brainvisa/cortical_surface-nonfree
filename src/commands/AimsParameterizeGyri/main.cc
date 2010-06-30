@@ -2,7 +2,7 @@
 #include <aims/io/writer.h>
 #include <aims/getopt/getopt2.h>
 #include <aims/mesh/texture.h>
-#include "gyri_parameterization.h"
+#include <cortical_surface/surfacereferential/gyri/gyri_parameterization.h>
 
 using namespace aims;
 using namespace std;

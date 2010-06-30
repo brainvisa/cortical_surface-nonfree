@@ -29,7 +29,7 @@ namespace surf{
             void getAimsMesh (  AimsSurface<3, Void> &mesh,
                                 float radius,
                                 int representation_mode );
-            void getAimsEllipsoid ( float abscissa, float height, float area );
+            void getAimsEllipsoid ( float abscissa, float depth, float height, float area );
 
             void getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
                                     float radius = 1.0 );
@@ -52,7 +52,7 @@ namespace surf{
 //             float dispersion;
             // Coordinate defined along an anatomical (possibly defined by user) axis.
             // It is used to measure the alignment of structures along axes.
-            map<int, float> x_along_axis;
+//             map<int, float> x_along_axis;
 
             Point3df boundingbox_max;
             Point3df boundingbox_min;
@@ -78,7 +78,7 @@ namespace surf{
 //                 area = glb->area;
                 index = glb->index;
                 nodes = set<int>(glb->nodes);
-                x_along_axis = map<int, float>(glb->x_along_axis);
+//                 x_along_axis = map<int, float>(glb->x_along_axis);
                 coordinates = map<int, vector<float> >(glb->coordinates);
                 raw_coordinates = map<int, vector<float> >(glb->raw_coordinates);
                 ssb_parent = glb->ssb_parent;
@@ -153,11 +153,11 @@ double getOverlapMeasure( Point2df bbmin1, Point2df bbmax1, Point2df bbmin2, Poi
 
 bool isInside2DBox( Point2df p1, Point2df bbmin, Point2df bbmax);
 
-void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
-                       vector<surf::GreyLevelBlob *> &filteredBlobs,
-                       vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-                       Point2df bbmin2,
-                       Point2df bbmax2 );
+// void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
+//                        vector<surf::GreyLevelBlob *> &filteredBlobs,
+//                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
+//                        Point2df bbmin2,
+//                        Point2df bbmax2 );
 
 void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                         vector<surf::GreyLevelBlob *> &filteredBlobs,

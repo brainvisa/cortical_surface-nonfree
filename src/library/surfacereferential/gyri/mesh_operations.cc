@@ -2,7 +2,7 @@
 #include <aims/distancemap/meshdistance.h>
 #include <aims/mesh/texture.h>
 #include <aims/io/io_g.h>
-#include "vector_operations.h"
+#include <cortical_surface/surfacereferential/gyri/vector_operations.h>
 
 using namespace std;
 using namespace aims;
@@ -10,7 +10,7 @@ using namespace aims::meshdistance;
 
 AimsSurfaceTriangle getGyrusMesh(AimsSurface<3, Void> &inMesh, const vector<uint> &gyrusVertices, vector<uint> &corres){
    AimsSurfaceTriangle gyrusMesh;
-        // on extrait un gyrus, le maillage a moins de vertex que l'hémisphère, du coup on crée un vecteur qui renseigne
+        // on extrait un gyrus, le maillage a moins de vertex que l'hï¿½misphï¿½re, du coup on crï¿½e un vecteur qui renseigne
         // sur les correspondances entre points homologues..s
    set<uint> gyrusSet;
    corres = *(new vector<uint>(inMesh.vertex().size()));

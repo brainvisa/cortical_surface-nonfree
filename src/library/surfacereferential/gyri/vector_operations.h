@@ -16,6 +16,8 @@ vector<short> reverseVector(const vector<short> &v);
    
 vector<uint> setToVector(const set<uint> &v);
 
+vector<uint> setToVector(const set<int> &v);
+
 vector<short> setToVector(const set<short> &v);
 
 vector<uint> getCorresVector(const vector<uint> &inVector, const vector<uint> &corres);

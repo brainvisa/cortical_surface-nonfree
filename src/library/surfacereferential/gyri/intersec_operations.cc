@@ -1,8 +1,8 @@
 #include <aims/mesh/surface.h>
 #include <aims/mesh/texture.h>
-#include "gyri_operations.h"
-#include "vertices_operations.h"
-#include "vector_operations.h"
+#include <cortical_surface/surfacereferential/gyri/gyri_operations.h>
+#include <cortical_surface/surfacereferential/gyri/vertices_operations.h>
+#include <cortical_surface/surfacereferential/gyri/vector_operations.h>
 
 using namespace std;
 using namespace aims;
@@ -311,9 +311,9 @@ uint lookUpIntersectionCase(short gyruslabel, short left, short central, short r
 }
 
 vector<uint> substractIntersections(const vector<uint> &intersection, short gyruslabel, const vector<short> &parcours, const vector<set<uint> > &voisins, const Texture<short> &inTex){
-   // cette méthode vise à retirer les intersections aux extrémités du segment sélectionné : le vecteur intersection est un
-   // ensemble de points sélectionnés à partir du vecteur de labels parcours. L'idée est d'en retirer les intersections des
-   // extrémités (pour éviter les éventuelles fusions entre haut et bas dans des cas défavorables).
+   // cette mï¿½thode vise ï¿½ retirer les intersections aux extrï¿½mitï¿½s du segment sï¿½lectionnï¿½ : le vecteur intersection est un
+   // ensemble de points sï¿½lectionnï¿½s ï¿½ partir du vecteur de labels parcours. L'idï¿½e est d'en retirer les intersections des
+   // extrï¿½mitï¿½s (pour ï¿½viter les ï¿½ventuelles fusions entre haut et bas dans des cas dï¿½favorables).
    vector<uint> result;
    short gyrus;
    vector<short> gyriVoisins(getNeighbouringLabels(gyruslabel, parcours[0], voisins, inTex));

@@ -1,8 +1,8 @@
 #include <aims/io/io_g.h>
 #include <aims/mesh/texture.h>
 #include <aims/mesh/surface.h>
-#include "vector_operations.h"
-#include "vertices_operations.h"
+#include <cortical_surface/surfacereferential/gyri/vector_operations.h>
+#include <cortical_surface/surfacereferential/gyri/vertices_operations.h>
 
 
 using namespace std;
@@ -379,7 +379,7 @@ vector<vector<uint> > nettoyerTaches(Texture<short> &inTex, const vector<set<uin
       }
    }
    
-   printf("Nettoyage effectué..\n");
+   printf("Nettoyage effectuï¿½..\n");
    return result;
 }
 

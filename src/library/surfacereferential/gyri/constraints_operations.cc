@@ -1,8 +1,8 @@
 #include <aims/mesh/surface.h>
 #include <aims/mesh/texture.h>
-#include "vector_operations.h"
-#include "model_operations.h"
-#include "vertices_operations.h"
+#include <cortical_surface/surfacereferential/gyri/vector_operations.h>
+#include <cortical_surface/surfacereferential/gyri/model_operations.h>
+#include <cortical_surface/surfacereferential/gyri/vertices_operations.h>
 
 using namespace std;
 using namespace aims;

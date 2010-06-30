@@ -1,6 +1,6 @@
 #include <aims/mesh/texture.h>
-#include "vector_operations.h"
-#include "vertices_operations.h"
+#include <cortical_surface/surfacereferential/gyri/vector_operations.h>
+#include <cortical_surface/surfacereferential/gyri/vertices_operations.h>
 
 using namespace std;
 using namespace aims;
@@ -8,7 +8,7 @@ using namespace aims;
 
 
 vector<short> getNeighbours(short gyrus1, const vector<set<uint> > &voisins, const Texture<short> &inTex){
-   // cette méthode renvoit les couleurs dont des points ont des voisins dans gyrus1
+   // cette mï¿½thode renvoit les couleurs dont des points ont des voisins dans gyrus1
    vector<short> result;   
    set<uint>::iterator it;
    set<short> aux;
@@ -27,7 +27,7 @@ vector<short> getNeighbours(short gyrus1, const vector<set<uint> > &voisins, con
 }
 
 vector<short> getNeighbouringLabels(short gyrus1, short gyrus2, const vector<set<uint> > &voisins, const Texture<short> &inTex){
-   // cette méthode renvoit les couleurs dont il existe un point ayant pour voisins des points de deux couleurs données
+   // cette mï¿½thode renvoit les couleurs dont il existe un point ayant pour voisins des points de deux couleurs donnï¿½es
    // LES GYRI DOIVENT OBLIGATOIREMENT SE TOUCHER
    vector<short> result;
    set<short> aux;
@@ -69,8 +69,8 @@ vector<short> getNeighbouringLabels(const vector<uint> &v, const vector<set<uint
 }
 
 vector<short> getCommonNeighbours(short gyrus1, short gyrus2, const vector<set<uint> > &voisins, const Texture<short> &inTex){
-   // cette méthode renvoit les couleurs dont des points ont des voisins dans gyrus1, et gyrus2 (pas forcément un meme point
-   // voisin à la fois de gyrus1 et gyrus2, non non..)
+   // cette mï¿½thode renvoit les couleurs dont des points ont des voisins dans gyrus1, et gyrus2 (pas forcï¿½ment un meme point
+   // voisin ï¿½ la fois de gyrus1 et gyrus2, non non..)
    vector<short> result;
    ASSERT(gyrus1!=gyrus2 && getIntersection(gyrus1,gyrus2,voisins,inTex).size()==0);
    set<uint>::iterator it;
@@ -94,7 +94,7 @@ vector<short> getCommonNeighbours(short gyrus1, short gyrus2, const vector<set<u
 }
 
 vector<pair<short,short> > getInBetweenLabels(short gyrus1, short gyrus2, const vector<set<uint> > &voisins, const Texture<short> &inTex){
-   // cette méthode renvoit les couleurs dont des points ont des voisins dans gyrus1, et/ou gyrus2
+   // cette mï¿½thode renvoit les couleurs dont des points ont des voisins dans gyrus1, et/ou gyrus2
    vector<pair<short,short> > result;
    set<pair<short,short> > aux;
    ASSERT(gyrus1!=gyrus2 && getIntersection(gyrus1,gyrus2,voisins,inTex).size()==0);

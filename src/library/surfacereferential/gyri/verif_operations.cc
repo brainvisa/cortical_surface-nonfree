@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <aims/mesh/texture.h>
 #include <aims/mesh/surface.h>
-#include "gyri_operations.h"
-#include "vertices_operations.h"
-#include "vector_operations.h"
+#include <cortical_surface/surfacereferential/gyri/gyri_operations.h>
+#include <cortical_surface/surfacereferential/gyri/vertices_operations.h>
+#include <cortical_surface/surfacereferential/gyri/vector_operations.h>
 
 using namespace std;
 using namespace aims;
@@ -50,16 +50,16 @@ bool verifIntersectionsModel(const vector<set<uint> > &voisins, const Texture<sh
 bool verifGyriExistence(short g, const Point3d &gHaut, const Point3d &gBas, const vector<uint> &corres){
    uint test=0;
    if (find(corres, g)==-1){
-      cerr << "Attention : le gyrus " << g << " référencé dans le modèle de diffusion n'existe pas dans la parcellisation.\n" << endl;
+      cerr << "Attention : le gyrus " << g << " rï¿½fï¿½rencï¿½ dans le modï¿½le de diffusion n'existe pas dans la parcellisation.\n" << endl;
       test=1;
    }
    for (uint i=0;i<3;i++)
       if (find(corres, gHaut[i])==-1) {
-         cerr << "Attention : le gyrus " << gHaut[i] << " référencé dans le modèle de diffusion n'existe pas dans la parcellisation.\n" << endl;
+         cerr << "Attention : le gyrus " << gHaut[i] << " rï¿½fï¿½rencï¿½ dans le modï¿½le de diffusion n'existe pas dans la parcellisation.\n" << endl;
          test=1;
       }
       else if (find(corres, gBas[i])==-1){
-         cerr << "Attention : le gyrus " << gBas[i] << " référencé dans le modèle de diffusion n'existe pas dans la parcellisation.\n" << endl;
+         cerr << "Attention : le gyrus " << gBas[i] << " rï¿½fï¿½rencï¿½ dans le modï¿½le de diffusion n'existe pas dans la parcellisation.\n" << endl;
          test = 1;
       }
    return (test==0);

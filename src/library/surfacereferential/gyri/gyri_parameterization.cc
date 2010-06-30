@@ -4,15 +4,15 @@
 #include <aims/mesh/curv.h>
 #include <aims/io/reader.h>
 #include <stdio.h>
-#include "verif_operations.h"
-#include "compconn_operations.h"
-#include "intersec_operations.h"
-#include "misctex_operations.h"
-#include "model_operations.h"
-#include "vertices_operations.h"
-#include "mesh_operations.h"
-#include "constraints_operations.h"
-#include "vector_operations.h"
+#include <cortical_surface/surfacereferential/gyri/verif_operations.h>
+#include <cortical_surface/surfacereferential/gyri/compconn_operations.h>
+#include <cortical_surface/surfacereferential/gyri/intersec_operations.h>
+#include <cortical_surface/surfacereferential/gyri/misctex_operations.h>
+#include <cortical_surface/surfacereferential/gyri/model_operations.h>
+#include <cortical_surface/surfacereferential/gyri/vertices_operations.h>
+#include <cortical_surface/surfacereferential/gyri/mesh_operations.h>
+#include <cortical_surface/surfacereferential/gyri/constraints_operations.h>
+#include <cortical_surface/surfacereferential/gyri/vector_operations.h>
 
 using namespace std;
 using namespace aims;
@@ -108,8 +108,8 @@ TimeTexture<float> GyriParamTexture(AimsSurface<3,Void> &inMesh, Texture<short> 
                   points.push_back(intersection);
                }
                else {
-                  if (hautBas.first.empty()) printf("Attention : détection intersection \"haut\" foireuse.\n");
-                  if (hautBas.second.empty()) printf("Attention : détection intersection \"bas\" foireuse.\n");
+                  if (hautBas.first.empty()) printf("Attention : dï¿½tection intersection \"haut\" foireuse.\n");
+                  if (hautBas.second.empty()) printf("Attention : dï¿½tection intersection \"bas\" foireuse.\n");
                }
                if (!(gaucheDroite.first.empty() || gaucheDroite.second.empty())){
 
@@ -189,7 +189,7 @@ TimeTexture<float> GyriParamTexture(AimsSurface<3,Void> &inMesh, Texture<short> 
                      final[2].item(vertices[0][i2]) = (float) horizDiff.item(corr[vertices[0][i2]]);
                }
                else {
-                  printf("Attention : détection intersections \"gaucheDroite\" foireuse.\n");
+                  printf("Attention : dï¿½tection intersections \"gaucheDroite\" foireuse.\n");
                }
             }
             else {

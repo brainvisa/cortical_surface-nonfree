@@ -45,6 +45,15 @@ vector<uint> setToVector(const set<uint> &v){
    return result;
 }
 
+vector<uint> setToVector(const set<int> &v){
+    set<int>::iterator it;
+    vector<uint> result;
+    for (it = v.begin();it!=v.end();it++)
+        result.push_back(*it);
+    
+    return result;
+}
+
 vector<short> setToVector(const set<short> &v){
    set<short>::iterator it;
    vector<short> result;

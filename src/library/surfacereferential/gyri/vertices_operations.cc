@@ -3,7 +3,7 @@
 #include <aims/mesh/surface.h>
 #include <aims/mesh/texture.h>
 #include <aims/mesh/surfaceOperation.h>
-#include "vector_operations.h"
+#include <cortical_surface/surfacereferential/gyri/vector_operations.h>
 
 using namespace std;
 using namespace aims;
@@ -11,7 +11,7 @@ using namespace aims;
 
 vector<vector<uint> > sortVertices(uint gyruslabel, const vector<set<uint> > &voisins, const Texture<short> &inTex) {
 
-   // méthode qui pour un gyrus donné renvoit les indices des points du gyrus, des points du bord du gyrus, des points du bord étant voisins de deux gyri distincts
+   // mï¿½thode qui pour un gyrus donnï¿½ renvoit les indices des points du gyrus, des points du bord du gyrus, des points du bord ï¿½tant voisins de deux gyri distincts
 
    uint test;
    set<uint>::const_iterator it;
@@ -56,7 +56,7 @@ vector<vector<uint> > sortVertices(uint gyruslabel, const vector<set<uint> > &vo
 vector<uint> getIntersection(short gyruslabel, short voisin1, short voisin2, const vector<set<uint> > &voisins,
       const Texture<short> &inTex){
    
-   // cette méthode renvoit les points d'une couleur donnée ayant pour voisins des points de deux couleurs données
+   // cette mï¿½thode renvoit les points d'une couleur donnï¿½e ayant pour voisins des points de deux couleurs donnï¿½es
 
    vector<uint> result;
    set<uint>::iterator it;
@@ -85,7 +85,7 @@ vector<uint> getIntersection(short gyruslabel, short voisin1, short voisin2, con
 vector<uint> getRealIntersection(short gyruslabel, short voisin1, short voisin2, const vector<set<uint> > &voisins,
       const Texture<short> &inTex){
    
-   // cette méthode renvoit les points d'une couleur donnée ayant pour voisins des points de deux couleurs données
+   // cette mï¿½thode renvoit les points d'une couleur donnï¿½e ayant pour voisins des points de deux couleurs donnï¿½es
 
    set<uint> result;
    set<uint>::iterator it,it2,it3;
@@ -104,7 +104,7 @@ vector<uint> getRealIntersection(short gyruslabel, short voisin1, short voisin2,
 }
 
 vector<uint> getIntersection(short gyruslabel, short voisin1, const vector<set<uint> > &voisins, const Texture<short> &inTex){
-    // cette méthode renvoit les points d'une couleur donnée ayant pour voisins des points d'une couleur donnée
+    // cette mï¿½thode renvoit les points d'une couleur donnï¿½e ayant pour voisins des points d'une couleur donnï¿½e
 
    vector<uint> result;
    set<uint>::iterator it;
@@ -126,7 +126,7 @@ vector<uint> getIntersection(short gyruslabel, short voisin1, const vector<set<u
 
 vector<uint> getThirdPoints(uint a, uint b, const vector<set<uint> > &voisins){
 
-   // méthode qui pour deux indices de points donnés renvoit la liste de points voisins de l'un et de l'autre simultanément
+   // mï¿½thode qui pour deux indices de points donnï¿½s renvoit la liste de points voisins de l'un et de l'autre simultanï¿½ment
 
    vector<uint> result;
    ASSERT(a!=b);
@@ -140,7 +140,7 @@ vector<uint> getThirdPoints(uint a, uint b, const vector<set<uint> > &voisins){
 
 vector<uint> getBorderNeighbours(uint v, const vector<uint> &borderVertices, const vector<set<uint> > &voisins){
 
-   // à un point en entrée la méthode renvoit ses voisins contenus dans le bord
+   // ï¿½ un point en entrï¿½e la mï¿½thode renvoit ses voisins contenus dans le bord
 
    set<uint>::iterator it;
    set<uint> result;
@@ -165,7 +165,7 @@ bool distanceCompare(Point3df &a, Point3df &b, Point3df &c){
 
 vector<uint> isolineExtraction(double value, AimsSurfaceTriangle &gyrusMesh, const Texture<double> &inTex){
 
-   // méthode qui renvoit une liste d'indice de points correspondant 
+   // mï¿½thode qui renvoit une liste d'indice de points correspondant 
 
    vector<set<uint> > voisins(SurfaceManip::surfaceNeighbours(gyrusMesh));
    //set<uint> result;
@@ -281,7 +281,7 @@ vector<uint> lineExtraction(uint start, uint end, AimsSurface<3,Void> &gyrusSurf
 
 uint getNearestPoint(const vector<uint> &vec, const Texture<double> &inTex, double value){
 
-   // à partir d'une liste d'indices de points, d'une texture et d'une valeur donnée, renvoit le point dont la valeur sur la texture est la plus proche de la valeur cible
+   // ï¿½ partir d'une liste d'indices de points, d'une texture et d'une valeur donnï¿½e, renvoit le point dont la valeur sur la texture est la plus proche de la valeur cible
  
    uint best=0;
    for (uint i=0;i<vec.size();i++)

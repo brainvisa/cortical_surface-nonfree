@@ -17,6 +17,18 @@ HEADERS = \
   surfacereferential/sulcusCorticalSnake.h \
   surfacereferential/sulcusCorticalSnake_energy.h \
   surfacereferential/conformalMapping.h \
+  surfacereferential/gyri/basictex_operations.h \
+  surfacereferential/gyri/compconn_operations.h \
+  surfacereferential/gyri/constraints_operations.h \
+  surfacereferential/gyri/gyri_operations.h \
+  surfacereferential/gyri/intersec_operations.h \
+  surfacereferential/gyri/mesh_operations.h \
+  surfacereferential/gyri/misctex_operations.h \
+  surfacereferential/gyri/model_operations.h \
+  surfacereferential/gyri/vector_operations.h \
+  surfacereferential/gyri/vertices_operations.h \
+  surfacereferential/gyri/verif_operations.h \
+  surfacereferential/gyri/gyri_parameterization.h \
   structuralanalysis/iograph.h \
   structuralanalysis/meshdistance.h \
   structuralanalysis/sites.h \
@@ -42,6 +54,18 @@ SOURCES = \
   surfacereferential/sulcusCorticalSnake.cc \
   surfacereferential/sulcusCorticalSnake_energy.cc \
   surfacereferential/conformalMapping.cc \
+  surfacereferential/gyri/basictex_operations.cc \
+  surfacereferential/gyri/compconn_operations.cc \
+  surfacereferential/gyri/constraints_operations.cc \
+  surfacereferential/gyri/gyri_operations.cc \
+  surfacereferential/gyri/intersec_operations.cc \
+  surfacereferential/gyri/mesh_operations.cc \
+  surfacereferential/gyri/misctex_operations.cc \
+  surfacereferential/gyri/model_operations.cc \
+  surfacereferential/gyri/vector_operations.cc \
+  surfacereferential/gyri/verif_operations.cc \
+  surfacereferential/gyri/vertices_operations.cc \
+  surfacereferential/gyri/gyri_parameterization.cc \
   structuralanalysis/iograph.cc \
   structuralanalysis/meshdistance.cc \
   structuralanalysis/sites.cc \

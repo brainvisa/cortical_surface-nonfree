@@ -123,7 +123,7 @@ void surf::Blob::getAimsMesh (  AimsSurface<3, Void> &mesh,
 
 //##############################################################################
 
-void surf::Blob::getAimsEllipsoid ( float abscissa, float height, float area ) {
+void surf::Blob::getAimsEllipsoid ( float abscissa, float depth, float height, float area ) {
     AimsSurfaceTriangle *ellipse;
 
     Point3df p1(0.0, 0.0, 0.0);
@@ -132,6 +132,7 @@ void surf::Blob::getAimsEllipsoid ( float abscissa, float height, float area ) {
     for ( uint i = 0 ; i < (*ellipse)[0].vertex().size() ; i ++ ) {        
         (*ellipse)[0].vertex()[i][0] += abscissa*10.0;
         (*ellipse)[0].vertex()[i][1] += log(height)*100.0;
+        (*ellipse)[0].vertex()[i][2] += depth*10.0;
     }
     this->mesh = (*ellipse)[0];
 }
@@ -159,12 +160,37 @@ void surf::GreyLevelBlob::getAimsMesh ( AimsSurface<3, Void> &mesh,
 }
 
 void surf::GreyLevelBlob::getAimsEllipsoid ( void ) {
+    cout << "ELLIPS" << endl;
     set<int>::iterator it;
-    float moy = 0.0;
-    for ( it = nodes.begin() ; it != nodes.end() ; it ++ )
-        moy += raw_coordinates[*it][0];
-    moy /= nodes.size();
-    surf::Blob::getAimsEllipsoid ( moy, scale, 2.0 );
+    float moyX = 0.0, moyY= 0.0;
+    if ( coordinates.size() != 0 ) {
+
+        for ( it = nodes.begin() ; it != nodes.end() ; it ++ ) {
+            cout << coordinates[*it].size() << " " << flush;
+            if ( coordinates[*it][0] != -1.0 )
+                moyX += coordinates[*it][0];
+            if ( coordinates[*it].size() == 2 && coordinates[*it][1] != -1.0 )
+                moyY += coordinates[*it][1];
+        }
+        it = nodes.begin();
+        
+        moyX /= nodes.size();
+        moyY /= nodes.size();
+
+        
+
+        cout << endl;
+
+        
+    }
+    else {
+        cerr << "WARNING : ELLIPSOID COMPUTED USING 3D COORDINATES AS ABSCISSA" << endl;
+        for ( it = nodes.begin() ; it != nodes.end() ; it ++ )
+            moyX += raw_coordinates[*it][0];
+        moyX /= nodes.size();
+    }
+    cout << "moyX:" << moyX << " moyY:" << moyY << endl;
+    surf::Blob::getAimsEllipsoid ( moyX,moyY, scale, 2.0 );
 }
 
 void surf::GreyLevelBlob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh ){
@@ -466,16 +492,15 @@ bool isInside2DBox( Point2df p1, Point2df bbmin, Point2df bbmax) {
         return true;
     else if (no_overlap == 1)
         return false;
+    assert(false);
+    return false;
 }
 
 
 void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                        vector<surf::GreyLevelBlob *> &filteredBlobs,
                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-                       Point2df bbminZone,
-                       Point2df bbmaxZone,
-                       set<int> &nodes,
-                       int filteringMode){
+                       set<int> &nodes ){
 
     for (uint i = 0 ; i < ssblobs.size() ; i++ )
         ssblobs[i]->index = i;
@@ -496,26 +521,26 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
         for (itB1 = ssblobs[i]->blobs.begin() ; itB1 != ssblobs[i]->blobs.end() && !firstGLB ; itB1++){
             uint no_overlap = 2;
 
-            if (filteringMode == 0){
-                pair<Point2df,Point2df> bbi = (*itB1)->get2DBoundingBox();/* (*itB1)->nodes, (*itB1)->coordinates );*/
+//             if (filteringMode == 0){
+//                 pair<Point2df,Point2df> bbi = (*itB1)->get2DBoundingBox();/* (*itB1)->nodes, (*itB1)->coordinates );*/
+// 
+//                 Point2df bbminBlob (bbi.first[0], bbi.first[1]),
+//                     bbmaxBlob (bbi.second[0], bbi.second[1]);
+// 
+//                 double overlap = getOverlapMeasure( bbminBlob, bbmaxBlob, bbminZone, bbmaxZone, &no_overlap );
+//             }
+//             else {
+            set<int>::iterator it;
+            set<int> intersection;
+            for ( it = (*itB1)->nodes.begin() ; it != (*itB1)->nodes.end() ; it++ )
+                if ( nodes.find(*it) != nodes.end() )
+                    intersection.insert(*it);
 
-                Point2df bbminBlob (bbi.first[0], bbi.first[1]),
-                    bbmaxBlob (bbi.second[0], bbi.second[1]);
-
-                double overlap = getOverlapMeasure( bbminBlob, bbmaxBlob, bbminZone, bbmaxZone, &no_overlap );
-            }
-            else {
-                set<int>::iterator it;
-                set<int> intersection;
-                for ( it = (*itB1)->nodes.begin() ; it != (*itB1)->nodes.end() ; it++ )
-                    if ( nodes.find(*it) != nodes.end() )
-                        intersection.insert(*it);
-
-                if ( intersection.size() != 0 )
-                    no_overlap = 0;
-                else
-                    no_overlap = 1;
-            }
+            if ( intersection.size() != 0 )
+                no_overlap = 0;
+            else
+                no_overlap = 1;
+//             }
             if (no_overlap == 0)
                 firstGLB = true;
         }
@@ -560,26 +585,27 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
             }
         }
     }
+    
 }
 
 
-void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
-                       vector<surf::GreyLevelBlob *> &filteredBlobs,
-                       vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-                       Point2df bbmin,
-                       Point2df bbmax){
-    set<int> nodes;
-    filteringBlobs ( ssblobs, filteredBlobs, filteredSsblobs, bbmin, bbmax, nodes, 0 );
-}
+// void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
+//                        vector<surf::GreyLevelBlob *> &filteredBlobs,
+//                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
+//                        Point2df bbmin,
+//                        Point2df bbmax){
+// //     set<int> nodes;
+//     filteringBlobs ( ssblobs, filteredBlobs, filteredSsblobs, bbmin, bbmax, nodes, 0 );
+// }
 
 
-void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
-                       vector<surf::GreyLevelBlob *> &filteredBlobs,
-                       vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-                       set<int> &nodes ) {
-    Point2df p1(0.0, 0.0), p2(0.0, 0.0);
-    filteringBlobs ( ssblobs, filteredBlobs, filteredSsblobs, p1, p2, nodes, 1 );
-}
+// void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
+//                        vector<surf::GreyLevelBlob *> &filteredBlobs,
+//                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
+//                        set<int> &nodes ) {
+// //     Point2df p1(0.0, 0.0), p2(0.0, 0.0);
+//     filteringBlobs ( ssblobs, filteredBlobs, filteredSsblobs, nodes);
+// }
 
 
 void computeBlobsDispersion( vector<surf::ScaleSpaceBlob *> & ssblobs ) {
