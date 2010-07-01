@@ -19,13 +19,13 @@ AimsSurfaceTriangle getBlobsEllipsoidMeshes ( vector<surf::GreyLevelBlob *> &blo
 
   for (uint i = 0 ; i < blobs.size() ; i++){
 
-    cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
+    cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << objects.size() << flush ;
     blobs[i]->getAimsEllipsoid ( );
     objects[i] = blobs[i]->mesh;
 
   }
 
-  cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
+  cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b  " << objects.size() << " meshes extracted" << endl;
   return objects;
 }
 
@@ -40,13 +40,13 @@ AimsSurfaceTriangle getBlobsSphericalMeshes ( vector<surf::GreyLevelBlob *> &blo
 
   for (uint i = 0 ; i < blobs.size() ; i++){
 
-    cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
+    cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << objects.size() << flush ;
     blobs[i]->getAimsPatchOnASphere(mesh);
     objects[i] = blobs[i]->mesh;
 
   }
 
-  cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
+  cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b  " << objects.size() << " meshes extracted" << endl;
   return objects;
 }
 
@@ -61,13 +61,13 @@ AimsSurfaceTriangle getBlobs2DMeshes ( vector<surf::GreyLevelBlob *> &blobs,
 
     for (uint i = 0 ; i < blobs.size() ; i++){
 
-        cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
+        cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << objects.size() << flush ;
         blobs[i]->getAimsPatchOnAPlane(mesh);
         objects[i] = blobs[i]->mesh;
 
     }
 
-    cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
+    cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b  " << objects.size() << " meshes extracted" << endl;
     return objects;
 }
 
@@ -82,13 +82,13 @@ AimsSurfaceTriangle getBlobsMeshes ( vector<surf::GreyLevelBlob *> &blobs,
 
     for (uint i = 0 ; i < blobs.size() ; i++){
 
-        cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
+        cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << objects.size() << flush ;
         blobs[i]->getAimsMeshPatch(mesh);
         objects[i] = blobs[i]->mesh;
 
     }
 
-    cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
+    cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b  " << objects.size() << " meshes extracted" << endl;
     return objects;
 }
 
@@ -322,9 +322,9 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
 //     }
 //     cout << "/";
 //     cout << ssb2->index << ":";
-    for ( itB1 = listGLB2.begin(); itB1 != listGLB2.end() ; itB1++){
-        cout << (*itB1)->scale << " " << flush;
-    }
+//     for ( itB1 = listGLB2.begin(); itB1 != listGLB2.end() ; itB1++){
+//         cout << (*itB1)->scale << " " << flush;
+//     }
 //     cout << endl;
     ASSERT( unsortedListGLB.size() == listGLB2.size() );
 //     cout << ssb1->index << " " << ssb1->blobs.size() << " " << ssb1->tmin << "-" << ssb1->tmax << " " << ssb2->index << " " << ssb2->blobs.size() << " " << ssb2->tmin << "-" << ssb2->tmax << endl;
@@ -395,7 +395,7 @@ AimsSurfaceTriangle getG2GRelationsMeshes ( vector< pair<surf::GreyLevelBlob *, 
         meshes[i] = linkMesh[0];
     }
     ASSERT( meshes.size() == blobsPairs.size() );
-    cout << "G2GRelationMeshes : " << meshes.size() << flush;
+    cout << "  " << meshes.size() << " meshes created" << endl;
     return meshes;
 }
 
@@ -412,6 +412,6 @@ AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector< pair< surf::ScaleSpa
         linkMesh = getBifurcationMesh( ssb1, ssb2, representation_mode );
         meshes[i] = linkMesh[0];
     }
-    cout << "bifurcationRelationsMeshes : " << meshes.size() << endl;
+    cout << "  " << meshes.size() << " meshes created" << endl;
     return meshes;
 }

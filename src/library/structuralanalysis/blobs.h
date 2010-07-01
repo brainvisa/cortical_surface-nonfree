@@ -47,12 +47,6 @@ namespace surf{
         public :
             float t;
             float scale;
-//             float area;
-            // Spatial dispersion : to describe if the blob is isolated are 
-//             float dispersion;
-            // Coordinate defined along an anatomical (possibly defined by user) axis.
-            // It is used to measure the alignment of structures along axes.
-//             map<int, float> x_along_axis;
 
             Point3df boundingbox_max;
             Point3df boundingbox_min;
@@ -65,6 +59,7 @@ namespace surf{
             void getAimsMeshPatch ( AimsSurface<3, Void> &mesh );
             void getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh );
             void getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh );
+            
             Point3df getBlobBarycenterOnASphere( );
             Point3df getBlobBarycenter( );
             Point3df getBlobBarycenterFromMesh( );
