@@ -174,19 +174,29 @@ void surf::GreyLevelBlob::getAimsEllipsoid ( void ) {
 //     cout << "ELLIPS" << endl;
     set<int>::iterator it;
     float moyX = 0.0, moyY= 0.0;
+    int nbX=0, nbY=0;
     if ( coordinates.size() != 0 ) {
 
         for ( it = nodes.begin() ; it != nodes.end() ; it ++ ) {
 //             cout << coordinates[*it].size() << " " << flush;
-            if ( coordinates[*it][0] != -1.0 )
+            if ( coordinates[*it][0] >= 0.0 ) {
                 moyX += coordinates[*it][0];
-            if ( coordinates[*it].size() == 2 && coordinates[*it][1] != -1.0 )
+                nbX++;
+            }
+            if ( coordinates[*it].size() == 2 && coordinates[*it][1] >= 0.0 ) {
                 moyY += coordinates[*it][1];
+                nbY++;
+            }
         }
         it = nodes.begin();
-        
-        moyX /= nodes.size();
-        moyY /= nodes.size();
+        if (nbX > 0)
+            moyX /= nbX;
+        else
+            moyX = 0.0;
+        if (nbY > 0)
+            moyY /= nbY;
+        else
+            moyY = 0.0;
 
         
 
