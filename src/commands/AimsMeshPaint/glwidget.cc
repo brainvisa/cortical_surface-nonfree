@@ -24,7 +24,7 @@ myGLWidget<T>::myGLWidget(QWidget *parent, string adressTexIn,
 	_wireframe = false;
 	_resized = false;
 	_parent = parent;
-	_showInfos = false;
+	_showInfos = true;
 
 	backBufferTexture = NULL;
 

@@ -10,7 +10,7 @@ int main(int argc, const char **argv)
 std::string adressTexIn="./";
 std::string adressMeshIn="./";
 std::string adressTexOut="./";
-std::string colorMap="./";
+std::string colorMap="./blue_red_bis.rgb";
 
 AimsApplication     app( argc, argv, "MeshPaint : draw a texture on mesh");
 
@@ -20,7 +20,7 @@ app.addOption( adressMeshIn, "-im", "input mesh");
 app.alias( "--inputMesh", "-im" );
 app.addOption( adressTexIn, "-it", "input texture");
 app.alias( "--inputTex", "-it" );
-app.addOption( colorMap, "-ic", "input colormap");
+app.addOption( colorMap, "-ic", "input colormap (blue_red_bis.rgb by default)",true);
 app.alias( "--inputColorMap", "-ic" );
 app.addOption( adressTexOut, "-ot", "output texture");
 app.alias( "--outputTex", "-ot" );
