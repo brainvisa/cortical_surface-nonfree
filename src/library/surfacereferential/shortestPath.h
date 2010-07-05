@@ -154,7 +154,7 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
           if (inext==i)
           {
                std::cerr << "ShortestPath->GraphPath<Val>::process : problem. There is no path between start and end included in the provided set" << std::endl;
-               Writer<TimeTexture<Val> > debugW("~/debugTex.tex");
+               Writer<TimeTexture<Val> > debugW("debugTex.tex");
                debugTex[0].item(dep)=value*3;
                debugTex[0].item(arr)=value*3;
                debugW.write(debugTex);
