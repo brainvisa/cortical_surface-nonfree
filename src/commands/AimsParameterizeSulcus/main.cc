@@ -104,7 +104,7 @@ int main( int argc, const char** argv )
       triR >> surface;
       cout << "done" << endl;
 
-      cout << "reading bottom image  : " << flush;
+      cout << "reading bottom image  : " << bottomfile << flush;
       AimsData<short> bottom;
       Reader<AimsData<short> > bottomR(bottomfile );
       bottomR >> bottom;
@@ -133,6 +133,82 @@ int main( int argc, const char** argv )
                          poleDilation(1, ns),
                          topLine(1,ns), botLine(1,ns);
 
+//      bottomDil=AimsMorphoChamferDilation(bottom, 2.0);
+      for (int z=0; z<sz; z++)
+     	  for (int y=0; y<sy; y++)
+     		  for (int x=0; x<sx; x++)
+     		  {
+					  bottomDil(x,y,z)=0;
+					  hullDil(x,y,z)=0;
+     		  }
+      for (int z=1; z<sz-1; z++)
+    	  for (int y=1; y<sy-1; y++)
+    		  for (int x=1; x<sx-1; x++)
+    		  {
+    			  if (bottom(x,y,z)!=0)
+    			  {
+    				  bottomDil(x,y,z)=1;
+    				  bottomDil(x,y,z+1)=1;
+    				  bottomDil(x,y,z-1)=1;
+    				  bottomDil(x,y-1,z)=1;
+    				  bottomDil(x,y-1,z-1)=1;
+    				  bottomDil(x,y-1,z+1)=1;
+    				  bottomDil(x,y+1,z)=1;
+    				  bottomDil(x,y+1,z-1)=1;
+    				  bottomDil(x,y+1,z+1)=1;
+    				  bottomDil(x-1,y,z)=1;
+    				  bottomDil(x-1,y,z-1)=1;
+    				  bottomDil(x-1,y,z+1)=1;
+    				  bottomDil(x-1,y-1,z)=1;
+    				  bottomDil(x-1,y-1,z-1)=1;
+    				  bottomDil(x-1,y-1,z+1)=1;
+    				  bottomDil(x-1,y+1,z)=1;
+    				  bottomDil(x-1,y+1,z-1)=1;
+    				  bottomDil(x-1,y+1,z+1)=1;
+    				  bottomDil(x+1,y,z)=1;
+    				  bottomDil(x+1,y,z-1)=1;
+    				  bottomDil(x+1,y,z+1)=1;
+    				  bottomDil(x+1,y-1,z)=1;
+    				  bottomDil(x+1,y-1,z-1)=1;
+    				  bottomDil(x+1,y-1,z+1)=1;
+    				  bottomDil(x+1,y+1,z)=1;
+    				  bottomDil(x+1,y+1,z-1)=1;
+    				  bottomDil(x+1,y+1,z+1)=1;
+    			  }
+       			  if (hull(x,y,z)!=0)
+       			  {
+					  hullDil(x,y,z)=1;
+					  hullDil(x,y,z+1)=1;
+					  hullDil(x,y,z-1)=1;
+					  hullDil(x,y-1,z)=1;
+					  hullDil(x,y-1,z-1)=1;
+					  hullDil(x,y-1,z+1)=1;
+					  hullDil(x,y+1,z)=1;
+					  hullDil(x,y+1,z-1)=1;
+					  hullDil(x,y+1,z+1)=1;
+					  hullDil(x-1,y,z)=1;
+					  hullDil(x-1,y,z-1)=1;
+					  hullDil(x-1,y,z+1)=1;
+					  hullDil(x-1,y-1,z)=1;
+					  hullDil(x-1,y-1,z-1)=1;
+					  hullDil(x-1,y-1,z+1)=1;
+					  hullDil(x-1,y+1,z)=1;
+					  hullDil(x-1,y+1,z-1)=1;
+					  hullDil(x-1,y+1,z+1)=1;
+					  hullDil(x+1,y,z)=1;
+					  hullDil(x+1,y,z-1)=1;
+					  hullDil(x+1,y,z+1)=1;
+					  hullDil(x+1,y-1,z)=1;
+					  hullDil(x+1,y-1,z-1)=1;
+					  hullDil(x+1,y-1,z+1)=1;
+					  hullDil(x+1,y+1,z)=1;
+					  hullDil(x+1,y+1,z-1)=1;
+					  hullDil(x+1,y+1,z+1)=1;
+				  }
+    		  }
+//      std::cerr << "Writing dilation" << std::endl;
+//      Writer< AimsData<short> > bdilW("/Users/olivier/bottomDil");
+//      bdilW << bottomDil;
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // computing intersection of mesh with bottom and hull image for selection of "ridges"
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -150,13 +226,13 @@ int main( int argc, const char** argv )
           x=int(floor(vert[0]/dx));
           y=int(floor(vert[1]/dy));
           z=int(floor(vert[2]/dz));
-          if (  (hull(x,y,z)!=0) || (hull(x,y,z+1)!=0) || (hull(x,y+1,z)!=0) || (hull(x,y+1,z+1)!=0)
-             || (hull(x+1,y,z)!=0) || (hull(x+1,y,z+1)!=0) || (hull(x+1,y+1,z)!=0) || (hull(x+1,y+1,z+1)!=0) )
+          if (  (hullDil(x,y,z)!=0) || (hullDil(x,y,z+1)!=0) || (hullDil(x,y+1,z)!=0) || (hullDil(x,y+1,z+1)!=0)
+             || (hullDil(x+1,y,z)!=0) || (hullDil(x+1,y,z+1)!=0) || (hullDil(x+1,y+1,z)!=0) || (hullDil(x+1,y+1,z+1)!=0) )
           {
               texHull[0].item(i)=short(RIDGE_TOP);
           }
-          if (  (bottom(x,y,z)!=0) || (bottom(x,y,z+1)!=0) || (bottom(x,y+1,z)!=0) || (bottom(x,y+1,z+1)!=0)
-             || (bottom(x+1,y,z)!=0) || (bottom(x+1,y,z+1)!=0) || (bottom(x+1,y+1,z)!=0) || (bottomDil(x+1,y+1,z+1)!=0) )
+          if (  (bottomDil(x,y,z)!=0) || (bottomDil(x,y,z+1)!=0) || (bottomDil(x,y+1,z)!=0) || (bottomDil(x,y+1,z+1)!=0)
+             || (bottomDil(x+1,y,z)!=0) || (bottomDil(x+1,y,z+1)!=0) || (bottomDil(x+1,y+1,z)!=0) || (bottomDil(x+1,y+1,z+1)!=0) )
           {
               texBot[0].item(i)=short(RIDGE_BOT);
           }
@@ -164,18 +240,18 @@ int main( int argc, const char** argv )
 
            // adding a second (different) pass for robustness
 
-     for (i=0; i<ns; i++)
-     {
-          texHull[0].item(i)=0;
-          texBot[0].item(i)=0;
-     }
+//     for (i=0; i<ns; i++)
+//     {
+//          texHull[0].item(i)=0;
+//          texBot[0].item(i)=0;
+//     }
      float fx, fy, fz;
      int count=0;
      for (z=0; z<sz; z++)
           for (y=0; y<sy; y++)
                for (x=0; x<sx; x++)
                {
-                    if (hull(x,y,z) != 0)
+                    if (hullDil(x,y,z) != 0)
                     {
                          float dist, distMin=10000.0;
                          uint imin=0;
@@ -193,7 +269,7 @@ int main( int argc, const char** argv )
                          }
                          texHull[0].item(imin)=short(RIDGE_TOP);
                     }
-                    if (bottom(x,y,z) != 0)
+                    if (bottomDil(x,y,z) != 0)
                     {
                          float dist, distMin=10000.0;
                          uint imin=0;
@@ -650,10 +726,10 @@ int main( int argc, const char** argv )
      
      
      // TO BE COMMENTED OR UNCOMMENTED ACCORDING TO DEBUG
-     cout << "writing texture topRidgeConnected : " << flush;
-     Writer<TimeTexture<short> >  topRidgeConW( "topRidgeConnected.tex" );
-     topRidgeConW.write( topRidge );
-     cout << "done " << endl;
+//     cout << "writing texture topRidgeConnected : " << flush;
+//     Writer<TimeTexture<short> >  topRidgeConW( "topRidgeConnected.tex" );
+//     topRidgeConW.write( topRidge );
+//     cout << "done " << endl;
      // -------------------------------------------------
      
      if (botRidge[0].item(pS) == 0)
