@@ -42,6 +42,10 @@ string	type = f.dataType();
 
 QApplication a(argc, (char **)argv);
 
+#ifdef QT_OPENGL_SUPPORT
+    QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
+#endif
+
 if (type == "FLOAT")
   {
   myMeshPaint<float> wf(adressTexIn,adressMeshIn,adressTexOut,colorMap,type);

@@ -65,6 +65,20 @@ class GLWidget : public QGLWidget
 {
     Q_OBJECT
 
+protected :
+    virtual void changeTextureValueFloat(double){}
+    virtual void changeTextureValueInt(int){}
+    virtual void changeIDPolygonValue(int){}
+    virtual void changeIDVertexValue(int){}
+
+private slots:
+
+  void changeTextureSpinBoxFloat(double v) {changeTextureValueFloat(v);}
+  void changeTextureSpinBoxInt(int v) {changeTextureValueInt(v);}
+  void changeIDPolygonSpinBox(int v) {changeIDPolygonValue(v);}
+  void changeIDVertexSpinBox(int v) {changeIDVertexValue(v);}
+
+
 public:
     GLWidget (QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent){};
     ~GLWidget (){};
@@ -77,11 +91,20 @@ public:
     myGLWidget (QWidget *parent, string adressTexIn,string adressMeshIn,string adressTexOut,string colorMap,string dataType);
     ~myGLWidget ();
 
+protected :
+    void changeTextureValueFloat(double );
+    void changeTextureValueInt(int );
+    void changeIDPolygonValue(int );
+    void changeIDVertexValue(int );
+
+public:
     int getMode () const { return _mode; }
     float getZoom () const { return _zoom; }
     float getTranslate () const { return _trans; }
 
     void changeMode (int mode);
+    void changeTextureValue(T value);
+    void updateInfosPicking(int idp, int idv);
     void saveTexture (void);
 
     void unitize (AimsSurfaceTriangle as, Point3df *meshCenter, float *meshScale);
@@ -97,7 +120,7 @@ public:
 
     void setZoom(float z);
     void setTranslate(float t);
-//
+
 protected:
     void initializeGL ();
     void paintGL ();
@@ -121,6 +144,8 @@ protected:
     void drawTexturePaint (void);
 
 private:
+
+    QWidget *_parent;
 //    void drawInfos (QPainter *painter, string t);
     void setupViewport (int width, int height);
 //
@@ -128,6 +153,7 @@ private:
     float _zoom ;
     float _trans;
     bool _resized;
+    bool _showInfos;
 
     GLUquadricObj *_qobj_cursor;
 
@@ -156,6 +182,8 @@ private:
     std::vector<int> _indexTexture;
     GLubyte *backBufferTexture;
     ATexture	*_ao;
+    T _minT;
+    T _maxT;
 
     unsigned char* dataColorMap;
 
@@ -173,9 +201,6 @@ private:
 
     //std::map< int,Point3d > _listTriangleSelect;
     map<int,T> _listVertexSelect;
-
-    // function pointer to OpenGL extensions
-    //PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements;
 
     GLfloat *_vertices;
     GLfloat *_normals;

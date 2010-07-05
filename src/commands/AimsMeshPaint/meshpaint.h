@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QtGui>
-#include "glwidget.h"
 #include <cstdlib>
 #include <iostream>
 #include <string.h>
@@ -12,6 +11,8 @@
 #include <anatomist/application/settings.h>
 #include <aims/io/process.h>
 #include <aims/io/finder.h>
+
+#include "glwidget.h"
 
 using namespace anatomist;
 using namespace aims;
@@ -36,8 +37,14 @@ protected :
 
   virtual void changeMode(int mode){};
   virtual void saveTexture(void){};
+  //virtual void changeTextureValue(void){};
 
 private slots:
+
+//  void changeTextureSpinBox()
+//  {
+//	  changeTextureValue();
+//  }
 
   void trackball()
   {
@@ -68,10 +75,16 @@ private slots:
     saveTexture();
     }
 
+
+
+protected :
+  QToolBar *paintToolBar;
+  QToolBar *infosToolBar;
+
 private :
   void createActions();
   void createToolBars();
-  QToolBar *paintToolBar;
+
   QAction *colorPickerAction;
   QAction *paintBrushAction;
   QAction *trackballAction;
@@ -88,6 +101,12 @@ public:
     void changeMode(int mode);
     void saveTexture(void);
     void keyPressEvent( QKeyEvent* event );
+
+public :
+    QWidget *textureSpinBox;
+    QSpinBox *IDPolygonSpinBox;
+    QSpinBox *IDVertexSpinBox;
+
 
 private :
     string _adressTexIn;

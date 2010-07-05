@@ -12,9 +12,65 @@ myMeshPaint<T>::myMeshPaint(string adressTexIn,string adressMeshIn,string adress
 
   glWidget = new myGLWidget<T> (this,adressTexIn,adressMeshIn,adressTexOut,colorMap,dataType);
 
-  //glWidget->setFocusPolicy(Qt::StrongFocus);
-
   setCentralWidget(glWidget);
+  glWidget->setFocusPolicy(Qt::StrongFocus);
+
+  QLabel *SpinBoxLabel = new QLabel(tr("Texture Value : "));
+
+  if (_dataType == "FLOAT")
+  {
+  QDoubleSpinBox *textureFloatSpinBox = new QDoubleSpinBox;
+
+  textureFloatSpinBox->setSingleStep(0.01);
+  textureFloatSpinBox->setFixedHeight(30);
+  textureFloatSpinBox->setFixedWidth(75);
+  textureFloatSpinBox->setValue(0.1);
+
+  textureSpinBox = static_cast<QDoubleSpinBox*>(textureFloatSpinBox);
+  connect(textureFloatSpinBox,SIGNAL(valueChanged(double)),glWidget,SLOT(changeTextureSpinBoxFloat(double)));
+  }
+
+  if (_dataType == "S16")
+  {
+  QSpinBox *textureIntSpinBox = new QSpinBox;
+  textureIntSpinBox->setSingleStep(1);
+  textureIntSpinBox->setFixedHeight(30);
+  textureIntSpinBox->setFixedWidth(75);
+  textureIntSpinBox->setValue(0);
+  textureSpinBox = static_cast<QSpinBox*>(textureIntSpinBox);
+
+  connect(textureIntSpinBox,SIGNAL(valueChanged(int)),glWidget,SLOT(changeTextureSpinBoxInt(int)));
+  }
+
+  QLabel *IDPolygonSpinBoxLabel = new QLabel(tr("ID Polygon : "));
+
+  IDPolygonSpinBox = new QSpinBox;
+  IDPolygonSpinBox->setSingleStep(1);
+  IDPolygonSpinBox->setFixedHeight(30);
+  IDPolygonSpinBox->setFixedWidth(75);
+  IDPolygonSpinBox->setValue(0);
+
+  QLabel *IDVertexSpinBoxLabel = new QLabel(tr("ID Vertex : "));
+
+  IDVertexSpinBox = new QSpinBox;
+  IDVertexSpinBox->setSingleStep(1);
+  IDVertexSpinBox->setFixedHeight(30);
+  IDVertexSpinBox->setFixedWidth(75);
+  IDVertexSpinBox->setValue(0);
+
+  infosToolBar->addWidget(SpinBoxLabel);
+  infosToolBar->addWidget(textureSpinBox);
+  infosToolBar->addSeparator();
+
+  infosToolBar->addWidget(IDPolygonSpinBoxLabel);
+  infosToolBar->addWidget(IDPolygonSpinBox);
+  infosToolBar->addSeparator();
+
+  infosToolBar->addWidget(IDVertexSpinBoxLabel);
+  infosToolBar->addWidget(IDVertexSpinBox);
+
+  connect(IDPolygonSpinBox ,SIGNAL(valueChanged(int)),glWidget,SLOT(changeIDPolygonSpinBox(int)));
+  connect(IDVertexSpinBox ,SIGNAL(valueChanged(int)),glWidget,SLOT(changeIDVertexSpinBox(int)));
 }
 
 template<typename T>
@@ -85,11 +141,9 @@ void MeshPaint::createActions()
 
   iconname = Settings::globalPath() + "/icons/meshPaint/save.png";
 
-  saveAction = new QAction(QIcon(iconname.c_str()), tr("&tsaveAction"), this);
+  saveAction = new QAction(QIcon(iconname.c_str()), tr("&Save Texture"), this);
   saveAction->setShortcut(tr("s"));
   saveAction->setStatusTip(tr("save"));
-  //saveAction->setCheckable(true);
-  //saveAction->setChecked(false);
   connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
 }
 
@@ -102,6 +156,13 @@ void MeshPaint::createToolBars()
   paintToolBar->addAction(colorPickerAction);
   paintToolBar->addAction(paintBrushAction);
   paintToolBar->addAction(saveAction);
+
+  infosToolBar = new QToolBar( tr( "InfosToolBar" ), this );
+  infosToolBar->setIconSize(QSize(32, 32));
+
+  addToolBar(Qt::BottomToolBarArea,infosToolBar);
+
+
 }
 
 template class myMeshPaint<float>;
