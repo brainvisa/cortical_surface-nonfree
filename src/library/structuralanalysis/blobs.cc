@@ -45,9 +45,7 @@ Point3df Point3dfOnPlane (  float height,
 //##############################################################################
 
 
-void surf::Blob::getAimsMesh (  AimsSurface<3, Void> &mesh,
-                                float radius,
-                                int representation_mode ) {
+void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &mesh ) {
 
     ASSERT ( mesh.vertex().size() != 0 ) ;
         
@@ -68,71 +66,40 @@ void surf::Blob::getAimsMesh (  AimsSurface<3, Void> &mesh,
             nodes.find(p3) != nodes.end() )
         tri.insert(j);
     }
-    if ( tri.size() >= 1 ) {
 
-        for (it=tri.begin();it!=tri.end();it++){
-            p1=mesh.polygon()[*it][0];
-            p2=mesh.polygon()[*it][1];
-            p3=mesh.polygon()[*it][2];
-            comp.insert(p1); comp.insert(p2); comp.insert(p3);
-        }
-
-        corres = vector<uint>(mesh.vertex().size());
-
-        for (it = comp.begin() ; it != comp.end() ; it++){
-            assert(*it<corres.size());
-            assert(*it<mesh.vertex().size());
-            
-            switch (representation_mode) {
-                case RAW : {
-                    this->mesh.vertex().push_back( Point3dfOnMesh( raw_coordinates[*it], radius) );
-                    break;
-                }
-                case SPHERE : {
-                    this->mesh.vertex().push_back( Point3dfOnSphere( radius, coordinates[*it][0], coordinates[*it][1]) );
-                    break;
-                }
-                case FLAT : {
-                    this->mesh.vertex().push_back( Point3dfOnPlane( log(radius)*100.0, coordinates[*it][0], coordinates[*it][1]) );
-                    break;
-                }
-            }
-            corres[*it] = this->mesh.vertex().size()-1;
-        }
-
-        for (it=tri.begin();it!=tri.end();it++){
-            p1=mesh.polygon()[*it][0];
-            p2=mesh.polygon()[*it][1];
-            p3=mesh.polygon()[*it][2];
-            this->mesh.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
-        }
+    for (it=tri.begin();it!=tri.end();it++){
+        p1=mesh.polygon()[*it][0];
+        p2=mesh.polygon()[*it][1];
+        p3=mesh.polygon()[*it][2];
+        comp.insert(p1); comp.insert(p2); comp.insert(p3);
     }
-    else {
-        AimsSurfaceTriangle *sphere;
-        switch (representation_mode) {
-            case RAW: {
-                Point3df p1 ( mesh.vertex()[*(nodes.begin())] );
-                for ( uint i = 0 ; i < 3 ; i ++ )
-                    p1[i] *= log( radius );
-                sphere = SurfaceGenerator::sphere(p1, 0.2, 10);
-                this->mesh = (*sphere)[0];
-                break;
-            }
-            case FLAT:{
-                Point3df p1 (  Point3dfOnPlane( log(radius)*100.0, coordinates[*(nodes.begin())][0], coordinates[*(nodes.begin())][1])  );
-                sphere = SurfaceGenerator::sphere(p1, 1.0, 10);
-                this->mesh = (*sphere)[0];
-                break;
-            }
-        }
-    
 
+    corres = vector<uint>(mesh.vertex().size());
+
+    for (it = comp.begin() ; it != comp.end() ; it++){
+        assert(*it<corres.size());
+        assert(*it<mesh.vertex().size());
+        this->mesh.vertex().push_back( Point3dfOnMesh( raw_coordinates[*it] ) );
+
+        corres[*it] = this->mesh.vertex().size()-1;
     }
+
+    for (it=tri.begin();it!=tri.end();it++){
+        p1=mesh.polygon()[*it][0];
+        p2=mesh.polygon()[*it][1];
+        p3=mesh.polygon()[*it][2];
+        this->mesh.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
+    }
+
     
 }
 
+void surf::GreyLevelBlob::getAimsMesh ( AimsSurface<3, Void> &mesh ){
+    surf::Blob::getAimsMesh ( mesh );
+}
 
 //##############################################################################
+
 
 void surf::Blob::getAimsEllipsoid ( float abscissa, float depth, float height, float area ) {
     AimsSurfaceTriangle *ellipse;
@@ -148,82 +115,98 @@ void surf::Blob::getAimsEllipsoid ( float abscissa, float depth, float height, f
     this->mesh = (*ellipse)[0];
 }
 
-void surf::Blob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
-                                    float radius ){
-    surf::Blob::getAimsMesh ( mesh, radius, RAW );
-}
-
-void surf::Blob::getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
-                                              float radius) {
-    surf::Blob::getAimsMesh ( mesh, radius, SPHERE );
-}
-
-void surf::Blob::getAimsPatchOnAPlane ( AimsSurface<3, Void> &mesh,
-                                              float height ) {
-    surf::Blob::getAimsMesh ( mesh, height, FLAT );
-}
-
-//##############################################################################
-
-void surf::GreyLevelBlob::getAimsMesh ( AimsSurface<3, Void> &mesh,
-                                        int representation_mode ){
-    surf::Blob::getAimsMesh ( mesh, scale + 1.0, representation_mode );
-}
-
 void surf::GreyLevelBlob::getAimsEllipsoid ( void ) {
-//     cout << "ELLIPS" << endl;
+
     set<int>::iterator it;
-    float moyX = 0.0, moyY= 0.0;
-    int nbX=0, nbY=0;
-    if ( coordinates.size() != 0 ) {
+    float moyX = 0.0, moyY = 0.0;
+    int nbX = 0, nbY = 0;
 
-        for ( it = nodes.begin() ; it != nodes.end() ; it ++ ) {
-//             cout << coordinates[*it].size() << " " << flush;
-            if ( coordinates[*it][0] >= 0.0 ) {
-                moyX += coordinates[*it][0];
-                nbX++;
-            }
-            if ( coordinates[*it].size() == 2 && coordinates[*it][1] >= 0.0 ) {
-                moyY += coordinates[*it][1];
-                nbY++;
-            }
+    for ( it = nodes.begin() ; it != nodes.end() ; it ++ ) {
+
+        ASSERT ( coordinates[*it].size() > 0);
+        if ( coordinates[*it][0] >= 0.0 ) {
+            moyX += coordinates[*it][0];
+            nbX++;
         }
-        it = nodes.begin();
-        if (nbX > 0)
-            moyX /= nbX;
-        else
-            moyX = 0.0;
-        if (nbY > 0)
-            moyY /= nbY;
-        else
-            moyY = 0.0;
-
+        if ( coordinates[*it].size() == 2 && coordinates[*it][1] >= 0.0 ) {
+            moyY += coordinates[*it][1];
+            nbY++;
+        }
+    }
+    
+    it = nodes.begin();
+    if (nbX > 0)
+        moyX /= nbX;
+    else
+        moyX = 0.0;
+    if (nbY > 0)
+        moyY /= nbY;
+    else
+        moyY = 0.0;
         
 
-//         cout << endl;
 
+    surf::Blob::getAimsEllipsoid ( moyX, moyY, scale, 2.0 );
+}
+
+
+void surf::Blob::moveMeshToSphericalAtlas ( float radius ) {
+    
+    if ( mesh.vertex().size() > 0 ) {
+        
+        if ( mesh.polygon().size() > 0 ) {
+            // If at least one triangle exists in the blob mesh
+            
+            for ( uint i = 0 ; i < mesh.vertex().size() ; i++ )
+                mesh.vertex()[i] = Point3dfOnSphere( radius, coordinates[i][0], coordinates[i][1]);    
+        
+        }
+        else {
+            // If the blob mesh has no triangle, the representing mesh is a sphere
+            //  centered at the first blob node
+            AimsSurfaceTriangle *sphere;
+            Point3df p ( Point3dfOnSphere( radius, coordinates[0][0], coordinates[0][1]) );
+//            for ( uint i = 0 ; i < 3 ; i ++ )
+//                p[i] *= log( radius );
+            sphere = SurfaceGenerator::sphere(p, 0.2, 10);
+            mesh = (*sphere)[0];
+        
+        }
         
     }
-    else {
-        cerr << "WARNING : ELLIPSOID COMPUTED USING 3D COORDINATES AS ABSCISSA" << endl;
-        for ( it = nodes.begin() ; it != nodes.end() ; it ++ )
-            moyX += raw_coordinates[*it][0];
-        moyX /= nodes.size();
+}
+
+void surf::GreyLevelBlob::moveMeshToSphericalAtlas ( ) {
+    return surf::Blob::moveMeshToSphericalAtlas ( scale + 1.0 );
+}
+
+void surf::Blob::moveMeshToPlaneAtlas ( float height ) {
+    
+    if ( mesh.vertex().size() > 0 ) {
+        
+        if ( mesh.polygon().size() > 0 ) {
+            // If at least one triangle exists in the blob mesh
+            
+            for ( uint i = 0 ; i < mesh.vertex().size() ; i++ )
+                mesh.vertex()[i] = Point3dfOnPlane( log(height)*100.0, coordinates[i][0], coordinates[i][1]);    
+        
+        }
+        else {
+            // If the blob mesh has no triangle, the representing mesh is a sphere
+            //  centered at the first blob node
+            AimsSurfaceTriangle *sphere;
+            Point3df p ( Point3dfOnPlane( log(height)*100.0, coordinates[0][0], coordinates[0][1]) );
+            sphere = SurfaceGenerator::sphere(p, 0.2, 10);
+            mesh = (*sphere)[0];
+        
+        }
+        
     }
-//     cout << "moyX:" << moyX << " moyY:" << moyY << endl;
-    surf::Blob::getAimsEllipsoid ( moyX,moyY, scale, 2.0 );
+    
 }
 
-void surf::GreyLevelBlob::getAimsMeshPatch ( AimsSurface<3, Void> &mesh ){
-  surf::Blob::getAimsMeshPatch(mesh, scale + 1.0);
-}
-
-void surf::GreyLevelBlob::getAimsPatchOnAPlane ( AimsSurface<3, Void> &mesh ){
-  surf::Blob::getAimsPatchOnAPlane(mesh, scale);
-}
-
-void surf::GreyLevelBlob::getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh ){
-  surf::Blob::getAimsPatchOnASphere(mesh, scale );
+void surf::GreyLevelBlob::moveMeshToPlaneAtlas ( ) {
+    return surf::Blob::moveMeshToPlaneAtlas ( scale + 1.0 );
 }
 
 //##############################################################################
@@ -524,8 +507,10 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                        set<int> &nodes ){
 
     for (uint i = 0 ; i < ssblobs.size() ; i++ )
-        ssblobs[i]->index = i;
+        ssblobs [i] -> index = i;
+    
     set< uint > filteredIndices;
+    
     // Filtering according to positions
     for (uint i = 0 ; i < ssblobs.size() ; i++ ){
         string subject;
@@ -542,15 +527,6 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
         for (itB1 = ssblobs[i]->blobs.begin() ; itB1 != ssblobs[i]->blobs.end() && !firstGLB ; itB1++){
             uint no_overlap = 2;
 
-//             if (filteringMode == 0){
-//                 pair<Point2df,Point2df> bbi = (*itB1)->get2DBoundingBox();/* (*itB1)->nodes, (*itB1)->coordinates );*/
-// 
-//                 Point2df bbminBlob (bbi.first[0], bbi.first[1]),
-//                     bbmaxBlob (bbi.second[0], bbi.second[1]);
-// 
-//                 double overlap = getOverlapMeasure( bbminBlob, bbmaxBlob, bbminZone, bbmaxZone, &no_overlap );
-//             }
-//             else {
             set<int>::iterator it;
             set<int> intersection;
             for ( it = (*itB1)->nodes.begin() ; it != (*itB1)->nodes.end() ; it++ )
@@ -588,6 +564,7 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
     // Now that the blobs are filtered, we add the correct bifurcations
 
     for ( uint i = 0 ; i < filteredSsblobs.size() ; i ++ ) {
+        
         set<surf::ScaleSpaceBlob *> auxTop = ssblobs[filteredSsblobs[i]->index]->topBlobs;
         set<surf::ScaleSpaceBlob *>::iterator it;
         for ( it = auxTop.begin() ; it != auxTop.end() ; it ++ ) {
@@ -597,43 +574,19 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                 filteredSsblobs[i]->topBlobs.insert( filteredSsblobs[i1] );
             }
         }
+        
         set<surf::ScaleSpaceBlob *> auxBot = ssblobs[filteredSsblobs[i]->index]->bottomBlobs;
-        for ( it = auxBot.begin() ; it != auxBot.end() ; it ++ ) {
+        for ( it = auxBot.begin() ; it != auxBot.end() ; it ++ ) {            
             if (filteredIndices.find((*it)->index) != filteredIndices.end()){
                 uint i1 = 0;
                 for ( ; i1 < filteredSsblobs.size() && filteredSsblobs[i1]->index != (*it)->index ; i1 ++ ) {}
                 filteredSsblobs[i]->bottomBlobs.insert(filteredSsblobs[i1]);
             }
         }
+        
     }
     
 }
-
-
-// void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
-//                        vector<surf::GreyLevelBlob *> &filteredBlobs,
-//                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-//                        Point2df bbmin,
-//                        Point2df bbmax){
-// //     set<int> nodes;
-//     filteringBlobs ( ssblobs, filteredBlobs, filteredSsblobs, bbmin, bbmax, nodes, 0 );
-// }
-
-
-// void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
-//                        vector<surf::GreyLevelBlob *> &filteredBlobs,
-//                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-//                        set<int> &nodes ) {
-// //     Point2df p1(0.0, 0.0), p2(0.0, 0.0);
-//     filteringBlobs ( ssblobs, filteredBlobs, filteredSsblobs, nodes);
-// }
-
-
-// void computeBlobsDispersion( vector<surf::ScaleSpaceBlob *> & ssblobs ) {
-    
-
-// }
-
 
 // #############################################################################
 

@@ -26,17 +26,11 @@ namespace surf{
 
             pair<Point2df, Point2df> get2DBoundingBox ( );
 
-            void getAimsMesh (  AimsSurface<3, Void> &mesh,
-                                float radius,
-                                int representation_mode );
+            void getAimsMesh (  AimsSurface<3, Void> &mesh );
             void getAimsEllipsoid ( float abscissa, float depth, float height, float area );
-
-            void getAimsMeshPatch ( AimsSurface<3, Void> &mesh,
-                                    float radius = 1.0 );
-            void getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh,
-                float radius);
-            void getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh,
-                float height );
+            void moveMeshToSphericalAtlas ( float radius ) ;
+            void moveMeshToPlaneAtlas ( float height ) ;
+            
             Blob(){}
             ~Blob(){}
     };
@@ -52,13 +46,11 @@ namespace surf{
             Point3df boundingbox_min;
             ScaleSpaceBlob *ssb_parent;
 
-            void getAimsMesh (  AimsSurface<3, Void> &mesh,
-                                int representation_mode );
+            void getAimsMesh (  AimsSurface<3, Void> &mesh );
             void getAimsEllipsoid ( void );
-
-            void getAimsMeshPatch ( AimsSurface<3, Void> &mesh );
-            void getAimsPatchOnASphere ( AimsSurface<3, Void> &mesh );
-            void getAimsPatchOnAPlane  ( AimsSurface<3, Void> &mesh );
+            void moveMeshToSphericalAtlas ( void ) ;
+            void moveMeshToPlaneAtlas ( void ) ;
+                        
             
             Point3df getBlobBarycenterOnASphere( );
             Point3df getBlobBarycenter( );
