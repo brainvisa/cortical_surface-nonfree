@@ -30,13 +30,11 @@ HEADERS = \
   surfacereferential/gyri/verif_operations.h \
   surfacereferential/gyri/gyri_parameterization.h \
   structuralanalysis/iograph.h \
-  structuralanalysis/meshdistance.h \
   structuralanalysis/sites.h \
   structuralanalysis/cliques.h \
   structuralanalysis/minimization.h \
   structuralanalysis/icm.h \
   structuralanalysis/anneal.h \
-  structuralanalysis/old_anneal.h \
   structuralanalysis/cluster.h \
   structuralanalysis/validation.h \
   structuralanalysis/representation.h \
@@ -67,13 +65,11 @@ SOURCES = \
   surfacereferential/gyri/vertices_operations.cc \
   surfacereferential/gyri/gyri_parameterization.cc \
   structuralanalysis/iograph.cc \
-  structuralanalysis/meshdistance.cc \
   structuralanalysis/sites.cc \
   structuralanalysis/cliques.cc \
   structuralanalysis/minimization.cc \
   structuralanalysis/icm.cc \
   structuralanalysis/anneal.cc \
-  structuralanalysis/old_anneal.cc \
   structuralanalysis/cluster.cc \
   structuralanalysis/validation.cc \
   structuralanalysis/representation.cc \

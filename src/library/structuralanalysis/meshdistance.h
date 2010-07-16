@@ -12,10 +12,10 @@ using namespace aims;
 using namespace std;
 using namespace carto;
 
-vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uint> nodes,float dist_thresh);
+//vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uint> nodes,float dist_thresh);
 // vector<map<uint,float> > CalculeDistancesBlob(AimsSurfaceTriangle mesh, set<uint> nodes, vector<uint> &sites);
-map<float, vector<pair<float, uint> > > getAlternateMesh(AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &longit);
-map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsigned> >    &neighbours,  int dep, float dist_thresh);
+//map<float, vector<pair<float, uint> > > getAlternateMesh(AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &longit);
+//map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsigned> >    &neighbours,  int dep, float dist_thresh);
 
 
 #endif

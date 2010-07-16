@@ -26,7 +26,7 @@ Point3df Point3dfOnSphere ( float radius,
 
     return  Point3df ( log(radius) * cos((lat-90.)/180.0*3.1415957) * cos(lon/180.0*3.1415957),
                     log(radius) * cos((lat-90.)/180.0*3.1415957) * sin(lon/180.0*3.1415957),
-                    log(radius) * sin((lat-90.)/180.0*3.1415957) );    //(float)(rand()/RAND_MAX) * 0.001 ));
+                    log(radius) * sin((lat-90.)/180.0*3.1415957) );  
 }
 
 Point3df Point3dfOnMesh ( vector<float> &coordinates, float radius = 1.0) {
@@ -42,64 +42,13 @@ Point3df Point3dfOnPlane (  float height,
     return Point3df(lat, lon, height );
 }
 
-//##############################################################################
-
-// PREVIOUS VERSION THE NEW ONE HAS BEEN COPIED FROM CORTICAL/SURF_REF/GYRI/MESH_OPERATIONS.CC
-
-//void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &mesh ) {
-//
-//    ASSERT ( mesh.vertex().size() != 0 ) ;
-//
-//    uint p1,p2,p3;
-//
-//    set<uint>::iterator it;
-//    set<uint> tri, comp;
-//    vector<uint> corres;
-//
-//    for (uint j = 0 ; j < mesh.polygon().size() ; j++){
-//
-//        p1=mesh.polygon()[j][0];
-//        p2=mesh.polygon()[j][1];
-//        p3=mesh.polygon()[j][2];
-//
-//        if ( nodes.find(p1) != nodes.end() &&
-//            nodes.find(p2) != nodes.end() &&
-//            nodes.find(p3) != nodes.end() )
-//        tri.insert(j);
-//    }
-//
-//    for (it=tri.begin();it!=tri.end();it++){
-//        p1=mesh.polygon()[*it][0];
-//        p2=mesh.polygon()[*it][1];
-//        p3=mesh.polygon()[*it][2];
-//        comp.insert(p1); comp.insert(p2); comp.insert(p3);
-//    }
-//
-//    corres = vector<uint>(mesh.vertex().size());
-//
-//    for (it = comp.begin() ; it != comp.end() ; it++){
-//        assert(*it<corres.size());
-//        assert(*it<mesh.vertex().size());
-//        this->mesh.vertex().push_back( Point3dfOnMesh( raw_coordinates[*it] ) );
-//
-//        corres[*it] = this->mesh.vertex().size()-1;
-//    }
-//
-//    for (it=tri.begin();it!=tri.end();it++){
-//        p1=mesh.polygon()[*it][0];
-//        p2=mesh.polygon()[*it][1];
-//        p3=mesh.polygon()[*it][2];
-//        this->mesh.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
-//    }
-//
-//}
 
 void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &inMesh) {
 
     this->mesh = AimsSurface<3,Void>();
 	vector<int> gyrusVertices, corres;
 	set<int>::iterator it;
-		// on extrait un gyrus, le maillage a moins de vertex que l'h�misph�re, du coup on cr�e un vecteur qui renseigne
+		// on extrait un gyrus, le maillage a moins de vertex que l'hemisphere, du coup on cree un vecteur qui renseigne
 		// sur les correspondances entre points homologues..s
 	set<uint> gyrusSet;
 	corres = *(new vector<int>(inMesh.vertex().size()));
@@ -661,5 +610,55 @@ pair<Point2df, Point2df> surf::ScaleSpaceBlob::get2DBoundingBox ( void ) {
 }
 
 
+
 //##############################################################################
 
+// PREVIOUS VERSION THE NEW ONE HAS BEEN COPIED FROM CORTICAL/SURF_REF/GYRI/MESH_OPERATIONS.CC
+
+//void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &mesh ) {
+//
+//    ASSERT ( mesh.vertex().size() != 0 ) ;
+//
+//    uint p1,p2,p3;
+//
+//    set<uint>::iterator it;
+//    set<uint> tri, comp;
+//    vector<uint> corres;
+//
+//    for (uint j = 0 ; j < mesh.polygon().size() ; j++){
+//
+//        p1=mesh.polygon()[j][0];
+//        p2=mesh.polygon()[j][1];
+//        p3=mesh.polygon()[j][2];
+//
+//        if ( nodes.find(p1) != nodes.end() &&
+//            nodes.find(p2) != nodes.end() &&
+//            nodes.find(p3) != nodes.end() )
+//        tri.insert(j);
+//    }
+//
+//    for (it=tri.begin();it!=tri.end();it++){
+//        p1=mesh.polygon()[*it][0];
+//        p2=mesh.polygon()[*it][1];
+//        p3=mesh.polygon()[*it][2];
+//        comp.insert(p1); comp.insert(p2); comp.insert(p3);
+//    }
+//
+//    corres = vector<uint>(mesh.vertex().size());
+//
+//    for (it = comp.begin() ; it != comp.end() ; it++){
+//        assert(*it<corres.size());
+//        assert(*it<mesh.vertex().size());
+//        this->mesh.vertex().push_back( Point3dfOnMesh( raw_coordinates[*it] ) );
+//
+//        corres[*it] = this->mesh.vertex().size()-1;
+//    }
+//
+//    for (it=tri.begin();it!=tri.end();it++){
+//        p1=mesh.polygon()[*it][0];
+//        p2=mesh.polygon()[*it][1];
+//        p3=mesh.polygon()[*it][2];
+//        this->mesh.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
+//    }
+//
+//}

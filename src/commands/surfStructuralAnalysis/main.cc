@@ -5,10 +5,8 @@
 #include <aims/mesh/texture.h>
 #include <cortical_surface/structuralanalysis/iograph.h>
 #include <cortical_surface/structuralanalysis/icm.h>
-#include <cortical_surface/structuralanalysis/old_anneal.h>
 #include <cortical_surface/structuralanalysis/anneal.h>
 #include <cortical_surface/structuralanalysis/cluster.h>
-// #include "validation.h"
 
 #include <aims/math/random.h>
 

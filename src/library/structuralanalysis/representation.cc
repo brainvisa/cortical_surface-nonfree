@@ -9,8 +9,6 @@ using namespace carto;
 using namespace std;
 
 
-//AimsSurfaceTriangle getBlobsMeshes
-
 //##############################################################################
 
 // Function that extracts mesh patches from a "mesh", being given a "blobs" vector.
