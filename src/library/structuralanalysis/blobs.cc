@@ -44,54 +44,81 @@ Point3df Point3dfOnPlane (  float height,
 
 //##############################################################################
 
+// PREVIOUS VERSION THE NEW ONE HAS BEEN COPIED FROM CORTICAL/SURF_REF/GYRI/MESH_OPERATIONS.CC
 
-void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &mesh ) {
+//void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &mesh ) {
+//
+//    ASSERT ( mesh.vertex().size() != 0 ) ;
+//
+//    uint p1,p2,p3;
+//
+//    set<uint>::iterator it;
+//    set<uint> tri, comp;
+//    vector<uint> corres;
+//
+//    for (uint j = 0 ; j < mesh.polygon().size() ; j++){
+//
+//        p1=mesh.polygon()[j][0];
+//        p2=mesh.polygon()[j][1];
+//        p3=mesh.polygon()[j][2];
+//
+//        if ( nodes.find(p1) != nodes.end() &&
+//            nodes.find(p2) != nodes.end() &&
+//            nodes.find(p3) != nodes.end() )
+//        tri.insert(j);
+//    }
+//
+//    for (it=tri.begin();it!=tri.end();it++){
+//        p1=mesh.polygon()[*it][0];
+//        p2=mesh.polygon()[*it][1];
+//        p3=mesh.polygon()[*it][2];
+//        comp.insert(p1); comp.insert(p2); comp.insert(p3);
+//    }
+//
+//    corres = vector<uint>(mesh.vertex().size());
+//
+//    for (it = comp.begin() ; it != comp.end() ; it++){
+//        assert(*it<corres.size());
+//        assert(*it<mesh.vertex().size());
+//        this->mesh.vertex().push_back( Point3dfOnMesh( raw_coordinates[*it] ) );
+//
+//        corres[*it] = this->mesh.vertex().size()-1;
+//    }
+//
+//    for (it=tri.begin();it!=tri.end();it++){
+//        p1=mesh.polygon()[*it][0];
+//        p2=mesh.polygon()[*it][1];
+//        p3=mesh.polygon()[*it][2];
+//        this->mesh.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
+//    }
+//
+//}
 
-    ASSERT ( mesh.vertex().size() != 0 ) ;
-        
-    uint p1,p2,p3;
+void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &mesh) {
 
-    set<uint>::iterator it;
-    set<uint> tri, comp;
-    vector<uint> corres;
+	vector<int> gyrusVertices, corres;
+	set<int>::iterator it;
+	AimsSurface<3, Void> gyrusMesh;
+		// on extrait un gyrus, le maillage a moins de vertex que l'h�misph�re, du coup on cr�e un vecteur qui renseigne
+		// sur les correspondances entre points homologues..s
+	set<uint> gyrusSet;
+	corres = *(new vector<uint>(inMesh.vertex().size()));
+	uint i = 0;
+	for ( it = nodes.begin() ; it != nodes.end() ; it ++ ) {
+	  gyrusMesh.vertex().push_back(inMesh.vertex()[*it]);
+	  corres[*it] = i++;
+	}
+	for ( uint i = 0 ; i < inMesh.polygon().size() ; i++ ) {
+	  if (gyrusSet.find(inMesh.polygon()[i][0])!=gyrusSet.end() &&
+			gyrusSet.find(inMesh.polygon()[i][1])!=gyrusSet.end() &&
+			gyrusSet.find(inMesh.polygon()[i][2])!=gyrusSet.end()){
+			   gyrusMesh.polygon().push_back(AimsVector<uint,3>(corres[inMesh.polygon()[i][0]],
+			   corres[inMesh.polygon()[i][1]],
+			   corres[inMesh.polygon()[i][2]]));
+			}
 
-    for (uint j = 0 ; j < mesh.polygon().size() ; j++){
-
-        p1=mesh.polygon()[j][0];
-        p2=mesh.polygon()[j][1];
-        p3=mesh.polygon()[j][2];
-
-        if ( nodes.find(p1) != nodes.end() &&
-            nodes.find(p2) != nodes.end() &&
-            nodes.find(p3) != nodes.end() )
-        tri.insert(j);
-    }
-
-    for (it=tri.begin();it!=tri.end();it++){
-        p1=mesh.polygon()[*it][0];
-        p2=mesh.polygon()[*it][1];
-        p3=mesh.polygon()[*it][2];
-        comp.insert(p1); comp.insert(p2); comp.insert(p3);
-    }
-
-    corres = vector<uint>(mesh.vertex().size());
-
-    for (it = comp.begin() ; it != comp.end() ; it++){
-        assert(*it<corres.size());
-        assert(*it<mesh.vertex().size());
-        this->mesh.vertex().push_back( Point3dfOnMesh( raw_coordinates[*it] ) );
-
-        corres[*it] = this->mesh.vertex().size()-1;
-    }
-
-    for (it=tri.begin();it!=tri.end();it++){
-        p1=mesh.polygon()[*it][0];
-        p2=mesh.polygon()[*it][1];
-        p3=mesh.polygon()[*it][2];
-        this->mesh.polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
-    }
-
-    
+	}
+	return gyrusMesh;
 }
 
 void surf::GreyLevelBlob::getAimsMesh ( AimsSurface<3, Void> &mesh ){
@@ -107,7 +134,7 @@ void surf::Blob::getAimsEllipsoid ( float abscissa, float depth, float height, f
     Point3df p1(0.0, 0.0, 0.0);
 
     ellipse = SurfaceGenerator::ellipse(p1, height, area, 10);
-    for ( uint i = 0 ; i < (*ellipse)[0].vertex().size() ; i ++ ) {        
+    for ( uint i = 0 ; i < (*ellipse)[0].vertex().size() ; i ++ ) {
         (*ellipse)[0].vertex()[i][0] += abscissa*10.0;
         (*ellipse)[0].vertex()[i][1] += log(height)*100.0;
         (*ellipse)[0].vertex()[i][2] += depth*10.0;
@@ -133,7 +160,7 @@ void surf::GreyLevelBlob::getAimsEllipsoid ( void ) {
             nbY++;
         }
     }
-    
+
     it = nodes.begin();
     if (nbX > 0)
         moyX /= nbX;
@@ -143,7 +170,7 @@ void surf::GreyLevelBlob::getAimsEllipsoid ( void ) {
         moyY /= nbY;
     else
         moyY = 0.0;
-        
+
 
 
     surf::Blob::getAimsEllipsoid ( moyX, moyY, scale, 2.0 );
@@ -151,15 +178,15 @@ void surf::GreyLevelBlob::getAimsEllipsoid ( void ) {
 
 
 void surf::Blob::moveMeshToSphericalAtlas ( float radius ) {
-    
+
     if ( mesh.vertex().size() > 0 ) {
-        
+
         if ( mesh.polygon().size() > 0 ) {
             // If at least one triangle exists in the blob mesh
-            
+
             for ( uint i = 0 ; i < mesh.vertex().size() ; i++ )
-                mesh.vertex()[i] = Point3dfOnSphere( radius, coordinates[i][0], coordinates[i][1]);    
-        
+                mesh.vertex()[i] = Point3dfOnSphere( radius, coordinates[i][0], coordinates[i][1]);
+
         }
         else {
             // If the blob mesh has no triangle, the representing mesh is a sphere
@@ -170,9 +197,9 @@ void surf::Blob::moveMeshToSphericalAtlas ( float radius ) {
 //                p[i] *= log( radius );
             sphere = SurfaceGenerator::sphere(p, 0.2, 10);
             mesh = (*sphere)[0];
-        
+
         }
-        
+
     }
 }
 
@@ -181,15 +208,15 @@ void surf::GreyLevelBlob::moveMeshToSphericalAtlas ( ) {
 }
 
 void surf::Blob::moveMeshToPlaneAtlas ( float height ) {
-    
+
     if ( mesh.vertex().size() > 0 ) {
-        
+
         if ( mesh.polygon().size() > 0 ) {
             // If at least one triangle exists in the blob mesh
-            
+
             for ( uint i = 0 ; i < mesh.vertex().size() ; i++ )
-                mesh.vertex()[i] = Point3dfOnPlane( log(height)*100.0, coordinates[i][0], coordinates[i][1]);    
-        
+                mesh.vertex()[i] = Point3dfOnPlane( log(height)*100.0, coordinates[i][0], coordinates[i][1]);
+
         }
         else {
             // If the blob mesh has no triangle, the representing mesh is a sphere
@@ -198,11 +225,11 @@ void surf::Blob::moveMeshToPlaneAtlas ( float height ) {
             Point3df p ( Point3dfOnPlane( log(height)*100.0, coordinates[0][0], coordinates[0][1]) );
             sphere = SurfaceGenerator::sphere(p, 0.2, 10);
             mesh = (*sphere)[0];
-        
+
         }
-        
+
     }
-    
+
 }
 
 void surf::GreyLevelBlob::moveMeshToPlaneAtlas ( ) {
@@ -219,7 +246,7 @@ int getEcartMaxIndice( set<float> &longitudes ) {
     itf = longitudes.begin();
     itf2 = longitudes.end();
     itf2--;
-    
+
     if ( *itf2 - *itf > 300.0 ) {
         imax = 0;
         itf2 = itf;
@@ -244,20 +271,20 @@ Point3df surf::GreyLevelBlob::getBlobBarycenterOnASphere( void ) {
     glb = this;
     float latMoy = 0.0, lonMoy = 0.0;
     ASSERT(glb->nodes.size() == glb->coordinates.size());
-    
+
     set<float> latitudes, longitudes;
-    
+
     set<int>::iterator it;
     set<float>::iterator itf, itf2;
     ASSERT( glb->nodes.size() >= 1 );
     it = glb->nodes.begin();
-    
+
     if ( glb->nodes.size() == 1 ) {
         latMoy = glb->coordinates[*it][0];
         lonMoy = glb->coordinates[*it][1];
     }
     else {
-        
+
         for ( it = glb->nodes.begin() ; it != glb->nodes.end() ; it ++ ) {
             latMoy += glb->coordinates[*it][0];
             lonMoy += glb->coordinates[*it][1];
@@ -279,11 +306,11 @@ Point3df surf::GreyLevelBlob::getBlobBarycenter( void ) {
     surf::GreyLevelBlob *glb;
     glb = this;
     float xMoy = 0.0, yMoy = 0.0, zMoy = 0.0;
-    ASSERT(glb->nodes.size() == glb->raw_coordinates.size());    
-       
+    ASSERT(glb->nodes.size() == glb->raw_coordinates.size());
+
     set<int>::iterator it;
     ASSERT( glb->nodes.size() >= 1 );
-            
+
     for ( it = glb->nodes.begin() ; it != glb->nodes.end() ; it ++ ) {
         ASSERT( glb->raw_coordinates[*it].size() == 3 );
         xMoy += glb->raw_coordinates[*it][0];
@@ -305,20 +332,20 @@ Point3df surf::GreyLevelBlob::getBlobBarycenterOnAPlane( void ) {
     glb = this;
     float latMoy = 0.0, lonMoy = 0.0;
     ASSERT(glb->nodes.size() == glb->coordinates.size());
-    
+
     set<float> latitudes, longitudes;
-    
+
     set<int>::iterator it;
     set<float>::iterator itf, itf2;
     ASSERT( glb->nodes.size() >= 1 );
     it = glb->nodes.begin();
-    
+
     if ( glb->nodes.size() == 1 ) {
         latMoy = glb->coordinates[*it][0];
         lonMoy = glb->coordinates[*it][1];
     }
     else {
-        
+
         for ( it = glb->nodes.begin() ; it != glb->nodes.end() ; it ++ ) {
             latMoy += glb->coordinates[*it][0];
             lonMoy += glb->coordinates[*it][1];
@@ -327,8 +354,8 @@ Point3df surf::GreyLevelBlob::getBlobBarycenterOnAPlane( void ) {
         }
         uint imax = getEcartMaxIndice( longitudes );
         lonMoy += ( imax + 1) * 360.0;
-        
-        
+
+
         latMoy /= glb->nodes.size();
         lonMoy /= glb->nodes.size();
     }
@@ -356,11 +383,11 @@ double getOverlapMeasure( Point2df bbmin1,
     float overlap_x, overlap_y, aux;
     double rec = 0.0;
 
-    if ( sqrt(pow( bbmin1[0] - bbmax1[0], 2) ) < 0.0001 )  bbmax1[0] += 0.5; 
-    if ( sqrt(pow( bbmin1[1] - bbmax1[1], 2) ) < 0.0001 )  bbmax1[1] += 0.5; 
-    if ( sqrt(pow( bbmin2[0] - bbmax2[0], 2) ) < 0.0001 )  bbmax2[0] += 0.5; 
-    if ( sqrt(pow( bbmin2[1] - bbmax2[1], 2) ) < 0.0001 )  bbmax2[1] += 0.5; 
-  
+    if ( sqrt(pow( bbmin1[0] - bbmax1[0], 2) ) < 0.0001 )  bbmax1[0] += 0.5;
+    if ( sqrt(pow( bbmin1[1] - bbmax1[1], 2) ) < 0.0001 )  bbmax1[1] += 0.5;
+    if ( sqrt(pow( bbmin2[0] - bbmax2[0], 2) ) < 0.0001 )  bbmax2[0] += 0.5;
+    if ( sqrt(pow( bbmin2[1] - bbmax2[1], 2) ) < 0.0001 )  bbmax2[1] += 0.5;
+
     if (sqrt(pow(bbmin1[1] - bbmax1[1], 2)) > 300 && sqrt(pow( bbmin2[1] - bbmax2[1], 2)) < 300) {
 
         if ( 360 - bbmax2[1] < bbmin2[1] ) {
@@ -397,7 +424,7 @@ double getOverlapMeasure( Point2df bbmin1,
         bbmin2[1] = bbmax2[1] - 360.0;
         bbmax2[1] = aux;
     }
-  
+
     // ON S'OCCUPE DE LA LATITUDE
     if (sqrt(pow( bbmin1[0] - bbmax1[0], 2)) > 150 && sqrt(pow( bbmin2[0] - bbmax2[0], 2)) < 150) {
 
@@ -436,7 +463,7 @@ double getOverlapMeasure( Point2df bbmin1,
         bbmin2[0] = bbmax2[0] - 360.0;
         bbmax2[0] = aux;
     }
-    
+
     // PRÉTRAITEMENTS EFFECTUÉS ON CALCULE LE RECOUVREMENT
 
     *no_overlap = 0;
@@ -508,9 +535,9 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
 
     for (uint i = 0 ; i < ssblobs.size() ; i++ )
         ssblobs [i] -> index = i;
-    
+
     set< uint > filteredIndices;
-    
+
     // Filtering according to positions
     for (uint i = 0 ; i < ssblobs.size() ; i++ ){
         string subject;
@@ -522,7 +549,7 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
         ssb->blobs.clear();
         ssb->topBlobs.clear();
         ssb->bottomBlobs.clear();
- 
+
         set<surf::GreyLevelBlob *>::iterator itB1;
         for (itB1 = ssblobs[i]->blobs.begin() ; itB1 != ssblobs[i]->blobs.end() && !firstGLB ; itB1++){
             uint no_overlap = 2;
@@ -564,7 +591,7 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
     // Now that the blobs are filtered, we add the correct bifurcations
 
     for ( uint i = 0 ; i < filteredSsblobs.size() ; i ++ ) {
-        
+
         set<surf::ScaleSpaceBlob *> auxTop = ssblobs[filteredSsblobs[i]->index]->topBlobs;
         set<surf::ScaleSpaceBlob *>::iterator it;
         for ( it = auxTop.begin() ; it != auxTop.end() ; it ++ ) {
@@ -574,18 +601,18 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                 filteredSsblobs[i]->topBlobs.insert( filteredSsblobs[i1] );
             }
         }
-        
+
         set<surf::ScaleSpaceBlob *> auxBot = ssblobs[filteredSsblobs[i]->index]->bottomBlobs;
-        for ( it = auxBot.begin() ; it != auxBot.end() ; it ++ ) {            
+        for ( it = auxBot.begin() ; it != auxBot.end() ; it ++ ) {
             if (filteredIndices.find((*it)->index) != filteredIndices.end()){
                 uint i1 = 0;
                 for ( ; i1 < filteredSsblobs.size() && filteredSsblobs[i1]->index != (*it)->index ; i1 ++ ) {}
                 filteredSsblobs[i]->bottomBlobs.insert(filteredSsblobs[i1]);
             }
         }
-        
+
     }
-    
+
 }
 
 // #############################################################################

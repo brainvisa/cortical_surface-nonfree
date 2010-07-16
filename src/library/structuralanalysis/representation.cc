@@ -129,7 +129,7 @@ AimsSurfaceTriangle getBlobsMeshesFromMesh ( vector<surf::GreyLevelBlob *> &blob
 //       }
 //     }
 //   }
-// 
+//
 //   return objects;
 // }
 
@@ -310,7 +310,7 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
                                          surf::ScaleSpaceBlob *ssb2,
                                          int representation_mode = SPHERE ) {
     AimsSurfaceTriangle mesh, *cyl;
-    
+
     set<surf::GreyLevelBlob *> unsortedListGLB = ssb1->blobs;
     set<surf::GreyLevelBlob *, ltBlobs> listGLB1, listGLB2;
     set<surf::GreyLevelBlob *>::iterator itB;
@@ -376,11 +376,11 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
             p1 = glb1->getBlobBarycenterFromMesh();
             p2 = glb2->getBlobBarycenterFromMesh();
         break;
-        
+
     }
     cyl = SurfaceGenerator::cylinder(p1, p2, 0.5, 0.5, 10, true, true);
     mesh[0] = (*cyl)[0];
-    
+
     return mesh;
 }
 
@@ -389,7 +389,7 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
 
 AimsSurfaceTriangle getG2GRelationsMeshes ( vector< pair<surf::GreyLevelBlob *, surf::GreyLevelBlob *> > &blobsPairs,
                                             int representation_mode ) {
-    
+
     AimsSurfaceTriangle meshes;
 
     for ( uint i = 0 ; i < blobsPairs.size() ; i ++ ) {
@@ -407,7 +407,7 @@ AimsSurfaceTriangle getG2GRelationsMeshes ( vector< pair<surf::GreyLevelBlob *, 
 
 AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector< pair< surf::ScaleSpaceBlob *, surf::ScaleSpaceBlob *> > &bifurcPairs,
                                             int representation_mode ) {
-    
+
     AimsSurfaceTriangle meshes, linkMesh;
     uint j = 0;
     set<uint>::iterator it;
