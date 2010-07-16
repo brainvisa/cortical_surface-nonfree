@@ -14,8 +14,6 @@ enum typesRepresentation {
 
 namespace surf{
 
-    // Of course, there is no info about the corresponding mesh but let's say the user is supposed to know that...
-
     class Blob{
         public:
             int index;
@@ -140,12 +138,6 @@ double getOverlapMeasure( Point2df bbmin1, Point2df bbmax1, Point2df bbmin2, Poi
 
 bool isInside2DBox( Point2df p1, Point2df bbmin, Point2df bbmax);
 
-// void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
-//                        vector<surf::GreyLevelBlob *> &filteredBlobs,
-//                        vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-//                        Point2df bbmin2,
-//                        Point2df bbmax2 );
-
 void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
                         vector<surf::GreyLevelBlob *> &filteredBlobs,
                         vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
@@ -154,7 +146,6 @@ void filteringBlobs (  vector<surf::ScaleSpaceBlob *> & ssblobs,
 //##############################################################################
 
 
-// pair<Point2df, Point2df> getBoundingBox(set<int> &nodes_list, map<int, float> &lat, map<int, float> &lon);
 
 float compareBlobsScales(const surf::GreyLevelBlob *s1, const surf::GreyLevelBlob *s2);
 
