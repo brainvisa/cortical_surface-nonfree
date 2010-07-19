@@ -63,13 +63,13 @@ QT_END_NAMESPACE
 
 class GLWidget : public QGLWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 
 protected :
-    virtual void changeTextureValueFloat(double){}
-    virtual void changeTextureValueInt(int){}
-    virtual void changeIDPolygonValue(int){}
-    virtual void changeIDVertexValue(int){}
+  virtual void changeTextureValueFloat(double){}
+  virtual void changeTextureValueInt(int){}
+  virtual void changeIDPolygonValue(int){}
+  virtual void changeIDVertexValue(int){}
 
 private slots:
 
@@ -80,133 +80,128 @@ private slots:
 
 
 public:
-    GLWidget (QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent){};
-    ~GLWidget (){};
+  GLWidget (QWidget *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent){};
+  ~GLWidget (){};
 };
 
 template<typename T>
 class myGLWidget : public GLWidget
 {
 public:
-    myGLWidget (QWidget *parent, string adressTexIn,string adressMeshIn,string adressTexOut,string colorMap,string dataType);
-    ~myGLWidget ();
+  myGLWidget (QWidget *parent, string adressTexIn,string adressMeshIn,string adressTexOut,string colorMap,string dataType);
+  ~myGLWidget ();
 
 protected :
-    void changeTextureValueFloat(double );
-    void changeTextureValueInt(int );
-    void changeIDPolygonValue(int );
-    void changeIDVertexValue(int );
+  void changeTextureValueFloat(double );
+  void changeTextureValueInt(int );
+  void changeIDPolygonValue(int );
+  void changeIDVertexValue(int );
 
 public:
-    int getMode () const { return _mode; }
-    float getZoom () const { return _zoom; }
-    float getTranslate () const { return _trans; }
+  int getMode () const { return _mode; }
+  float getZoom () const { return _zoom; }
+  float getTranslate () const { return _trans; }
 
-    void changeMode (int mode);
-    void changeTextureValue(T value);
-    void updateInfosPicking(int idp, int idv);
-    void saveTexture (void);
+  void changeMode (int mode);
+  void changeTextureValue(T value);
+  void updateInfosPicking(int idp, int idv);
+  void saveTexture (void);
 
-    void unitize (AimsSurfaceTriangle as, Point3df *meshCenter, float *meshScale);
-    int buildDisplayList (AimsSurfaceTriangle as,int mode);
-    void buildDataArray(void);
-    int computeNearestVertexFromPolygonPoint (Point3df position, int poly, AimsSurfaceTriangle as);
-    void computeIndexColor (AimsSurfaceTriangle as);
-    void copyBackBuffer2Texture (void);
+  void unitize (AimsSurfaceTriangle as, Point3df *meshCenter, float *meshScale);
+  int buildDisplayList (AimsSurfaceTriangle as,int mode);
+  void buildDataArray(void);
+  int computeNearestVertexFromPolygonPoint (Point3df position, int poly, AimsSurfaceTriangle as);
+  void computeIndexColor (AimsSurfaceTriangle as);
+  void copyBackBuffer2Texture (void);
 
-    GLuint loadColorMap (const char * filename);
-    void drawColorMap (void);
-    void keyPressEvent (QKeyEvent *event);
+  GLuint loadColorMap (const char * filename);
+  void drawColorMap (void);
+  void keyPressEvent (QKeyEvent *event);
 
-    void setZoom(float z);
-    void setTranslate(float t);
+  void setZoom(float z);
+  void setTranslate(float t);
 
 protected:
-    void initializeGL ();
-    void paintGL ();
-    void resizeGL (int width, int height);
-    void mousePressEvent (QMouseEvent *event);
-    void mouseMoveEvent (QMouseEvent *event);
-    void mouseReleaseEvent (QMouseEvent *event);
-    void wheelEvent (QWheelEvent *event);
-    void dragEnterEvent (QDragEnterEvent *event);
-    void dragMoveEvent (QDragMoveEvent *event);
-    void dropEvent (QDropEvent *event);
-    QPointF pixelPosToViewPos (const QPointF& p);
-    void drawScenetoBackBuffer (void);
+  void initializeGL ();
+  void paintGL ();
+  void resizeGL (int width, int height);
+  void mousePressEvent (QMouseEvent *event);
+  void mouseMoveEvent (QMouseEvent *event);
+  void mouseReleaseEvent (QMouseEvent *event);
+  void wheelEvent (QWheelEvent *event);
+  void dragEnterEvent (QDragEnterEvent *event);
+  void dragMoveEvent (QDragMoveEvent *event);
+  void dropEvent (QDropEvent *event);
+  QPointF pixelPosToViewPos (const QPointF& p);
+  void drawScenetoBackBuffer (void);
 
-    GLuint checkIDpolygonPicked (int x, int y);
-    Point3df check3DpointPicked (int x, int y);
-    void projectionPerspective (void);
-    void projectionOrtho (void);
-    void trackBallTransformation(void);
-    void drawPrimitivePicked (void);
-    void drawTexturePaint (void);
+  GLuint checkIDpolygonPicked (int x, int y);
+  Point3df check3DpointPicked (int x, int y);
+  void projectionPerspective (void);
+  void projectionOrtho (void);
+  void trackBallTransformation(void);
+  void drawPrimitivePicked (void);
+  void drawTexturePaint (void);
 
 private:
 
-    QWidget *_parent;
-//    void drawInfos (QPainter *painter, string t);
-    void setupViewport (int width, int height);
+  QWidget *_parent;
+  void setupViewport (int width, int height);
 //
-    int _mode;
-    float _zoom ;
-    float _trans;
-    bool _resized;
-    bool _showInfos;
+  int _mode;
+  float _zoom ;
+  float _trans;
+  bool _resized;
+  bool _showInfos;
 
-    GLUquadricObj *_qobj_cursor;
+  GLUquadricObj *_qobj_cursor;
 
-    int _frames;
-    QTime _time;
+  int _frames;
+  QTime _time;
 
-    string _dataType;
-    AimsSurfaceTriangle _mesh;
-    TimeTexture<T> _tex;
+  string _dataType;
+  AimsSurfaceTriangle _mesh;
+  TimeTexture<T> _tex;
 
-    string _adressTexIn;
-    string _adressMeshIn;
-    string _adressTexOut;
-    string _colorMap;
+  string _adressTexIn;
+  string _adressMeshIn;
+  string _adressTexOut;
+  string _colorMap;
 
-    TrackBall _trackBall;
+  TrackBall _trackBall;
 
-    //GLuint _listMeshRender;
-    GLuint _listMeshPicking;
-    //GLuint _listMeshParcelation;
-    //GLuint _listMeshSmooth;
+  GLuint _listMeshPicking;
 
-    Point3df _meshCenter;
-    float _meshScale;
+  Point3df _meshCenter;
+  float _meshScale;
 
-    std::vector<int> _indexTexture;
-    GLubyte *backBufferTexture;
-    ATexture	*_ao;
-    T _minT;
-    T _maxT;
+  std::vector<int> _indexTexture;
+  GLubyte *backBufferTexture;
+  ATexture	*_ao;
+  T _minT;
+  T _maxT;
 
-    unsigned char* dataColorMap;
+  unsigned char* dataColorMap;
 
-    Point3df _point3Dpicked;
-    Point3df _vertexNearestpicked;
-    Point3d _colorpicked;
+  Point3df _point3Dpicked;
+  Point3df _vertexNearestpicked;
+  Point3d _colorpicked;
 
-    GLuint _indexPolygon;
-    GLuint _indexVertex;
-    T _textureValue;
-    bool _wireframe;
-    bool _parcelation;
+  GLuint _indexPolygon;
+  GLuint _indexVertex;
+  T _textureValue;
+  bool _wireframe;
+  bool _parcelation;
 
-    GLuint _IDcolorMap;
+  GLuint _IDcolorMap;
 
-    //std::map< int,Point3d > _listTriangleSelect;
-    map<int,T> _listVertexSelect;
+  map<int,T> _listVertexSelect;
 
-    GLfloat *_vertices;
-    GLfloat *_normals;
-    GLubyte *_colors;
-    GLuint *_indices;
-    //GLfloat *_textures;
+  GLfloat *_vertices;
+  GLfloat *_normals;
+  GLubyte *_colors;
+  GLuint *_indices;
+  //GLfloat *_textures;
 };
 
 #endif

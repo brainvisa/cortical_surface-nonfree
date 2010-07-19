@@ -28,7 +28,8 @@ public:
   ~MeshPaint();
 
 protected :
-  void resizeEvent(QResizeEvent *event ) {
+  void resizeEvent(QResizeEvent *event )
+  {
 	  event->accept();
 	  trackballAction->setChecked(true);
 	  paintBrushAction->setChecked(false);
@@ -37,18 +38,11 @@ protected :
 
   virtual void changeMode(int mode){};
   virtual void saveTexture(void){};
-  //virtual void changeTextureValue(void){};
 
 private slots:
 
-//  void changeTextureSpinBox()
-//  {
-//	  changeTextureValue();
-//  }
-
   void trackball()
   {
-    //std::cout << "trackball" << std::endl;
     paintBrushAction->setChecked(false);
   	colorPickerAction->setChecked(false);
   	changeMode(1);
@@ -56,7 +50,6 @@ private slots:
 
   void colorPicker()
   {
-    //std::cout << "color picker" << std::endl;
     paintBrushAction->setChecked(false);
     trackballAction->setChecked(false);
     changeMode(2);
@@ -64,16 +57,15 @@ private slots:
 
   void paintBrush()
   {
-    //std::cout << "paint brush" << std::endl;
     colorPickerAction->setChecked(false);
     trackballAction->setChecked(false);
     changeMode(3);
   }
 
   void save()
-    {
+  {
     saveTexture();
-    }
+  }
 
 
 
@@ -95,27 +87,27 @@ template<typename T>
 class myMeshPaint : public MeshPaint
 {
 public:
-    myMeshPaint(string adressTexIn,string adressMeshIn,string adressTexOut,string colorMap, string dataType);
-    ~myMeshPaint();
+  myMeshPaint(string adressTexIn,string adressMeshIn,string adressTexOut,string colorMap, string dataType);
+  ~myMeshPaint();
 
-    void changeMode(int mode);
-    void saveTexture(void);
-    void keyPressEvent( QKeyEvent* event );
+  void changeMode(int mode);
+  void saveTexture(void);
+  void keyPressEvent( QKeyEvent* event );
 
 public :
-    QWidget *textureSpinBox;
-    QSpinBox *IDPolygonSpinBox;
-    QSpinBox *IDVertexSpinBox;
+  QWidget *textureSpinBox;
+  QSpinBox *IDPolygonSpinBox;
+  QSpinBox *IDVertexSpinBox;
 
 
 private :
-    string _adressTexIn;
-    string _adressMeshIn;
-    string _adressTexOut;
-    string _colorMap;
-    string _dataType;
+  string _adressTexIn;
+  string _adressMeshIn;
+  string _adressTexOut;
+  string _colorMap;
+  string _dataType;
 
-    myGLWidget<T> *glWidget;
+  myGLWidget<T> *glWidget;
 };
 
 #endif // MESHPAINT_H

@@ -3,8 +3,6 @@ TARGET = AimsMeshPaint
 
 #!include ../../../config-cpp-command
 
-RESOURCES = cursor-color-picker.png
-
 QT = core \
     gui \
     opengl

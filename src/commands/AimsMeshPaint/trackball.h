@@ -49,30 +49,31 @@
 class TrackBall
 {
 public:
-    enum TrackMode
-    {
-        Plane,
-        Sphere,
-    };
-    TrackBall(TrackMode mode = Sphere);
-    TrackBall(float angularVelocity, const gfx::Vector3f& axis, TrackMode mode = Sphere);
-    // coordinates in [-1,1]x[-1,1]
-    void push(const QPointF& p, const gfx::Quaternionf &transformation);
-    void move(const QPointF& p, const gfx::Quaternionf &transformation);
-    void release(const QPointF& p, const gfx::Quaternionf &transformation);
-    void start(); // starts clock
-    void stop(); // stops clock
-    gfx::Quaternionf rotation() const;
-private:
-    gfx::Quaternionf m_rotation;
-    gfx::Vector3f m_axis;
-    float m_angularVelocity;
+  enum TrackMode
+  {
+    Plane,
+    Sphere,
+  };
 
-    QPointF m_lastPos;
-    QTime m_lastTime;
-    bool m_paused;
-    bool m_pressed;
-    TrackMode m_mode;
+  TrackBall(TrackMode mode = Sphere);
+  TrackBall(float angularVelocity, const gfx::Vector3f& axis, TrackMode mode = Sphere);
+  // coordinates in [-1,1]x[-1,1]
+  void push(const QPointF& p, const gfx::Quaternionf &transformation);
+  void move(const QPointF& p, const gfx::Quaternionf &transformation);
+  void release(const QPointF& p, const gfx::Quaternionf &transformation);
+  void start(); // starts clock
+  void stop(); // stops clock
+  gfx::Quaternionf rotation() const;
+private:
+  gfx::Quaternionf m_rotation;
+  gfx::Vector3f m_axis;
+  float m_angularVelocity;
+
+  QPointF m_lastPos;
+  QTime m_lastTime;
+  bool m_paused;
+  bool m_pressed;
+  TrackMode m_mode;
 };
 
 #endif

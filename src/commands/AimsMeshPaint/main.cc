@@ -5,59 +5,58 @@
 
 int main(int argc, const char **argv)
 {
+  //DECLARATIONS
+  std::string adressTexIn="./";
+  std::string adressMeshIn="./";
+  std::string adressTexOut="./";
+  std::string colorMap="blue_red_bis.rgb";
 
-//DECLARATIONS
-std::string adressTexIn="./";
-std::string adressMeshIn="./";
-std::string adressTexOut="./";
-std::string colorMap="./blue_red_bis.rgb";
+  AimsApplication     app( argc, argv, "MeshPaint : draw a texture on mesh");
 
-AimsApplication     app( argc, argv, "MeshPaint : draw a texture on mesh");
-
-try
-{
-app.addOption( adressMeshIn, "-im", "input mesh");
-app.alias( "--inputMesh", "-im" );
-app.addOption( adressTexIn, "-it", "input texture");
-app.alias( "--inputTex", "-it" );
-app.addOption( colorMap, "-ic", "input colormap (blue_red_bis.rgb by default)",true);
-app.alias( "--inputColorMap", "-ic" );
-app.addOption( adressTexOut, "-ot", "output texture");
-app.alias( "--outputTex", "-ot" );
-app.initialize();
-}
-catch( user_interruption & )
-   {
-      return EXIT_FAILURE;
-   }
-   catch( exception & e )
-   {
-      cerr << e.what() << endl;
-      return EXIT_FAILURE;
-   }
-
-Finder	f;
-f.check( adressTexIn );
-string	type = f.dataType();
-
-QApplication a(argc, (char **)argv);
-
-#ifdef QT_OPENGL_SUPPORT
-    QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
-#endif
-
-if (type == "FLOAT")
+  try
   {
-  myMeshPaint<float> wf(adressTexIn,adressMeshIn,adressTexOut,colorMap,type);
-  a.exec();
+    app.addOption( adressMeshIn, "-im", "input mesh");
+    app.alias( "--inputMesh", "-im" );
+    app.addOption( adressTexIn, "-it", "input texture");
+    app.alias( "--inputTex", "-it" );
+    app.addOption( colorMap, "-ic", "input colormap (blue_red_bis.rgb by default)",true);
+    app.alias( "--inputColorMap", "-ic" );
+    app.addOption( adressTexOut, "-ot", "output texture");
+    app.alias( "--outputTex", "-ot" );
+    app.initialize();
+    }
+  catch( user_interruption & )
+  {
+    return EXIT_FAILURE;
+  }
+  catch( exception & e )
+  {
+    cerr << e.what() << endl;
+    return EXIT_FAILURE;
   }
 
-if (type == "S16")
+  Finder	f;
+  f.check( adressTexIn );
+  string	type = f.dataType();
+
+  QApplication a(argc, (char **)argv);
+
+  #ifdef QT_OPENGL_SUPPORT
+      QGL::setPreferredPaintEngine(QPaintEngine::OpenGL);
+  #endif
+
+  if (type == "FLOAT")
   {
-  myMeshPaint<short> ws(adressTexIn,adressMeshIn,adressTexOut,colorMap,type);
-  a.exec();
+    myMeshPaint<float> wf(adressTexIn,adressMeshIn,adressTexOut,colorMap,type);
+    a.exec();
   }
 
-return 1;
+  if (type == "S16")
+  {
+    myMeshPaint<short> ws(adressTexIn,adressMeshIn,adressTexOut,colorMap,type);
+    a.exec();
+  }
+
+  return 1;
 }
 
