@@ -2,13 +2,11 @@
 #ifndef AIMS_PARAMETERIZEGYRI_MISCTEX_OPERATIONS_H
 #define AIMS_PARAMETERIZEGYRI_MISCTEX_OPERATIONS_H
 
-using namespace aims;
-using namespace std;
 
 
-void makeGenericTexture(Texture<short> &inTex, const vector<uint> &corres);
+void makeGenericTexture(Texture<short> &inTex, const std::vector<uint> &corres);
 
-void createAuxTexture(uint size,const vector<pair<pair<vector<uint>, vector<uint> >, pair<vector<uint>, vector<uint> > > > &points,
+void createAuxTexture(uint size,const std::vector<std::pair<std::pair<std::vector<uint>, std::vector<uint> >, std::pair<std::vector<uint>, std::vector<uint> > > > &points,
     char* path);
 
 

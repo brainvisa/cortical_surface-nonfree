@@ -2,10 +2,6 @@
 #define AIMS_MINIMIZATION_H
 #include "cliques.h"
 
-using namespace aims;
-using namespace carto;
-using namespace std;
-
 
 enum typesMinim{
   ICM, ANNEAL, CUSTOM
@@ -16,21 +12,21 @@ enum typesMinim{
 class SurfaceBased_StructuralAnalysis{
   public:
     float Esimil;
-    vector<uint> ipscliques;
+    std::vector<uint> ipscliques;
     
     long double energy;
     uint nbsujets;
-    vector<int> labels;
-    vector<pair<Point2df,Point2df> > labelsZones;
-    vector<set<uint> > zonesListesBlobs;
-    vector<set<uint> > listeZones; // attention les indices de listeZones sont décalés de 1 par rapport à labelsZones (à cause du label 0 qui recouvre tout l'espace 2D)
-    vector<Site *> sites;
-    vector<Clique> cliques;
-    vector<vector<int> > cliquesDuSite;
+    std::vector<int> labels;
+    std::vector<std::pair<Point2df,Point2df> > labelsZones;
+    std::vector<std::set<uint> > zonesListesBlobs;
+    std::vector<std::set<uint> > listeZones; // attention les indices de listeZones sont décalés de 1 par rapport à labelsZones (à cause du label 0 qui recouvre tout l'espace 2D)
+    std::vector<Site *> sites;
+    std::vector<Clique> cliques;
+    std::vector<std::vector<int> > cliquesDuSite;
 
     void ShortSummaryLabels();
 
-    string energypath, recuitpath;
+    std::string energypath, recuitpath;
     uint run,save;
     void noLabelsZones();
     void regionLabelsZones(); //vector<pair<Point2df,Point2df> > &labelsZones, vector<set<uint> > &zonesListesBlobs, vector<set<uint> > &listeZones );
@@ -44,7 +40,7 @@ class SurfaceBased_StructuralAnalysis{
     
     void RunMinimization(int type);
     long double getLabelEnergy(int label, int type=UNKNOWN);
-    long double getClusterEnergy(vector<uint> &composante);
+    long double getClusterEnergy(std::vector<uint> &composante);
     long double getTypeEnergy(int type);
     long double getTotalEnergy();
 //     double getTotalEnergyLastChance(uint site, uint newlabel);

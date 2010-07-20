@@ -4,10 +4,6 @@
 #include <cortical_surface/structuralanalysis/meshdistance.h>
 #include <cortical_surface/structuralanalysis/cliques.h>
 
-using namespace aims;
-using namespace carto;
-using namespace std;
-
 
 class ICM: public SurfaceBased_StructuralAnalysis{
   private:

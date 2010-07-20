@@ -3,15 +3,13 @@
 #include <aims/mesh/surface.h>
 #include <aims/mesh/texture.h>
 
-using namespace aims;
-using namespace carto;
-using namespace std;
+
 
 class Site{
   public :
     uint index;
     int graph_index;
-    string subject;
+    std::string subject;
     int label;
     float tValue;
     float t;
@@ -27,10 +25,10 @@ class Site{
     uint node;
     Point3df boundingbox_max;
     Point3df boundingbox_min;
-    set<int> nodes_list;
+    std::set<int> nodes_list;
 };
 
-vector<Site *> ConstruireSites(Graph &primal); //map<float, vector<pair<float, uint > > > &altmesh);
+std::vector<Site *> ConstruireSites(Graph &primal); //map<float, vector<pair<float, uint > > > &altmesh);
 
 #endif
 

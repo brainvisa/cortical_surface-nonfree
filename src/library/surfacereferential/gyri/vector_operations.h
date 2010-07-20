@@ -2,39 +2,37 @@
 #define AIMS_PARAMETERIZEGYRI_VECTOR_OPERATIONS_H
 
 
-using namespace std;
+int find(const std::vector<uint> &v, uint item);
 
-int find(const vector<uint> &v, uint item);
+int find(const std::vector<short> &v, short item);
 
-int find(const vector<short> &v, short item);
+void push_vector(std::vector<uint> &v, const std::vector<uint> &w);
 
-void push_vector(vector<uint> &v, const vector<uint> &w);
+void push_vector(std::vector<short> &v, const std::vector<short> &w);
 
-void push_vector(vector<short> &v, const vector<short> &w);
-
-vector<short> reverseVector(const vector<short> &v);
+std::vector<short> reverseVector(const std::vector<short> &v);
    
-vector<uint> setToVector(const set<uint> &v);
+std::vector<uint> setToVector(const std::set<uint> &v);
 
-vector<uint> setToVector(const set<int> &v);
+std::vector<uint> setToVector(const std::set<int> &v);
 
-vector<short> setToVector(const set<short> &v);
+std::vector<short> setToVector(const std::set<short> &v);
 
-vector<uint> getCorresVector(const vector<uint> &inVector, const vector<uint> &corres);
+std::vector<uint> getCorresVector(const std::vector<uint> &inVector, const std::vector<uint> &corres);
 
-vector<uint> minusVector(const vector<uint> &v, const vector<uint> &w);
+std::vector<uint> minusVector(const std::vector<uint> &v, const std::vector<uint> &w);
 
-vector<short> minusVector(const vector<short> &v, const vector<short> &w);
+std::vector<short> minusVector(const std::vector<short> &v, const std::vector<short> &w);
 
-vector<uint> intersVector(const vector<uint> &v, const vector<uint> &w);
+std::vector<uint> intersVector(const std::vector<uint> &v, const std::vector<uint> &w);
 
-int getRealSize(const vector<set<uint> > &v);
+int getRealSize(const std::vector<std::set<uint> > &v);
 
 bool valueOf(const std::string &s, uint &obj);
 
-string f2str(float f);
+std::string f2str(float f);
 
-string i2str(uint f);
+std::string i2str(uint f);
 
 #endif
 

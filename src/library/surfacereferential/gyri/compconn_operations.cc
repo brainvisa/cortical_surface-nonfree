@@ -6,7 +6,6 @@
 
 
 using namespace std;
-using namespace aims;
 
 vector<vector<uint> > getComposantesConnexes(const set<uint> &v, const vector<set<uint> > &voisins){
    vector<set<uint> > result;

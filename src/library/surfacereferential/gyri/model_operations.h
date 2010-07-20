@@ -2,20 +2,19 @@
 #ifndef AIMS_PARAMETERIZEGYRI_MODEL_OPERATIONS_H
 #define AIMS_PARAMETERIZEGYRI_MODEL_OPERATIONS_H
 
-using namespace aims;
-using namespace std;
 
-vector<string> readGyriToTextureFile(const char *path);
 
-pair<vector<vector<uint> >, vector<vector<uint> > > getDiffusionModel(const char *path);
+std::vector<std::string> readGyriToTextureFile(const char *path);
 
-vector<uint> gyrToTexCorres(const vector<string> &tab);
+std::pair<std::vector<std::vector<uint> >, std::vector<std::vector<uint> > > getDiffusionModel(const char *path);
 
-vector<uint> getGyriToTextureCorres(const char *path);
+std::vector<uint> gyrToTexCorres(const std::vector<std::string> &tab);
 
-pair<Point3d, Point3d> getGyrusModel(uint gyrus, const vector<vector<uint> > &diffMod);
+std::vector<uint> getGyriToTextureCorres(const char *path);
 
-vector<vector<short> > getGyrusConstraints(uint gyrus, const vector<vector<uint> > &diffMod);
+std::pair<Point3d, Point3d> getGyrusModel(uint gyrus, const std::vector<std::vector<uint> > &diffMod);
+
+std::vector<std::vector<short> > getGyrusConstraints(uint gyrus, const std::vector<std::vector<uint> > &diffMod);
 
 
 #endif

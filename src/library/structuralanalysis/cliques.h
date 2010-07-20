@@ -6,8 +6,6 @@
 #include <cortical_surface/structuralanalysis/meshdistance.h>
 
 
-using namespace std;
-
 enum typesCliques {
   DATADRIVEN, BESTLOWERSCALE, INTRAPRIMALSKETCH, SIMILARITY, UNKNOWN, DATADRIVEN2
 };
@@ -17,9 +15,9 @@ class Clique{
         static float ddweight, intrapsweight, simweight, lsweight, ddx2, ddx1, ddh;
 
         int type;
-        vector<Site *> blobs;
+        std::vector<Site *> blobs;
         double energie,sigma,rec;
-        map<int,uint> labelscount;
+        std::map<int,uint> labelscount;
         
         float computeEnergy(bool save, uint CLIQUESNBSUJETS) {
             float energy=-1.0;
@@ -144,19 +142,17 @@ class Clique{
         static void setParameters( float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh);
 
         static float getIntraPSWeight(){ return intrapsweight; }
-        Clique(){ type = UNKNOWN; energie = 0.0; blobs = vector<Site *>(); labelscount = map<int,uint>();  }
+        Clique(){ type = UNKNOWN; energie = 0.0; blobs = std::vector<Site *>(); labelscount = std::map<int,uint>();  }
         
 };
 
 double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bbmax2, uint *no_overlap);
 
-// vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, map<string, AimsSurfaceTriangle> &meshes, map<string, TimeTexture<float> > &lats, map<string, TimeTexture<float> > &lons);
+void ConstruireCliquesIntraPS(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
+void ConstruireCliquesDataDriven(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
+void ConstruireCliquesSimilarity(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
 
-void ConstruireCliquesIntraPS(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<Clique> &cliques);
-void ConstruireCliquesDataDriven(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<Clique> &cliques);
-void ConstruireCliquesSimilarity(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite, vector<Clique> &cliques);
-
-vector<Clique> ConstruireCliques(vector<Site *> &sites, vector<vector<int> > &cliquesDuSite);
+std::vector<Clique> ConstruireCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite);
 
 #endif
 

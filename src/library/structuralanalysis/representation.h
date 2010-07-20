@@ -6,23 +6,19 @@
 
 
 
-using namespace aims;
-using namespace carto;
-using namespace std;
 
+AimsSurfaceTriangle getBlobsMeshesEllipsoid ( std::vector<surf::GreyLevelBlob *> &blobs );
 
-AimsSurfaceTriangle getBlobsMeshesEllipsoid ( vector<surf::GreyLevelBlob *> &blobs );
-
-AimsSurfaceTriangle getBlobsMeshesSphericalAtlas ( vector<surf::GreyLevelBlob *> &blobs,
+AimsSurfaceTriangle getBlobsMeshesSphericalAtlas ( std::vector< surf::GreyLevelBlob *> &blobs,
                                      AimsSurface<3, Void> &mesh );
 
 //AimsSurfaceTriangle getBlobsMeshesSpherical ( vector<surf::ScaleSpaceBlob *> &blobs,
 //                                     AimsSurface<3, Void> &mesh );
 
-AimsSurfaceTriangle getBlobsMeshes2DAtlas ( vector<surf::GreyLevelBlob *> &blobs,
+AimsSurfaceTriangle getBlobsMeshes2DAtlas ( std::vector< surf::GreyLevelBlob *> &blobs,
                                      AimsSurface<3, Void> &mesh );
 
-AimsSurfaceTriangle getBlobsMeshesFromMesh( vector<surf::GreyLevelBlob *> &blobs,
+AimsSurfaceTriangle getBlobsMeshesFromMesh( std::vector< surf::GreyLevelBlob *> &blobs,
                                     AimsSurface<3, Void> &mesh );
 
 //AimsSurfaceTriangle getBlobsMeshesFromMesh( vector<surf::ScaleSpaceBlob *> &blobs,
@@ -34,16 +30,16 @@ AimsSurfaceTriangle getLabelObjectsOnASphere( TimeTexture<short> &tex,
                                 AimsSurface<3,Void> &mesh,
                                 Texture<float> &lat,
                                 Texture<float> &lon,
-                                vector<set<int> > &nodes_lists);
+                                std::vector< std::set<int> > &nodes_lists);
 
 //AimsSurfaceTriangle getLabelObjectsOnAMesh( TimeTexture<short> &tex,
 //                                AimsSurface<3,Void> &mesh,
 //                                vector<set<int> > &nodes_lists);
 
-AimsSurfaceTriangle getG2GRelationsMeshes ( vector< pair<surf::GreyLevelBlob *, surf::GreyLevelBlob *> > &blobsPairs,
+AimsSurfaceTriangle getG2GRelationsMeshes ( std::vector< std::pair<surf::GreyLevelBlob *, surf::GreyLevelBlob *> > &blobsPairs,
                                             int representation_mode = SPHERE );
 
-AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector< pair< surf::ScaleSpaceBlob *, surf::ScaleSpaceBlob *> > & bifurcPairs,
+AimsSurfaceTriangle getBifurcationRelationsMeshes ( std::vector< std::pair< surf::ScaleSpaceBlob *, surf::ScaleSpaceBlob *> > & bifurcPairs,
                                                     int representation_mode = SPHERE );
 
 #endif

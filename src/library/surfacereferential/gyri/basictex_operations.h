@@ -2,8 +2,6 @@
 #ifndef AIMS_PARAMETERIZEGYRI_BASICTEX_OPERATIONS_H
 #define AIMS_PARAMETERIZEGYRI_BASICTEX_OPERATIONS_H
 
-using namespace aims;
-using namespace std;
 
 TimeTexture<short> getTimeTex(const Texture<short> &inTex);
 TimeTexture<float> getTimeTex(const Texture<double> &inTex);
