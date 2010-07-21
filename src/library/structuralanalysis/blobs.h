@@ -13,8 +13,10 @@ namespace surf{
 
     class Blob{
         public:
+            
             int index;
             std::set<int> nodes;
+//            std::set<Point3di> polygons;
             std::map<int, std::vector<float> > coordinates;
             std::map<int, std::vector<float> > raw_coordinates;
             AimsSurface<3, Void> mesh;
@@ -57,10 +59,9 @@ namespace surf{
             GreyLevelBlob(){}
             ~GreyLevelBlob(){}
             GreyLevelBlob( GreyLevelBlob *glb ) {
-//                 area = glb->area;
                 index = glb->index;
                 nodes = std::set<int>(glb->nodes);
-//                 x_along_axis = map<int, float>(glb->x_along_axis);
+//                polygons = set::set<Point3di>(glb->polygons);
                 coordinates = std::map<int, std::vector<float> >(glb->coordinates);
                 raw_coordinates = std::map<int, std::vector<float> >(glb->raw_coordinates);
                 ssb_parent = glb->ssb_parent;

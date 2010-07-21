@@ -54,6 +54,7 @@ void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &inMesh) {
 	corres = *(new vector<int>(inMesh.vertex().size()));
 	uint i = 0;
 	for ( it = nodes.begin() ; it != nodes.end() ; it ++ ) {
+	  gyrusSet.insert(*it);
 	  this->mesh.vertex().push_back(inMesh.vertex()[*it]);
 	  corres[*it] = i++;
 	}
@@ -71,6 +72,15 @@ void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &inMesh) {
 
 void surf::GreyLevelBlob::getAimsMesh ( AimsSurface<3, Void> &mesh ){
     surf::Blob::getAimsMesh ( mesh );
+    assert( this->mesh.vertex().size() > 0 );
+    if ( this->mesh.polygon().size() == 0 ) {     
+        cout << " sphere " << endl;
+        AimsSurfaceTriangle *sph;
+        sph = SurfaceGenerator::sphere(this->mesh.vertex()[0], 0.1, 10);
+        this->mesh = (*sph)[0];    
+    }
+    else 
+        cout << " pas sphere" << endl;
 }
 
 //##############################################################################
