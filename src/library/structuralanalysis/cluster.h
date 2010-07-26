@@ -1,6 +1,5 @@
 #ifndef AIMS_CLUSTER_H
 #define AIMS_CLUSTER_H
-#include <cortical_surface/structuralanalysis/meshdistance.h>
 #include <cortical_surface/structuralanalysis/cliques.h>
 #include <cortical_surface/structuralanalysis/minimization.h>
 

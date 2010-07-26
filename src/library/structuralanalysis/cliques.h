@@ -3,7 +3,6 @@
 
 #include <math.h>
 #include <cortical_surface/structuralanalysis/sites.h>
-#include <cortical_surface/structuralanalysis/meshdistance.h>
 
 
 enum typesCliques {

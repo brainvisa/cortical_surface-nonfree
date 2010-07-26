@@ -1,7 +1,6 @@
 #ifndef AIMS_ANNEAL_H
 #define AIMS_ANNEAL_H
 #include <cortical_surface/structuralanalysis/minimization.h>
-#include <cortical_surface/structuralanalysis/meshdistance.h>
 #include <cortical_surface/structuralanalysis/cliques.h>
 
 using namespace aims;

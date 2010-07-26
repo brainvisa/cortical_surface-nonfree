@@ -1,7 +1,6 @@
 #ifndef AIMS_ICM_H
 #define AIMS_ICM_H
 #include <cortical_surface/structuralanalysis/minimization.h>
-#include <cortical_surface/structuralanalysis/meshdistance.h>
 #include <cortical_surface/structuralanalysis/cliques.h>
 
 
