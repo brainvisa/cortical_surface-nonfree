@@ -16,7 +16,6 @@ namespace surf{
             
             int index;
             std::set<int> nodes;
-//            std::set<Point3di> polygons;
             std::map<int, std::vector<float> > coordinates;
             std::map<int, std::vector<float> > raw_coordinates;
             AimsSurface<3, Void> mesh;
@@ -39,8 +38,8 @@ namespace surf{
             float t;
             float scale;
 
-            Point3df boundingbox_max;
-            Point3df boundingbox_min;
+//            Point3df boundingbox_max;
+//            Point3df boundingbox_min;
             surf::ScaleSpaceBlob *ssb_parent;
 
             void getAimsMesh (  AimsSurface<3, Void> &mesh );
@@ -68,10 +67,6 @@ namespace surf{
                 mesh = glb->mesh;
                 t = glb->t;
                 scale = glb->scale;
-                for ( uint i = 0 ; i < 3 ; i ++ ) {
-                    boundingbox_min[i] = glb->boundingbox_min[i];
-                    boundingbox_max[i] = glb->boundingbox_max[i];
-                }
             }
                 
 

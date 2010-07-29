@@ -96,6 +96,25 @@ AimsSurfaceTriangle getBlobsMeshesFromMesh ( vector<surf::GreyLevelBlob *> &blob
     return objects;
 }
 
+//##############################################################################
+
+// Function that extracts mesh patches from a "mesh", being given a "blobs" vector,
+//   and returning a collection of "objects" plus a vector of "nodes_lists".
+AimsSurfaceTriangle getBlobsMeshesFromMesh ( vector<surf::Blob *> &blobs,
+                                     AimsSurface<3, Void> &mesh){
+    AimsSurfaceTriangle objects;
+
+    for (uint i = 0 ; i < blobs.size() ; i++){
+
+        cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << objects.size() << flush ;
+        blobs[i]->getAimsMesh(mesh);
+        objects[i] = blobs[i]->mesh;
+
+    }
+
+    cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b  " << objects.size() << " meshes extracted" << endl;
+    return objects;
+}
 
 
 //##############################################################################

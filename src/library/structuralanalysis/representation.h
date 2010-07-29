@@ -21,6 +21,9 @@ AimsSurfaceTriangle getBlobsMeshes2DAtlas ( std::vector< surf::GreyLevelBlob *> 
 AimsSurfaceTriangle getBlobsMeshesFromMesh( std::vector< surf::GreyLevelBlob *> &blobs,
                                     AimsSurface<3, Void> &mesh );
 
+AimsSurfaceTriangle getBlobsMeshesFromMesh( std::vector< surf::Blob *> &blobs,
+                                    AimsSurface<3, Void> &mesh );
+
 //AimsSurfaceTriangle getBlobsMeshesFromMesh( vector<surf::ScaleSpaceBlob *> &blobs,
 //                                    AimsSurface<3, Void> &mesh );
 
