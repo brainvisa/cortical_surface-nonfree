@@ -8,7 +8,7 @@ using namespace std;
 using namespace aims;
 using namespace aims::meshdistance;
 
-AimsSurfaceTriangle getGyrusMesh(AimsSurface<3, Void> &inMesh, const vector<uint> &gyrusVertices, vector<uint> &corres){
+AimsSurfaceTriangle getGyrusMesh(AimsSurface<3, Void> &inMesh, vector<uint> &gyrusVertices, vector<uint> &corres){
    AimsSurfaceTriangle gyrusMesh;
         // on extrait un gyrus, le maillage a moins de vertex que l'h�misph�re, du coup on cr�e un vecteur qui renseigne
         // sur les correspondances entre points homologues..s
@@ -27,7 +27,7 @@ AimsSurfaceTriangle getGyrusMesh(AimsSurface<3, Void> &inMesh, const vector<uint
                corres[inMesh.polygon()[i][1]],
                corres[inMesh.polygon()[i][2]]));
             }
-         
+
    }
    return gyrusMesh;
 }
@@ -50,20 +50,24 @@ map<unsigned, set<pair<unsigned,float> > > getGyrusWeight (map<unsigned, set<pai
    return poidsGyrus;
 }
 
-AimsSurface<3,Void> getFlatMesh(const AimsSurface<3,Void> &mesh, const vector<uint> &vertices, const vector<uint> &corres,
+AimsSurface<3,Void> getFlatMesh(const AimsSurface<3,Void> &mesh, const vector<uint> &vertices,
       TimeTexture<float> &paramTex){
-   
+
    set<uint> gyrusSet;
    for (uint i=0;i<vertices.size();i++)
       gyrusSet.insert(vertices[i]);
    AimsSurface<3,Void> outMesh(mesh);
    TimeTexture<short> outTex(1,mesh.vertex().size());
-   
-   for (uint i=0;i<paramTex[0].nItem();i++)
-      if (gyrusSet.find(i)!=gyrusSet.end()) {
-         outMesh.vertex()[corres[i]] = *new AimsVector<float,3>(paramTex[1].item(i)+(i*0.01)/paramTex[0].nItem(), paramTex[2].item(i)+(i*0.01)/paramTex[0].nItem(), (i*0.01)/paramTex[0].nItem());
-      }
-   
+
+//   for (uint i=0;i<paramTex[0].nItem();i++)
+//      if (gyrusSet.find(i)!=gyrusSet.end()) {
+//         outMesh.vertex()[corres[i]] = *new AimsVector<float,3>(paramTex[1].item(i)+(i*0.01)/paramTex[0].nItem(), paramTex[2].item(i)+(i*0.01)/paramTex[0].nItem(), (i*0.01)/paramTex[0].nItem());
+//      }
+   for ( uint i = 0 ; i < outMesh.vertex().size() ; i++ )
+		 outMesh.vertex()[i] = *new AimsVector<float,3>( paramTex[1].item( vertices[i] ) + ( i * 0.01 ) / paramTex[0].nItem(),
+				                                         paramTex[2].item( vertices[i] ) + ( i * 0.01 ) / paramTex[0].nItem(),
+				                                         ( i * 0.01 ) / paramTex[0].nItem() );
+
    return outMesh;
 }
 
@@ -77,14 +81,14 @@ Texture<double> AimsMeshLaplacian( const Texture<double> &inittex,
   double                                        L;
   float weight;
   ASSERT ( lapl.size() == n);
-  
+
   for (il = lapl.begin(), el = lapl.end(); il != el; ++il)
     {
       node = il->first;
       L = 0;
 
-      //Pondered sum on the neighbour of the node 
-      for ( ip = (il->second).begin(), ep = (il->second).end(); ip != ep; ++ip    ) 
+      //Pondered sum on the neighbour of the node
+      for ( ip = (il->second).begin(), ep = (il->second).end(); ip != ep; ++ip    )
    {
      neigh = ip->first;
      weight = ip->second;
@@ -99,30 +103,30 @@ Texture<double> AimsMeshLaplacian( const Texture<double> &inittex,
 Texture<double> diffusion(map<unsigned, set<pair<unsigned,float> > > &poidsGyrus,
       AimsSurface<3,Void> &mesh_base, vector<uint> &haut, vector<uint> &bas, const vector<pair<vector<uint>,short> > &constraints
       , short init, vector<uint> &gyrusvertices, vector<uint> &corr, const float criter, const float dt){
-         
+
    Texture<double> tex1,lapl,tex2;
    Texture<float> tex1a, aux;
    float maxi=0.0;
-   
+
    for (uint i=0;i<mesh_base.vertex().size();i++){
       aux.push_back(0.0);
       tex1.push_back(0.0);
       tex2.push_back(0.0);
       }
-      
+
    for (uint i=0;i<haut.size();i++){
       aux.item(haut[i])= 100.0;
       }
    switch(init){
       case -1:
-         tex1a = MeshDistance(mesh_base, aux, false);         
+         tex1a = MeshDistance(mesh_base, aux, false);
          for (uint i=0;i<mesh_base.vertex().size();i++)
             maxi = max(maxi, tex1a.item(i));
          printf("maxi : %f\n",maxi);
          for (uint i=0;i<mesh_base.vertex().size();i++){
             tex1.item(i) = 100-tex1a.item(i)/maxi*100;
             tex2.item(i) = tex1.item(i);
-         }      
+         }
       break;
       default:
          for (uint i=0;i<mesh_base.vertex().size();i++){
@@ -130,13 +134,13 @@ Texture<double> diffusion(map<unsigned, set<pair<unsigned,float> > > &poidsGyrus
             tex2.item(i) = (double)init;
          }
    }
-      
 
-      
+
+
    for (uint i=0;i<haut.size();i++)
-      tex1.item(haut[i])= 100.0;            
+      tex1.item(haut[i])= 100.0;
    for (uint i=0;i<bas.size();i++)
-      tex1.item(bas[i])= 0.0;        
+      tex1.item(bas[i])= 0.0;
 
    for (uint i=0;i<constraints.size();i++)
       for (uint j=0;j<constraints[i].first.size();j++)
@@ -144,19 +148,19 @@ Texture<double> diffusion(map<unsigned, set<pair<unsigned,float> > > &poidsGyrus
 
    /*Texture<double> test;
    for (uint i=0;i<corr.size();i++)
-      test.push_back(0);          
+      test.push_back(0);
    writeTexture(test, "/opt/goperto/tempTex.tex");
    writeTexture(test, "/opt/goperto/laplTex.tex");*/
 
-   
+
    printf("Diffusion en cours (seuil=0.001) : \n");
    fflush(NULL);
 
    double stop=9.0, moy=0.0, stop2=9.0, moy2=0.0;
    printf("%.9f", stop);
 //   FILE *f1= fopen ("/home/grg/lapl.txt","a");
-//   fprintf(f1,"============================================================================================\n");  
-   
+//   fprintf(f1,"============================================================================================\n");
+
 
    for (long int n=1;stop2>criter;n++){
       stop=0.0;
@@ -194,7 +198,7 @@ Texture<double> diffusion(map<unsigned, set<pair<unsigned,float> > > &poidsGyrus
       if (n%100==0) {
 //         fprintf(f1, "%.7f\t%.7f\t%.7f\t%.7f\n", stop, stop2, moy, moy2);
       }
-      
+
    }
 //   fclose(f1);
    printf("\n");

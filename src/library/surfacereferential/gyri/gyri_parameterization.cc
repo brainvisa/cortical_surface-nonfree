@@ -131,7 +131,7 @@ TimeTexture<float> GyriParamTexture(AimsSurface<3,Void> &inMesh, Texture<short> 
                      for (uint i2=0;i2<vertices[0].size();i2++)
                         final[2].item(vertices[0][i2]) = (float) horizDiff.item(corr[vertices[0][i2]]);
 
-                     flatMesh = getFlatMesh(gyrusMesh[0], vertices[0], corr, final);
+                     flatMesh = getFlatMesh(gyrusMesh[0], vertices[0], final);
                   }
 
                   pair<vector<pair<vector<uint>,short> >,vector<pair<vector<uint>,short> > > constraints;

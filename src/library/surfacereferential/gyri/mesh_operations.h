@@ -2,14 +2,12 @@
 #ifndef AIMS_PARAMETERIZEGYRI_MESH_OPERATIONS_H
 #define AIMS_PARAMETERIZEGYRI_MESH_OPERATIONS_H
 
-using namespace std;
 
+AimsSurfaceTriangle getGyrusMesh(AimsSurface<3, Void> &inMesh, std::vector<uint> &gyrusVertices, std::vector<uint> &corres);
 
-AimsSurfaceTriangle getGyrusMesh(AimsSurface<3, Void> &inMesh, const std::vector<uint> &gyrusVertices, std::vector<uint> &corres);
+std::map<unsigned, std::set<std::pair<unsigned,float> > > getGyrusWeight (std::map<unsigned, std::set<std::pair<unsigned,float> > > &poids, std::vector<uint> &gyrusVertices, std::vector<uint> &corres);
 
-std::map<unsigned, std::set<pair<unsigned,float> > > getGyrusWeight (std::map<unsigned, std::set<std::pair<unsigned,float> > > &poids, std::vector<uint> &gyrusVertices, std::vector<uint> &corres);
-
-AimsSurface<3,Void> getFlatMesh(const AimsSurface<3,Void> &mesh, const std::vector<uint> &vertices, const std::vector<uint> &corres,
+AimsSurface<3,Void> getFlatMesh(const AimsSurface<3,Void> &mesh, const std::vector<uint> &vertices,
       TimeTexture<float> &paramTex);
 
 Texture<double> AimsMeshLaplacian( const Texture<double> &inittex,
