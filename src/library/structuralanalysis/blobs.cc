@@ -76,7 +76,7 @@ void surf::GreyLevelBlob::getAimsMesh ( AimsSurface<3, Void> &mesh ){
     if ( this->mesh.polygon().size() == 0 ) {     
         cout << " sphere " << endl;
         AimsSurfaceTriangle *sph;
-        sph = SurfaceGenerator::sphere(this->mesh.vertex()[0], 0.1, 10);
+        sph = SurfaceGenerator::sphere(this->mesh.vertex()[0], 0.9, 10);
         this->mesh = (*sph)[0];    
     }
     else 
