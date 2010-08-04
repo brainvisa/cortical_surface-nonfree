@@ -47,13 +47,13 @@ void SurfaceBased_StructuralAnalysis::noLabelsZones () {/* vector<pair<Point2df,
 //         labelsZones.push_back(zone);
 //     }
 
-    for (uint i=0;i<21;i++)
+    for (uint i=0;i<121;i++)
         labels.push_back(i);
     
     for (uint j=0;j<sites.size();j++){
 //         listeZones[j].insert(0);
 //         zonesListesBlobs[0].insert(j);
-        for (uint k=0;k<21;k++){
+        for (uint k=0;k<121;k++){
             listeZones[j].insert(k);
 //             zonesListesBlobs[k+1].insert(j);
 

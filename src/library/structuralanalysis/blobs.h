@@ -37,9 +37,8 @@ namespace surf{
         public :
             float t;
             float scale;
+            int label;
 
-//            Point3df boundingbox_max;
-//            Point3df boundingbox_min;
             surf::ScaleSpaceBlob *ssb_parent;
 
             void getAimsMesh (  AimsSurface<3, Void> &mesh );

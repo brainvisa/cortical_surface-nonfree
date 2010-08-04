@@ -13,9 +13,10 @@ class Clique{
     public:
         static float ddweight, intrapsweight, simweight, lsweight, ddx2, ddx1, ddh;
 
-        int type;
+        short type;
         std::vector<Site *> blobs;
-        double energie,sigma,rec;
+        double energie;
+        float rec;
         std::map<int,uint> labelscount;
         
         float computeEnergy(bool save, uint CLIQUESNBSUJETS) {

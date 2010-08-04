@@ -15,9 +15,9 @@ Anneal::Anneal(Graph &primal){
 
 void Anneal::Step(vector<int> &random, long double temp, uint &mod){
   
-    long double somme=0.0;
+    long double somme = 0.0;
     int old;
-    mod=0;
+    mod = 0;
     set<uint>::iterator it;
 
     cout << "STEP " << flush;
@@ -186,7 +186,7 @@ void Anneal::Run(int verbose){
     cliques[k].computeEnergy(true,nbsujets);
   }
 
-  if (run==1){
+  if ( run == 1 ) {
       while (nb_under_threshold<5 || mod!=0){ 
       //    while (temp>200.0){
 
