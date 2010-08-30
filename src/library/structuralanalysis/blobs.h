@@ -80,7 +80,10 @@ namespace surf{
             float tmax;
             std::set<GreyLevelBlob *> blobs;
             std::set<ScaleSpaceBlob *> topBlobs, bottomBlobs;
+            
+            void getAimsMesh ( AimsSurface<3, Void> &mesh );
 
+            
             ScaleSpaceBlob(){}
             ~ScaleSpaceBlob(){}
             ScaleSpaceBlob( ScaleSpaceBlob *ssb ) {
