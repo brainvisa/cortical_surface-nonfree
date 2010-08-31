@@ -21,6 +21,9 @@ AimsSurfaceTriangle getBlobsMeshes2DAtlas ( std::vector< surf::GreyLevelBlob *> 
 AimsSurfaceTriangle getBlobsMeshesFromMesh( std::vector< surf::GreyLevelBlob *> &blobs,
                                     AimsSurface<3, Void> &mesh );
 
+AimsSurfaceTriangle getBlobsMeshesFromSpheresAtMax( std::vector< surf::GreyLevelBlob *> &blobs,
+                                    AimsSurface<3, Void> &mesh, Texture<float> &tex );
+
 AimsSurfaceTriangle getBlobsMeshesFromMesh( std::vector< surf::Blob *> &blobs,
                                     AimsSurface<3, Void> &mesh );
 

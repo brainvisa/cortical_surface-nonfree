@@ -21,8 +21,9 @@ namespace surf{
             AimsSurface<3, Void> mesh;
 
             std::pair<Point2df, Point2df> get2DBoundingBox ( );
-
+                        
             void getAimsMesh (  AimsSurface<3, Void> &mesh );
+            void getAimsSphereAtMaxNode (  AimsSurface<3, Void> &mesh, Texture<float> &tex );
             void getAimsEllipsoid ( float abscissa, float depth, float height, float area );
             void moveMeshToSphericalAtlas ( float radius ) ;
             void moveMeshToPlaneAtlas ( float height ) ;

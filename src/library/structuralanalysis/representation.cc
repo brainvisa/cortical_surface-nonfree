@@ -116,7 +116,21 @@ AimsSurfaceTriangle getBlobsMeshesFromMesh ( vector<surf::Blob *> &blobs,
     return objects;
 }
 
+AimsSurfaceTriangle getBlobsMeshesFromSpheresAtMax( std::vector< surf::GreyLevelBlob *> &blobs,
+                                    AimsSurface<3, Void> &mesh, Texture<float> &tex ) {
+    AimsSurfaceTriangle objects;
 
+    for (uint i = 0 ; i < blobs.size() ; i++){
+
+        cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << objects.size() << flush ;
+        blobs[i]->getAimsSphereAtMaxNode(mesh, tex);
+        objects[i] = blobs[i]->mesh;
+
+    }
+
+    cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b  " << objects.size() << " meshes extracted" << endl;
+    return objects;
+}
 //##############################################################################
 
 

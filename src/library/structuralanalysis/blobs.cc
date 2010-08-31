@@ -227,9 +227,24 @@ void surf::Blob::moveMeshToPlaneAtlas ( float height ) {
 void surf::GreyLevelBlob::moveMeshToPlaneAtlas ( ) {
     return surf::Blob::moveMeshToPlaneAtlas ( scale + 1.0 );
 }
-
 //##############################################################################
 
+void surf::Blob::getAimsSphereAtMaxNode (  AimsSurface<3, Void> &mesh, Texture<float> &tex ) {
+    set<int>::iterator it;
+    assert(nodes.size() > 0);
+    int maxim_node = * (nodes.begin());
+    for ( it = nodes.begin() ; it != nodes.end() ; it ++ )
+        if ( tex.item(*it) > tex.item(maxim_node) )
+            maxim_node = *it;
+    AimsSurfaceTriangle *sph;
+    sph = SurfaceGenerator::sphere(mesh.vertex()[maxim_node], 0.9, 10);
+    this->mesh = (*sph)[0];    
+
+}
+
+
+
+//##############################################################################
 int getEcartMaxIndice( set<float> &longitudes ) {
 
     uint i = 0, imax = -1 ;
