@@ -43,7 +43,7 @@ namespace surf{
 
             surf::ScaleSpaceBlob *ssb_parent;
 
-            void getAimsMesh (  AimsSurface<3, Void> &mesh );
+//            void getAimsMesh (  AimsSurface<3, Void> &mesh );
             void getAimsEllipsoid ( void );
             void moveMeshToSphericalAtlas ( void ) ;
             void moveMeshToPlaneAtlas ( void ) ;
@@ -83,7 +83,7 @@ namespace surf{
             std::set<GreyLevelBlob *> blobs;
             std::set<ScaleSpaceBlob *> topBlobs, bottomBlobs;
 
-            void getAimsMesh ( AimsSurface<3, Void> &mesh );
+//            void getAimsMesh ( AimsSurface<3, Void> &mesh );
 
 
             ScaleSpaceBlob(){}

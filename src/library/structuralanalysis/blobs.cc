@@ -70,52 +70,52 @@ void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &inMesh) {
 	}
 }
 
-void surf::GreyLevelBlob::getAimsMesh ( AimsSurface<3, Void> &mesh ){
-    surf::Blob::getAimsMesh ( mesh );
-    assert( this->mesh.vertex().size() > 0 );
-    if ( this->mesh.polygon().size() == 0 ) {
-//        cout << " sphere " << endl;
-        AimsSurfaceTriangle *sph;
-        sph = SurfaceGenerator::sphere(this->mesh.vertex()[0], 0.9, 10);
-        this->mesh = (*sph)[0];
-    }
-}
+//void surf::GreyLevelBlob::getAimsMesh ( AimsSurface<3, Void> &mesh ){
+//    surf::Blob::getAimsMesh ( mesh );
+//    assert( this->mesh.vertex().size() > 0 );
+//    if ( this->mesh.polygon().size() == 0 ) {
+////        cout << " sphere " << endl;
+//        AimsSurfaceTriangle *sph;
+//        sph = SurfaceGenerator::sphere(this->mesh.vertex()[0], 0.9, 10);
+//        this->mesh = (*sph)[0];
+//    }
+//}
 
-void surf::ScaleSpaceBlob::getAimsMesh ( AimsSurface<3, Void> &inMesh ){
-    this->mesh = AimsSurface<3,Void>();
-    vector<int> gyrusVertices, corres;
-    set<int>::iterator it;
-
-        // on extrait un gyrus, le maillage a moins de vertex que l'hemisphere, du coup on cree un vecteur qui renseigne
-        // sur les correspondances entre points homologues..s
-    set<uint> gyrusSet;
-    corres = *(new vector<int>(inMesh.vertex().size()));
-    uint i = 0;
-    assert(blobs.size() == 1);
-    set<int> nodes2 ( (*(blobs.begin()))->nodes );
-    for ( it = nodes2.begin() ; it != nodes2.end() ; it ++ ) {
-      gyrusSet.insert(*it);
-      this->mesh.vertex().push_back(inMesh.vertex()[*it]);
-      corres[*it] = i++;
-    }
-    for ( uint i = 0 ; i < inMesh.polygon().size() ; i++ ) {
-      if (gyrusSet.find(inMesh.polygon()[i][0])!=gyrusSet.end() &&
-            gyrusSet.find(inMesh.polygon()[i][1])!=gyrusSet.end() &&
-            gyrusSet.find(inMesh.polygon()[i][2])!=gyrusSet.end()){
-              this->mesh.polygon().push_back(AimsVector<uint,3>(corres[inMesh.polygon()[i][0]],
-               corres[inMesh.polygon()[i][1]],
-               corres[inMesh.polygon()[i][2]]));
-            }
-
-    }
-    assert( this->mesh.vertex().size() > 0 );
-    if ( this->mesh.polygon().size() == 0 ) {
-//        cout << " sphere " << endl;
-        AimsSurfaceTriangle *sph;
-        sph = SurfaceGenerator::sphere(this->mesh.vertex()[0], 0.9, 10);
-        this->mesh = (*sph)[0];
-    }
-}
+//void surf::ScaleSpaceBlob::getAimsMesh ( AimsSurface<3, Void> &inMesh ){
+//    this->mesh = AimsSurface<3,Void>();
+//    vector<int> gyrusVertices, corres;
+//    set<int>::iterator it;
+//
+//        // on extrait un gyrus, le maillage a moins de vertex que l'hemisphere, du coup on cree un vecteur qui renseigne
+//        // sur les correspondances entre points homologues..s
+//    set<uint> gyrusSet;
+//    corres = *(new vector<int>(inMesh.vertex().size()));
+//    uint i = 0;
+//    assert(blobs.size() == 1);
+//    set<int> nodes2 ( (*(blobs.begin()))->nodes );
+//    for ( it = nodes2.begin() ; it != nodes2.end() ; it ++ ) {
+//      gyrusSet.insert(*it);
+//      this->mesh.vertex().push_back(inMesh.vertex()[*it]);
+//      corres[*it] = i++;
+//    }
+//    for ( uint i = 0 ; i < inMesh.polygon().size() ; i++ ) {
+//      if (gyrusSet.find(inMesh.polygon()[i][0])!=gyrusSet.end() &&
+//            gyrusSet.find(inMesh.polygon()[i][1])!=gyrusSet.end() &&
+//            gyrusSet.find(inMesh.polygon()[i][2])!=gyrusSet.end()){
+//              this->mesh.polygon().push_back(AimsVector<uint,3>(corres[inMesh.polygon()[i][0]],
+//               corres[inMesh.polygon()[i][1]],
+//               corres[inMesh.polygon()[i][2]]));
+//            }
+//
+//    }
+//    assert( this->mesh.vertex().size() > 0 );
+//    if ( this->mesh.polygon().size() == 0 ) {
+////        cout << " sphere " << endl;
+//        AimsSurfaceTriangle *sph;
+//        sph = SurfaceGenerator::sphere(this->mesh.vertex()[0], 0.9, 10);
+//        this->mesh = (*sph)[0];
+//    }
+//}
 
 //##############################################################################
 
@@ -231,7 +231,6 @@ void surf::GreyLevelBlob::moveMeshToPlaneAtlas ( ) {
 
 void surf::Blob::getAimsSphereAtMaxNode (  AimsSurface<3, Void> &mesh, Texture<float> &tex ) {
     set<int>::iterator it;
-    assert(nodes.size() > 0);
     int maxim_node = getMaximumNode(tex);
     AimsSurfaceTriangle *sph;
     sph = SurfaceGenerator::sphere(mesh.vertex()[maxim_node], 0.9, 10);
