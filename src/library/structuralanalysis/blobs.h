@@ -13,7 +13,7 @@ namespace surf{
 
     class Blob{
         public:
-            
+
             int index;
             std::set<int> nodes;
             std::map<int, std::vector<float> > coordinates;
@@ -21,18 +21,19 @@ namespace surf{
             AimsSurface<3, Void> mesh;
 
             std::pair<Point2df, Point2df> get2DBoundingBox ( );
-                        
+            int getMaximumNode( Texture<float> &tex );
+
             void getAimsMesh (  AimsSurface<3, Void> &mesh );
             void getAimsSphereAtMaxNode (  AimsSurface<3, Void> &mesh, Texture<float> &tex );
             void getAimsEllipsoid ( float abscissa, float depth, float height, float area );
             void moveMeshToSphericalAtlas ( float radius ) ;
             void moveMeshToPlaneAtlas ( float height ) ;
-            
+
             Blob(){}
             ~Blob(){}
     };
     class ScaleSpaceBlob;
-  
+
 
     class GreyLevelBlob: public Blob {
         public :
@@ -46,15 +47,15 @@ namespace surf{
             void getAimsEllipsoid ( void );
             void moveMeshToSphericalAtlas ( void ) ;
             void moveMeshToPlaneAtlas ( void ) ;
-                        
-            
+
+
             Point3df getBlobBarycenterOnASphere( );
             Point3df getBlobBarycenter( );
             Point3df getBlobBarycenterFromMesh( );
             Point3df getBlobBarycenterOnAPlane( );
 
             std::pair<Point2df, Point2df> get2DBoundingBox ( );
-            
+
             GreyLevelBlob(){}
             ~GreyLevelBlob(){}
             GreyLevelBlob( GreyLevelBlob *glb ) {
@@ -68,7 +69,7 @@ namespace surf{
                 t = glb->t;
                 scale = glb->scale;
             }
-                
+
 
     };
 
@@ -81,10 +82,10 @@ namespace surf{
             float tmax;
             std::set<GreyLevelBlob *> blobs;
             std::set<ScaleSpaceBlob *> topBlobs, bottomBlobs;
-            
+
             void getAimsMesh ( AimsSurface<3, Void> &mesh );
 
-            
+
             ScaleSpaceBlob(){}
             ~ScaleSpaceBlob(){}
             ScaleSpaceBlob( ScaleSpaceBlob *ssb ) {
@@ -122,7 +123,7 @@ namespace surf{
             std::set<ScaleSpaceBlob *> bottomBlobs;
             std::string type;
             SSBBifurcation ( std::set<ScaleSpaceBlob *> &s1, std::set< ScaleSpaceBlob *> &s2, std::string _type){topBlobs = std::set<ScaleSpaceBlob *>(s1); bottomBlobs = std::set<ScaleSpaceBlob *>(s2); type = _type;}
-          
+
     };
 }
 

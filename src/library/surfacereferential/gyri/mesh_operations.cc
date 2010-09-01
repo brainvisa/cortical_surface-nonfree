@@ -1,8 +1,7 @@
-#include <cstdlib>
 #include <aims/distancemap/meshdistance.h>
-#include <aims/mesh/texture.h>
-#include <aims/io/io_g.h>
+#include <aims/getopt/getopt2.h>
 #include <cortical_surface/surfacereferential/gyri/vector_operations.h>
+#include <cortical_surface/surfacereferential/gyri/mesh_operations.h>
 
 using namespace std;
 using namespace aims;

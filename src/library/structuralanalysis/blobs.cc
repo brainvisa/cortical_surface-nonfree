@@ -26,7 +26,7 @@ Point3df Point3dfOnSphere ( float radius,
 
     return  Point3df ( log(radius) * cos((lat-90.)/180.0*3.1415957) * cos(lon/180.0*3.1415957),
                     log(radius) * cos((lat-90.)/180.0*3.1415957) * sin(lon/180.0*3.1415957),
-                    log(radius) * sin((lat-90.)/180.0*3.1415957) );  
+                    log(radius) * sin((lat-90.)/180.0*3.1415957) );
 }
 
 Point3df Point3dfOnMesh ( vector<float> &coordinates, float radius = 1.0) {
@@ -73,11 +73,11 @@ void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &inMesh) {
 void surf::GreyLevelBlob::getAimsMesh ( AimsSurface<3, Void> &mesh ){
     surf::Blob::getAimsMesh ( mesh );
     assert( this->mesh.vertex().size() > 0 );
-    if ( this->mesh.polygon().size() == 0 ) {     
+    if ( this->mesh.polygon().size() == 0 ) {
 //        cout << " sphere " << endl;
         AimsSurfaceTriangle *sph;
         sph = SurfaceGenerator::sphere(this->mesh.vertex()[0], 0.9, 10);
-        this->mesh = (*sph)[0];    
+        this->mesh = (*sph)[0];
     }
 }
 
@@ -85,7 +85,7 @@ void surf::ScaleSpaceBlob::getAimsMesh ( AimsSurface<3, Void> &inMesh ){
     this->mesh = AimsSurface<3,Void>();
     vector<int> gyrusVertices, corres;
     set<int>::iterator it;
-    
+
         // on extrait un gyrus, le maillage a moins de vertex que l'hemisphere, du coup on cree un vecteur qui renseigne
         // sur les correspondances entre points homologues..s
     set<uint> gyrusSet;
@@ -109,11 +109,11 @@ void surf::ScaleSpaceBlob::getAimsMesh ( AimsSurface<3, Void> &inMesh ){
 
     }
     assert( this->mesh.vertex().size() > 0 );
-    if ( this->mesh.polygon().size() == 0 ) {     
+    if ( this->mesh.polygon().size() == 0 ) {
 //        cout << " sphere " << endl;
         AimsSurfaceTriangle *sph;
         sph = SurfaceGenerator::sphere(this->mesh.vertex()[0], 0.9, 10);
-        this->mesh = (*sph)[0];    
+        this->mesh = (*sph)[0];
     }
 }
 
@@ -232,13 +232,10 @@ void surf::GreyLevelBlob::moveMeshToPlaneAtlas ( ) {
 void surf::Blob::getAimsSphereAtMaxNode (  AimsSurface<3, Void> &mesh, Texture<float> &tex ) {
     set<int>::iterator it;
     assert(nodes.size() > 0);
-    int maxim_node = * (nodes.begin());
-    for ( it = nodes.begin() ; it != nodes.end() ; it ++ )
-        if ( tex.item(*it) > tex.item(maxim_node) )
-            maxim_node = *it;
+    int maxim_node = getMaximumNode(tex);
     AimsSurfaceTriangle *sph;
     sph = SurfaceGenerator::sphere(mesh.vertex()[maxim_node], 0.9, 10);
-    this->mesh = (*sph)[0];    
+    this->mesh = (*sph)[0];
 
 }
 
@@ -671,6 +668,18 @@ pair<Point2df, Point2df> surf::ScaleSpaceBlob::get2DBoundingBox ( void ) {
 
 
 //##############################################################################
+
+int surf::Blob::getMaximumNode( Texture<float> &tex ) {
+	assert(nodes.size() > 0);
+    int maximum = *(nodes.begin());
+    set<int>::iterator it;
+    for ( it = nodes.begin() ; it != nodes.end() ; it ++ ) {
+        if ( tex.item(*it) > tex.item(maximum) )
+            maximum = *it;
+    }
+    return maximum;
+}
+
 
 // PREVIOUS VERSION THE NEW ONE HAS BEEN COPIED FROM CORTICAL/SURF_REF/GYRI/MESH_OPERATIONS.CC
 

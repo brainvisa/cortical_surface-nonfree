@@ -2,6 +2,8 @@
 #ifndef AIMS_PARAMETERIZEGYRI_MESH_OPERATIONS_H
 #define AIMS_PARAMETERIZEGYRI_MESH_OPERATIONS_H
 
+#include <aims/getopt/getopt2.h>
+#include <aims/mesh/texture.h>
 
 AimsSurfaceTriangle getGyrusMesh(AimsSurface<3, Void> &inMesh, std::vector<uint> &gyrusVertices, std::vector<uint> &corres);
 
