@@ -331,11 +331,25 @@ AimsSurfaceTriangle getLinkMesh ( surf::GreyLevelBlob *glb1, surf::GreyLevelBlob
     }
 
 
-    cyl = SurfaceGenerator::cylinder(p1, p2, 0.1, 0.1, 10, true, true);
+    cyl = SurfaceGenerator::cylinder(p1, p2, 0.01, 0.01, 10, true, true);
     mesh[0] = (*cyl)[0];
 
     return mesh;
 }
+
+AimsSurfaceTriangle getLinkMesh ( surf::Blob *b1, surf::Blob * b2 ) {
+    AimsSurfaceTriangle mesh, *cyl;
+
+    Point3df    p1, p2;
+    p1 = b1->getBlobBarycenterFromMesh();
+    p2 = b2->getBlobBarycenterFromMesh();
+
+    cyl = SurfaceGenerator::cylinder(p1, p2, 0.01, 0.01, 10, true, true);
+    mesh[0] = (*cyl)[0];
+
+    return mesh;
+}
+
 
 AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
                                          surf::ScaleSpaceBlob *ssb2,
@@ -449,6 +463,23 @@ AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector< pair< surf::ScaleSpa
         linkMesh = getBifurcationMesh( ssb1, ssb2, representation_mode );
         meshes[i] = linkMesh[0];
     }
+    cout << "  " << meshes.size() << " meshes created" << endl;
+    return meshes;
+}
+
+AimsSurfaceTriangle getB2BRelationsMeshes ( vector<surf::SSBClique> &cliques, int representation_mode ) {
+
+    AimsSurfaceTriangle meshes;
+
+    for ( uint i = 0 ; i < cliques.size() ; i ++ ) {
+        surf::ScaleSpaceBlob *ssb1, *ssb2;
+        ssb1 = cliques[i].ssb1;
+        ssb2 = cliques[i].ssb2;
+        AimsSurfaceTriangle linkMesh;
+        linkMesh = getLinkMesh( ssb1, ssb2 );
+        meshes[i] = linkMesh[0];
+    }
+    ASSERT( meshes.size() == cliques.size() );
     cout << "  " << meshes.size() << " meshes created" << endl;
     return meshes;
 }

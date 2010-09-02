@@ -233,7 +233,9 @@ void surf::Blob::getAimsSphereAtMaxNode (  AimsSurface<3, Void> &mesh, Texture<f
     set<int>::iterator it;
     int maxim_node = getMaximumNode(tex);
     AimsSurfaceTriangle *sph;
-    sph = SurfaceGenerator::sphere(mesh.vertex()[maxim_node], 0.9, 10);
+//    sph = SurfaceGenerator::sphere(mesh.vertex()[maxim_node], 0.9, 10);
+    Point3df p(raw_coordinates[maxim_node][0],raw_coordinates[maxim_node][1],raw_coordinates[maxim_node][2]); 
+    sph = SurfaceGenerator::sphere(p, 0.9, 10);
     this->mesh = (*sph)[0];
 
 }
@@ -269,8 +271,8 @@ int getEcartMaxIndice( set<float> &longitudes ) {
 
 //##############################################################################
 
-Point3df surf::GreyLevelBlob::getBlobBarycenterOnASphere( void ) {
-    surf::GreyLevelBlob *glb;
+Point3df surf::Blob::getBlobBarycenterOnASphere( void ) {
+    surf::Blob *glb;
     glb = this;
     float latMoy = 0.0, lonMoy = 0.0;
     ASSERT(glb->nodes.size() == glb->coordinates.size());
@@ -305,8 +307,8 @@ Point3df surf::GreyLevelBlob::getBlobBarycenterOnASphere( void ) {
                  sin((latMoy-90.)/180.0*3.1415957) );
 }
 
-Point3df surf::GreyLevelBlob::getBlobBarycenter( void ) {
-    surf::GreyLevelBlob *glb;
+Point3df surf::Blob::getBlobBarycenter( void ) {
+    surf::Blob *glb;
     glb = this;
     float xMoy = 0.0, yMoy = 0.0, zMoy = 0.0;
     ASSERT(glb->nodes.size() == glb->raw_coordinates.size());
@@ -330,8 +332,8 @@ Point3df surf::GreyLevelBlob::getBlobBarycenter( void ) {
 
 // PAS VERIFIEE
 
-Point3df surf::GreyLevelBlob::getBlobBarycenterOnAPlane( void ) {
-    surf::GreyLevelBlob *glb;
+Point3df surf::Blob::getBlobBarycenterOnAPlane( void ) {
+    surf::Blob *glb;
     glb = this;
     float latMoy = 0.0, lonMoy = 0.0;
     ASSERT(glb->nodes.size() == glb->coordinates.size());
@@ -365,7 +367,8 @@ Point3df surf::GreyLevelBlob::getBlobBarycenterOnAPlane( void ) {
     return Point3df(  latMoy, lonMoy, 1.0 );
 }
 
-Point3df surf::GreyLevelBlob::getBlobBarycenterFromMesh( void ) {
+Point3df surf::Blob::getBlobBarycenterFromMesh( void ) {
+    assert(mesh.vertex().size() > 0);
     Point3df bc(0.0, 0.0, 0.0);
     for ( uint i = 0 ; i < mesh.vertex().size() ; i++ )
         bc += mesh.vertex()[i];

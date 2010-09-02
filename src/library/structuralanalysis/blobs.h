@@ -28,6 +28,11 @@ namespace surf{
             void getAimsEllipsoid ( float abscissa, float depth, float height, float area );
             void moveMeshToSphericalAtlas ( float radius ) ;
             void moveMeshToPlaneAtlas ( float height ) ;
+            
+            Point3df getBlobBarycenterOnASphere( );
+            Point3df getBlobBarycenter( );
+            Point3df getBlobBarycenterFromMesh( );
+            Point3df getBlobBarycenterOnAPlane( );
 
             Blob(){}
             ~Blob(){}
@@ -49,10 +54,7 @@ namespace surf{
             void moveMeshToPlaneAtlas ( void ) ;
 
 
-            Point3df getBlobBarycenterOnASphere( );
-            Point3df getBlobBarycenter( );
-            Point3df getBlobBarycenterFromMesh( );
-            Point3df getBlobBarycenterOnAPlane( );
+
 
             std::pair<Point2df, Point2df> get2DBoundingBox ( );
 
