@@ -23,7 +23,7 @@ std::pair<std::vector<uint>, std::vector<uint> > sortRightLeft(AimsSurface<3,Voi
 std::pair<std::vector<uint>, std::vector<uint> > getOppositeSides(std::pair< std::vector<uint>, std::vector<uint> > &hautBas,
                const std::vector<std::vector<uint> > &vertices, const std::vector<std::set<uint> > &voisins, const Texture<short> &inTex);
 
-std::vector<std::vector<uint> > nettoyerTaches(Texture<short> &inTex, const std::vector<std::set<uint> > &voisins);
+std::vector<std::vector<uint> > nettoyerTaches(Texture<short> &inTex, const std::vector<std::set<uint> > &voisins, short gyruslabel = 0);
 
 
 

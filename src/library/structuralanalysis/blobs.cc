@@ -234,13 +234,23 @@ void surf::Blob::getAimsSphereAtMaxNode (  AimsSurface<3, Void> &mesh, Texture<f
     int maxim_node = getMaximumNode(tex);
     AimsSurfaceTriangle *sph;
 //    sph = SurfaceGenerator::sphere(mesh.vertex()[maxim_node], 0.9, 10);
-    Point3df p(raw_coordinates[maxim_node][0],raw_coordinates[maxim_node][1],raw_coordinates[maxim_node][2]); 
+    assert( nodes.size() == raw_coordinates.size() );
+    Point3df p(raw_coordinates[maxim_node][0],raw_coordinates[maxim_node][1],raw_coordinates[maxim_node][2]);
     sph = SurfaceGenerator::sphere(p, 0.9, 10);
     this->mesh = (*sph)[0];
 
 }
 
-
+void surf::Blob::getNodesFromBlob ( surf::Blob *b ){
+	std::set<int>::iterator it;
+	nodes = set<int>( b->nodes );
+	for (it = nodes.begin() ; it != nodes.end() ; it++ ){
+		raw_coordinates[*it] = std::vector<float>(b->raw_coordinates[*it]);
+		coordinates[*it] = std::vector<float>(b->coordinates[*it]);
+	}
+	assert( nodes.size() == raw_coordinates.size() || raw_coordinates.size() == 0) ;
+	assert( nodes.size() == coordinates.size() || coordinates.size() == 0);
+}
 
 //##############################################################################
 int getEcartMaxIndice( set<float> &longitudes ) {

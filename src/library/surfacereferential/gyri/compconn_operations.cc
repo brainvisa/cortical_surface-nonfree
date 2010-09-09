@@ -16,7 +16,7 @@ vector<vector<uint> > getComposantesConnexes(const set<uint> &v, const vector<se
       v2.insert(*it);
       result.push_back(v2);
    }
-   
+
    for (uint i=0;i<result.size();i++){
 
       printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [%d]    ",getRealSize(result));
@@ -33,22 +33,22 @@ vector<vector<uint> > getComposantesConnexes(const set<uint> &v, const vector<se
                   }
                }
             }
-         }         
+         }
       }
    }
-   
+
 
    for (uint i=0;i<result.size();i++)
       if (result[i].size()!=0) result2.push_back(setToVector(result[i]));
-       
+
    printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [%d]         \n",result2.size());
    fflush(NULL);
-   return result2;   
+   return result2;
 }
 
 vector<vector<uint> > getComposantesConnexes2(const vector<uint> &v, const vector<set<uint> > &voisins){
 
-   vector<vector<uint> > result;   
+   vector<vector<uint> > result;
    int test;
    set<uint>::iterator it;
    for (uint i=0;i<v.size();i++){
@@ -57,7 +57,7 @@ vector<vector<uint> > getComposantesConnexes2(const vector<uint> &v, const vecto
       result.push_back(v2);
    }
 
-   
+
    for (uint i=0;i<result.size();i++){
       if (test != -1) i=0;
       printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [%d]    ",result.size());
@@ -79,18 +79,19 @@ vector<vector<uint> > getComposantesConnexes2(const vector<uint> &v, const vecto
                   result.erase(result.begin() + test);
                }
             }
-         }         
+         }
       }
    }
    printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [%d]         \n",result.size());
    fflush(NULL);
-   return result;   
+   return result;
 }
 
 vector<vector<uint> > getComposantesConnexes(short gyruslabel, const vector<set<uint> > &voisins, const Texture<short> &inTex){
    set<uint> v;
    for (uint i=0;i<inTex.nItem();i++)
       if (inTex.item(i)==gyruslabel) v.insert(i);
+   cout << v.size() << endl;
    return getComposantesConnexes(v, voisins);
 }
 
@@ -115,7 +116,7 @@ vector<vector<uint> > fusionComposantesConnexes(uint comp1, uint comp2, const ve
       if (i==comp1) result.push_back(aux);
       else if (i==comp2);
       else result.push_back(compConn[i]);
-      
+
    return result;
 }
 
@@ -150,7 +151,7 @@ pair<vector<uint>, vector<uint> > sortRightLeft(AimsSurface<3,Void> &inMesh, con
    pair<vector<uint>, vector<uint> > result;
    /*
    Point3df o(0.0,0.0,0.0);
-   
+
    Point3df v1(inMesh.vertex()[hautBas.first[0]][0]-inMesh.vertex()[hautBas.second[0]][0],
       inMesh.vertex()[hautBas.first[0]][1]-inMesh.vertex()[hautBas.second[0]][1],
       inMesh.vertex()[hautBas.first[0]][2]-inMesh.vertex()[hautBas.second[0]][2]);
@@ -165,14 +166,14 @@ pair<vector<uint>, vector<uint> > sortRightLeft(AimsSurface<3,Void> &inMesh, con
       for (uint i=0;i<gaucheDroite.first.size() && test==-1;i++)
          if (voisins[hautBas.first[0]].find(gaucheDroite.first[i]) != voisins[hautBas.first[0]].end())
             test = i;
-      printf("%d\n", test);      
+      printf("%d\n", test);
       v2 = *new Point3df(inMesh.vertex()[gaucheDroite.first[test]][0]-inMesh.vertex()[hautBas.second[0]][0],
          inMesh.vertex()[gaucheDroite.first[test]][1]-inMesh.vertex()[hautBas.second[0]][1],
          inMesh.vertex()[gaucheDroite.first[test]][2]-inMesh.vertex()[hautBas.second[0]][2]);
    }
    Point3df v1v2(cross(v1,v2));
    printf("%.3f %.3f %.3f\n",v1v2[0],v1v2[1],v1v2[2]);
-   
+
    for (uint i=0;i<gaucheDroite.first.size();i++){
       Point3df w(inMesh.vertex()[gaucheDroite.first[i]][0]-inMesh.vertex()[hautBas.second[0]][0],
             inMesh.vertex()[gaucheDroite.first[i]][1]-inMesh.vertex()[hautBas.second[0]][1],
@@ -190,7 +191,7 @@ pair<vector<uint>, vector<uint> > sortRightLeft(AimsSurface<3,Void> &inMesh, con
    p1[2] = p1[2] / gaucheDroite.first.size();
 
    printf("%.3f\n", m);
-   
+
    for (uint i=0;i<gaucheDroite.second.size();i++){
       Point3df w(inMesh.vertex()[gaucheDroite.second[i]][0]-inMesh.vertex()[hautBas.second[0]][0],
             inMesh.vertex()[gaucheDroite.second[i]][1]-inMesh.vertex()[hautBas.second[0]][1],
@@ -210,7 +211,7 @@ pair<vector<uint>, vector<uint> > sortRightLeft(AimsSurface<3,Void> &inMesh, con
    p1[0] /= gaucheDroite.first.size();
    p1[1] /= gaucheDroite.first.size();
    p1[2] /= gaucheDroite.first.size();
-   
+
    for (uint i=0;i<gaucheDroite.second.size();i++){
       p2[0] += inMesh.vertex()[gaucheDroite.second[i]][0];
       p2[1] += inMesh.vertex()[gaucheDroite.second[i]][1];
@@ -219,10 +220,10 @@ pair<vector<uint>, vector<uint> > sortRightLeft(AimsSurface<3,Void> &inMesh, con
    p2[0] /= gaucheDroite.second.size();
    p2[1] /= gaucheDroite.second.size();
    p2[2] /= gaucheDroite.second.size();
-   
+
    m = p1[1];
    n = p2[1];
-   
+
    if (m>n) {
       result.first = *new vector<uint>(gaucheDroite.first);
       result.second = *new vector<uint>(gaucheDroite.second);
@@ -235,7 +236,7 @@ pair<vector<uint>, vector<uint> > sortRightLeft(AimsSurface<3,Void> &inMesh, con
       printf("Impossible de distinguer gauche et droite !\n");
       result.first = *new vector<uint>(gaucheDroite.first);
       result.second = *new vector<uint>(gaucheDroite.second);
-   }   
+   }
    return result;
 }
 
@@ -247,23 +248,23 @@ pair<vector<uint>, vector<uint> > getOppositeSides(pair<vector<uint>, vector<uin
    set<uint>::iterator it;
    push_vector(hb, hautBas.first);
    push_vector(hb, hautBas.second);
-   
+
    gd = minusVector(vertices[1], hb);
-   
+
    uint test=0;
    //compConn = getComposantesConnexes(hb, voisins);
    vector<set<uint> > voisins2,voisins3;
    for (uint i=0;i<voisins.size();i++){
       voisins2.push_back(*new set<uint>);
       if (find(gd,i)!=-1){
-         for (it=voisins[i].begin();it!=voisins[i].end();it++){            
-            if (find(gd,*it)!=-1){               
+         for (it=voisins[i].begin();it!=voisins[i].end();it++){
+            if (find(gd,*it)!=-1){
                voisins2[voisins2.size()-1].insert(*it);
             }
          }
-      }                  
+      }
    }
-   
+
    for (uint i=0;i<voisins2.size();i++){
       voisins3.push_back(*new set<uint>);
       for (it=voisins2[i].begin();it!=voisins2[i].end();it++){
@@ -273,25 +274,25 @@ pair<vector<uint>, vector<uint> > getOppositeSides(pair<vector<uint>, vector<uin
             if (inTex.item(pts[j])!=inTex.item(vertices[0][0])) test=1;
          if (test!=0){
             voisins3[voisins3.size()-1].insert(*it);
-            test=0;                        
+            test=0;
          }
       }
    }
    //   set<uint> gd;
    //   for (uint i=0;i<gd2.size();i++)
    //      gd.insert(gd2[i]);
-   
+
    compConn = getComposantesConnexes2(gd, voisins3);
 
-                       
 
 
-   
+
+
    if (compConn.size()==1){
-      
+
       test = 0;
       if (hautBas.first.size() != 0 && hautBas.second.size() != 0){
-         
+
          if (hautBas.first.size() <= hautBas.second.size()) {
             temp1 = *new vector<uint>(hautBas.first);
             temp2 = *new vector<uint>(hautBas.second);
@@ -300,23 +301,23 @@ pair<vector<uint>, vector<uint> > getOppositeSides(pair<vector<uint>, vector<uin
             temp1 = *new vector<uint>(hautBas.second);
             temp2 = *new vector<uint>(hautBas.first);
          }
-         
+
          while (compConn.size() != 2){
             test++;
             for (uint i=0;i<test;i++){
                for (uint j=0;j<temp1.size();j++){
                   for (it = voisins[temp1[j]].begin(); it != voisins[temp1[j]].end() ; it++){
                      if (find(vertices[1],*it)!=-1)
-                        
+
                         aux1.push_back(*it);
                   }
                }
-               push_vector(temp1,aux1);             
+               push_vector(temp1,aux1);
             }
             temp = *new vector<uint>(vertices[1]);
             temp = minusVector(temp, temp1);
             temp = minusVector(temp, temp2);
-            
+
             compConn = getComposantesConnexes2(temp, voisins2);
          }
          if (hautBas.first.size() <= hautBas.second.size()) {
@@ -328,7 +329,7 @@ pair<vector<uint>, vector<uint> > getOppositeSides(pair<vector<uint>, vector<uin
       }
    }
 
-   
+
 
    if (compConn.size()==3) raccomodage(compConn, minusVector(vertices[1],gd), voisins);
    if (compConn.size()==3) {
@@ -342,7 +343,7 @@ pair<vector<uint>, vector<uint> > getOppositeSides(pair<vector<uint>, vector<uin
    if (compConn.size()==1) {
       for (uint i=49;i<70;i++)
          printf("%d ", compConn[0][i]);
-      printf("\n");      
+      printf("\n");
       printf("Attention : getOppositeSides renvoit 1 composante connexe. (Verifier la parcellisation)\n");
       return *new pair<vector<uint>, vector<uint> >(compConn[0], *new vector<uint>);
    }
@@ -353,8 +354,8 @@ pair<vector<uint>, vector<uint> > getOppositeSides(pair<vector<uint>, vector<uin
    }
 }
 
-vector<vector<uint> > nettoyerTaches(Texture<short> &inTex, const vector<set<uint> > &voisins){
-   vector<vector<uint> > result(getComposantesConnexes(0,voisins,inTex));
+vector<vector<uint> > nettoyerTaches(Texture<short> &inTex, const vector<set<uint> > &voisins, short gyruslabel){
+   vector<vector<uint> > result(getComposantesConnexes(gyruslabel,voisins,inTex));
    vector<uint> v;
    set<uint>::iterator it;
    vector<uint> gyriVoisins;
@@ -369,7 +370,7 @@ vector<vector<uint> > nettoyerTaches(Texture<short> &inTex, const vector<set<uin
       if (i!=maxi){
          for (uint j=0;j<result[i].size();j++){
             for (it = voisins[result[i][j]].begin();it!=voisins[result[i][j]].end();it++){
-               if (inTex.item(*it) != 0) gyriVoisins.push_back(inTex.item(*it));
+               if (inTex.item(*it) != gyruslabel ) gyriVoisins.push_back(inTex.item(*it));
             }
          }
          for (uint j=0;j<result[i].size();j++){
@@ -377,7 +378,7 @@ vector<vector<uint> > nettoyerTaches(Texture<short> &inTex, const vector<set<uin
          }
       }
    }
-   
+
    printf("Nettoyage effectu�..\n");
    return result;
 }

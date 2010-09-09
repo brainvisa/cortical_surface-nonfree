@@ -21,12 +21,12 @@ int find(const vector<short> &v, short item){
 
 void push_vector(vector<uint> &v, const vector<uint> &w){
    for (uint i=0;i<w.size();i++)
-      v.push_back(w[i]);   
+      v.push_back(w[i]);
 }
 
 void push_vector(vector<short> &v, const vector<short> &w){
    for (uint i=0;i<w.size();i++)
-      v.push_back(w[i]);   
+      v.push_back(w[i]);
 }
 
 vector<short> reverseVector(const vector<short> &v){
@@ -35,7 +35,7 @@ vector<short> reverseVector(const vector<short> &v){
       result.push_back(v[v.size()-1-i]);
    return result;
 }
-   
+
 vector<uint> setToVector(const set<uint> &v){
    set<uint>::iterator it;
    vector<uint> result;
@@ -50,7 +50,7 @@ vector<uint> setToVector(const set<int> &v){
     vector<uint> result;
     for (it = v.begin();it!=v.end();it++)
         result.push_back(*it);
-    
+
     return result;
 }
 
@@ -100,7 +100,7 @@ vector<uint> intersVector(const vector<uint> &v, const vector<uint> &w){
 int getRealSize(const vector<set<uint> > &v){
    int result=0;
    for (uint i=0;i<v.size();i++)
-      if (v[i].size() != 0) result++;
+      result++;
    return result;
 }
 

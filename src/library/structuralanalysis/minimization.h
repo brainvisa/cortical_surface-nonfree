@@ -13,7 +13,7 @@ class SurfaceBased_StructuralAnalysis{
   public:
     float Esimil;
     std::vector<uint> ipscliques;
-    
+
     long double energy;
     uint nbsujets;
     std::vector<int> labels;
@@ -27,17 +27,17 @@ class SurfaceBased_StructuralAnalysis{
     void ShortSummaryLabels();
 
     std::string energypath, recuitpath;
-    uint run,save;
+    uint run, save;
     void noLabelsZones();
     void regionLabelsZones(); //vector<pair<Point2df,Point2df> > &labelsZones, vector<set<uint> > &zonesListesBlobs, vector<set<uint> > &listeZones );
     void MinimizationSetup(Graph &primal);
-    
+
 
     SurfaceBased_StructuralAnalysis(){}
     SurfaceBased_StructuralAnalysis(Graph &primal);
 
     void setModelParameters(float _ddweight=0.0, float _intrapsweight = 0.0, float _simweight=0.0, float _lsweight=0.0, float _ddx2 = 0.0, float _ddx1 = 0.0, float _ddh=0.0);
-    
+
     void RunMinimization(int type);
     long double getLabelEnergy(int label, int type=UNKNOWN);
     long double getClusterEnergy(std::vector<uint> &composante);

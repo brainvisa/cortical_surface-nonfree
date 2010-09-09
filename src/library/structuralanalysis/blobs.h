@@ -28,7 +28,8 @@ namespace surf{
             void getAimsEllipsoid ( float abscissa, float depth, float height, float area );
             void moveMeshToSphericalAtlas ( float radius ) ;
             void moveMeshToPlaneAtlas ( float height ) ;
-            
+            void getNodesFromBlob( surf::Blob * blob);
+
             Point3df getBlobBarycenterOnASphere( );
             Point3df getBlobBarycenter( );
             Point3df getBlobBarycenterFromMesh( );
@@ -70,6 +71,7 @@ namespace surf{
                 mesh = glb->mesh;
                 t = glb->t;
                 scale = glb->scale;
+
             }
 
 
@@ -103,6 +105,7 @@ namespace surf{
                 blobs = ssb->blobs;
                 topBlobs = ssb->topBlobs;
                 bottomBlobs = ssb->bottomBlobs;
+                mesh = ssb->mesh;
             }
 
             std::pair<Point2df, Point2df> get2DBoundingBox ( );
@@ -115,7 +118,8 @@ namespace surf{
             ScaleSpaceBlob *ssb1;
             ScaleSpaceBlob *ssb2;
             float similarity;
-            SSBClique(ScaleSpaceBlob *s1, ScaleSpaceBlob *s2, float sim){ssb1=s1; ssb2=s2; similarity=sim;}
+            float distance;
+            SSBClique(ScaleSpaceBlob *s1, ScaleSpaceBlob *s2, float dist){ssb1=s1; ssb2=s2; distance=dist; similarity=1.0 - distance/20.0;}
 
     };
 
