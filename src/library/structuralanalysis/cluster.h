@@ -17,7 +17,7 @@ class SWC: public SurfaceBased_StructuralAnalysis{
 
 
   public:
-    SWC(){}
+//    SWC(){}
 
     void Run();
     void Run2();

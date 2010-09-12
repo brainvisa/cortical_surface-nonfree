@@ -8,19 +8,12 @@ using namespace std;
 
 
 
-Anneal::Anneal(Graph &primal){
-  MinimizationSetup(primal);
-
-}
-
 void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 
     long double somme = 0.0;
     int old;
     mod = 0;
-    set<uint>::iterator it;
-
-//    cout << "STEP " << flush;
+    std::set<uint>::iterator it;
 
     // Iterating On The Vector Of Sites (In Randomized Order) (long loop)
     for (uint i = 0 ; i < random.size() ; i++){
@@ -143,52 +136,32 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 
 }
 
-void Anneal::Run(int verbose){
-
-
-//   for (uint k=0;k<cliques.size();k++){
-//     cliques[k].updateLabelsCount();
-//     cliques[k].computeEnergy(true,nbsujets);
-//   }
-//
-//   for (uint i=0;i<cliques.size();i++)
-//     if (cliques[i].type == INTRAPRIMALSKETCH)
-//       ipscliques.push_back(i);
-//
-//   cout << ipscliques.size() << " cliques intraps" << endl;
-//
-//   energy = getTotalEnergy();
-//
-//   cout << "energie initiale : " << energy << endl;
-//   SummaryLabels();
-
+void Anneal::Run ( int verbose ){
 
   vector< int >  indices_start;
   for( uint i = 0 ; i < sites.size() ; i++ )
     indices_start.push_back(i);
 
-  long double temp=300.0;
+  long double temp = 300.0;
 
   uint mod = 1, ite = 0, nb_under_threshold = 0, test = 1;
 
   cout.precision(2);
 
   FILE * f1, *f;
-  if ( recuitpath != "" )
-    f1 = fopen ( recuitpath.data(), "w" );
-  if ( energypath != "" ) {
-      f = fopen ( energypath.data(), "a" );
+  if ( labelsPath != "" )
+    f1 = fopen ( labelsPath.data(), "w" );
+  if ( energyPath != "" ) {
+      f = fopen ( energyPath.data(), "a" );
       fprintf(f, "== DEBUT NOUVEAU RECUIT ==\n");
   }
-  //   cin >> test;
-  //   test=0;
 
     for ( uint k = 0 ; k < cliques.size() ; k++ ){
         cliques[k].updateLabelsCount();
         cliques[k].computeEnergy(true, nbsujets);
     }
 
-    if ( run == 1 ) {
+//    if ( run == 1 ) {
         while ( nb_under_threshold < 5 || mod != 0 ) {
             //    while (temp>200.0){
 
@@ -199,7 +172,7 @@ void Anneal::Run(int verbose){
 
             cout << " T=" << temp << " it="<< ite++ << " " << flush ;
 
-            if ( this->recuitpath != "" ) {
+            if ( this->labelsPath != "" ) {
                 for ( uint i0 = 0 ; i0 < sites.size() ; i0++ ) {
                     fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
                 }
@@ -226,7 +199,7 @@ void Anneal::Run(int verbose){
             temp = temp * 0.99;
 
         }
-    }
+//    }
 
     for ( uint k = 0 ; k < cliques.size() ; k++ ) {
         cliques[k].updateLabelsCount();
@@ -234,15 +207,13 @@ void Anneal::Run(int verbose){
     }
     energy = getTotalEnergy();
 
-    cout << "energie finale : " << energy << endl;
+    cout << "final energy : " << energy << endl;
     ShortSummaryLabels();
-    if ( this->energypath != "" ) {
+    if ( this->energyPath != "" ) {
         fprintf(f, "%3lf\nFIN RECUIT\n", (float)energy);
         fclose(f);
     }
-    if ( this->recuitpath != "" )
+    if ( this->labelsPath != "" )
         fclose(f1);
 
-  //   for (uint i=0;i<sites.size();i++)
-  //     sites[i]->label = (uint)sites[i]->t;
 }

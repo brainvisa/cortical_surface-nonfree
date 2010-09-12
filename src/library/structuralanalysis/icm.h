@@ -8,7 +8,7 @@ class ICM: public SurfaceBased_StructuralAnalysis{
   private:
 
   public:
-    ICM(){}
+//    ICM(){}
 
 
     void Run();

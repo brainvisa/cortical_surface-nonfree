@@ -4,6 +4,25 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
+std::vector<std::string> getVectorStringFromGraph ( Graph &graph, std::string graph_property ) {
+    std::vector<std::string> v;
+    if( graph.hasProperty( graph_property ) )  {
+        carto::Object slist = graph.getProperty( graph_property ); // note the different getProperty() method
+        // cout << "node with 'sujets' property:\n";
+        carto::Object oit = slist->objectIterator();  // iterator on the list
+        while( oit->isValid() ) {
+            carto::Object s = oit->currentValue(); // the list element, type Object
+            std::string ss = s->getString(); // extract as std::string or convert to string
+            std::cout << ss << ", ";
+            v.push_back(ss);
+            oit->next();
+        }
+        std::cout << std::endl;
+    }
+
+    return v;
+}
+
 void ConcatenerGraphes( const vector<Graph*> in, Graph & out, const string & subjectatt ){
   vector<Graph*>::const_iterator  ig, eg = in.end();
   Graph::iterator     iv, ev;
@@ -40,7 +59,7 @@ void LireGraphes(string graphFile, Graph &primal ){
   if( graphFiles.size() == 1 ){
     Reader<Graph> fr( graphFile );
     try{
-      cout << "Lecture du graphe sillons " << graphFile << endl;
+      cout << "Lecture du graphe " << graphFile << endl;
       fr.read(primal);
       Graph::iterator iv;
       string        subject;
