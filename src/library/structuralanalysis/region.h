@@ -1,7 +1,7 @@
 #ifndef REGION_H_
 #define REGION_H_
 
-#include <operto/subjectdata.h>
+#include <cortical_surface/structuralanalysis/subjectdata.h>
 #include <cortical_surface/structuralanalysis/blobs.h>
 
 

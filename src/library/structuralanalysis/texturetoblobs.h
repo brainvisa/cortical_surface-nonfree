@@ -6,7 +6,7 @@
 #include <aims/primalsketch/finiteElementSmoother_d.h>
 
 #include <cortical_surface/structuralanalysis/blobs.h>
-#include <operto/region.h>
+#include <cortical_surface/structuralanalysis/region.h>
 
 
 

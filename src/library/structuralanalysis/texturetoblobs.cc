@@ -1,7 +1,7 @@
 
 
-#include <operto/region.h>
-#include <operto/texturetoblobs.h>
+#include <cortical_surface/structuralanalysis/region.h>
+#include <cortical_surface/structuralanalysis/texturetoblobs.h>
 
 #include <aims/getopt/getopt2.h>
 #include <aims/primalsketch/primalSketch.h>

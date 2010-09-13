@@ -3,7 +3,7 @@
 #include <aims/primalsketch/finiteElementSmoother_d.h>
 #include <cortical_surface/surfacereferential/gyri/mesh_operations.h>
 #include <aims/distancemap/meshdistance.h>
-#include <operto/region.h>
+#include <cortical_surface/structuralanalysis/region.h>
 
 using namespace aims;
 using namespace carto;
