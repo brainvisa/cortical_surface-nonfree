@@ -39,6 +39,10 @@ HEADERS = \
   structuralanalysis/validation.h \
   structuralanalysis/representation.h \
   structuralanalysis/blobs.h \
+  structuralanalysis/subjectdata.h \
+  structuralanalysis/region.h \
+  structuralanalysis/texturetoblobs.h 
+
 
 
 SOURCES = \
@@ -73,4 +77,7 @@ SOURCES = \
   structuralanalysis/cluster.cc \
   structuralanalysis/validation.cc \
   structuralanalysis/representation.cc \
-  structuralanalysis/blobs.cc 
+  structuralanalysis/blobs.cc \
+  structuralanalysis/subjectdata.cc \
+  structuralanalysis/region.cc \
+  structuralanalysis/texturetoblobs.cc 

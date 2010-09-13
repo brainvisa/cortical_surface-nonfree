@@ -4,7 +4,7 @@
 #include <math.h>
 #include <cortical_surface/structuralanalysis/sites.h>
 #include <cortical_surface/structuralanalysis/blobs.h>
-#include <operto/subjectdata.h>
+#include <cortical_surface/structuralanalysis/subjectdata.h>
 
 
 
