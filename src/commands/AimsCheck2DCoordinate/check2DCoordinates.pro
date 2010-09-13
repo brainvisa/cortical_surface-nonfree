@@ -5,9 +5,6 @@ TARGET = AimsCheck2DCoordinates
 
 SOURCES = \
           main.cc \
-          mesh_operations.cc \
-          vector_operations.cc 
 
-INCLUDES = \
-          mesh_operations.h \
-          vector_operations.h 
+# INCLUDES = \
+        

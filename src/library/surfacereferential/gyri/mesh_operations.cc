@@ -155,13 +155,16 @@ Texture<double> diffusion(map<unsigned, set<pair<unsigned,float> > > &poidsGyrus
    printf("Diffusion en cours (seuil=0.001) : \n");
    fflush(NULL);
 
-   double stop=9.0, moy=0.0, stop2=9.0, moy2=0.0;
+   double stop = 9.0, 
+          moy = 0.0, 
+          stop2 = 9.0, 
+          moy2 = 0.0;
    printf("%.9f", stop);
 //   FILE *f1= fopen ("/home/grg/lapl.txt","a");
 //   fprintf(f1,"============================================================================================\n");
 
 
-   for (long int n=1;stop2>criter;n++){
+   for ( long int n = 1 ; stop2 > criter ; n++ ){
       stop=0.0;
       stop2=0.0;
       moy=0.0;

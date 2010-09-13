@@ -7,29 +7,6 @@
 
 
 
-AimsSurfaceTriangle getBlobsMeshesEllipsoid ( std::vector<surf::GreyLevelBlob *> &blobs );
-
-AimsSurfaceTriangle getBlobsMeshesSphericalAtlas ( std::vector< surf::GreyLevelBlob *> &blobs,
-                                     AimsSurface<3, Void> &mesh );
-
-//AimsSurfaceTriangle getBlobsMeshesSpherical ( vector<surf::ScaleSpaceBlob *> &blobs,
-//                                     AimsSurface<3, Void> &mesh );
-
-AimsSurfaceTriangle getBlobsMeshes2DAtlas ( std::vector< surf::GreyLevelBlob *> &blobs,
-                                     AimsSurface<3, Void> &mesh );
-
-AimsSurfaceTriangle getBlobsMeshesFromMesh( std::vector< surf::GreyLevelBlob *> &blobs,
-                                    AimsSurface<3, Void> &mesh );
-
-AimsSurfaceTriangle getBlobsMeshesFromSpheresAtMax( std::vector< surf::GreyLevelBlob *> &blobs,
-                                    AimsSurface<3, Void> &mesh, Texture<float> &tex );
-
-AimsSurfaceTriangle getBlobsMeshesFromMesh( std::vector< surf::Blob *> &blobs,
-                                    AimsSurface<3, Void> &mesh );
-
-//AimsSurfaceTriangle getBlobsMeshesFromMesh( vector<surf::ScaleSpaceBlob *> &blobs,
-//                                    AimsSurface<3, Void> &mesh );
-
 //AimsSurfaceTriangle getFlatMap(vector<vector<int> > &nodes_lists, TimeTexture<float> &lat, TimeTexture<float> &lon, TimeTexture<float> &tex);
 
 AimsSurfaceTriangle getLabelObjectsOnASphere( TimeTexture<short> &tex,

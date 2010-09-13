@@ -120,16 +120,16 @@ void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &inMesh) {
 //##############################################################################
 
 
-void surf::Blob::getAimsEllipsoid ( float abscissa, float depth, float height, float area ) {
+void surf::Blob::getAimsEllipsoid ( float abscissa, float height, float depth, float area ) {
     AimsSurfaceTriangle *ellipse;
 
     Point3df p1(0.0, 0.0, 0.0);
 
-    ellipse = SurfaceGenerator::ellipse(p1, height, area, 10);
+    ellipse = SurfaceGenerator::ellipse(p1,  depth / 5.0, area, 10);
     for ( uint i = 0 ; i < (*ellipse)[0].vertex().size() ; i ++ ) {
-        (*ellipse)[0].vertex()[i][0] += abscissa*10.0;
-        (*ellipse)[0].vertex()[i][1] += log(height)*100.0;
-        (*ellipse)[0].vertex()[i][2] += depth*10.0;
+        (*ellipse)[0].vertex()[i][0] += abscissa;
+        (*ellipse)[0].vertex()[i][1] += depth * 5.0;
+        (*ellipse)[0].vertex()[i][2] += height;
     }
     this->mesh = (*ellipse)[0];
 }
@@ -163,9 +163,12 @@ void surf::GreyLevelBlob::getAimsEllipsoid ( void ) {
     else
         moyY = 0.0;
 
+    surf::Blob::getAimsEllipsoid ( moyX*15.0, 0.0 /*moyY*10.0*/, log(scale)*10.0, 2.0 );
+}
 
-
-    surf::Blob::getAimsEllipsoid ( moyX, moyY, scale, 2.0 );
+void surf::GreyLevelBlob::getAimsEllipsoidAtMaxNode (  Texture<float> &tex ) {
+    int maxim_node = getMaximumNode(tex);
+    surf::Blob::getAimsEllipsoid ( coordinates[maxim_node][0]*15.0, 0.0 /*moyY*10.0*/, log(scale)*10.0, 2.0 );
 }
 
 

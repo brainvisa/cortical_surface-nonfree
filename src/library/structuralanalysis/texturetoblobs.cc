@@ -752,19 +752,10 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
 //        blobs[i]->index = i;
 
     cout << "════ Extracting meshes for the grey-level blobs..." << endl;
-    AimsSurfaceTriangle *objects = new AimsSurfaceTriangle();
-
-//    if ( subjData.getFilterMode() == GYRUS ) {
-//        cout << "      ░░░ mode Blobs Meshes 2D Atlas ░░░     " << endl;
-//        *objects = getBlobsMeshes2DAtlas ( blobs, subjData.mesh );
-//    }
-//    else if ( subjData.getFilterMode() == AXIS ) {
-//        cout << "      ░░░ mode Blobs Meshes Ellipsoid ░░░     " << endl;
-//        *objects = getBlobsMeshesEllipsoid ( blobs );
-//    }
 
 	cout << "      ░░░ mode Blobs Meshes From Mesh ░░░     " << endl;
-	*objects = getBlobsMeshesFromMesh ( blobs, *(subject.mesh) );
+    for ( uint i = 0 ; i < blobs.size() ; i++ )
+        blobs[i]->getAimsSphereAtMaxNode (  *(subject.mesh) , *(subject.tex) ); 
 
     cout << "════ Adding blobs..." << endl;
 
@@ -777,7 +768,6 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         vert = graph->addVertex("glb");
 
         vert->setProperty( "index", blobs[i]->index );
-
         vert->setProperty( "nodes", blobs[i]->nodes );
         vert->setProperty( "label", "0");
 
@@ -800,7 +790,7 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
 
         // We associate the proper mesh patch from "objects" to the vertex
         ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-        (*ptr)[0]=(*objects)[i];
+        (*ptr)[0]=blobs[i]->mesh;
         manip.storeAims(*graph, vert, "glb", ptr);
     }
     cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added in total (SSB and GLB)" << endl;
@@ -880,21 +870,11 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
 
     // Let's add the grey-level blobs
     cout << "════ Extracting meshes for the grey-level blobs..." << endl;
-    AimsSurfaceTriangle *objects = new AimsSurfaceTriangle();
-
-//    if ( subjData.getFilterMode() == GYRUS ) {
-//        cout << "      ░░░ mode Blobs Meshes 2D Atlas ░░░     " << endl;
-//        *objects = getBlobsMeshes2DAtlas ( blobs, subjData.mesh );
-//    }
-//    else if ( subjData.getFilterMode() == AXIS ) {
-//        cout << "      ░░░ mode Blobs Meshes Ellipsoid ░░░     " << endl;
-//        *objects = getBlobsMeshesEllipsoid ( blobs );
-//    }
-//    else
-//    if ( subjData.getFilterMode() == NO_FILTER ) {
-	cout << "      ░░░ mode Blobs Meshes From Mesh ░░░     " << endl;
-	*objects = getBlobsMeshesFromSpheresAtMax ( blobs, *(subject.mesh), *(subject.tex) );
-//    }
+    
+    std::cout << "      ░░░ mode Blobs Meshes From Mesh ░░░     " << std::endl;
+    for ( uint i = 0 ; i < blobs.size() ; i++ )
+        blobs[i]->getAimsEllipsoidAtMaxNode ( *(subject.tex) ); 
+    
 
     cout << "════ Adding grey-level blobs..." << endl;
 
@@ -903,11 +883,13 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         // For every scale-space blob, we create a vertex in the Aims graph : we define
         //   its properties and store a link between the created vertex and the blob index
 
-        cout << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
+        cout << "\b\b\b\b\b\b\b\b\b\b\baa" << graph->order() << flush ;
         vert = graph->addVertex("glb");
 
         vert->setProperty( "t", blobs[i]->t);
         vert->setProperty( "scale", blobs[i]->scale );
+        cout << blobs[i]->ssb_parent->subject << endl;
+        vert->setProperty( "subject", blobs[i]->ssb_parent->subject );
         vert->setProperty( "nodes", blobs[i]->nodes );
 
         if ( subject.coordinates == LATLON_2D ) {
@@ -931,7 +913,7 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         }
         else if ( subject.coordinates == LAT_1D ) {
             //TODO
-            cout << "TO be Implemented" << endl;
+            cout << "To Be Implemented" << endl;
 
         }
 
@@ -939,7 +921,7 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
 
         // We associate the proper mesh patch from "objects" to the vertex
         ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-        (*ptr)[0]=(*objects)[i];
+        (*ptr)[0] = blobs[i]->mesh;
         manip.storeAims(*graph, vert, "glb", ptr);
 
     }

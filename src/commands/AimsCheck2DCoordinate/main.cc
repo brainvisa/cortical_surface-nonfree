@@ -23,7 +23,7 @@
 #include <aims/distancemap/meshmorphomat_d.h>
 #include <aims/connectivity/meshcc.h>
 #include <aims/connectivity/meshcc_d.h>
-#include "mesh_operations.h"
+#include <cortical_surface/surfacereferential/gyri/mesh_operations.h>
 
 using namespace aims;
 using namespace carto;
@@ -35,7 +35,7 @@ int main( int argc, const char** argv )
 {
   string fileOut, fileMesh, fileLat, fileLon;
 
-  AimsApplication    app( argc, argv, "Check that a 2D surface-based coordinate system is OK (unicity)" );
+  AimsApplication    app( argc, argv, "[UNCOMPLETE DEBUG FUNCTION] Check that a 2D surface-based coordinate system is OK (unicity)" );
   try
   {
      app.addOption( fileMesh, "-m", "input mesh" );
@@ -271,28 +271,21 @@ int main( int argc, const char** argv )
             AimsSurfaceTriangle gyrusMesh = getGyrusMesh(surface[0], inside, corr);
             map<unsigned, set<pair<unsigned,float> > > poidsGyrus = getGyrusWeight(poids,inside,corr);
 
-            vector<pair<uint, float> > constraintVert;
-            vector<pair<uint, float> > constraintHor; 
-            for (j=0; j<left.size(); j++)
-            {
-              pair<uint, float>    con(left[j], texLat[0].item(left[j]));
-              constraintVert.push_back(con);
-            }
-            for (j=0; j<right.size(); j++)
-            {
-              pair<uint, float>    con(right[j], texLat[0].item(right[j]));
-              constraintVert.push_back(con);
-            }
-            for (j=0; j<top.size(); j++)
-            {
-              pair<uint, float>    con(top[j], texLat[0].item(top[j]));
-              constraintHor.push_back(con);
-            }
-            for (j=0; j<bottom.size(); j++)
-            {
-              pair<uint, float>    con(bottom[j], texLat[0].item(bottom[j]));
-              constraintHor.push_back(con);
-            }
+            std::vector < std::pair < std::vector <uint>, short > > constraintVert;
+            std::vector < std::pair < std::vector <uint>, short > > constraintHor; 
+
+              pair<vector<uint>, float>    con1(left, texLat[0].item(left[j]));
+              constraintVert.push_back(con1);
+
+              pair<vector<uint>, float>    con2(right, texLat[0].item(right[j]));
+              constraintVert.push_back(con2);
+
+              pair<vector<uint>, float>    con3(top, texLat[0].item(top[j]));
+              constraintHor.push_back(con3);
+
+              pair<vector<uint>, float>    con4(bottom, texLat[0].item(bottom[j]));
+              constraintHor.push_back(con4);
+
 
             float criter=0.001;
             float dt=0.05;
@@ -308,9 +301,9 @@ int main( int argc, const char** argv )
             Texture<float> verticDiff,horizDiff;
             cout << "Starting diffusion" << endl;
             cout << "vertical" << endl;
-            verticDiff = diffusion(poidsGyrus, gyrusMesh[0], top, bottom, constraintVert, (latMin+latMax)/2.0, inside, corr, criter, dt);
+//            verticDiff = diffusion ( poidsGyrus, gyrusMesh[0], top, bottom, constraintVert, (latMin + latMax)/2.0, inside, corr, criter, dt );
             cout << "horizontal" << endl;
-            horizDiff = diffusion(poidsGyrus, gyrusMesh[0], left, right, constraintHor, (lonMin+lonMax)/2.0, inside, corr, criter, dt);
+//            horizDiff = diffusion ( poidsGyrus, gyrusMesh[0], left, right, constraintHor, (lonMin + lonMax)/2.0, inside, corr, criter, dt );
             cout << "Reinjecting result on coordinate field" << endl;
           /* FINIR CA ET S'OCCUPER DU SEG FAULT" */
            /* for (uint i2=0;i2<vertices[0].size();i2++)

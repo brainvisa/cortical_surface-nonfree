@@ -25,7 +25,7 @@ namespace surf{
 
             void getAimsMesh (  AimsSurface<3, Void> &mesh );
             void getAimsSphereAtMaxNode (  AimsSurface<3, Void> &mesh, Texture<float> &tex );
-            void getAimsEllipsoid ( float abscissa, float depth, float height, float area );
+            void getAimsEllipsoid ( float abscissa, float height, float depth, float area );
             void moveMeshToSphericalAtlas ( float radius ) ;
             void moveMeshToPlaneAtlas ( float height ) ;
             void getNodesFromBlob( surf::Blob * blob);
@@ -51,12 +51,13 @@ namespace surf{
 
 //            void getAimsMesh (  AimsSurface<3, Void> &mesh );
             void getAimsEllipsoid ( void );
+            void getAimsEllipsoidAtMaxNode (  Texture<float> &tex ) ;
             void moveMeshToSphericalAtlas ( void ) ;
             void moveMeshToPlaneAtlas ( void ) ;
 
 
 
-
+            
             std::pair<Point2df, Point2df> get2DBoundingBox ( );
 
             GreyLevelBlob(){}
