@@ -1,4 +1,4 @@
-#include <operto/subjectdata.h>
+#include <cortical_surface/structuralanalysis/subjectdata.h>
 #include <aims/data/data_g.h>
 #include <aims/io/io_g.h>
 

@@ -46,6 +46,7 @@ class SurfaceBased_StructuralAnalysis {
                 nb_cl_lower << " lower scale cliques ; " <<
                 nb_cl_intraps << " maximal order cliques ; " <<
                 cliques.size() << " cliques in total)" << std::endl;
+            std::cout << nbsujets << " subjects" << std::endl;
         }
 
         SurfaceBased_StructuralAnalysis(){}
@@ -99,6 +100,12 @@ class SurfaceBased_StructuralAnalysis {
             for ( uint i = 0 ; i < this->cliques.size() ; i++ )
                 if ( this->cliques[i].type == INTRAPRIMALSKETCH )
                     this->ipscliques.push_back(i);
+            
+            std::set<std::string> subjects;
+            for ( uint i = 0 ; i < this->sites.size() ; i++ )
+                subjects.insert(this->sites[i]->subject);
+            nbsujets = subjects.size();
+            assert( nbsujets == ipscliques.size() );
         }
 
 
