@@ -23,11 +23,11 @@ class Site{
         float sim_rankperc;
         int rank;
         Point3df gravitycenter;
-        int node;
+//        int node;
         Point3df boundingbox_max;
         Point3df boundingbox_min;
         std::set<int> nodes_list;
-        Site() { node = -1; label_occur_number = -1; significance = -1.0; t_rankperc = -1.0; sim_rankperc = -1.0; }
+        Site() {  label_occur_number = -1; significance = -1.0; t_rankperc = -1.0; sim_rankperc = -1.0; }
 };
 
 

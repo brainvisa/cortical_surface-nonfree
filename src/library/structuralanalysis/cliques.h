@@ -165,9 +165,9 @@ double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bb
 
 void BuildMaximalOrderCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
 void BuildDataDrivenCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
-void BuildSimilarityCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
+//void BuildSimilarityCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
 
-std::vector<Clique> BuildCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite);
+//std::vector<Clique> BuildCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite);
 
 void getCliquesFromSSBCliques ( std::vector<surf::SSBClique> &ssbcliques,
                                 std::vector<Site *> &sites,

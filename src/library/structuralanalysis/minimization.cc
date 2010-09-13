@@ -522,8 +522,8 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
                 s << sites[i]->label ;
                 (*iv)->setProperty( "label", s.str());
                 (*iv)->setProperty( "name", s.str());
-                node = sites[i]->node;
-                (*iv)->setProperty( "node", node);
+//                node = sites[i]->node;
+//                (*iv)->setProperty( "node", node);
                 label_occur_number = sites[i]->label_occur_number;
                 (*iv)->setProperty( "label_occur_number", label_occur_number);
                 value = sites[i]->significance;
