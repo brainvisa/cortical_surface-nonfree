@@ -937,21 +937,21 @@ void GyriRegularization::runAnnealing(float T, float kT)
 
 	Writer<TimeTexture<int> > resultW( "resultGyri" );
 	resultW << _gyriTexture ;
-	TimeTexture<float> dataD(1, _size);
-	for (i=0; i< _size; i++)
-	{
-		dataD[0].item(i)=(float) computeDataDrivenPotential(i, _gyriTexture[0].item(i));
-	}
-	Writer<TimeTexture<float> > dataDW( "dataDriven" );
-	dataDW << dataD ;
-
-    std::cout << "Writing energy.txt" << endl;
-    FILE *eFile=fopen("energy.txt", "w");
-    for (i=0; i<_evolutionE.size(); i++)
-    {
-    	fprintf(eFile, "%f\n", _evolutionE[i]);
-    }
-    fclose(eFile);
+//	TimeTexture<float> dataD(1, _size);
+//	for (i=0; i< _size; i++)
+//	{
+//		dataD[0].item(i)=(float) computeDataDrivenPotential(i, _gyriTexture[0].item(i));
+//	}
+//	Writer<TimeTexture<float> > dataDW( "dataDriven" );
+//	dataDW << dataD ;
+//
+//    std::cout << "Writing energy.txt" << endl;
+//    FILE *eFile=fopen("energy.txt", "w");
+//    for (i=0; i<_evolutionE.size(); i++)
+//    {
+//    	fprintf(eFile, "%f\n", _evolutionE[i]);
+//    }
+//    fclose(eFile);
 //	Writer<TimeTexture<float> > texEnergyW( "energyEvolution" );
 //	texEnergyW << energyEvolution ;
 }
