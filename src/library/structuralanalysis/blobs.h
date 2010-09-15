@@ -13,7 +13,6 @@ namespace surf{
 
     class Blob{
         public:
-
             int index;
             std::set<int> nodes;
             std::map<int, std::vector<float> > coordinates;
@@ -54,9 +53,6 @@ namespace surf{
             void getAimsEllipsoidAtMaxNode (  Texture<float> &tex ) ;
             void moveMeshToSphericalAtlas ( void ) ;
             void moveMeshToPlaneAtlas ( void ) ;
-
-
-
             
             std::pair<Point2df, Point2df> get2DBoundingBox ( );
 
@@ -72,9 +68,7 @@ namespace surf{
                 mesh = glb->mesh;
                 t = glb->t;
                 scale = glb->scale;
-
             }
-
 
     };
 

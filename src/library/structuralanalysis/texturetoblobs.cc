@@ -266,27 +266,27 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
 
     // Initialization of the results vectors "blobs" and "ssblobs"
     if (initNull){
-      blobs.clear();
-      ssblobs.clear();
+        blobs.clear();
+        ssblobs.clear();
     }
 
     list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> listBlobs
          = sketch.BlobSet();
 
-    list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*>::iterator itSSB, itSSBaux, itSSBaux2;
-    list<GreyLevelBlob<SiteType<AimsSurface<3, Void> >::type > *>::iterator itGLB;
+    std::list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*>::iterator itSSB, itSSBaux, itSSBaux2;
+    std::list<GreyLevelBlob<SiteType<AimsSurface<3, Void> >::type > *>::iterator itGLB;
 
     ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type > *ssb;
-    set< SiteType<AimsSurface<3, Void> >::type,
-      ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> >::iterator itPoints;
+    std::set< SiteType<AimsSurface<3, Void> >::type,
+        ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> >::iterator itPoints;
 
-    map< ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*, surf::ScaleSpaceBlob * > ssbMap;
+    std::map< ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*, surf::ScaleSpaceBlob * > ssbMap;
 
     for (itSSB = listBlobs.begin() ; itSSB != listBlobs.end() ; itSSB++){
 
-      // For each scale-space blob, we create a surf::ScaleSpaceBlob in "ssblobs" containing
-      //    various surf::GreyLevelBlob objects (being themselves contained in a general resulting
-      // "blobs" vector).
+        // For each scale-space blob, we create a surf::ScaleSpaceBlob in "ssblobs" containing
+        //    various surf::GreyLevelBlob objects (being themselves contained in a general resulting
+        // "blobs" vector).
         ssb = *itSSB;
 
         ssblobs.push_back(new surf::ScaleSpaceBlob());
@@ -295,52 +295,52 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
         ssblob->tmin = 999.0;
         ssblob->tmax = -999.0;
 
-      // We save a link between the pointer and the corresponding index in ssblobs
-        pair< ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*, surf::ScaleSpaceBlob * > p;
+        // We save a link between the pointer and the corresponding index in ssblobs
+        std::pair< ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*, surf::ScaleSpaceBlob * > p;
         p.first = ssb;
         p.second = ssblob;
         ssbMap.insert(p);
 
-      for (itGLB = ssb->glBlobs.begin(); itGLB != ssb->glBlobs.end(); itGLB++){
+        for ( itGLB = ssb->glBlobs.begin() ; itGLB != ssb->glBlobs.end() ; itGLB++ ){
 
-        // For each grey-level blob, we create a Blob
-        blobs.push_back(new surf::GreyLevelBlob());
-        surf::GreyLevelBlob *blob = blobs[blobs.size()-1];
-
-        blob->ssb_parent = ssblob;
-        blob->t = (*itGLB)->measurements.t;
-        blob->scale = (*itGLB)->GetScale();
-
-        // The surf::GreyLevelBlob's nodeslist contains its corresponding nodes indices on the
-        //    mesh it was extracted from.
-        set<SiteType<AimsSurface<3, Void> >::type,
-             ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints
-                 = (*itGLB)->GetListePoints();
-        for (itPoints = listePoints.begin() ; itPoints != listePoints.end() ; itPoints++) {
-          (blob->nodes).insert((*itPoints).second);
-
-          if ( subject.coordinates == LATLON_2D ) {
-            (blob->coordinates)[(*itPoints).second] = vector<float>(2);
-
-			(blob->coordinates)[(*itPoints).second][0] = subject.lat->item((*itPoints).second);
-            (blob->coordinates)[(*itPoints).second][1] = subject.lon->item((*itPoints).second);
-          }
-
-          (blob->raw_coordinates)[(*itPoints).second] = vector<float>(3);
-          (blob->raw_coordinates)[(*itPoints).second][0] = subject.mesh->vertex()[(*itPoints).second][0];
-          (blob->raw_coordinates)[(*itPoints).second][1] = subject.mesh->vertex()[(*itPoints).second][1];
-          (blob->raw_coordinates)[(*itPoints).second][2] = subject.mesh->vertex()[(*itPoints).second][2];
+            // For each grey-level blob, we create a Blob
+            blobs.push_back( new surf::GreyLevelBlob() );
+            surf::GreyLevelBlob *blob = blobs[blobs.size()-1];
+    
+            blob->ssb_parent = ssblob;
+            blob->t = (*itGLB)->measurements.t;
+            blob->scale = (*itGLB)->GetScale();
+    
+            // The surf::GreyLevelBlob's nodeslist contains its corresponding nodes indices on the
+            //    mesh it was extracted from.
+            std::set<SiteType<AimsSurface<3, Void> >::type,
+                 ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints
+                     = (*itGLB)->GetListePoints();
+            for ( itPoints = listePoints.begin() ; itPoints != listePoints.end() ; itPoints++ ) {
+                (blob->nodes).insert( (*itPoints).second );
+    
+                if ( subject.coordinates == LATLON_2D ) {
+                    (blob->coordinates)[(*itPoints).second] = vector<float>(2);
+        
+        			(blob->coordinates)[(*itPoints).second][0] = subject.lat->item((*itPoints).second);
+                    (blob->coordinates)[(*itPoints).second][1] = subject.lon->item((*itPoints).second);
+                }
+    
+                (blob->raw_coordinates)[(*itPoints).second] = vector<float>(3);
+                (blob->raw_coordinates)[(*itPoints).second][0] = subject.mesh->vertex()[(*itPoints).second][0];
+                (blob->raw_coordinates)[(*itPoints).second][1] = subject.mesh->vertex()[(*itPoints).second][1];
+                (blob->raw_coordinates)[(*itPoints).second][2] = subject.mesh->vertex()[(*itPoints).second][2];
+            }
+    
+            ssblob->blobs.insert(blob);
+    
+            if ( blob->scale < ssblob->tmin )
+                ssblob->tmin = blob->scale;
+            if ( blob->scale > ssblob->tmax )
+                ssblob->tmax = blob->scale;
         }
 
-        ssblob->blobs.insert(blob);
-
-        if (blob->scale < ssblob->tmin)
-          ssblob->tmin=blob->scale;
-        if (blob->scale > ssblob->tmax)
-          ssblob->tmax=blob->scale;
-      }
-
-      ssblob->t = ssb->GetMeasurements().t;
+        ssblob->t = ssb->GetMeasurements().t;
 
     }
 
@@ -349,8 +349,8 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
     // between them
 
     // BIFURCATIONS
-    list<Bifurcation<SiteType<AimsSurface<3, Void> >::type> *> bifurcations = sketch.BifurcationList();
-    list<Bifurcation<SiteType<AimsSurface<3, Void> >::type> *>::iterator bifurcIt;
+    std::list<Bifurcation<SiteType<AimsSurface<3, Void> >::type> *> bifurcations = sketch.BifurcationList();
+    std::list<Bifurcation<SiteType<AimsSurface<3, Void> >::type> *>::iterator bifurcIt;
     for ( bifurcIt = bifurcations.begin() ; bifurcIt != bifurcations.end() ; bifurcIt ++ ) {
         list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type > *> topBlobs, bottomBlobs, topBottomBlobs, bottomTopBlobs;
         topBlobs = (*bifurcIt)->TopBlobs();
@@ -364,8 +364,8 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
         }
     }
 
-    cout << " blobs.size : " << blobs.size() <<
-            " ssblobs.size : " << ssblobs.size() << endl;
+    std::cout << " blobs.size : " << blobs.size() <<
+            " ssblobs.size : " << ssblobs.size() << std::endl;
 
 }
 
@@ -537,14 +537,28 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
             surf::GreyLevelBlob *blob = blobs[blobs.size()-1];
 
             (*iv)->getProperty( "scale", scale );
-            (*iv)->getProperty( "nodes", nodes_list );
+            
             (*iv)->getProperty( "t", t );
             (*iv)->getProperty( "label", label );
-            if ( subject.coordinates == LATLON_2D ) {
-                (*iv)->getProperty( "latitudes", latitudes );
-                (*iv)->getProperty( "longitudes", longitudes );
+            
+            if ( (*iv)->hasProperty( "nodes" ) ) {
+                (*iv)->getProperty( "nodes", nodes_list );
+                (*iv)->getProperty( "x", latitudes );
+                (*iv)->getProperty( "y", longitudes );
+                for ( uint i = 0 ; i < nodes_list.size() ; i++ ) {
+                    (blob->raw_coordinates)[nodes_list[i]] = vector<float>(3);
+                    (blob->raw_coordinates)[nodes_list[i]][0] = subject.mesh->vertex()[nodes_list[i]][0];
+                    (blob->raw_coordinates)[nodes_list[i]][1] = subject.mesh->vertex()[nodes_list[i]][1];
+                    (blob->raw_coordinates)[nodes_list[i]][2] = subject.mesh->vertex()[nodes_list[i]][2];
+                    if ( subject.coordinates == LATLON_2D ) {
+                        (blob->coordinates)[nodes_list[i]] = vector<float>(2);
+                        ( blob->coordinates)[nodes_list[i]][0] = latitudes[i];
+                        ( blob->coordinates)[nodes_list[i]][1] = longitudes[i];
+                    }
+    
+                }
             }
-
+            
             blob->index = iNbGLB++;
             blob->label = label;
             index = blob->index;
@@ -554,18 +568,6 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
             blob->scale = scale;
             blob->t = t;
             blob->ssb_parent = NULL;
-            for ( uint i = 0 ; i < nodes_list.size() ; i++ ) {
-                (blob->raw_coordinates)[nodes_list[i]] = vector<float>(3);
-                (blob->raw_coordinates)[nodes_list[i]][0] = subject.mesh->vertex()[nodes_list[i]][0];
-                (blob->raw_coordinates)[nodes_list[i]][1] = subject.mesh->vertex()[nodes_list[i]][1];
-                (blob->raw_coordinates)[nodes_list[i]][2] = subject.mesh->vertex()[nodes_list[i]][2];
-                if ( subject.coordinates == LATLON_2D ) {
-                    (blob->coordinates)[nodes_list[i]] = vector<float>(2);
-                    ( blob->coordinates)[nodes_list[i]][0] = latitudes[i];
-                    ( blob->coordinates)[nodes_list[i]][1] = longitudes[i];
-                }
-
-            }
         }
     }
 }
@@ -779,9 +781,9 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
                 if ( blobs[i]->coordinates[*it].size() >= 2 )
                     longitudes.push_back( blobs[i]->coordinates[*it][1] );
             }
-            vert->setProperty( "latitudes", latitudes );
+            vert->setProperty( "x", latitudes );
             if ( latitudes.size() == longitudes.size() ) {
-                vert->setProperty( "longitudes", longitudes );
+                vert->setProperty( "y", longitudes );
             }
             else {
                 assert(longitudes.size() == 0);
@@ -810,7 +812,7 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
                                    vector<surf::ScaleSpaceBlob *> &ssblobs ) {
     // From the two vectors, we build a graph containing the ssb, the glb and
     //  the links between ssb and glb
-
+    std::cout << "TEST" << std::endl;
     vector<float> resolution, bbmin2D, bbmax2D;
     vector<int> bbmin, bbmax;
     resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0);
@@ -876,7 +878,7 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         blobs[i]->getAimsEllipsoidAtMaxNode ( *(subject.tex) ); 
     
 
-    cout << "════ Adding grey-level blobs..." << endl;
+    cout << "════ Adding grey-level bbblobs..." << endl;
 
     for ( int i = 0 ; i < (int) blobs.size() ; i++ ) {
 
@@ -900,9 +902,9 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
                 if ( blobs[i]->coordinates[*it].size() >= 2 )
                     longitudes.push_back( blobs[i]->coordinates[*it][1] );
             }
-            vert->setProperty( "latitudes", latitudes );
+            vert->setProperty( "x", latitudes );
             if ( latitudes.size() == longitudes.size() ) {
-                vert->setProperty( "longitudes", longitudes );
+                vert->setProperty( "y", longitudes );
             }
             else {
                 if ( longitudes.size() != 0 ) {
@@ -926,7 +928,6 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
 
     }
     cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added in total (SSB and GLB)" << endl;
-
 
 
     // Let's add the links between scale-space and grey-level blobs
