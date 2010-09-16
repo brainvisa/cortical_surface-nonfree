@@ -136,7 +136,7 @@ void NewModel::Step(vector<int> &random, long double temp, uint &mod){
 
 }
 
-void Anneal::Run ( int verbose ){
+void NewModel::Run ( int verbose ){
 
   vector< int >  indices_start;
   for( uint i = 0 ; i < sites.size() ; i++ )

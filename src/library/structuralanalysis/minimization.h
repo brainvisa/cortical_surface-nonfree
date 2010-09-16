@@ -58,7 +58,8 @@ class SurfaceBased_StructuralAnalysis {
                                   float _lsweight = 0.0,
                                   float _ddx2 = 0.0,
                                   float _ddx1 = 0.0,
-                                  float _ddh = 0.0 );
+                                  float _ddh = 0.0,
+                                  float _globalweight = 0.0 );
 
         long double getLabelEnergy ( int label, int type = UNKNOWN );
         long double getClusterEnergy ( std::vector<uint> &composante );
