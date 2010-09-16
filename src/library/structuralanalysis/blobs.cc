@@ -232,14 +232,14 @@ void surf::GreyLevelBlob::moveMeshToPlaneAtlas ( ) {
 }
 //##############################################################################
 
-void surf::Blob::getAimsSphereAtMaxNode (  AimsSurface<3, Void> &mesh, Texture<float> &tex ) {
+void surf::Blob::getAimsSphereAtMaxNode (  Texture<float> &tex, float radius ) {
     set<int>::iterator it;
     int maxim_node = getMaximumNode(tex);
     AimsSurfaceTriangle *sph;
 //    sph = SurfaceGenerator::sphere(mesh.vertex()[maxim_node], 0.9, 10);
     assert( nodes.size() == raw_coordinates.size() );
     Point3df p(raw_coordinates[maxim_node][0],raw_coordinates[maxim_node][1],raw_coordinates[maxim_node][2]);
-    sph = SurfaceGenerator::sphere(p, 0.9, 10);
+    sph = SurfaceGenerator::sphere(p, radius, 10);
     this->mesh = (*sph)[0];
 
 }

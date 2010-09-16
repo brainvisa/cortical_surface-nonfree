@@ -104,15 +104,15 @@ class TextureToBlobs {
                                     vector<surf::GreyLevelBlob *> &blobs,
                                     vector<surf::ScaleSpaceBlob *> &ssblobs,
                                     bool initNull = true);
-
-        static void AimsGraph( Graph *graph,
-						SubjectData & subject,
-						std::vector<surf::GreyLevelBlob *> & blobs,
-						std::vector<surf::ScaleSpaceBlob *> & ssblobs ) ;
-
+        
         static void AimsGraph( Graph *graph,
 						SubjectData & subject,
 						std::vector<surf::Blob *> & blobs ) ;
+        
+        static void AimsGraph( Graph *graph,
+                                SubjectData & subject,
+                                std::vector<surf::GreyLevelBlob *> & blobs,
+                                std::vector<surf::ScaleSpaceBlob *> & ssblobs ) ;
 
         static void AimsGroupGraph( Graph *graph,
                                 std::map<std::string, SubjectData *> data,

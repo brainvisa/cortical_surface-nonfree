@@ -10,21 +10,22 @@
 
 
 enum typesCliques {
-    DATADRIVEN, BESTLOWERSCALE, INTRAPRIMALSKETCH, SIMILARITY, UNKNOWN, DATADRIVEN2, ANTISIMILARITY
+    DATADRIVEN, BESTLOWERSCALE, INTRAPRIMALSKETCH, SIMILARITY, UNKNOWN, DATADRIVEN2, GLOBAL
 };
 
 class Clique{
     public:
-        static float ddweight, intrapsweight, simweight, lsweight, ddx2, ddx1, ddh;
+        static float ddweight, intrapsweight, globalweight, simweight, lsweight, ddx2, ddx1, ddh;
 
         short type;
         std::vector<Site *> blobs;
         double energie;
         float rec;
-        std::map<int,uint> labelscount;
+        std::map<int, uint> labelscount;
+        std::map<int, uint> subjectscount;
 
-        float computeEnergy(bool save, uint CLIQUESNBSUJETS) {
-            float energy=-1.0;
+        float computeEnergy (bool save, uint CLIQUESNBSUJETS) {
+            float energy = -1.0;
             switch ( type ) {
                 case DATADRIVEN:
                     ASSERT( blobs.size() == 1 );
@@ -80,17 +81,15 @@ class Clique{
                     }
 
                 break;
-                case ANTISIMILARITY:
-                    ASSERT( blobs.size() == 2 );
-                    if ( blobs[0]->label == blobs[1]->label && blobs[0]->label != 0 ) {
-
-                        energy = -rec;
-                        energy *= simweight;
-
+                case GLOBAL:
+                    energy = 0;
+                    for ( uint j = 1 ; j < subjectscount.size() ; j++ ) {
+                        if ( subjectscount[j] == CLIQUESNBSUJETS )
+                            energy += 0;
+                        else
+                            energy += globalweight* (CLIQUESNBSUJETS - subjectscount[j]);
                     }
-                    else {
-                        energy = 0.0;
-                    }
+                    energy *= CLIQUESNBSUJETS;
 
                 break;
             }
@@ -101,7 +100,7 @@ class Clique{
         float updateEnergy( uint node, int old, bool save, uint CLIQUESNBSUJETS ) {
 
             float energy = 0.0;
-            float _intrapsweight;
+            float _intrapsweight, _globalweight;
 
             switch ( type ) {
 
@@ -160,17 +159,45 @@ class Clique{
                         labelscount[old]--;
                     }
                 break;
+                case GLOBAL:
+                    _globalweight = globalweight;
+                    uint j;
+                    for ( j = 0 ; j < blobs.size() && (uint) blobs[j]->index != (uint) node ; j++ )
+                    {}
+                    ASSERT( j < blobs.size() );
+                    if ( old == blobs[j]->label )
+                        energy = 0.0;
+                    else {
+                        if ( old == 0 )
+                            energy = 0.0;
+                        else if ( subjectscount[ old ] < CLIQUESNBSUJETS )
+                            energy += -_globalweight;
+
+                        if ( blobs[j]->label == 0 )
+                            energy += 0.0;
+                        else if ( labelscount[ blobs[j]->label ] > 0 )
+                            energy += _intrapsweight;
+                    }
+                    energy *= CLIQUESNBSUJETS;
+            //           energy = 0.0;
+                    if (save){
+                        labelscount[blobs[j]->label]++;
+                        labelscount[old]--;
+                    }
+                break;
             }
             if (save) energie += energy;
             return energy;
         }
 
         void updateLabelsCount();
+        
+        void updateSubjectsCount();
 
-        static void setParameters( float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh);
+        static void setParameters ( float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh, float _globalweight );
 
-        static float getIntraPSWeight(){ return intrapsweight; }
-        Clique(){ type = UNKNOWN; energie = 0.0; blobs = std::vector<Site *>(); labelscount = std::map<int,uint>();  }
+        static float getIntraPSWeight() { return intrapsweight; }
+        Clique(){ type = UNKNOWN; energie = 0.0; blobs = std::vector<Site *>(); labelscount = std::map<int,uint>();  subjectscount = std::map<int, uint>(); }
 
 };
 

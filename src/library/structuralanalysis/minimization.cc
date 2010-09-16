@@ -70,33 +70,33 @@ void SurfaceBased_StructuralAnalysis::noLabelsZones () {/* vector<pair<Point2df,
 void SurfaceBased_StructuralAnalysis::regionLabelsZones () {/* vector<pair<Point2df,Point2df> > &labelsZones,
                                                            vector<set<uint> > &zonesListesBlobs,
                                                            vector<set<uint> > &listeZones ){*/
-    uint i=0;
-    labelsZones = vector<pair<Point2df,Point2df> > ();
+    uint i = 0;
+    labelsZones = std::vector<std::pair<Point2df,Point2df> > ();
 
-    for (uint it=0;it<3;it++)
-        for (float zonelat = -20;zonelat<180.0;zonelat += 36.0)
-            for ( float zonelon = -20;zonelon<360.0;zonelon += 72.0){
+    for ( uint it = 0 ; it < 3 ; it++ )
+        for ( float zonelat = -20 ; zonelat < 180.0 ; zonelat += 36.0 )
+            for ( float zonelon = -20 ; zonelon < 360.0 ; zonelon += 72.0 ) {
 
-                pair<Point2df, Point2df> zone;
-                zone.first = Point2df(max(zonelat,0.0), max(zonelon, 0.0));
-                zone.second = Point2df(min(zonelat + 76.0, 180.0), min(zonelon + 112.0,360.0));
+                std::pair<Point2df, Point2df> zone;
+                zone.first = Point2df( max(zonelat, 0.0), max(zonelon, 0.0) );
+                zone.second = Point2df( min(zonelat + 76.0, 180.0), min(zonelon + 112.0,360.0) );
         //         std::cout << i << " " << zone.first[0] << ";" << zone.first[1] << " " << zone.second[0] << ";" << zone.second[1] << std::endl;
                 labelsZones.push_back(zone);
                 i++;
             }
 
     std::cout << labelsZones.size() << " zones" << std::endl;
-    for (i=0;i<labelsZones.size()+1;i++)
+    for ( i = 0 ; i < labelsZones.size() + 1 ; i++ )
         labels.push_back(i);
-    vector<int> zonescount, labelscount;
+    std::vector<int> zonescount, labelscount;
 
-    for (i=0;i<labelsZones.size()+1;i++){
+    for ( i = 0 ; i < labelsZones.size() + 1 ; i++ ) {
         zonescount.push_back(0);
         labelscount.push_back(0);
     }
 
-    zonesListesBlobs = vector<set<uint> >(labelsZones.size()+1);
-    listeZones = vector<set<uint> > (sites.size());
+    zonesListesBlobs = std::vector< std::set<uint> >( labelsZones.size() + 1 );
+    listeZones = std::vector<std::set<uint> > (sites.size());
 
     for (uint j=0;j<sites.size();j++){
         uint count=0;
@@ -184,6 +184,7 @@ void SurfaceBased_StructuralAnalysis::Initialization( bool initLabel ){
 
     for ( uint k = 0 ; k < cliques.size() ; k++ ){
         cliques[k].updateLabelsCount();
+        cliques[k].updateSubjectsCount();
         cliques[k].computeEnergy( true, nbsujets );
     }
     energy = getTotalEnergy();

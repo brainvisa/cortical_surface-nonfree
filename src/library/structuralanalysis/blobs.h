@@ -23,7 +23,7 @@ namespace surf{
             int getMaximumNode( Texture<float> &tex );
 
             void getAimsMesh (  AimsSurface<3, Void> &mesh );
-            void getAimsSphereAtMaxNode (  AimsSurface<3, Void> &mesh, Texture<float> &tex );
+            void getAimsSphereAtMaxNode (  Texture<float> &tex, float radius = 0.1 );
             void getAimsEllipsoid ( float abscissa, float height, float depth, float area );
             void moveMeshToSphericalAtlas ( float radius ) ;
             void moveMeshToPlaneAtlas ( float height ) ;

@@ -543,14 +543,17 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
             (*iv)->getProperty( "nodes", nodes_list );
             (*iv)->getProperty( "x", latitudes );
             (*iv)->getProperty( "y", longitudes );
+            assert(nodes_list.size() == latitudes.size());
 
             for ( uint i = 0 ; i < nodes_list.size() ; i++ ) {
+                
                 (blob->raw_coordinates)[nodes_list[i]] = vector<float>(3);
                 (blob->raw_coordinates)[nodes_list[i]][0] = subject.mesh->vertex()[nodes_list[i]][0];
                 (blob->raw_coordinates)[nodes_list[i]][1] = subject.mesh->vertex()[nodes_list[i]][1];
                 (blob->raw_coordinates)[nodes_list[i]][2] = subject.mesh->vertex()[nodes_list[i]][2];
+
                 if ( subject.coordinates == LATLON_2D ) {
-                    (blob->coordinates)[nodes_list[i]] = vector<float>(2);
+                    ( blob->coordinates)[nodes_list[i]] = vector<float>(2);
                     ( blob->coordinates)[nodes_list[i]][0] = latitudes[i];
                     ( blob->coordinates)[nodes_list[i]][1] = longitudes[i];
                 }
@@ -755,7 +758,7 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
 
 	cout << "      ░░░ mode Blobs Meshes From Mesh ░░░     " << endl;
     for ( uint i = 0 ; i < blobs.size() ; i++ )
-        blobs[i]->getAimsSphereAtMaxNode (  *(subject.mesh) , *(subject.tex) );
+        blobs[i]->getAimsSphereAtMaxNode ( *(subject.tex) );
 
     cout << "════ Adding blobs..." << endl;
 
@@ -870,10 +873,10 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
     // Let's add the grey-level blobs
     cout << "════ Extracting meshes for the grey-level blobs..." << endl;
 
-    std::cout << "      ░░░ mode Blobs Meshes From Mesh ░░░     " << std::endl;
+    std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
     for ( uint i = 0 ; i < blobs.size() ; i++ )
 //        blobs[i]->getAimsEllipsoidAtMaxNode ( *(subject.tex) );
-        blobs[i]->getAimsSphereAtMaxNode( *(subject.mesh), *(subject.tex));
+        blobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.3);
 
 
     cout << "════ Adding grey-level blobs..." << endl;
@@ -883,7 +886,7 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         // For every scale-space blob, we create a vertex in the Aims graph : we define
         //   its properties and store a link between the created vertex and the blob index
 
-        cout << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
+        std::cout << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << std::flush ;
         vert = graph->addVertex("glb");
 
         vert->setProperty( "t", blobs[i]->t);
@@ -892,14 +895,15 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         vert->setProperty( "nodes", blobs[i]->nodes );
 
         if ( subject.coordinates == LATLON_2D ) {
-            vector<float> latitudes, longitudes;
-            set<int>::iterator it;
+            std::vector<float> latitudes, longitudes;
+            std::set<int>::iterator it;
             for ( it = blobs[i]->nodes.begin() ; it != blobs[i]->nodes.end() ; it++ ) {
-                latitudes.push_back( blobs[i]->coordinates[*it][0] );
+                latitudes.push_back( (float) blobs[i]->coordinates[*it][0] );
                 if ( blobs[i]->coordinates[*it].size() >= 2 )
-                    longitudes.push_back( blobs[i]->coordinates[*it][1] );
+                    longitudes.push_back( (float) blobs[i]->coordinates[*it][1] );
             }
             vert->setProperty( "x", latitudes );
+            
             if ( latitudes.size() == longitudes.size() ) {
                 vert->setProperty( "y", longitudes );
             }

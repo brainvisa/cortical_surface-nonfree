@@ -6,30 +6,53 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-float Clique::ddweight, Clique::intrapsweight, Clique::simweight, Clique::lsweight, Clique::ddx2, Clique::ddx1, Clique::ddh;
-void Clique::setParameters(float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh){
+float Clique::ddweight, Clique::intrapsweight, Clique::simweight, Clique::lsweight, Clique::ddx2, Clique::ddx1, Clique::ddh, Clique::globalweight;
+void Clique::setParameters( float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh, float _globalweight = 0.0 ){
   ddweight=_ddweight; intrapsweight = _intrapsweight; simweight=_simweight; lsweight=_lsweight; ddx2 =_ddx2;  ddx1 = _ddx1; ddh=_ddh;
+  globalweight=_globalweight;
 }
 
-void Clique::updateLabelsCount(){
-  if (type == INTRAPRIMALSKETCH){
-    labelscount = map<int, uint>();
-    for (uint i=0;i<blobs.size();i++){
-      if (labelscount.find(blobs[i]->label) == labelscount.end())
-        labelscount[blobs[i]->label] = 1;
-      else
-        labelscount[blobs[i]->label]++;
+void Clique::updateLabelsCount ( ) {
+    if ( type == INTRAPRIMALSKETCH ) {
+        labelscount = std::map<int, uint>();
+        for ( uint i = 0 ; i < blobs.size() ; i++ ) {
+            if ( labelscount.find(blobs[i]->label) == labelscount.end() )
+                labelscount[blobs[i]->label] = 1;
+            else
+                labelscount[blobs[i]->label]++;
+        }
+        std::map<int, uint>::iterator it;
+        uint chksum = 0;
+    //     cout << blobs[0]->subject << endl;
+        for ( it = labelscount.begin() ; it != labelscount.end() ; it++ ) {
+    //       cout << it->first << " " << it->second << "-";
+            chksum += (*it).second;
+        }
+    //     cout  << endl;
+        ASSERT( chksum == blobs.size() );
     }
-    map<int,uint>::iterator it;
-    uint chksum=0;
-//     cout << blobs[0]->subject << endl;
-    for (it=labelscount.begin();it!=labelscount.end();it++){
-//       cout << it->first << " " << it->second << "-";
-      chksum += (*it).second;
+}
+
+void Clique::updateSubjectsCount ( ) {
+    if ( type == GLOBAL ) {
+        subjectscount = std::map<int, uint>();
+        std::map<int, std::set<std::string> > aux;
+        for ( uint i = 0 ; i < blobs.size() ; i++ ) {
+            if ( aux.find( blobs[i]->label) == aux.end() ) {
+                labelscount[blobs[i]->label] = 0;
+                aux[blobs[i]->label] = std::set<std::string>();
+            }
+            aux[blobs[i]->label].insert(blobs[i]->subject);            
+        }
+
+        std::map<int, std::set<std::string> >::iterator itset;
+        for ( itset = aux.begin() ; itset != aux.end() ; itset++ ) { 
+            subjectscount[(*itset).first] = (*itset).second.size();
+            std::cout << (*itset).second.size() << " " << std::flush;
+        }
+        std::cout << std::endl;
+        
     }
-//     cout  << endl;
-    ASSERT(chksum == blobs.size());
-  }
 }
 
 
@@ -433,14 +456,14 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
                 b2max = *itB2;
                 int max1 = b1max->getMaximumNode(*(data[ssblobs[i]->subject]->tex));
                 int max2 = b2max->getMaximumNode(*(data[ssblobs[j]->subject]->tex));
-                Point3df p1 (b1max->coordinates[max1][0], b1max->coordinates[max1][1], 0.0);
-                Point3df p2 (b2max->coordinates[max2][0], b2max->coordinates[max2][1], 0.0);
+//                Point3df p1 (b1max->coordinates[max1][0], b1max->coordinates[max1][1], 0.0);
+//                Point3df p2 (b2max->coordinates[max2][0], b2max->coordinates[max2][1], 0.0);
+//                Point3df p = p1-p2;
+//                distance = sqrt(10*p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+                Point3df p1 (b1max->raw_coordinates[max1][0], b1max->raw_coordinates[max1][1], b1max->raw_coordinates[max1][2]);
+                Point3df p2 (b2max->raw_coordinates[max2][0], b2max->raw_coordinates[max2][1], b2max->raw_coordinates[max2][2]);
                 Point3df p = p1-p2;
-                distance = sqrt(10*p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
-                //Point3df p1 (b1max->raw_coordinates[max1][0], b1max->raw_coordinates[max1][1], b1max->raw_coordinates[max1][2]);
-                //Point3df p2 (b2max->raw_coordinates[max2][0], b2max->raw_coordinates[max2][1], b2max->raw_coordinates[max2][2]);
-                //Point3df p = p1-p2;
-                //distance = p.norm();
+                distance = p.norm();
 
                 std::cout << distance << " " << std::flush;
 

@@ -35,6 +35,7 @@ HEADERS = \
   structuralanalysis/minimization.h \
   structuralanalysis/icm.h \
   structuralanalysis/anneal.h \
+  structuralanalysis/newmodel.h \
   structuralanalysis/cluster.h \
   structuralanalysis/validation.h \
   structuralanalysis/representation.h \
@@ -74,6 +75,7 @@ SOURCES = \
   structuralanalysis/minimization.cc \
   structuralanalysis/icm.cc \
   structuralanalysis/anneal.cc \
+  structuralanalysis/newmodel.cc \
   structuralanalysis/cluster.cc \
   structuralanalysis/validation.cc \
   structuralanalysis/representation.cc \

@@ -91,93 +91,94 @@ void StructuralAnalysis_Validation::printFile(vector<double> &samples, FILE *f){
 
 
 
-vector<int> StructuralAnalysis_Validation::getCompConn(vector<uint> &indicesCliques, set<uint> &listeSites){
-  vector<int> comp(ssb->sites.size());
-  uint blob0,blob1;
+std::vector<int> StructuralAnalysis_Validation::getCompConn(vector<uint> &indicesCliques, set<uint> &listeSites){
+  std::vector<int> comp( ssb->sites.size() );
+  uint blob0, blob1;
   Site *s0, *s1;
   int lcomp,nbcomp,aux;
   int label0,label1;
-  set<uint>::iterator it;
-  for (uint i=0;i<ssb->sites.size();i++)
-    comp[i]=-1;
-  lcomp=0;
-  nbcomp=0;
-  for (it = listeSites.begin();it != listeSites.end();it++)
-    comp[*it]=0;
-  for (uint i=0;i<indicesCliques.size();i++)
-    if (ssb->cliques[indicesCliques[i]].type == SIMILARITY){
-    s0 = ssb->cliques[indicesCliques[i]].blobs[0];
-    s1 = ssb->cliques[indicesCliques[i]].blobs[1];
-    blob0=s0->index;
-    blob1=s1->index;
-    comp[blob0]=0;
-    comp[blob1]=0;
-    }
-    for (uint i=0;i<indicesCliques.size();i++){
-      if (ssb->cliques[indicesCliques[i]].type == SIMILARITY){
-
-        s0 = ssb->cliques[indicesCliques[i]].blobs[0];
-        s1 = ssb->cliques[indicesCliques[i]].blobs[1];
-        blob0=s0->index;
-        blob1=s1->index;
-
-        if (comp[blob0] == 0){
-          if (comp[blob1] == 0){
-            lcomp++;
-            nbcomp++;
-            comp[blob0] = lcomp;
-            comp[blob1] = lcomp;
-  //             cout << "a"<< nbcomp << "-" ;
-          }
-          else if (comp[blob1] > 0){
-            comp[blob0] = comp[blob1];
-          }
-        }
-        else if (comp[blob1] == 0){
-          comp[blob1] = comp[blob0];
-        }
-        else if (comp[blob0] == comp[blob1]){
-    // clique cyclique ne pas s'inquiéter mais répéter 100 fois rapidement
-        }
-        else if (comp[blob0] > 0 && comp[blob1] > 0){ // fusion
-          label0 = comp[blob0];
-          label1 = comp[blob1];
-
-          if (label0>label1) {
-            aux=label0;
-            label0=label1;
-            label1=aux;
-          }
-
-  //           cout << nbcomp << ";" << lcomp << "(" << label1 << "-" << label0 << ")-";
-          for (uint i0=0;i0<comp.size();i0++){
-            if (comp[i0] == label1)
-              comp[i0] = label0;
-          }
-          for (uint i0=0;i0<comp.size();i0++){
-            if (comp[i0] == lcomp){
-              comp[i0] = label1;
-  //               cout << "o" ;
-            }
-          }
-          lcomp--;
-          nbcomp--;
-        }
+  std::set<uint>::iterator it;
+  for ( uint i = 0 ; i < ssb->sites.size() ; i++ )
+      comp[i] = -1;
+  lcomp = 0;
+  nbcomp = 0;
+  for ( it = listeSites.begin() ; it != listeSites.end() ; it++ )
+      comp[*it] = 0;
+  for ( uint i = 0 ; i < indicesCliques.size() ; i++ )
+      if ( ssb->cliques[indicesCliques[i]].type == SIMILARITY ) {
+          s0 = ssb->cliques[indicesCliques[i]].blobs[0];
+          s1 = ssb->cliques[indicesCliques[i]].blobs[1];
+          blob0 = s0->index;
+          blob1 = s1->index;
+          comp[blob0] = 0;
+          comp[blob1] = 0;
       }
-    }
-    vector<uint> zeros;
-    for (uint i=0;i<comp.size();i++)
-      if (comp[i]==0) zeros.push_back(i);
-    for (uint i=0;i<zeros.size();i++){
-      lcomp++;
-      nbcomp++;
-      comp[zeros[i]]=lcomp;
-    }
-//   cout << "nbcomp:" << nbcomp << endl;
-    return comp;
+      for ( uint i = 0 ; i < indicesCliques.size() ; i++ ) {
+          if ( ssb->cliques[indicesCliques[i]].type == SIMILARITY ) {
+
+              s0 = ssb->cliques[indicesCliques[i]].blobs[0];
+              s1 = ssb->cliques[indicesCliques[i]].blobs[1];
+              blob0=s0->index;
+              blob1=s1->index;
+
+              if ( comp[blob0] == 0 ) {
+                  if ( comp[blob1] == 0 ) {
+                      lcomp++;
+                      nbcomp++;
+                      comp[blob0] = lcomp;
+                      comp[blob1] = lcomp;
+  //             cout << "a"<< nbcomp << "-" ;
+                  }
+                  else if ( comp[blob1] > 0 ) {
+                      comp[blob0] = comp[blob1];
+                  }
+              }
+              else if ( comp[blob1] == 0 ) {
+                  comp[blob1] = comp[blob0];
+              }
+              else if ( comp[blob0] == comp[blob1] ) {
+                  // clique cyclique ne pas s'inquiéter mais répéter 100 fois rapidement
+              }
+              else if ( comp[blob0] > 0 && comp[blob1] > 0 ) { // fusion
+                  label0 = comp[blob0];
+                  label1 = comp[blob1];
+
+                  if ( label0 > label1 ) {
+                      aux = label0;
+                      label0 = label1;
+                      label1 = aux;
+                  }
+
+                  //           cout << nbcomp << ";" << lcomp << "(" << label1 << "-" << label0 << ")-";
+                  for ( uint i0 = 0 ; i0 < comp.size() ; i0++ ) {
+                      if ( comp[i0] == label1 )
+                          comp[i0] = label0;
+                  }
+                  for ( uint i0 = 0 ; i0 < comp.size() ; i0++ ){
+                      if ( comp[i0] == lcomp ) {
+                          comp[i0] = label1;
+                          //               cout << "o" ;
+                      }
+                  }
+                  lcomp--;
+                  nbcomp--;
+              }
+          }
+      }
+      std::vector<uint> zeros;
+      for ( uint i = 0 ; i < comp.size() ; i++ )
+          if ( comp[i] == 0 ) 
+              zeros.push_back(i);
+      for ( uint i = 0 ; i < zeros.size() ; i++ ) {
+          lcomp++;
+          nbcomp++;
+          comp[zeros[i]] = lcomp;
+      }
+      //   cout << "nbcomp:" << nbcomp << endl;
+      return comp;
 }
 
-vector<set<uint> > StructuralAnalysis_Validation::getCompConnVector(vector<int> &comp){
+std::vector<std::set<uint> > StructuralAnalysis_Validation::getCompConnVector(vector<int> &comp){
   vector<set<uint> > cc;
   uint cpt=0,cpt2,nbsites=0;
   for (uint i=0;i<comp.size();i++)
@@ -351,14 +352,14 @@ vector<double> StructuralAnalysis_Validation::getBackup(vector<uint> &composante
 
 void StructuralAnalysis_Validation::ValidAround(){
 
-      set< uint > existinglabels;
-      set< uint >::iterator it;
+      std::set <uint> existinglabels;
+      std::set <uint>::iterator it;
       for ( uint i = 0 ; i < ssb->sites.size() ; i++ )
-          if ( ssb->sites[i]->label !=0 )
+          if ( ssb->sites[i]->label != 0 )
               existinglabels.insert( ssb->sites[i]->label );
       uint cpt = 0;
 
-      vector< set<uint> > activblobs( existinglabels.size() );
+      std::vector< std::set<uint> > activblobs( existinglabels.size() );
       for ( it = existinglabels.begin() ; it != existinglabels.end() ; it++ ) {
           for ( uint j = 0 ; j < ssb->sites.size() ; j++ )
               if ( ssb->sites[j]->label == (int) *it )
@@ -366,8 +367,8 @@ void StructuralAnalysis_Validation::ValidAround(){
           cpt++;
       }
 
-      vector< uint > cliquesV;
-      set< uint > sitesV;
+      std::vector <uint> cliquesV;
+      std::set <uint> sitesV;
 
       for ( uint j = 0 ; j < ssb->cliques.size() ; j++ )
           cliquesV.push_back( j );
@@ -375,8 +376,8 @@ void StructuralAnalysis_Validation::ValidAround(){
       for ( uint j = 0 ; j < ssb->sites.size() ; j++ )
           sitesV.insert( j );
 
-      vector< int > ccc = getCompConn( cliquesV, sitesV );
-      vector< set<uint> > cc = getCompConnVector( ccc );
+      std::vector< int > ccc = getCompConn( cliquesV, sitesV );
+      std::vector< std::set<uint> > cc = getCompConnVector( ccc );
       uint startsite;
 
       set< uint > activblobsglobal;
@@ -393,7 +394,7 @@ void StructuralAnalysis_Validation::ValidAround(){
       for ( uint i = 0 ; i < activblobs.size() ; i++ ) {
           if ( processedsizes.find( activblobs[i].size() ) == processedsizes.end() ) {
               processedsizes.insert( activblobs[i].size() );
-              set< uint > forbidden,autorized( activblobs[i] );
+              set< uint > forbidden, autorized( activblobs[i] );
 
               cout << endl << activblobs[i].size() << endl;
               for ( it = activblobs[i].begin() ; it != activblobs[i].end() ; it++ )
