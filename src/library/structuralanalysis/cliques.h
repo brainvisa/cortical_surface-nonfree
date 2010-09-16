@@ -84,6 +84,7 @@ class Clique{
                 case GLOBAL:
                     energy = 0;
                     for ( uint j = 1 ; j < subjectscount.size() ; j++ ) {
+                        assert( subjectscount[j] <= CLIQUESNBSUJETS );
                         if ( subjectscount[j] == CLIQUESNBSUJETS )
                             energy += 0;
                         else
@@ -175,8 +176,8 @@ class Clique{
 
                         if ( blobs[j]->label == 0 )
                             energy += 0.0;
-                        else if ( labelscount[ blobs[j]->label ] > 0 )
-                            energy += _intrapsweight;
+                        else if ( subjectscount[ blobs[j]->label ] < CLIQUESNBSUJETS )
+                            energy += _globalweight;
                     }
                     energy *= CLIQUESNBSUJETS;
             //           energy = 0.0;

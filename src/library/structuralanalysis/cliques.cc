@@ -468,7 +468,7 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
                 std::cout << distance << " " << std::flush;
 
                 if ( distance < threshold ) {
-                  cliques.push_back( surf::SSBClique(ssblobs[i], ssblobs[j], distance ) );
+                    cliques.push_back( surf::SSBClique(ssblobs[i], ssblobs[j], distance ) );
                 }
             }
             // The next pair of scale-space blobs will now be processed.
