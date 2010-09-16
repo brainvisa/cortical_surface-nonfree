@@ -10,7 +10,7 @@
 
 
 enum typesCliques {
-    DATADRIVEN, BESTLOWERSCALE, INTRAPRIMALSKETCH, SIMILARITY, UNKNOWN, DATADRIVEN2
+    DATADRIVEN, BESTLOWERSCALE, INTRAPRIMALSKETCH, SIMILARITY, UNKNOWN, DATADRIVEN2, ANTISIMILARITY
 };
 
 class Clique{
@@ -68,6 +68,19 @@ class Clique{
                     energy *= CLIQUESNBSUJETS;
                 break;
                 case SIMILARITY:
+                    ASSERT( blobs.size() == 2 );
+                    if ( blobs[0]->label == blobs[1]->label && blobs[0]->label != 0 ) {
+
+                        energy = -rec;
+                        energy *= simweight;
+
+                    }
+                    else {
+                        energy = 0.0;
+                    }
+
+                break;
+                case ANTISIMILARITY:
                     ASSERT( blobs.size() == 2 );
                     if ( blobs[0]->label == blobs[1]->label && blobs[0]->label != 0 ) {
 
