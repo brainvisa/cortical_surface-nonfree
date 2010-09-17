@@ -268,51 +268,51 @@ long double SurfaceBased_StructuralAnalysis::getTypeEnergy(int type){ // RETOURN
 }
 
 long double SurfaceBased_StructuralAnalysis::getTotalEnergy(){
-  long double energy=0.0;
-  int nclsim=0,nbips=0,nb2=0;
-  vector<int> bysub(nbsujets);
+    long double energy = 0.0;
+    int nclsim = 0, nbips = 0, nb2 = 0;
+    std::vector<int> bysub( nbsujets );
 
-  for (uint i=0;i<cliques.size();i++){
-    cliques[i].updateLabelsCount();
-    if (cliques[i].type == DATADRIVEN){
-      energy += cliques[i].computeEnergy(true, nbsujets);
+    for ( uint i = 0 ; i < cliques.size() ; i++ ) {
+        cliques[i].updateLabelsCount();
+        if ( cliques[i].type == DATADRIVEN ) {
+            energy += cliques[i].computeEnergy( true, nbsujets );
+        }
+        else if ( cliques[i].type == SIMILARITY ) {
+            energy += cliques[i].computeEnergy( true,nbsujets );
+            if ( cliques[i].blobs[0]->label == cliques[i].blobs[1]->label && cliques[i].blobs[0]->label != 0 )
+                nclsim++;
+        }
     }
-    else if (cliques[i].type == SIMILARITY){
-      energy += cliques[i].computeEnergy(true,nbsujets);
-      if (cliques[i].blobs[0]->label == cliques[i].blobs[1]->label && cliques[i].blobs[0]->label != 0)
-        nclsim++;
 
+    for ( uint k = 1 ; k < labels.size() ; k++ ) {
+
+        uint i, j;
+        for ( uint n = 0 ; n < ipscliques.size() ; n++ ) {
+            bysub[n] = cliques[ipscliques[n]].labelscount[labels[k]];
+            // std::cout << bysub[n] << " " ;
+        }
+        // std::cout << std::endl;
+        uint nb = 0;
+        for ( i = 0 ; i < nbsujets - 1 ; i++ ) {
+            for ( j = i + 1 ; j < nbsujets ; j++ ) {
+                nb += bysub[i] * bysub[j];
+            }
+        }
+        //  std::cout << "nb"<< nb << " ";
+        nbips += nb;
+        for ( i = 0 ; i < nbsujets ; i++ )
+            if ( bysub[i] > 1 )
+                nb2 += bysub[i] - 1;
     }
-  }
-
-  for (uint k=1;k<labels.size();k++){
-
-    uint i,j;
-    for (uint n=0;n<ipscliques.size();n++){
-      bysub[n] = cliques[ipscliques[n]].labelscount[labels[k]];
-    // std::cout << bysub[n] << " " ;
-    }
-    // std::cout << std::endl;
-    uint nb=0;
-    for (i=0;i<nbsujets-1;i++){
-      for (j=i+1;j<nbsujets;j++){
-        nb += bysub[i]*bysub[j];
-      }
-    }
-    //  std::cout << "nb"<< nb << " ";
-    nbips += nb;
-    for (i=0;i<nbsujets;i++)
-      if (bysub[i]>1) nb2 += bysub[i]-1;
-  }
 
 
 
-  //   Esimil = 4.0*(nbips-nclsim);
-  ASSERT(nbips>=nclsim || (std::cout << nbips << ">=" << nclsim << endl && false));
-//   energy += Clique::intrapsweight*(nbips-nclsim);
-  energy += Clique::intrapsweight*nb2*nbsujets;
+    //   Esimil = 4.0*(nbips-nclsim);
+    ASSERT(nbips>=nclsim || (std::cout << nbips << ">=" << nclsim << endl && false));
+    //   energy += Clique::intrapsweight*(nbips-nclsim);
+    energy += Clique::intrapsweight * nb2 * nbsujets;
 
-  return energy;
+    return energy;
 }
 
 

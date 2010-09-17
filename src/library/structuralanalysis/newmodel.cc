@@ -46,7 +46,9 @@ void NewModel::Step(vector<int> &random, long double temp, uint &mod){
                 uint aux = cliquesDuSite[ random[i] ][ n ];
 
                 // Updating The System Depending On The Clique Type
-                if ( cliques[ aux ].type == DATADRIVEN || cliques[ aux ].type == INTRAPRIMALSKETCH ){
+                if ( cliques[ aux ].type == DATADRIVEN ||
+                        cliques[ aux ].type == INTRAPRIMALSKETCH ) {//||
+//                        cliques[ aux ].type == GLOBAL ){
 
                     globalenergieslabels[ k ] += cliques[ aux ].updateEnergy( random[ i ], old, false, nbsujets );
 

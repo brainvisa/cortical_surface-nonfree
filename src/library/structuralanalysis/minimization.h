@@ -13,6 +13,7 @@ class SurfaceBased_StructuralAnalysis {
     public:
 
         std::vector<uint> ipscliques;
+        int globalclique;
 
         long double energy;
         uint nbsujets;
@@ -95,13 +96,20 @@ class SurfaceBased_StructuralAnalysis {
 
         void importGraphNodesAndCliques ( std::vector<surf::ScaleSpaceBlob *> &ssblobs, std::vector<surf::SSBClique> &ssbcliques ) {
             ConvertSSBlobsToSites ( ssblobs, this->sites );
+
             GetSimilarityCliquesFromSSBCliques( ssbcliques, this->sites, this->cliques, this->cliquesDuSite );
+
+            BuildGlobalClique( this->sites, this->cliquesDuSite, this->cliques );
             BuildDataDrivenCliques( this->sites, this->cliquesDuSite, this->cliques );
             BuildMaximalOrderCliques( this->sites, this->cliquesDuSite, this->cliques );
-            for ( uint i = 0 ; i < this->cliques.size() ; i++ )
+
+            for ( uint i = 0 ; i < this->cliques.size() ; i++ ) {
                 if ( this->cliques[i].type == INTRAPRIMALSKETCH )
                     this->ipscliques.push_back(i);
-            
+                if ( this->cliques[i].type == GLOBAL )
+                    this->globalclique = i;
+            }
+
             std::set<std::string> subjects;
             for ( uint i = 0 ; i < this->sites.size() ; i++ )
                 subjects.insert(this->sites[i]->subject);

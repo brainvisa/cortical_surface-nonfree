@@ -1,5 +1,5 @@
-#ifndef AIMS_ANNEAL_H
-#define AIMS_ANNEAL_H
+#ifndef AIMS_NEWMODEL_H
+#define AIMS_NEWMODEL_H
 #include <cortical_surface/structuralanalysis/minimization.h>
 #include <cortical_surface/structuralanalysis/cliques.h>
 

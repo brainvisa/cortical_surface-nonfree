@@ -537,7 +537,6 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
             surf::GreyLevelBlob *blob = blobs[blobs.size()-1];
 
             (*iv)->getProperty( "scale", scale );
-
             (*iv)->getProperty( "t", t );
             (*iv)->getProperty( "label", label );
             (*iv)->getProperty( "nodes", nodes_list );
@@ -546,7 +545,7 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
             assert(nodes_list.size() == latitudes.size());
 
             for ( uint i = 0 ; i < nodes_list.size() ; i++ ) {
-                
+
                 (blob->raw_coordinates)[nodes_list[i]] = vector<float>(3);
                 (blob->raw_coordinates)[nodes_list[i]][0] = subject.mesh->vertex()[nodes_list[i]][0];
                 (blob->raw_coordinates)[nodes_list[i]][1] = subject.mesh->vertex()[nodes_list[i]][1];
@@ -903,7 +902,7 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
                     longitudes.push_back( (float) blobs[i]->coordinates[*it][1] );
             }
             vert->setProperty( "x", latitudes );
-            
+
             if ( latitudes.size() == longitudes.size() ) {
                 vert->setProperty( "y", longitudes );
             }

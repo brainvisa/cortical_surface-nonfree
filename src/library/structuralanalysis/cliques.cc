@@ -42,16 +42,16 @@ void Clique::updateSubjectsCount ( ) {
                 labelscount[blobs[i]->label] = 0;
                 aux[blobs[i]->label] = std::set<std::string>();
             }
-            aux[blobs[i]->label].insert(blobs[i]->subject);            
+            aux[blobs[i]->label].insert(blobs[i]->subject);
         }
 
         std::map<int, std::set<std::string> >::iterator itset;
-        for ( itset = aux.begin() ; itset != aux.end() ; itset++ ) { 
+        for ( itset = aux.begin() ; itset != aux.end() ; itset++ ) {
             subjectscount[(*itset).first] = (*itset).second.size();
             std::cout << (*itset).second.size() << " " << std::flush;
         }
         std::cout << std::endl;
-        
+
     }
 }
 
@@ -248,6 +248,21 @@ void BuildDataDrivenCliques( vector<Site *> &sites,
   }
 }
 
+void BuildGlobalClique( vector<Site *> &sites,
+                                  vector<vector<int> > &cliquesDuSite,
+                                  vector<Clique> &cliques ) {
+    Clique c;
+    c.type = GLOBAL;
+
+    for ( uint i = 0 ; i < sites.size() ; i++ ) {
+
+        cliquesDuSite[ sites[i]->index ].push_back( cliques.size() );
+        c.blobs.push_back( sites[i] );
+    }
+    cliques.push_back( c );
+
+
+}
 
 //##############################################################################
 

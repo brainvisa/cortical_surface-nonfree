@@ -30,18 +30,15 @@ class Clique{
                 case DATADRIVEN:
                     ASSERT( blobs.size() == 1 );
                     if ( blobs[0]->label != 0 ){
-//                        if (blobs[0]->t < ddx1) energy = 1.0;
-//                        else {
-//                        energy =  pow(ddx2/2.0,2)/(pow(0.5*ddx2,2)+pow(blobs[0]->t -ddx1,2));
-//                        }
-//                        energy = 0.0;
-                        energy = blobs[0]->t;
-                        if ( energy > 10.0 )
-                            energy = 0.0001;
-                        else if ( energy < 0.0 )
-                            assert(false);
-                        else
-                            energy = 1.0 - energy / 10.0;
+
+                        energy = 0.0;
+//                        energy = blobs[0]->t;
+//                        if ( energy > 10.0 )
+//                            energy = 0.0001;
+//                        else if ( energy < 0.0 )
+//                            assert(false);
+//                        else
+//                            energy = 1.0 - energy / 10.0;
                     }
                     else {
                         energy = 0.0;
@@ -192,7 +189,7 @@ class Clique{
         }
 
         void updateLabelsCount();
-        
+
         void updateSubjectsCount();
 
         static void setParameters ( float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh, float _globalweight );
@@ -206,6 +203,7 @@ double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bb
 
 void BuildMaximalOrderCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
 void BuildDataDrivenCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
+void BuildGlobalClique( std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques );
 
 void getCliquesFromSSBCliques ( std::vector<surf::SSBClique> &ssbcliques,
                                 std::vector<Site *> &sites,
