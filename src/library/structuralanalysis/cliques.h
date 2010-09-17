@@ -22,7 +22,7 @@ class Clique{
         double energie;
         float rec;
         std::map<int, uint> labelscount;
-        std::map<int, uint> subjectscount;
+        std::map<int, std::set<std::string> > subjectscount;
 
         float computeEnergy (bool save, uint CLIQUESNBSUJETS) {
             float energy = -1.0;
@@ -81,11 +81,11 @@ class Clique{
                 case GLOBAL:
                     energy = 0;
                     for ( uint j = 1 ; j < subjectscount.size() ; j++ ) {
-                        assert( subjectscount[j] <= CLIQUESNBSUJETS );
-                        if ( subjectscount[j] == CLIQUESNBSUJETS )
+                        assert( subjectscount[j].size() <= CLIQUESNBSUJETS );
+                        if ( subjectscount[j].size() == CLIQUESNBSUJETS )
                             energy += 0;
                         else
-                            energy += globalweight* (CLIQUESNBSUJETS - subjectscount[j]);
+                            energy += globalweight* (CLIQUESNBSUJETS - subjectscount[j].size());
                     }
                     energy *= CLIQUESNBSUJETS;
 
@@ -168,19 +168,19 @@ class Clique{
                     else {
                         if ( old == 0 )
                             energy = 0.0;
-                        else if ( subjectscount[ old ] < CLIQUESNBSUJETS )
+                        else if ( subjectscount[ old ].size() < CLIQUESNBSUJETS )
                             energy += -_globalweight;
 
                         if ( blobs[j]->label == 0 )
                             energy += 0.0;
-                        else if ( subjectscount[ blobs[j]->label ] < CLIQUESNBSUJETS )
+                        else if ( subjectscount[ blobs[j]->label ].size() < CLIQUESNBSUJETS )
                             energy += _globalweight;
                     }
                     energy *= CLIQUESNBSUJETS;
             //           energy = 0.0;
                     if (save){
-                        labelscount[blobs[j]->label]++;
-                        labelscount[old]--;
+                        subjectscount[blobs[j]->label].insert(blobs[j]->subject);
+                        subjectscount[old].erase(blobs[j]->subject);
                     }
                 break;
             }
@@ -195,7 +195,7 @@ class Clique{
         static void setParameters ( float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh, float _globalweight );
 
         static float getIntraPSWeight() { return intrapsweight; }
-        Clique(){ type = UNKNOWN; energie = 0.0; blobs = std::vector<Site *>(); labelscount = std::map<int,uint>();  subjectscount = std::map<int, uint>(); }
+        Clique(){ type = UNKNOWN; energie = 0.0; blobs = std::vector<Site *>(); labelscount = std::map<int,uint>();  subjectscount = std::map<int, std::set<std::string> >(); }
 
 };
 

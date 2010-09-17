@@ -515,25 +515,26 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
         std::string test;
         (*iv)->getProperty( "index", index );
         (*iv)->getProperty( "subject", subject );
-
-        for ( uint i = 0 ; i < sites.size() ; i++ )
-            if ( sites[i]->graph_index == index && sites[i]->subject == subject ) {
+        
+        for ( uint i = 0 ; i < sites.size() ; i++ ) {
+            
+            if ( sites[i]->index == index && sites[i]->subject == subject ) {
                 std::ostringstream s;
-
                 s << sites[i]->label ;
                 (*iv)->setProperty( "label", s.str());
                 (*iv)->setProperty( "name", s.str());
 //                node = sites[i]->node;
 //                (*iv)->setProperty( "node", node);
-                label_occur_number = sites[i]->label_occur_number;
-                (*iv)->setProperty( "label_occur_number", label_occur_number);
-                value = sites[i]->significance;
-                (*iv)->setProperty( "significance", value);
-                value = sites[i]->t_rankperc;
-                (*iv)->setProperty( "t_rankperc", value);
-                value = sites[i]->sim_rankperc;
-                (*iv)->setProperty( "sim_rankperc", value);
+//                label_occur_number = sites[i]->label_occur_number;
+//                (*iv)->setProperty( "label_occur_number", label_occur_number);
+//                value = sites[i]->significance;
+//                (*iv)->setProperty( "significance", value);
+//                value = sites[i]->t_rankperc;
+//                (*iv)->setProperty( "t_rankperc", value);
+//                value = sites[i]->sim_rankperc;
+//                (*iv)->setProperty( "sim_rankperc", value);
             }
+        }
     }
 
 }

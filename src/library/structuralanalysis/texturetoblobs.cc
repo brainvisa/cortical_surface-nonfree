@@ -587,7 +587,7 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
 
     listGLBindices = std::map<int, std::set<int> >();
     int iNbLinks = 0;
-    int iNbSSB = 0;
+    int iNbSSB = ssblobs.size();
 
     for ( iv = graph->vertices().begin() ; iv != graph->vertices().end() ; ++iv ) {
         if ( (*iv)->getSyntax() == "ssb" ) {
@@ -686,28 +686,31 @@ void TextureToBlobs::RecoverBlobsFromGLBOnly( Graph *graph,
 
     int iNbGLB = blobs.size();
     getGreyLevelBlobsFromIndividualGraph ( graph, subject, blobs, initNull );
-    iNbGLB = blobs.size() - iNbGLB;
+//    iNbGLB = blobs.size() - iNbGLB;
 
-    int iNbSSB = 0;
+    int iNbSSB = ssblobs.size();
 
     // We Add A Fictitious Ssb Per Glb
-    for ( uint i = 0 ; i < iNbGLB ; i++ ) {
+    for ( uint i = 0 ; i < blobs.size() - iNbGLB ; i++ ) {
         ssblobs.push_back( new surf::ScaleSpaceBlob() );
         surf::ScaleSpaceBlob *ssblob = ssblobs[ssblobs.size()-1];
 
-        ssblob->index = iNbSSB++;
-        ssblob->t = blobs[blobs.size() - iNbGLB + i]->t;
+        ssblob->index = iNbSSB + i;
+        ssblob->t = blobs[iNbGLB + i]->t;
         ssblob->subject = subject.subject_id;
+        ssblob->tmin = blobs[iNbGLB + i]->scale;
+        ssblob->tmax = blobs[iNbGLB + i]->scale;
 
-        ssblob->blobs.insert( blobs[blobs.size() - iNbGLB + i] );
+        ssblob->blobs.insert( blobs[iNbGLB + i] );
         ssblob->getNodesFromBlob( * (ssblob->blobs.begin()) );
-        blobs[blobs.size() - iNbGLB + i]->ssb_parent = ssblob;
+        blobs[iNbGLB + i]->ssb_parent = ssblob;
     }
 
-    assert( iNbSSB == iNbGLB );
+    
+    assert( blobs.size() - iNbGLB == ssblobs.size() - iNbSSB );
 
-    cout << iNbGLB << " blobs added" << endl;
-    cout << iNbSSB << " ssblobs added " << endl;
+    cout << blobs.size() - iNbGLB << " blobs added" << endl;
+    cout << ssblobs.size() - iNbSSB << " ssblobs added " << endl;
 
     for (uint i = blobs.size() - iNbGLB ; i < blobs.size() ; i++)
         assert(blobs[i]->ssb_parent != NULL);
@@ -1134,7 +1137,6 @@ void TextureToBlobs::AimsGroupGraph ( Graph *graph,
         vert->setProperty( "subject", ssblobs[i]->subject );
         vert->setProperty( "tmin", ssblobs[i]->tmin );
         vert->setProperty( "tmax", ssblobs[i]->tmax );
-        vert->setProperty( "tValue", 100.0 );
         vert->setProperty( "nodes", set2vector((*(ssblobs[i]->blobs.begin()))->nodes) );
 
          // We associate the proper mesh patch from "objects" to the vertex

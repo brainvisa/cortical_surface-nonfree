@@ -35,19 +35,17 @@ void Clique::updateLabelsCount ( ) {
 
 void Clique::updateSubjectsCount ( ) {
     if ( type == GLOBAL ) {
-        subjectscount = std::map<int, uint>();
-        std::map<int, std::set<std::string> > aux;
+        subjectscount = std::map<int, std::set<std::string> >();
+
         for ( uint i = 0 ; i < blobs.size() ; i++ ) {
-            if ( aux.find( blobs[i]->label) == aux.end() ) {
-                labelscount[blobs[i]->label] = 0;
-                aux[blobs[i]->label] = std::set<std::string>();
+            if ( subjectscount.find( blobs[i]->label) == subjectscount.end() ) {
+                subjectscount[blobs[i]->label] = std::set<std::string>();
             }
-            aux[blobs[i]->label].insert(blobs[i]->subject);
+            subjectscount[blobs[i]->label].insert(blobs[i]->subject);
         }
 
         std::map<int, std::set<std::string> >::iterator itset;
-        for ( itset = aux.begin() ; itset != aux.end() ; itset++ ) {
-            subjectscount[(*itset).first] = (*itset).second.size();
+        for ( itset = subjectscount.begin() ; itset != subjectscount.end() ; itset++ ) {
             std::cout << (*itset).second.size() << " " << std::flush;
         }
         std::cout << std::endl;
@@ -441,9 +439,11 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
 
 ////##############################################################################
 
+
 std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCliques3D ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
                                                    GroupData &data,
-                                                   float threshold ) {
+                                                   float threshold,
+                                                   int type_distance ) {
 
     std::vector<surf::SSBClique > cliques;
 
@@ -451,6 +451,12 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
     surf::GreyLevelBlob *b1max, *b2max;
 
     // Start of cliques construction
+    if ( type_distance == DISTANCE_LATITUDES ) 
+        std::cout << "DISTANCE_LATITUDES" << std::endl;
+    else if ( type_distance == DISTANCE_3DEUCLIDIAN )
+        std::cout << "DISTANCE_3DEUCLIDIAN" << std::endl;
+
+
 
     for ( uint i = 0 ; i < ssblobs.size() - 1 ; i++ ) {
 
@@ -471,16 +477,21 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
                 b2max = *itB2;
                 int max1 = b1max->getMaximumNode(*(data[ssblobs[i]->subject]->tex));
                 int max2 = b2max->getMaximumNode(*(data[ssblobs[j]->subject]->tex));
-//                Point3df p1 (b1max->coordinates[max1][0], b1max->coordinates[max1][1], 0.0);
-//                Point3df p2 (b2max->coordinates[max2][0], b2max->coordinates[max2][1], 0.0);
-//                Point3df p = p1-p2;
-//                distance = sqrt(10*p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
-                Point3df p1 (b1max->raw_coordinates[max1][0], b1max->raw_coordinates[max1][1], b1max->raw_coordinates[max1][2]);
-                Point3df p2 (b2max->raw_coordinates[max2][0], b2max->raw_coordinates[max2][1], b2max->raw_coordinates[max2][2]);
-                Point3df p = p1-p2;
-                distance = p.norm();
+                
+                if ( type_distance == DISTANCE_LATITUDES ) {
+                    Point3df p1 (b1max->coordinates[max1][0], b1max->coordinates[max1][1], 0.0);
+                    Point3df p2 (b2max->coordinates[max2][0], b2max->coordinates[max2][1], 0.0);
+                    Point3df p = p1-p2;
+                    distance = sqrt(10*p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+                }
+                else if ( type_distance == DISTANCE_3DEUCLIDIAN ) {
+                    Point3df p1 (b1max->raw_coordinates[max1][0], b1max->raw_coordinates[max1][1], b1max->raw_coordinates[max1][2]);
+                    Point3df p2 (b2max->raw_coordinates[max2][0], b2max->raw_coordinates[max2][1], b2max->raw_coordinates[max2][2]);
+                    Point3df p = p1-p2;
+                    distance = p.norm();
+                }
 
-                std::cout << distance << " " << std::flush;
+                // std::cout << distance << " " << std::flush;
 
                 if ( distance < threshold ) {
                     cliques.push_back( surf::SSBClique(ssblobs[i], ssblobs[j], distance ) );

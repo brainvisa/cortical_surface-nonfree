@@ -8,7 +8,7 @@ using namespace std;
 
 
 
-void Anneal::Step(vector<int> &random, long double temp, uint &mod){
+void Anneal::Step(std::vector<int> &random, long double temp, uint &mod){
 
     long double somme = 0.0;
     int old;
@@ -21,14 +21,14 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 
         old = sites[random[i]]->label;
 
-        vector<int> zoneLab;
+        std::vector<int> zoneLab;
 //         cout << "[" << i << "] " << flush;
 
         // Selecting The Few Labels That The Current Site Can Take (short loop)
         for ( it = listeZones[ random[i] ].begin() ; it != listeZones[ random[i] ].end() ; it++)
             zoneLab.push_back( *it );
 
-        vector<long double> globalenergieslabels( zoneLab.size() ),
+        std::vector<long double> globalenergieslabels( zoneLab.size() ),
                             expenergies( zoneLab.size() ),
                             total( zoneLab.size() );
 
@@ -80,10 +80,7 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 
             }
 
-
-
             total[k] = ( nbips1 - nclsim1 - (nbips2 - nclsim2) );
-
 
         //       globalenergieslabels[k] += Clique::intrapsweight * total[k];
 
@@ -138,7 +135,7 @@ void Anneal::Step(vector<int> &random, long double temp, uint &mod){
 
 void Anneal::Run ( int verbose ){
 
-  vector< int >  indices_start;
+  std::vector< int >  indices_start;
   for( uint i = 0 ; i < sites.size() ; i++ )
     indices_start.push_back(i);
 
@@ -146,7 +143,7 @@ void Anneal::Run ( int verbose ){
 
   uint mod = 1, ite = 0, nb_under_threshold = 0, test = 1;
 
-  cout.precision(2);
+  std::cout.precision(2);
 
   FILE * f1, *f;
   if ( labelsPath != "" )
@@ -161,16 +158,14 @@ void Anneal::Run ( int verbose ){
         cliques[k].computeEnergy(true, nbsujets);
     }
 
-//    if ( run == 1 ) {
         while ( nb_under_threshold < 5 || mod != 0 ) {
-            //    while (temp>200.0){
 
             if ( mod != 0 )
                 nb_under_threshold = 0;
             else
                 nb_under_threshold++;
 
-            cout << " T=" << temp << " it="<< ite++ << " " << flush ;
+            std::cout << " T=" << temp << " it="<< ite++ << " " << std::flush ;
 
             if ( this->labelsPath != "" ) {
                 for ( uint i0 = 0 ; i0 < sites.size() ; i0++ ) {
@@ -178,8 +173,8 @@ void Anneal::Run ( int verbose ){
                 }
                 fprintf(f1, "\n");
             }
-            vector< int > indices( indices_start );
-            vector< int > random;
+            std::vector< int > indices( indices_start );
+            std::vector< int > random;
 
             for ( uint i = 0 ; i < sites.size() ; i++ ) {
                 int index = (int)(UniformRandom() * indices.size());
@@ -194,7 +189,7 @@ void Anneal::Run ( int verbose ){
 
             if (verbose == 1) ShortSummaryLabels();
             // double everif= getTotalEnergy();
-            cout << " E=" << energy << endl; //" Everif=" << everif << endl;
+            std::cout << " E=" << energy << std::endl; //" Everif=" << everif << endl;
 
             temp = temp * 0.99;
 

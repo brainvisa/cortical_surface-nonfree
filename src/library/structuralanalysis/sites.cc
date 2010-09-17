@@ -101,7 +101,7 @@ void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites( std::vector<surf::S
         sites.push_back(new Site());
         Site *s = sites[sites.size() - 1];
         s->index = ssblobs[i]->index;
-
+        s->graph_index = ssblobs[i]->index;
         s->subject = ssblobs[i]->subject;
         s->label = ssblobs[i]->label;
         s->tmin = ssblobs[i]->tmin;
