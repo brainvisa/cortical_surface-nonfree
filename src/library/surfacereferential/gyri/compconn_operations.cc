@@ -7,148 +7,164 @@
 
 using namespace std;
 
-vector<vector<uint> > getComposantesConnexes(const set<uint> &v, const vector<set<uint> > &voisins){
-   vector<set<uint> > result;
-   vector<vector<uint> > result2;
-   set<uint>::iterator it,it3,ite;
-   for (it=v.begin();it!=v.end();it++){
-      set<uint> v2;
-      v2.insert(*it);
-      result.push_back(v2);
-   }
+std::vector< std::vector<uint> > getComposantesConnexes ( const std::set<uint> &v,
+                                                          const std::vector<std::set<uint> > &voisins ) {
+    std::vector< std::set<uint> > result;
+    std::vector< std::vector<uint> > result2;
+    std::set<uint>::iterator it, it3, ite;
+    for ( it = v.begin() ; it != v.end() ; it++ ) {
+        std::set<uint> v2;
+        v2.insert( *it );
+        result.push_back( v2 );
+    }
 
-   for (uint i=0;i<result.size();i++){
+    for ( uint i = 0 ; i < result.size() ; i++ ) {
 
-      printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [%d]    ",getRealSize(result));
-      fflush(NULL);
-      for (ite=result[i].begin();ite!=result[i].end();ite++){
-         for (it=voisins[*ite].begin(); it!=voisins[*ite].end();it++){
-            if (v.find(*it)!=v.end()){
-               for (uint k=0;k<result.size();k++){
-                  if (k!=i && result[k].find(*it)!=result[k].end()) {
-                     for (it3=result[k].begin();it3!=result[k].end();it3++){
-                        result[i].insert(*it3);
-                     }
-                     result[k].clear();
-                  }
-               }
+        std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [" << getRealSize(result) << "]" << std::flush;
+
+        for ( ite = result[i].begin() ; ite != result[i].end() ; ite++ ) {
+            for ( it = voisins[*ite].begin() ; it != voisins[*ite].end() ; it++ ) {
+                if ( v.find(*it) != v.end() ) {
+                    for ( uint k = 0 ; k < result.size() ; k++ ) {
+                        if ( k != i && result[k].find(*it) != result[k].end() ) {
+                            for ( it3 = result[k].begin() ; it3 != result[k].end() ; it3++ ) {
+                                result[i].insert(*it3);
+                            }
+                            result[k].clear();
+                        }
+                    }
+                }
             }
-         }
-      }
-   }
+        }
+    }
 
 
-   for (uint i=0;i<result.size();i++)
-      if (result[i].size()!=0) result2.push_back(setToVector(result[i]));
+    for ( uint i = 0 ; i < result.size() ; i++ )
+        if ( result[i].size() != 0 ) result2.push_back( setToVector(result[i]) );
 
-   printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [%d]         \n",result2.size());
-   fflush(NULL);
-   return result2;
+    std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [" << result2.size() << "]" << std::endl;
+    return result2;
 }
 
-vector<vector<uint> > getComposantesConnexes2(const vector<uint> &v, const vector<set<uint> > &voisins){
+std::vector<std::vector<uint> > getComposantesConnexes2 ( const std::vector<uint> &v,
+                                                          const std::vector<std::set<uint> > &voisins ) {
 
-   vector<vector<uint> > result;
-   int test;
-   set<uint>::iterator it;
-   for (uint i=0;i<v.size();i++){
-      vector<uint> v2;
-      v2.push_back(v[i]);
-      result.push_back(v2);
-   }
+    std::vector<std::vector<uint> > result;
+    int test;
+    std::set<uint>::iterator it;
+    for ( uint i = 0 ; i < v.size() ; i++ ) {
+        std::vector<uint> v2;
+        v2.push_back(v[i]);
+        result.push_back(v2);
+    }
 
 
-   for (uint i=0;i<result.size();i++){
-      if (test != -1) i=0;
-      printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [%d]    ",result.size());
-      fflush(NULL);
-      test = -1;
-      for (uint j=0;j<result[i].size() && test == -1;j++){
-         for (it=voisins[result[i][j]].begin(); it!=voisins[result[i][j]].end() && test == -1;it++){
-            test = -1;
-            //printf("(%d,%d) %d %d | ", i,j,*it, voisins[result[i][j]].size());
-            if (find(v,*it) != -1){
-               //printf("\n%d\n", find(v,*it));
-               for (uint k=0;k<result.size() && test == -1;k++){
-                  if (k!=i && find(result[k], *it)!=-1) test = k;
-               }
-               if (test != -1){
-                  for (uint m=0;m<result[test].size();m++){
-                     result[i].push_back(result[test][m]);
-                  }
-                  result.erase(result.begin() + test);
-               }
+    for ( uint i = 0 ; i < result.size() ; i++ ) {
+        if ( test != -1 )
+            i = 0;
+        std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [" << result.size() << "]" << std::flush;
+        test = -1;
+        for ( uint j = 0 ; j < result[i].size() && test == -1 ; j++ ) {
+            for ( it = voisins[result[i][j]].begin() ; it!=voisins[result[i][j]].end() && test == -1 ; it++ ) {
+                test = -1;
+                //printf("(%d,%d) %d %d | ", i,j,*it, voisins[result[i][j]].size());
+                if ( find(v,*it) != -1 ) {
+                    //printf("\n%d\n", find(v,*it));
+                    for ( uint k = 0 ; k < result.size() && test == -1 ; k++ ) {
+                        if ( k != i && find(result[k], *it) != -1)
+                            test = k;
+                    }
+                    if ( test != -1 ) {
+                        for ( uint m = 0 ; m < result[test].size() ; m++ ) {
+                            result[i].push_back(result[test][m]);
+                        }
+                        result.erase(result.begin() + test);
+                    }
+                }
             }
-         }
-      }
-   }
-   printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [%d]         \n",result.size());
-   fflush(NULL);
-   return result;
+        }
+    }
+    std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b     [" << result.size() << "]" << std::endl;
+    return result;
 }
 
-vector<vector<uint> > getComposantesConnexes(short gyruslabel, const vector<set<uint> > &voisins, const Texture<short> &inTex){
-   set<uint> v;
-   for (uint i=0;i<inTex.nItem();i++)
-      if (inTex.item(i)==gyruslabel) v.insert(i);
-   cout << v.size() << endl;
-   return getComposantesConnexes(v, voisins);
+std::vector<std::vector<uint> > getComposantesConnexes ( short gyruslabel,
+                                                         const std::vector<std::set<uint> > &voisins,
+                                                         const Texture<short> &inTex ) {
+    std::set<uint> v;
+    for ( uint i = 0 ; i < inTex.nItem() ; i++ )
+        if ( inTex.item(i) == gyruslabel )
+            v.insert(i);
+    std::cout << v.size() << std::endl;
+    return getComposantesConnexes(v, voisins);
 }
 
 
-vector<uint> fusionComposantesConnexes(uint newpoint, const vector<vector<uint> > &compConn, const vector<set<uint> > &voisins){
-   set<uint> result;
-   set<uint>::iterator it;
-   ASSERT(newpoint<voisins.size());
-   for (it=voisins[newpoint].begin();it!=voisins[newpoint].end();it++)
-      for (uint i=0;i<compConn.size();i++)
-         if (find(compConn[i], *it)!=-1) result.insert(i);
+std::vector<uint> fusionComposantesConnexes ( uint newpoint,
+                                              const std::vector<std::vector<uint> > &compConn,
+                                              const std::vector<std::set<uint> > &voisins ) {
+    std::set<uint> result;
+    std::set<uint>::iterator it;
+    ASSERT( newpoint<voisins.size() );
+    for ( it = voisins[newpoint].begin() ; it != voisins[newpoint].end() ; it++ )
+        for ( uint i = 0 ; i < compConn.size() ; i++ )
+            if ( find(compConn[i], *it) != -1)
+                result.insert(i);
 
-   return setToVector(result);
+    return setToVector(result);
 }
 
-vector<vector<uint> > fusionComposantesConnexes(uint comp1, uint comp2, const vector<vector<uint> > &compConn){
-   vector<vector<uint> > result;
-   ASSERT(comp1 < compConn.size() && comp2 < compConn.size());
-   vector<uint> aux(compConn[comp1]);
-   push_vector(aux, compConn[comp2]);
-   for (uint i=0;i<compConn.size();i++)
-      if (i==comp1) result.push_back(aux);
-      else if (i==comp2);
-      else result.push_back(compConn[i]);
+std::vector<std::vector<uint> > fusionComposantesConnexes ( uint comp1,
+                                                            uint comp2,
+                                                            const std::vector<std::vector<uint> > &compConn ) {
+    std::vector<std::vector<uint> > result;
+    ASSERT( comp1 < compConn.size() && comp2 < compConn.size() );
+    std::vector<uint> aux(compConn[comp1]);
+    push_vector(aux, compConn[comp2]);
+    for ( uint i = 0 ; i < compConn.size() ; i++ )
+        if ( i == comp1 )
+            result.push_back(aux);
+        else if ( i == comp2 );
+        else result.push_back( compConn[i] );
 
-   return result;
+    return result;
 }
 
-void raccomodage(vector<vector<uint> > &compConn, const vector<uint> &candidates, const vector<set<uint> > &voisins){
-   uint test=0;
-   for (uint i=0;i<candidates.size() && test==0;i++){
-      vector<uint> fcc(fusionComposantesConnexes(candidates[i], compConn, voisins));
-      if (fcc.size()==2){
-         compConn[fcc[0]].push_back(candidates[i]);
-         fusionComposantesConnexes(fcc[0],fcc[1],compConn);
-         test=1;
-      }
-   }
-   vector<uint> aux;
-   for (uint i=0;i<compConn.size();i++)
-      for (uint j=i+1;j<compConn.size();j++){
-         aux.clear();
-         push_vector(aux, compConn[i]);
-         push_vector(aux, compConn[j]);
-         if (getComposantesConnexes2(aux, voisins).size()==1) {
-            compConn = fusionComposantesConnexes(i,j,compConn);
-            j=i=compConn.size();
-         }
-      }
+void raccomodage ( std::vector<std::vector<uint> > &compConn,
+                   const std::vector<uint> &candidates,
+                   const std::vector<std::set<uint> > &voisins){
+    uint test = 0;
+    for ( uint i = 0 ; i < candidates.size() && test == 0 ; i++ ) {
+        std::vector<uint> fcc ( fusionComposantesConnexes( candidates[i], compConn, voisins ) );
+        if ( fcc.size() == 2 ) {
+            compConn[fcc[0]].push_back(candidates[i]);
+            fusionComposantesConnexes(fcc[0], fcc[1], compConn);
+            test = 1;
+        }
+    }
+    std::vector<uint> aux;
+    for ( uint i = 0 ; i < compConn.size() ; i++ )
+        for ( uint j = i + 1 ; j < compConn.size() ; j++ ) {
+            aux.clear();
+            push_vector(aux, compConn[i]);
+            push_vector(aux, compConn[j]);
+            if ( getComposantesConnexes2(aux, voisins).size() == 1 ) {
+                compConn = fusionComposantesConnexes(i, j, compConn);
+                j = i = compConn.size();
+            }
+        }
 }
 
-pair<vector<uint>, vector<uint> > sortRightLeft(AimsSurface<3,Void> &inMesh, const pair<vector<uint>, vector<uint> > &hautBas,
-      const pair<vector<uint>, vector<uint> > &gaucheDroite, const vector<set<uint> > &voisins){
-   double m=0.0,n=0.0;
-   Point3df p1(0.0,0.0,0.0);
-   Point3df p2(0.0,0.0,0.0);
-   pair<vector<uint>, vector<uint> > result;
+std::pair<std::vector<uint>, std::vector<uint> > sortRightLeft ( AimsSurface<3,Void> &inMesh,
+                                                                 const std::pair<std::vector<uint>,
+                                                                 std::vector<uint> > &hautBas,
+                                                                 const std::pair<std::vector<uint>,
+                                                                 std::vector<uint> > &gaucheDroite,
+                                                                 const std::vector<std::set<uint> > &voisins ) {
+    double m = 0.0, n = 0.0;
+    Point3df p1(0.0,0.0,0.0);
+    Point3df p2(0.0,0.0,0.0);
+    std::pair<std::vector<uint>, std::vector<uint> > result;
    /*
    Point3df o(0.0,0.0,0.0);
 
@@ -203,41 +219,41 @@ pair<vector<uint>, vector<uint> > sortRightLeft(AimsSurface<3,Void> &inMesh, con
    n = n/gaucheDroite.second.size();
    printf("%.3f\n", n);
    */
-   for (uint i=0;i<gaucheDroite.first.size();i++){
-      p1[0] += inMesh.vertex()[gaucheDroite.first[i]][0];
-      p1[1] += inMesh.vertex()[gaucheDroite.first[i]][1];
-      p1[2] += inMesh.vertex()[gaucheDroite.first[i]][2];
-   }
-   p1[0] /= gaucheDroite.first.size();
-   p1[1] /= gaucheDroite.first.size();
-   p1[2] /= gaucheDroite.first.size();
+    for ( uint i = 0 ; i < gaucheDroite.first.size() ; i++ ) {
+        p1[0] += inMesh.vertex()[gaucheDroite.first[i]][0];
+        p1[1] += inMesh.vertex()[gaucheDroite.first[i]][1];
+        p1[2] += inMesh.vertex()[gaucheDroite.first[i]][2];
+    }
+    p1[0] /= gaucheDroite.first.size();
+    p1[1] /= gaucheDroite.first.size();
+    p1[2] /= gaucheDroite.first.size();
 
-   for (uint i=0;i<gaucheDroite.second.size();i++){
-      p2[0] += inMesh.vertex()[gaucheDroite.second[i]][0];
-      p2[1] += inMesh.vertex()[gaucheDroite.second[i]][1];
-      p2[2] += inMesh.vertex()[gaucheDroite.second[i]][2];
-   }
-   p2[0] /= gaucheDroite.second.size();
-   p2[1] /= gaucheDroite.second.size();
-   p2[2] /= gaucheDroite.second.size();
+    for ( uint i = 0 ; i < gaucheDroite.second.size() ; i++ ) {
+        p2[0] += inMesh.vertex()[gaucheDroite.second[i]][0];
+        p2[1] += inMesh.vertex()[gaucheDroite.second[i]][1];
+        p2[2] += inMesh.vertex()[gaucheDroite.second[i]][2];
+    }
+    p2[0] /= gaucheDroite.second.size();
+    p2[1] /= gaucheDroite.second.size();
+    p2[2] /= gaucheDroite.second.size();
 
-   m = p1[1];
-   n = p2[1];
+    m = p1[1];
+    n = p2[1];
 
-   if (m>n) {
-      result.first = *new vector<uint>(gaucheDroite.first);
-      result.second = *new vector<uint>(gaucheDroite.second);
-   }
-   else if (n>m){
-      result.first = *new vector<uint>(gaucheDroite.second);
-      result.second = *new vector<uint>(gaucheDroite.first);
-   }
-   else {
-      printf("Impossible de distinguer gauche et droite !\n");
-      result.first = *new vector<uint>(gaucheDroite.first);
-      result.second = *new vector<uint>(gaucheDroite.second);
-   }
-   return result;
+    if ( m > n ) {
+        result.first = *new vector<uint>(gaucheDroite.first);
+        result.second = *new vector<uint>(gaucheDroite.second);
+    }
+    else if ( n > m ) {
+        result.first = *new vector<uint>(gaucheDroite.second);
+        result.second = *new vector<uint>(gaucheDroite.first);
+    }
+    else {
+        std::cout << "Impossible de distinguer gauche et droite !" << std::endl;
+        result.first = *new std::vector<uint>(gaucheDroite.first);
+        result.second = *new std::vector<uint>(gaucheDroite.second);
+    }
+    return result;
 }
 
 pair<vector<uint>, vector<uint> > getOppositeSides(pair<vector<uint>, vector<uint> > &hautBas,

@@ -700,13 +700,12 @@ void TextureToBlobs::RecoverBlobsFromGLBOnly( Graph *graph,
         ssblob->subject = subject.subject_id;
         ssblob->tmin = blobs[iNbGLB + i]->scale;
         ssblob->tmax = blobs[iNbGLB + i]->scale;
-
         ssblob->blobs.insert( blobs[iNbGLB + i] );
         ssblob->getNodesFromBlob( * (ssblob->blobs.begin()) );
         blobs[iNbGLB + i]->ssb_parent = ssblob;
     }
 
-    
+
     assert( blobs.size() - iNbGLB == ssblobs.size() - iNbSSB );
 
     cout << blobs.size() - iNbGLB << " blobs added" << endl;

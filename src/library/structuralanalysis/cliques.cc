@@ -451,7 +451,7 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
     surf::GreyLevelBlob *b1max, *b2max;
 
     // Start of cliques construction
-    if ( type_distance == DISTANCE_LATITUDES ) 
+    if ( type_distance == DISTANCE_LATITUDES )
         std::cout << "DISTANCE_LATITUDES" << std::endl;
     else if ( type_distance == DISTANCE_3DEUCLIDIAN )
         std::cout << "DISTANCE_3DEUCLIDIAN" << std::endl;
@@ -477,7 +477,7 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
                 b2max = *itB2;
                 int max1 = b1max->getMaximumNode(*(data[ssblobs[i]->subject]->tex));
                 int max2 = b2max->getMaximumNode(*(data[ssblobs[j]->subject]->tex));
-                
+
                 if ( type_distance == DISTANCE_LATITUDES ) {
                     Point3df p1 (b1max->coordinates[max1][0], b1max->coordinates[max1][1], 0.0);
                     Point3df p2 (b2max->coordinates[max2][0], b2max->coordinates[max2][1], 0.0);
@@ -494,7 +494,7 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
                 // std::cout << distance << " " << std::flush;
 
                 if ( distance < threshold ) {
-                    cliques.push_back( surf::SSBClique(ssblobs[i], ssblobs[j], distance ) );
+                    cliques.push_back( surf::SSBClique(ssblobs[i], ssblobs[j], distance, threshold ) );
                 }
             }
             // The next pair of scale-space blobs will now be processed.
