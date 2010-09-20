@@ -120,16 +120,16 @@ class SubjectData{
                 this->coordinates = LATLON_2D;
             }
             else {
-//                bool isCoordinatesOrFilteringTexture = false;
-//                std::set<float> possibleValues;
-//                possibleValues.insert(-1.0);
-//                possibleValues.insert(-2.0);
-//                possibleValues.insert(0.0);
-//                possibleValues.insert(1.0);
-//                for ( uint i = 0 ; i < this->lat->nItem() && !isCoordinatesOrFiltering; i ++ ) {
-//                    if (this->lat->item(i) != -1 && this->
-//
-//                }
+                //bool isCoordinatesOrFilteringTexture = false;
+                //std::set<float> possibleValues;
+                //possibleValues.insert(-1.0);
+                //possibleValues.insert(-2.0);
+                //possibleValues.insert(0.0);
+                //possibleValues.insert(1.0);
+                //for ( uint i = 0 ; i < this->lat->nItem() && !isCoordinatesOrFiltering; i ++ ) {
+                //    if (this->lat->item(i) != -1 && this->
+                //
+                //}
                 this->coordinates = LAT_1D;
             }
         }
