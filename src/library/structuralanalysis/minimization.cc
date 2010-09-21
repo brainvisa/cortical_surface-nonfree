@@ -6,27 +6,33 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-float max(float a, float b){
-  if (a>b) return a; else return b;
+float max ( float a, float b ) {
+  if ( a > b ) 
+      return a; 
+  else 
+      return b;
   return a;
 }
-float min(float a, float b){
-  if (a<b) return a; else return b;
+float min ( float a, float b ) {
+  if ( a < b ) 
+      return a; 
+  else 
+      return b;
   return a;
 }
 
 struct ltstr_vec
 {
-  bool operator()(const vector<uint> p1, const vector<uint> p2)
-  {
-    assert(p1.size()==p2.size());
-    for (uint i=0;i<p1.size();i++){
-      if (p1[p1.size()-1-i]<p2[p1.size()-1-i])
-        return true;
-      else if (p1[p1.size()-1-i]>p2[p1.size()-1-i])
-        return false;
+    bool operator ( ) ( const std::vector<uint> p1, 
+                      const std::vector<uint> p2) {
+        assert( p1.size() == p2.size() );
+        for ( uint i = 0 ; i < p1.size() ; i++ ) {
+            if ( p1[p1.size()-1-i] < p2[p1.size()-1-i] )
+                return true;
+            else if ( p1[p1.size()-1-i]>p2[p1.size()-1-i] )
+                return false;
+        }
     }
-  }
 };
 
 
@@ -37,7 +43,7 @@ struct ltstr_vec
 void SurfaceBased_StructuralAnalysis::noLabelsZones () {/* vector<pair<Point2df,Point2df> > &labelsZones,
                                                            vector<set<uint> > &zonesListesBlobs,
                                                            vector<set<uint> > &listeZones ){*/
-    listeZones = vector<set<uint> > (sites.size());
+    listeZones = std::vector<std::set<uint> > (sites.size());
 //     zonesListesBlobs = vector<set<uint> >(labelsZones.size()+1);
 //     labelsZones = vector<pair<Point2df,Point2df> > ();
 //     for (uint it=0;it<20;it++){
@@ -47,21 +53,17 @@ void SurfaceBased_StructuralAnalysis::noLabelsZones () {/* vector<pair<Point2df,
 //         labelsZones.push_back(zone);
 //     }
 
-    for (uint i=0;i<21;i++)
+    for ( uint i = 0 ; i < 21 ; i++ )
         labels.push_back(i);
 
-    for (uint j=0;j<sites.size();j++){
+    for ( uint j = 0 ; j < sites.size() ; j++ ) {
 //         listeZones[j].insert(0);
 //         zonesListesBlobs[0].insert(j);
-        for (uint k=0;k<21;k++){
+        for ( uint k = 0 ; k < 21 ; k++ ) {
             listeZones[j].insert(k);
 //             zonesListesBlobs[k+1].insert(j);
-
-
         }
     }
-
-
 }
 
 //###############################################################################################
@@ -209,54 +211,60 @@ long double SurfaceBased_StructuralAnalysis::getClusterEnergy(vector<uint> &comp
 }
 
 long double SurfaceBased_StructuralAnalysis::getLabelEnergy(int label, int type){
-  bool test = true;
-  long double energydd=0.0, energysim=0.0, energy=0.0;
-  uint nclsim=0,nbips=0;
-  vector<int> bysub(nbsujets);
-
-  for (uint i=0;i<cliques.size();i++){
-    cliques[i].updateLabelsCount();
-    cliques[i].computeEnergy(true,nbsujets);
-    if (type==UNKNOWN || cliques[i].type == type){
-      test = true;
-      for (uint j=0;j<cliques[i].blobs.size() && test == true;j++)
-        if (cliques[i].blobs[j]->label != label ) test = false;
-      if (test) {
-          if (cliques[i].type==DATADRIVEN) {energydd += cliques[i].energie; }
-          else if (cliques[i].type==SIMILARITY)  { nclsim++; energysim += cliques[i].energie;
-          }
-
-//         if (false && cliques[i].type==SIMILARITY) std::cout << "(("<<cliques[i].rec << "(" << cliques[i].blobs[0]->label << "(" <<  cliques[i].blobs[0]->node << ")" << "-" << cliques[i].blobs[1]->label <<"(" <<  cliques[i].blobs[1]->node << ")" << ")=>" << cliques[i].energie << ")) ";
-      }
-//       if (cliques[i].type == INTRAPRIMALSKETCH && cliques[i].labelscount[label] > 1 && label != 0) {energy += (cliques[i].labelscount[label]-1)*Clique::getIntraPSWeight();}
+    bool test = true;
+    long double energydd = 0.0, energysim = 0.0, energyglob = 0.0, energy = 0.0;
+    uint nclsim = 0, nbips = 0;
+    std::vector<int> bysub( nbsujets );
+    
+    for ( uint i = 0 ; i < cliques.size() ; i++ ) {
+        cliques[i].updateLabelsCount();
+        cliques[i].updateSubjectsCount();
+        cliques[i].computeEnergy(true,nbsujets);
+        if ( type == UNKNOWN || cliques[i].type == type ) {
+            test = true;
+            for ( uint j = 0 ; j < cliques[i].blobs.size() && test == true ; j++ )
+                if ( cliques[i].blobs[j]->label != label ) 
+                    test = false;
+            if (test) {
+                if ( cliques[i].type==DATADRIVEN ) {
+                    energydd += cliques[i].energie; 
+                }
+                else if ( cliques[i].type==SIMILARITY )  { 
+                    nclsim++; energysim += cliques[i].energie;
+                }
+    
+    //         if (false && cliques[i].type==SIMILARITY) std::cout << "(("<<cliques[i].rec << "(" << cliques[i].blobs[0]->label << "(" <<  cliques[i].blobs[0]->node << ")" << "-" << cliques[i].blobs[1]->label <<"(" <<  cliques[i].blobs[1]->node << ")" << ")=>" << cliques[i].energie << ")) ";
+            }
+    //       if (cliques[i].type == INTRAPRIMALSKETCH && cliques[i].labelscount[label] > 1 && label != 0) {energy += (cliques[i].labelscount[label]-1)*Clique::getIntraPSWeight();}
+        }
     }
-  }
-    uint i,j;
-    for (uint n=0;n<ipscliques.size();n++){
-      bysub[n] = cliques[ipscliques[n]].labelscount[label];
-//       std::cout << bysub[n] << " " ;
+    uint i, j;
+    for ( uint n = 0 ; n < ipscliques.size() ; n ++ ) {
+          bysub[n] = cliques[ipscliques[n]].labelscount[label];
+    //       std::cout << bysub[n] << " " ;
     }
-//     std::cout << std::endl;
-    uint nb=0;
-    for (i=0;i<nbsujets-1;i++){
-      for (j=i+1;j<nbsujets;j++){
-        nb += bysub[i]*bysub[j];
-      }
+    //     std::cout << std::endl;
+    uint nb = 0;
+    for ( i = 0 ; i < nbsujets - 1 ; i++ ) {
+        for ( j = i + 1 ; j < nbsujets ; j++ ) {
+            nb += bysub[i]*bysub[j];
+        }
     }
-    uint nb2=0;
-    for (i=0;i<nbsujets;i++)
-      if (bysub[i]>1) nb2 += bysub[i]-1;
-
-//     std::cout << nclsim << "|"<< energydd << " " << energysim << "|";
+    uint nb2 = 0;
+    for ( i = 0 ; i < nbsujets ; i++ )
+        if ( bysub[i] > 1 )  
+            nb2 += bysub[i] - 1;
+    
+    //     std::cout << nclsim << "|"<< energydd << " " << energysim << "|";
     nbips += nb;
-// std::cout << Clique::intrapsweight*(nbips-nclsim) << " ";
-    ASSERT(nbips>=nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false));
-//   energy += Clique::intrapsweight*(nbips-nclsim);
-  energy += Clique::intrapsweight*nb2*nbsujets;
-  energy += energydd;
-  energy += energysim;
-
-  return energy;
+    // std::cout << Clique::intrapsweight*(nbips-nclsim) << " ";
+    ASSERT( nbips>=nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false) );
+    //   energy += Clique::intrapsweight*(nbips-nclsim);
+    energy += Clique::intrapsweight * nb2 * nbsujets;
+      energy += energydd;
+      energy += energysim;
+    
+      return energy;
 }
 
 long double SurfaceBased_StructuralAnalysis::getTypeEnergy(int type){ // RETOURNE L'ENERGIE PAR TYPE DE CLIQUE
@@ -274,6 +282,7 @@ long double SurfaceBased_StructuralAnalysis::getTotalEnergy(){
 
     for ( uint i = 0 ; i < cliques.size() ; i++ ) {
         cliques[i].updateLabelsCount();
+        cliques[i].updateSubjectsCount();
         if ( cliques[i].type == DATADRIVEN ) {
             energy += cliques[i].computeEnergy( true, nbsujets );
         }

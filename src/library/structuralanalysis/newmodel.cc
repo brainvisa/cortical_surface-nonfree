@@ -47,8 +47,8 @@ void NewModel::Step(vector<int> &random, long double temp, uint &mod){
 
                 // Updating The System Depending On The Clique Type
                 if ( cliques[ aux ].type == DATADRIVEN ||
-                        cliques[ aux ].type == INTRAPRIMALSKETCH ) {//||
-//                        cliques[ aux ].type == GLOBAL ){
+                        cliques[ aux ].type == INTRAPRIMALSKETCH  ||
+                        cliques[ aux ].type == GLOBAL ){
 
                     globalenergieslabels[ k ] += cliques[ aux ].updateEnergy( random[ i ], old, false, nbsujets );
 
@@ -160,6 +160,7 @@ void NewModel::Run ( int verbose ){
 
     for ( uint k = 0 ; k < cliques.size() ; k++ ){
         cliques[k].updateLabelsCount();
+        cliques[k].updateSubjectsCount();
         cliques[k].computeEnergy(true, nbsujets);
     }
 
@@ -205,6 +206,7 @@ void NewModel::Run ( int verbose ){
 
     for ( uint k = 0 ; k < cliques.size() ; k++ ) {
         cliques[k].updateLabelsCount();
+        cliques[k].updateSubjectsCount();
         cliques[k].computeEnergy(true, nbsujets);
     }
     energy = getTotalEnergy();

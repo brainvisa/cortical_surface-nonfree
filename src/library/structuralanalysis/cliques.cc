@@ -443,6 +443,7 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
 std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCliques3D ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
                                                    GroupData &data,
                                                    float threshold,
+                                                   float alpha,
                                                    int type_distance ) {
 
     std::vector<surf::SSBClique > cliques;
@@ -494,7 +495,7 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
                 // std::cout << distance << " " << std::flush;
 
                 if ( distance < threshold ) {
-                    cliques.push_back( surf::SSBClique(ssblobs[i], ssblobs[j], distance, threshold ) );
+                    cliques.push_back( surf::SSBClique(ssblobs[i], ssblobs[j], distance, threshold, alpha ) );
                 }
             }
             // The next pair of scale-space blobs will now be processed.

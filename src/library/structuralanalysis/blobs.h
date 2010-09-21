@@ -114,7 +114,7 @@ namespace surf{
             ScaleSpaceBlob *ssb2;
             float similarity;
             float distance;
-            SSBClique(ScaleSpaceBlob *s1, ScaleSpaceBlob *s2, float dist, float threshold = 5.0 ) {
+            SSBClique(ScaleSpaceBlob *s1, ScaleSpaceBlob *s2, float dist, float threshold = 5.0, float alpha = 4.0 ) {
                 ssb1=s1;
                 ssb2=s2;
                 distance=dist;
@@ -122,7 +122,7 @@ namespace surf{
                     similarity = 1.0;
                 else
 //                    similarity = - 0.5 * (distance-3.0) +1.0;}
-                    similarity = - 1.0 * (distance-threshold) + 1.0;
+                    similarity = - 1.0 / (threshold - alpha) * (distance - alpha) + 1.0;
             }
 
     };

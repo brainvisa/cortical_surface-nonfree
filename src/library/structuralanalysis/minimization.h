@@ -93,6 +93,7 @@ class SurfaceBased_StructuralAnalysis {
         static std::vector<surf::SSBClique> BuildSimilarityCliques3D ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
                                                            GroupData &data,
                                                            float threshold = 5.0,
+                                                           float alpha = 4.0,
                                                            int typeDistance = DISTANCE_3DEUCLIDIAN );
 
         void importGraphCliquesFromSSBCliques ( std::vector<surf::SSBClique> &ssbcliques ) {
