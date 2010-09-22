@@ -16,12 +16,12 @@ void NewModel::Step(vector<int> &random, long double temp, uint &mod){
     std::set<uint>::iterator it;
 
     // Iterating On The Vector Of Sites (In Randomized Order) (long loop)
-    for (uint i = 0 ; i < random.size() ; i++){
-        somme=0.0;
+    for ( uint i = 0 ; i < random.size() ; i++ ) {
+        somme = 0.0;
 
         old = sites[random[i]]->label;
 
-        vector<int> zoneLab;
+        std::vector<int> zoneLab;
 //         cout << "[" << i << "] " << flush;
 
         // Selecting The Few Labels That The Current Site Can Take (short loop)
@@ -35,7 +35,7 @@ void NewModel::Step(vector<int> &random, long double temp, uint &mod){
         // Iterating On These Labels
         for ( uint k = 0 ; k < zoneLab.size() ; k++ ) {
 
-//             cout << zoneLab[k] << " " << flush;
+            //std::cout << zoneLab[k] << " " << flush;
             sites[ random[i] ]->label = zoneLab[ k ];
             globalenergieslabels[ k ] = energy;
 
@@ -49,7 +49,6 @@ void NewModel::Step(vector<int> &random, long double temp, uint &mod){
                 if ( cliques[ aux ].type == DATADRIVEN ||
                         cliques[ aux ].type == INTRAPRIMALSKETCH  ||
                         cliques[ aux ].type == GLOBAL ){
-
                     globalenergieslabels[ k ] += cliques[ aux ].updateEnergy( random[ i ], old, false, nbsujets );
 
                 }
@@ -138,33 +137,33 @@ void NewModel::Step(vector<int> &random, long double temp, uint &mod){
 
 }
 
-void NewModel::Run ( int verbose ){
+void NewModel::Run ( int verbose, bool doRun ){
 
-  vector< int >  indices_start;
-  for( uint i = 0 ; i < sites.size() ; i++ )
-    indices_start.push_back(i);
+    std::vector< int >  indices_start;
+    for ( uint i = 0 ; i < sites.size() ; i++ )
+        indices_start.push_back(i);
 
-  long double temp = 300.0;
+    long double temp = 300.0;
 
-  uint mod = 1, ite = 0, nb_under_threshold = 0, test = 1;
+    uint mod = 1, ite = 0, nb_under_threshold = 0, test = 1;
 
-  cout.precision(2);
+    std::cout.precision(2);
 
-  FILE * f1, *f;
-  if ( labelsPath != "" )
-    f1 = fopen ( labelsPath.data(), "w" );
-  if ( energyPath != "" ) {
-      f = fopen ( energyPath.data(), "a" );
-      fprintf(f, "== DEBUT NOUVEAU RECUIT ==\n");
-  }
+    FILE * f1, *f;
+    if ( labelsPath != "" )
+        f1 = fopen ( labelsPath.data(), "w" );
+    if ( energyPath != "" ) {
+        f = fopen ( energyPath.data(), "a" );
+        fprintf(f, "== DEBUT NOUVEAU RECUIT ==\n");
+    }
 
     for ( uint k = 0 ; k < cliques.size() ; k++ ){
         cliques[k].updateLabelsCount();
         cliques[k].updateSubjectsCount();
-        cliques[k].computeEnergy(true, nbsujets);
+        cliques[k].computeEnergy ( true, nbsujets );
     }
 
-//    if ( run == 1 ) {
+    if ( doRun ) {
         while ( nb_under_threshold < 5 || mod != 0 ) {
             //    while (temp>200.0){
 
@@ -181,28 +180,28 @@ void NewModel::Run ( int verbose ){
                 }
                 fprintf(f1, "\n");
             }
-            vector< int > indices( indices_start );
-            vector< int > random;
+            std::vector< int > indices( indices_start );
+            std::vector< int > random;
 
             for ( uint i = 0 ; i < sites.size() ; i++ ) {
                 int index = (int)(UniformRandom() * indices.size());
                 random.push_back(indices[index]);
                 indices.erase(indices.begin()+index);
             }
-            ASSERT(random.size() == sites.size());
+            ASSERT (random.size() == sites.size());
             Step(random, temp, mod);
 
-            cout << " chg:" << mod << " " << flush;
+            std::cout << " chg:" << mod << " " << std::flush;
 
 
             if (verbose == 1) ShortSummaryLabels();
             // double everif= getTotalEnergy();
-            cout << " E=" << energy << endl; //" Everif=" << everif << endl;
+            std::cout << " E=" << energy << std::endl; //" Everif=" << everif << endl;
 
             temp = temp * 0.99;
 
         }
-//    }
+    }
 
     for ( uint k = 0 ; k < cliques.size() ; k++ ) {
         cliques[k].updateLabelsCount();
@@ -211,7 +210,7 @@ void NewModel::Run ( int verbose ){
     }
     energy = getTotalEnergy();
 
-    cout << "final energy : " << energy << endl;
+    std::cout << "final energy : " << energy << std::endl;
     ShortSummaryLabels();
     if ( this->energyPath != "" ) {
         fprintf(f, "%3lf\nFIN RECUIT\n", (float)energy);

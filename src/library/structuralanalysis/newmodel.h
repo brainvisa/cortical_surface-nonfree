@@ -9,7 +9,7 @@ class NewModel: public SurfaceBased_StructuralAnalysis{
 
         public:
 
-            void Run( int verbose = 1 );
+            void Run( int verbose = 1, bool doRun = true );
             void Step( std::vector<int> &random, long double temp, uint &mod );
 };
 

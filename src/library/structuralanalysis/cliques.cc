@@ -6,10 +6,37 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-float Clique::ddweight, Clique::intrapsweight, Clique::simweight, Clique::lsweight, Clique::ddx2, Clique::ddx1, Clique::ddh, Clique::globalweight;
-void Clique::setParameters( float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh, float _globalweight ){
-  ddweight=_ddweight; intrapsweight = _intrapsweight; simweight=_simweight; lsweight=_lsweight; ddx2 =_ddx2;  ddx1 = _ddx1; ddh=_ddh;
-  globalweight=_globalweight;
+float Clique::ddweight, 
+      Clique::intrapsweight, 
+      Clique::simweight, 
+      Clique::lsweight, 
+      Clique::ddx1, 
+      Clique::ddx2, 
+      Clique::simx1, 
+      Clique::simx2, 
+      Clique::ddh, 
+      Clique::globalweight;
+
+void Clique::setParameters ( float _ddweight, 
+                             float _intrapsweight, 
+                             float _simweight, 
+                             float _lsweight, 
+                             float _ddx1, 
+                             float _ddx2,
+                             float _simx1,
+                             float _simx2,
+                             float _ddh, 
+                             float _globalweight ){
+    ddweight = _ddweight; 
+    intrapsweight = _intrapsweight; 
+    simweight = _simweight; 
+    lsweight = _lsweight;
+    ddx1 = _ddx1; 
+    ddx2 = _ddx2; 
+    simx1 = _simx1;
+    simx2 = _simx2;
+    ddh = _ddh;
+    globalweight = _globalweight;
 }
 
 void Clique::updateLabelsCount ( ) {
@@ -59,42 +86,42 @@ double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bb
   float overlap_x,overlap_y,aux;
   double rec=0.0;
 
-  if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) < 0.0001) {bbmax1[0] += 0.5; /*cout << "bbmax10+ ";*/}
-  if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) < 0.0001) {bbmax1[1] += 0.5; /*cout << "bbmax11+ ";*/}
-  if (sqrt(pow(bbmin2[0]-bbmax2[0],2)) < 0.0001) {bbmax2[0] += 0.5; /*cout << "bbmax20+ ";*/}
-  if (sqrt(pow(bbmin2[1]-bbmax2[1],2)) < 0.0001) {bbmax2[1] += 0.5; /*cout << "bbmax21+ ";*/}
+  if ( sqrt(pow(bbmin1[0]-bbmax1[0],2)) < 0.0001 ) { bbmax1[0] += 0.5; /*cout << "bbmax10+ ";*/ }
+  if ( sqrt(pow(bbmin1[1]-bbmax1[1],2)) < 0.0001 ) { bbmax1[1] += 0.5; /*cout << "bbmax11+ ";*/ }
+  if ( sqrt(pow(bbmin2[0]-bbmax2[0],2)) < 0.0001 ) { bbmax2[0] += 0.5; /*cout << "bbmax20+ ";*/ }
+  if ( sqrt(pow(bbmin2[1]-bbmax2[1],2)) < 0.0001 ) { bbmax2[1] += 0.5; /*cout << "bbmax21+ ";*/ }
   // if (bbmin1[1]>bbmax1[1] && bbmin2[1] < bbmax2[1] ) {//alors i a bouclé autour de 360/0
-  if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) <300){
+  if ( sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) < 300 ) {
     //  cout << "i boucle lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
     //  ASSERT(bbmin1[1]>bbmax2[1]);
       if (360-bbmax2[1]<bbmin2[1]){
-        aux = bbmax1[1];
-        bbmax1[1] = bbmin1[1] + 360.0;
-        bbmin1[1] = aux;
+          aux = bbmax1[1];
+          bbmax1[1] = bbmin1[1] + 360.0;
+          bbmin1[1] = aux;
       }
       else {
-        aux = bbmin1[1];
-        bbmin1[1] = bbmax1[1] - 360.0;
-        bbmax1[1] = aux;
+          aux = bbmin1[1];
+          bbmin1[1] = bbmax1[1] - 360.0;
+          bbmax1[1] = aux;
       }
   }
   //  else if (bbmin1[1]<bbmax1[1] && bbmin2[1] > bbmax2[1] ) {//alors j a bouclé autour de 360/0
-  else if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) <300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) >300){
+  else if ( sqrt(pow(bbmin1[1]-bbmax1[1],2)) <300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) > 300 ) {
   //  cout << "j boucle lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
   //  ASSERT(bbmin2[1]>bbmax1[1]);
       if (360-bbmax1[1]<bbmin1[1]){
-        aux = bbmax2[1];
-        bbmax2[1] = bbmin2[1] + 360.0;
-        bbmin2[1] = aux;
+          aux = bbmax2[1];
+          bbmax2[1] = bbmin2[1] + 360.0;
+          bbmin2[1] = aux;
       }
       else {
-        aux = bbmin2[1];
-        bbmin2[1] = bbmax2[1] - 360.0;
-        bbmax2[1] = aux;
+          aux = bbmin2[1];
+          bbmin2[1] = bbmax2[1] - 360.0;
+          bbmax2[1] = aux;
       }
   }
   // else if (bbmin1[1]>bbmax1[1] && bbmin2[1]>bbmax2[1] ) {//alors i&j ont bouclé
-  else if (sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) >300){
+  else if ( sqrt(pow(bbmin1[1]-bbmax1[1],2)) >300 && sqrt(pow(bbmin2[1]-bbmax2[1],2)) > 300 ) {
   // cout << "i et j bouclent lon " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
         aux = bbmin1[1];
         bbmin1[1] = bbmax1[1] - 360.0;
@@ -105,7 +132,7 @@ double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bb
   }
 // on s'occupe de la latitude
 // if (bbmin1[0]>bbmax1[0] && bbmin2[0] < bbmax2[0] ) {//alors i a bouclé autour de 360/0
-if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) <150){
+if ( sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2)) < 150 ) {
 //  cout << "i boucle lat" << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl;
 //  ASSERT(bbmin1[0]>bbmax2[0]);
       if (180-bbmax2[0]<bbmin2[0]){
@@ -272,24 +299,26 @@ void SurfaceBased_StructuralAnalysis::GetSimilarityCliquesFromSSBCliques ( std::
     cliquesDuSite = std::vector<std::vector<int> >( sites.size() );
 
     for ( uint i = 0 ; i < ssbcliques.size() ; i++ ) {
-       Clique simc;
-       simc.type = SIMILARITY;
-       simc.rec = ssbcliques[i].similarity;
-       surf::ScaleSpaceBlob *ssb1, *ssb2;
-       int iSSB1, iSSB2;
-       ssb1 = ssbcliques[i].ssb1;
-       ssb2 = ssbcliques[i].ssb2;
-       iSSB1 = ssb1->index;
-       iSSB2 = ssb2->index;
+        Clique simc;
+        simc.type = SIMILARITY;
+        simc.similarity = ssbcliques[i].similarity;
+        simc.distance = ssbcliques[i].distance;
+        surf::ScaleSpaceBlob *ssb1, *ssb2;
+        int iSSB1, iSSB2;
+        ssb1 = ssbcliques[i].ssb1;
+        ssb2 = ssbcliques[i].ssb2;
+        iSSB1 = ssb1->index;
+        iSSB2 = ssb2->index;
 
-       cliquesDuSite[ sites[iSSB1]->index ].push_back(i);
-       cliquesDuSite[ sites[iSSB2]->index ].push_back(i);
+        cliquesDuSite[ sites[iSSB1]->index ].push_back(i);
+        cliquesDuSite[ sites[iSSB2]->index ].push_back(i);
 
-       simc.blobs.push_back( sites[iSSB1] );
-       simc.blobs.push_back( sites[iSSB2] );
-       cliques.push_back(simc);
+        simc.blobs.push_back( sites[iSSB1] );
+        simc.blobs.push_back( sites[iSSB2] );
+        cliques.push_back(simc);
 
     }
+    
     for ( uint i = 0 ; i < sites.size() ; i++ ) {
 
         for ( uint n = 0 ; n < cliquesDuSite[i].size() ; n++ ) {
@@ -495,7 +524,7 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
                 // std::cout << distance << " " << std::flush;
 
                 if ( distance < threshold ) {
-                    cliques.push_back( surf::SSBClique(ssblobs[i], ssblobs[j], distance, threshold, alpha ) );
+                    cliques.push_back( surf::SSBClique(ssblobs[i], ssblobs[j], distance ) );
                 }
             }
             // The next pair of scale-space blobs will now be processed.

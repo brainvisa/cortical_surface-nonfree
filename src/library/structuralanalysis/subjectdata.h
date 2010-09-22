@@ -80,43 +80,49 @@ class SubjectData{
 //        void readData ( std::string _meshPath, std::string _texPath, AimsSurfaceTriangle) ;
 
 
-        void storeData ( AimsSurface<3,Void> *mesh, Texture<float> *tex, bool computeWeights = true, bool computeNeighbours = true ) {
+        void storeData ( AimsSurface<3,Void> *mesh, Texture<float> *tex, bool computeWeights = true, bool computeNeighbours = true, bool verbose = true ) {
             this->mesh = mesh;
             this->tex = tex;
-
-            std::cout << "  mesh : " << this->mesh->vertex().size() << " vertices" << std::endl;
-            std::cout << "  tex : " << this->tex->nItem() << " values" << std::endl;
+            if ( verbose ) {
+                std::cout << "  mesh : " << this->mesh->vertex().size() << " vertices" << std::endl;
+                std::cout << "  tex : " << this->tex->nItem() << " values" << std::endl;
+            }
 
             this->coordinates = RAW_3D;
             if ( computeWeights ) {
                 this->weightLapl = AimsMeshWeightFiniteElementLaplacian ( *(this->mesh), 0.98 );
-                std::cout << "  weights : " << this->weightLapl.size() << " weights" << std::endl;
+                if ( verbose ) {
+                    std::cout << "  weights : " << this->weightLapl.size() << " weights" << std::endl;
+                }
             }
             if ( computeNeighbours ) {
                 AimsSurfaceTriangle mesh;
                 mesh[0] = *(this->mesh);
                 this->neighbours = aims::SurfaceManip::surfaceNeighbours( mesh );
-                std::cout << "  neighbours : " << this->neighbours.size() << " sets" << std::endl;
+                if ( verbose ) {
+                    std::cout << "  neighbours : " << this->neighbours.size() << " sets" << std::endl;
+                }
 
             }
 
         }
 
-        void storeData ( AimsSurface<3,Void> *mesh, Texture<float> *tex, std::map<unsigned, std::set< std::pair<unsigned,float> > > & weights ) {
-            storeData ( mesh, tex, false );
+        void storeData ( AimsSurface<3,Void> *mesh, Texture<float> *tex, std::map<unsigned, std::set< std::pair<unsigned,float> > > & weights, bool verbose = true ) {
+            storeData ( mesh, tex, false, false, verbose );
             this->weightLapl = weights;
         }
 
-        void storeCoordinates ( Texture<float> *lat, Texture<float> *lon = NULL ) {
+        void storeCoordinates ( Texture<float> *lat, Texture<float> *lon = NULL, bool verbose = true ) {
             this->lat = lat;
             this->lon = lon;
 
-
-            std::cout << "  lat : " << this->lat->nItem() << " values" << std::endl;
+            if ( verbose )
+                std::cout << "  lat : " << this->lat->nItem() << " values" << std::endl;
 
 
             if ( this->lon != NULL ) {
-                std::cout << "  lon : " << this->lon->nItem() << " values" << std::endl;
+                if ( verbose )
+                    std::cout << "  lon : " << this->lon->nItem() << " values" << std::endl;
                 this->coordinates = LATLON_2D;
             }
             else {
@@ -133,14 +139,13 @@ class SubjectData{
                 this->coordinates = LAT_1D;
             }
         }
-        std::vector<std::map<uint, float> > GetSecondOrderNeighbours();
 
 };
 
 class GroupData:
     public std::map< std::string, SubjectData *> {
     public:
-      void readData( void );
+      void readData( bool verbose = true );
       std::map< std::string, uint > subjects_id;
       std::vector < AimsSurfaceTriangle > meshes;
       std::vector < TimeTexture<float> > textures;

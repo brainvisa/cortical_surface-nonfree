@@ -194,20 +194,19 @@ void SurfaceBased_StructuralAnalysis::Initialization( bool initLabel ){
     SummaryLabels();
 }
 
-long double SurfaceBased_StructuralAnalysis::getClusterEnergy(vector<uint> &composante){
-  vector<int> old;
-  for (uint i=0;i<sites.size();i++){
-    old.push_back(sites[i]->label);
-    sites[i]->label=0;
-  }
-  for (uint i=0;i<composante.size();i++)
-    sites[composante[i]]->label = 1;
+long double SurfaceBased_StructuralAnalysis::getClusterEnergy ( std::vector<uint> &composante ) {
+    std::vector<int> old;
+    for ( uint i = 0 ; i < sites.size() ; i++ ) {
+        old.push_back(sites[i]->label);
+        sites[i]->label=0;
+    }
+    for ( uint i = 0 ; i < composante.size() ; i++ )
+        sites[composante[i]]->label = 1;
 
-  long double energy = getTotalEnergy();
-  for (uint i=0;i<sites.size();i++)
-    sites[i]->label = old[i];
-  return energy;
-
+    long double energy = getTotalEnergy();
+    for ( uint i =  0; i < sites.size() ; i++ )
+        sites[i]->label = old[i];
+    return energy;
 }
 
 long double SurfaceBased_StructuralAnalysis::getLabelEnergy(int label, int type){
@@ -219,17 +218,17 @@ long double SurfaceBased_StructuralAnalysis::getLabelEnergy(int label, int type)
     for ( uint i = 0 ; i < cliques.size() ; i++ ) {
         cliques[i].updateLabelsCount();
         cliques[i].updateSubjectsCount();
-        cliques[i].computeEnergy(true,nbsujets);
+        cliques[i].computeEnergy ( true, nbsujets );
         if ( type == UNKNOWN || cliques[i].type == type ) {
             test = true;
             for ( uint j = 0 ; j < cliques[i].blobs.size() && test == true ; j++ )
                 if ( cliques[i].blobs[j]->label != label )
                     test = false;
             if (test) {
-                if ( cliques[i].type==DATADRIVEN ) {
+                if ( cliques[i].type == DATADRIVEN ) {
                     energydd += cliques[i].energie;
                 }
-                else if ( cliques[i].type==SIMILARITY )  {
+                else if ( cliques[i].type == SIMILARITY )  {
                     nclsim++; energysim += cliques[i].energie;
                 }
 
@@ -254,7 +253,7 @@ long double SurfaceBased_StructuralAnalysis::getLabelEnergy(int label, int type)
     for ( i = 0 ; i < nbsujets ; i++ )
         if ( bysub[i] > 1 )
             nb2 += bysub[i] - 1;
-    energyglob = ( nbsujets - cliques[globalclique].subjectscount[label].size() ) * Clique::globalweight * nbsujets;
+    energyglob = - (long double)cliques[globalclique].subjectscount[label].size() * Clique::globalweight * nbsujets;
 
     //     std::cout << nclsim << "|"<< energydd << " " << energysim << "|";
     nbips += nb;
@@ -297,7 +296,7 @@ long double SurfaceBased_StructuralAnalysis::getTotalEnergy(){
 
     for ( uint k = 1 ; k < labels.size() ; k++ ) {
 
-        energy += (nbsujets - cliques[globalclique].subjectscount[labels[k]].size()) * Clique::globalweight * nbsujets;
+        energy += - (long double)cliques[globalclique].subjectscount[labels[k]].size() * Clique::globalweight * nbsujets;
 
         uint i, j;
         for ( uint n = 0 ; n < ipscliques.size() ; n++ ) {
@@ -354,19 +353,22 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
         int nclsim = 0, nbips = 0;
         std::vector<int> bysub ( nbsujets );
 
-        for (uint i=0;i<cliques.size();i++){
+        for ( uint i = 0 ; i < cliques.size() ; i++ ) {
             cliques[i].updateLabelsCount();
+            cliques[i].updateSubjectsCount();
 
-            if (cliques[i].type == DATADRIVEN && cliques[i].blobs[0]->label==labels[lab]){
-                energy += cliques[i].computeEnergy(true, nbsujets);
-                Edd += cliques[i].computeEnergy(true, nbsujets);
+            if ( cliques[i].type == DATADRIVEN && cliques[i].blobs[0]->label == labels[lab] ) {
+                energy += cliques[i].computeEnergy ( true, nbsujets );
+                Edd += cliques[i].computeEnergy ( true, nbsujets );
             }
-            else if (cliques[i].type == SIMILARITY && cliques[i].blobs[0]->label == cliques[i].blobs[1]->label && cliques[i].blobs[0]->label== labels[lab]){
-                energy += cliques[i].computeEnergy(true,nbsujets);
-                Esim += cliques[i].computeEnergy(true, nbsujets);
-                if (cliques[i].blobs[0]->label == cliques[i].blobs[1]->label && cliques[i].blobs[0]->label != 0)
+            else if ( cliques[i].type == SIMILARITY 
+                    && cliques[i].blobs[0]->label == cliques[i].blobs[1]->label 
+                    && cliques[i].blobs[0]->label== labels[lab] ) {
+                energy += cliques[i].computeEnergy ( true,nbsujets );
+                Esim += cliques[i].computeEnergy ( true, nbsujets );
+                if ( cliques[i].blobs[0]->label == cliques[i].blobs[1]->label 
+                        && cliques[i].blobs[0]->label != 0 )
                     nclsim++;
-
             }
         }
 
@@ -387,27 +389,27 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
             if ( bysub[i] > 1 )
                 nb2 += bysub[i] - 1;
 
-        Eglob += ( nbsujets - cliques[globalclique].subjectscount[labels[lab]].size() ) * Clique::globalweight * nbsujets;
+        Eglob += - (long double)cliques[globalclique].subjectscount[labels[lab]].size() * Clique::globalweight * nbsujets;
 
 
         ASSERT(nbips>=nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false));
     //     energy += Clique::intrapsweight*(nbips-nclsim);
     //     Esub += Clique::intrapsweight*(nbips-nclsim);
-        energy += Clique::intrapsweight*nb2*nbsujets;
-        energy += ( nbsujets - cliques[globalclique].subjectscount[labels[lab]].size() ) * Clique::globalweight * nbsujets;
-        Eintra += Clique::intrapsweight*nb2*nbsujets;
-        Etotal +=energy;
+        energy += Clique::intrapsweight * nb2 * nbsujets;
+        energy += - (long double)cliques[globalclique].subjectscount[labels[lab]].size() * Clique::globalweight * nbsujets;
+        Eintra += Clique::intrapsweight * nb2 * nbsujets;
+        Etotal += energy;
 
 
         ASSERT(pow(Edd+Esim+Esub+Eintra+Eglob-energy,2)<0.01);
         ASSERT(Esub<0.0001);
 
         nblabel = 0;
-        for ( uint il = 0 ; il < cliques.size() ; il++ ) {
-            nblabel += cliques[il].labelscount[labels[lab]];
-        }
+        for ( uint il = 0 ; il < ipscliques.size() ; il++ ) {
+            nblabel += cliques[ipscliques[il]].labelscount[labels[lab]];
+        }        
         if ( nblabel != 0 ) {
-            std::cout << "label " << labels[lab] << " : " << " (" << Edd << ";" << Esim << ";" << Esub<<";" <<Eintra<<";"<< Eglob<<") " << energy << " " << std::flush;
+            std::cout << "label " << labels[lab] << " : " << cliques[globalclique].subjectscount[ labels[lab] ].size() << " subjects (" << Edd << ";" << Esim << ";" << Esub<<";" <<Eintra<<";"<< Eglob<<") " << energy << " " << std::flush;
 
             std::cout << nblabel << " - " << std::endl;
             // fprintf(f,"label %d : (%3lf;%3lf) %i;\n", labels[lab],(double)Edd,(double)Esim,nblabel);
@@ -490,27 +492,31 @@ void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
         uint nb2 = 0;
         for ( uint k = 0 ; k < nbsujets ; k++ )
             if ( bysub[k] > 1 ) nb2 += bysub[k] - 1;
-        Eglob += ( nbsujets - cliques[globalclique].subjectscount[labels[lab]].size() ) * Clique::globalweight * nbsujets;
+
+        //std::cout << "Eglob:" << Eglob << std::flush; 
+        //std::cout << "l:" << labels[lab] << " CL:" << cliques[globalclique].subjectscount[labels[lab]].size() << " w:" << Clique::globalweight << " sj:" << nbsujets << " " << std::flush;
+        Eglob += - (long double)(cliques[globalclique].subjectscount[labels[lab]].size()) * Clique::globalweight * nbsujets;
+        //std::cout << "Eglob:" << Eglob << std::flush; 
 
 
         ASSERT(nbips>=nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false));
     //     energy += Clique::intrapsweight*(nbips-nclsim);
     //     Esub += Clique::intrapsweight*(nbips-nclsim);
         energy += Clique::intrapsweight * nb2 * nbsujets;
-        energy += ( nbsujets - cliques[globalclique].subjectscount[labels[lab]].size() ) * Clique::globalweight * nbsujets;
+        energy +=  - (long double) cliques[globalclique].subjectscount[labels[lab]].size()  * Clique::globalweight * nbsujets;
         Eintra += Clique::intrapsweight * nb2 * nbsujets;
         Etotal += energy;
 
         ASSERT( pow ( Edd + Esim + Esub + Eintra + Eglob - energy, 2 ) < 0.01 );
-        ASSERT(Esub<0.0001);
+        ASSERT( Esub < 0.0001 );
 
         nblabel = 0;
-        for ( uint il = 0 ; il < cliques.size() ; il++ ) {
-          nblabel += cliques[il].labelscount[ labels[lab] ];
+        for ( uint il = 0 ; il < ipscliques.size() ; il++ ) {           
+            nblabel += cliques[ ipscliques[il] ].labelscount[ labels[lab] ];
         }
         if ( nblabel != 0 ) {
-        std::cout << "L"<<labels[lab] << "(" << energy << "=" << Edd << "+" << Esim << "+" << Eintra << "+" << Eglob <<"):" << std::flush;
-        std::cout << nblabel << " - ";
+            std::cout << "L" << labels[lab] << ":" << cliques[globalclique].subjectscount[labels[lab]].size() << " subjects (" << energy << "=" << Edd << "+" << Esim << "+" << Eintra << "+" << Eglob <<"):" << std::flush;
+            std::cout << nblabel << " - ";
         }
         nblab.push_back(nblabel);
     }
@@ -524,8 +530,17 @@ void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
 
 
 
-void SurfaceBased_StructuralAnalysis::setModelParameters(float _ddweight, float _intrapsweight, float _simweight, float _lsweight, float _ddx2, float _ddx1, float _ddh, float _globalweight){
-  Clique::setParameters(_ddweight, _intrapsweight, _simweight, _lsweight, _ddx2, _ddx1, _ddh, _globalweight);
+void SurfaceBased_StructuralAnalysis::setModelParameters ( float _ddweight, 
+                                                           float _intrapsweight, 
+                                                           float _simweight, 
+                                                           float _lsweight, 
+                                                           float _ddx1, 
+                                                           float _ddx2,
+                                                           float _simx1,
+                                                           float _simx2,
+                                                           float _ddh, 
+                                                           float _globalweight ) {
+    Clique::setParameters ( _ddweight, _intrapsweight, _simweight, _lsweight, _ddx1, _ddx2, _simx1, _simx2, _ddh, _globalweight);
 }
 
 void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
@@ -535,6 +550,7 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
     int node, label_occur_number;
     std::string subject;
     float value;
+    primal.setProperty ( "global_energy", (float) energy );
 
     for ( iv = primal.vertices().begin() ; iv != primal.vertices().end() ; ++iv ) {
         std::string test;

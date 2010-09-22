@@ -60,8 +60,10 @@ class SurfaceBased_StructuralAnalysis {
                                   float _intrapsweight = 0.0,
                                   float _simweight = 0.0,
                                   float _lsweight = 0.0,
-                                  float _ddx2 = 0.0,
                                   float _ddx1 = 0.0,
+                                  float _ddx2 = 0.0,
+                                  float _simx1 = 0.0,
+                                  float _simx2 = 0.0,
                                   float _ddh = 0.0,
                                   float _globalweight = 0.0 );
 

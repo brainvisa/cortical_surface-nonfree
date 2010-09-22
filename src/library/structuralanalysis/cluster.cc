@@ -11,8 +11,8 @@ using namespace std;
 
 
 
-vector<int> SWC::getCompConn(vector<uint> &indicesCliques, set<uint> &listeSites){
-  vector<int> comp(sites.size());
+std::vector<int> SWC::getCompConn(vector<uint> &indicesCliques, set<uint> &listeSites){
+  std::vector<int> comp(sites.size());
   uint blob0,blob1;
   Site *s0, *s1;
   int lcomp,nbcomp,aux;
@@ -128,15 +128,15 @@ long double ft(long double t){
   else return 1.0/7.0*t-2.0/7.0;
 }
 
-vector<uint> SWC::getCliquesTurnedOn(float temp, vector<uint> &indicesCliques){
-  vector<uint> turnedOn;
+std::vector<uint> SWC::getCliquesTurnedOn(float temp, vector<uint> &indicesCliques){
+  std::vector<uint> turnedOn;
 
   for (uint i=0;i<indicesCliques.size();i++){
     if (cliques[indicesCliques[i]].type == SIMILARITY){
 //       if(cliques[indicesCliques[i]].blobs[0]->label==cliques[indicesCliques[i]].blobs[1]->label){
       long double tirage = ((long double)UniformRandom() * 1.0);
 //         long double qe= exp(-((cliques[indicesCliques[i]].rec)*(temp+1)));
-      long double frect = frec(cliques[indicesCliques[i]].rec)*ft(cliques[indicesCliques[i]].blobs[0]->t)*ft(cliques[indicesCliques[i]].blobs[1]->t);
+      long double frect = frec(cliques[indicesCliques[i]].similarity)*ft(cliques[indicesCliques[i]].blobs[0]->t)*ft(cliques[indicesCliques[i]].blobs[1]->t);
       long double qe = (1-exp(-frect*temp)); //(1-exp(-1.0));
 //         if ((cliques[indicesCliques[i]].blobs[0]->t+cliques[indicesCliques[i]].blobs[1]->t)/2.0 < 5.0) qe=0.0;
 //         qe += 0.1 * (-1.0/20.0*cliques[indicesCliques[i]].rec+1.0);
@@ -183,7 +183,7 @@ long double SWC::getCompacite(set<uint> &comp, bool verb){
 //   cout << "compsize:" << comp.size() << endl ;
 //   cout << "compac:" << compac << endl;
   for (it=auxcliques.begin();it!=auxcliques.end();it++)
-    rec += frec(cliques[*it].rec); // /10.0+0.9;
+    rec += frec(cliques[*it].similarity); // /10.0+0.9;
 
   compac += -rec;
 //   cout << "rec:" << rec<< endl;
