@@ -31,14 +31,13 @@ class Clique{
                     ASSERT( blobs.size() == 1 );
                     if ( blobs[0]->label != 0 ){
 
-                        energy = 0.0;
-//                        energy = blobs[0]->t;
-//                        if ( energy > 10.0 )
-//                            energy = 0.0001;
-//                        else if ( energy < 0.0 )
-//                            assert(false);
-//                        else
-//                            energy = 1.0 - energy / 10.0;
+                        energy = blobs[0]->t;
+                        if ( energy > 15.0 )
+                            energy = 0.0001;
+                        else if ( energy < 0.0 )
+                            assert(false);
+                        else
+                            energy = 1.0 - energy / 15.0;
                     }
                     else {
                         energy = 0.0;

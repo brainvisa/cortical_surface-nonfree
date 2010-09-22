@@ -44,11 +44,11 @@ void Clique::updateSubjectsCount ( ) {
             subjectscount[blobs[i]->label].insert(blobs[i]->subject);
         }
 
-        std::map<int, std::set<std::string> >::iterator itset;
-        for ( itset = subjectscount.begin() ; itset != subjectscount.end() ; itset++ ) {
-            std::cout << (*itset).second.size() << " " << std::flush;
-        }
-        std::cout << std::endl;
+//        std::map<int, std::set<std::string> >::iterator itset;
+//        for ( itset = subjectscount.begin() ; itset != subjectscount.end() ; itset++ ) {
+//            std::cout << (*itset).second.size() << " " << std::flush;
+//        }
+//        std::cout << std::endl;
 
     }
 }
