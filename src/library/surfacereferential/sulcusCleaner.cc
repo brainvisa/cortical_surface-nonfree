@@ -192,7 +192,7 @@ namespace aims
 				poles[0].push_back(0);
 		}
 		
-		std::cout<<"writing texture..."<<std::endl;
+		std::cout<<"writing texture poles..."<<std::endl;
 		Writer<Texture1d> wT1cclfr(adr_poles);
 		wT1cclfr.write(poles);
 		

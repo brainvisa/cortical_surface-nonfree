@@ -23,7 +23,7 @@ void SulcusCorticalSnake::createDistanceTexture()
 	
 	std::cout<<"SulcusCorticalSnake : createDistanceTexture"<<std::endl;
 	for(uint j=0; j<size; j++)
-		tex_distance[0].push_back(0);
+		tex_distance[0].push_back(0.0);
 
 	TimeTexture<float> init(1,size);	
 	
@@ -31,7 +31,7 @@ void SulcusCorticalSnake::createDistanceTexture()
 	{
 		init[0].item(j)=0;
 // 		std::cout<<" "<<constraint[0].item(j);
-		if(constraint[0].item(j)==value)
+		if(fabs(constraint[0].item(j)-value)<0.01)
 			init[0].item(j)=10;
 	}
 
@@ -60,13 +60,16 @@ TimeTexture<float> SulcusCorticalSnake::compute_snake()
 	for(uint j=0; j<size; j++)
 		result_total[0].item(j)=0;
 	
+//	std::cout << "Curv and Dist computed, looking for extremities" << endl;
 	int test=1;
 	test=define_extremities();
 	if(test==0)
       {
-          std::cout << "testDefineExt=0" << std::endl;
+		//          std::cout << "testDefineExt=0" << std::endl;
 		return( result_total );
 	}
+	//	std::cout << "n1=" << n1 << ", and n2=" << n2 << ", Moving on to finding middle point" << std::endl;
+
 
 	uint n=0;
 	
@@ -79,24 +82,33 @@ TimeTexture<float> SulcusCorticalSnake::compute_snake()
 	
 	//defini la taille entre les 2 estremites (le max en gros)
 	
-	
+	//	std::cout << "distance ˆ n1" << std::endl;
+
 	TimeTexture<float> carte(1,size);
 	for(uint i=0; i<size; i++)
 		if(i==n1)
 			carte[0].item(i)=10;
-	else
-		carte[0].item(i)=0;
+		else
+			carte[0].item(i)=0;
 	
-	
+	//	std::cout << "distance ˆ n2" << std::endl;
+
 	max=MeshDistance_adapt( carte[0],true,n2);
 	
+	//	std::cout << "OK. Init de result" << std::endl;
+
 	TimeTexture<float> result(100,size);
 	for(int i=0; i<100; i++)
 		for(uint j=0; j<size; j++)
 			result[i].item(j)=0;
 	
+
+	//	std::cout << "OK. Entering big loop" << std::endl;
+
+
 	while(stop_total()==0)
 	{
+		//		std::cout << "StopTotal pas 0" << std::endl;
 // 		std::cout<<"SulcusCorticalSnake : ComputeSnake : while stoptotal==0, resolution="<<cpt_resolution<<std::endl;
 // 		for(uint j=0; j<size; j++)
 // 		{
@@ -134,8 +146,9 @@ TimeTexture<float> SulcusCorticalSnake::compute_snake()
 		cout<<n2<<endl;*/
 		
 // 		compute_snake_at_1_resolution(result);
+		//		std::cout << "ComputeSnake at 1 res" << std::endl;
 		compute_snake_at_1_resolution();
-		
+		//		std::cout << "OK comptage points" << std::endl;
 		for(uint i=0; i<list_points.size(); i++)
 		{
 			if( avant_list[i] == list_points[i] )
@@ -143,6 +156,7 @@ TimeTexture<float> SulcusCorticalSnake::compute_snake()
 			if( avant_list[i] != list_points[i] )
 				cpt_points[i] = 0;
 		}
+		//		std::cout << "refine vector" << std::endl;
 
 		
 		//On calcule le snake (rajouter boucle!)
@@ -156,9 +170,11 @@ TimeTexture<float> SulcusCorticalSnake::compute_snake()
 		}
 		cout<<n2<<endl;*/
 		//update old vector (list_points) with new_vector (CHECK THE '=' OPERATION!!)
+		//		std::cout << "Et on boucle... stop ?" << std::endl;
+
 		cpt_resolution++;
 	}
-	cout<<"STOP TOTAL!!"<<endl;
+	//	cout<<"STOP TOTAL!!"<<endl;
 	
 	
 	//ECRITURE TEXTURE TEMPORAIRE!!
@@ -197,7 +213,7 @@ void SulcusCorticalSnake::compute_snake_at_1_resolution()
 // 			loc[ list_points[i] ]=0;
 // 		count[i][ list_points[i] ]=0;
 // 	}
-	std::cout<<"compute_snake_at_1_resolution"<<endl;
+	//	std::cout<<"compute_snake_at_1_resolution"<<endl;
 	while( stop_condition_1_resolution()==0 )
 	{
 		
@@ -245,21 +261,26 @@ int SulcusCorticalSnake::stop_total()
 	int stop=1;
 	std::set<uint>::const_iterator itneigh;
 	
+	//	std::cout << "stop_total() : check " << std::endl;
 	//si le truc n'a pas de point ou n'en a qu'un
 	if( list_points.size()==0 )
 	{
+		//		std::cout << "stop_total() : first if " << std::endl;
 		if( are_they_neighbours(n1,n2)==1 )
 			return(1);
-		else{}
+		else return(0); // there was else {}
 	}
-	else
+	else if( list_points.size()==1 ) // there was no if
 	{
+		//		std::cout << "stop_total() : first else " << std::endl;
 		if( ( are_they_neighbours(n1, list_points[0])==1 ) && ( are_they_neighbours(n2, list_points[0]) == 1 ) )
 			return(1);
+		else return(0); //there was no else condition
 	}
-	
+	//	std::cout << "stop_total() : entering loop with " << list_points.size() << " points" << std::endl;
 	for(uint i=0; i<list_points.size(); i++)
 	{
+		//		std::cout << "i=" << i << std::endl;
 		int cpt=0;
 		
 		//si on est sur l'une des 2 extremites, on fait comme i on a deja rencontre un voisin sur le snake
@@ -269,19 +290,30 @@ int SulcusCorticalSnake::stop_total()
 		itneigh=neigh[ list_points[i] ].begin();
 		for ( ; itneigh != neigh[ list_points[i] ].end(); ++itneigh )
 		{
-			if( (*itneigh)==list_points[i-1] || (*itneigh)==list_points[i+1] )
-				cpt++;
+			// correction de bug un peu brutale
+			if (i==0)
+			{
+				if ((*itneigh)==list_points[i+1] )
+					cpt++;
+			}
+			else if (i==list_points.size()-1)
+			{
+				if( (*itneigh)==list_points[i-1] )
+					cpt++;
+			}
+			else
+			{
+				if( (*itneigh)==list_points[i-1] || (*itneigh)==list_points[i+1] ) //avant il n'y avait que ces deux
+					cpt++;															// lignes lˆ.
+			}
 		}
 		if(cpt<2)
 		{
 			stop = 0;
 		}
 	}
-	
-	if( list_points.size() < 2 )
-	{
-		stop=0;
-	}
+	//	std::cout << "stop_total() : exited loop " << std::endl;
+
 	return stop;
 }
 
@@ -314,7 +346,7 @@ int SulcusCorticalSnake::stop_condition_1_resolution()
 //POUR LE MOMENT? FAIT AVEC DES TEXTURES. A METTRE A JOUR AVEC LES BUCKETS
 int SulcusCorticalSnake::define_extremities()
 {
-	std::cout<<"SulcusCorticalSnake : define_extremities"<<std::endl;
+	//	std::cout<<"SulcusCorticalSnake : define_extremities"<<std::endl;
 	TimeTexture<float> tex_ext(1,size);
 	init_texture_single(tex_ext);
 	TimeTexture<float> tex_temp(1,size);
@@ -327,9 +359,13 @@ int SulcusCorticalSnake::define_extremities()
 		//On enleve les points non susceptibles d'etre des extremites
 // 	std::cout << "bookmark1" << std::endl;
 //   std::cout << "size=" << size << endl;
+
+	//	std::cout << "SulcusCorticalSnake::define_extremities -> about to enter main loop" << std::endl;
+
 	for(uint j=0; j<size;j++)
 	{
-//           std::cout << "j=" << j << std::endl;
+
+ //          std::cout << "j=" << j << "/" << size << std::endl;
 		int cpt=0;
 		if(constraint[0].item(j)==value)
 		{
@@ -366,7 +402,8 @@ int SulcusCorticalSnake::define_extremities()
                 }
 		}
 	}
-// 	     std::cout << "bookmark2" << std::endl;
+
+	//    std::cout << "SulcusCorticalSnake::define_extremities -> out of main loop" << std::endl;
 
 	int cpt=0;
 	for(uint j=0; j<size;j++)
@@ -377,7 +414,8 @@ int SulcusCorticalSnake::define_extremities()
 			pts.push_back(j);
 		}
 	}
-	
+	//    std::cout << "bookmark2" << std::endl;
+
 	if(cpt==0)
 		return 0;
 	
@@ -389,7 +427,7 @@ int SulcusCorticalSnake::define_extremities()
 	init_texture_single(tex_path_temp);
 	
 	// on prend les 2 plus loin
-// 	     std::cout << "bookmark3" << std::endl;
+	// 	     std::cout << "bookmark3" << std::endl;
 
 	for(uint j=0; j<pts.size() - 1; j++)
 	{
@@ -417,7 +455,7 @@ int SulcusCorticalSnake::define_extremities()
 		}
 	}
 
-//     std::cout << "ok pour extremities" << std::endl;
+	//     std::cout << "ok pour extremities" << std::endl;
 	return 1;
 }
 
@@ -446,7 +484,7 @@ int SulcusCorticalSnake::is_it_in_the_vector(uint vertex)
 //defines new point in the snake for snake refinement
 uint SulcusCorticalSnake::define_new_middle_point(uint origine, uint destination)
 {
-// 	std::cout<<"SulcusCorticalSnake : define_new_middle_point"<<std::endl;
+	//	std::cout<<"SulcusCorticalSnake : define_new_middle_point"<<std::endl;
 	std::map<uint, float> ord_list;
 
 	uint size_vect=0;
@@ -459,6 +497,7 @@ uint SulcusCorticalSnake::define_new_middle_point(uint origine, uint destination
 	TimeTexture<float> carte_retour(1,size);
 	TimeTexture<float> carte_limit(1,size);
 	
+
 	for(uint i=0; i<size; i++)
 	{
 		if(i==destination)
@@ -472,9 +511,12 @@ uint SulcusCorticalSnake::define_new_middle_point(uint origine, uint destination
 			carte_retour[0].item(i)=0;
 	}
 	
+	//	std::cout << "MeshDistAdaptTex" << std::endl;
 	dist[0]=MeshDistance_adapt_tex( carte[0],true,origine);
 	dist_retour[0]=MeshDistance_adapt_tex( carte_retour[0],true,destination);
 	
+	//	std::cout << "Rest" << std::endl;
+
 	int indicateur=0;
 	if( cpt_resolution<=2 )
 	{
@@ -493,7 +535,7 @@ uint SulcusCorticalSnake::define_new_middle_point(uint origine, uint destination
 		
 	if( indicateur==1 )
 	{
-// 		std::cout<<"METHODE 1"<<endl;
+		// 		std::cout<<"METHODE 1"<<endl;
 		dist_contraint_limit[0]=MeshDistance( mesh[0], constraint[0],true);
 	
 		for(uint i=0; i<size; i++)
@@ -503,7 +545,7 @@ uint SulcusCorticalSnake::define_new_middle_point(uint origine, uint destination
 		}
 		
 		//choix du point resultant
-// 		std::cout<<"choix du point resultant"<<endl;
+		//		std::cout<<"choix du point resultant"<<endl;
 		float dist_test=10000;
 		uint t=0;
 		int indic_move=0;
@@ -519,9 +561,12 @@ uint SulcusCorticalSnake::define_new_middle_point(uint origine, uint destination
 				}
 			}
 		}
-// 		std::cout<<"choix du point resultant FINI : "<<t<<endl;
+		//		std::cout<<"choix du point resultant FINI : "<<t<<endl;
 		if(indic_move==1)
+		{
+			//			std::cout << "out" << std::endl;
 			return(t);
+		}
 		else
 		{}
 	}
@@ -694,15 +739,62 @@ void SulcusCorticalSnake::refine_vector()
 void SulcusCorticalSnake::compute_curv()
 {
 	std::cout<<"SulcusCorticalSnake : compute_curv"<<std::endl;
-	CurvatureFactory CF;
-	Curvature * curvat = CF.createCurvature(mesh,"fem");
-	curv[0] = curvat->doIt();
-	curvat->regularize(curv[0],1);
-	curvat->getTextureProperties(curv[0]);
-	delete curvat;
 	
-	h_min=10000;
-	h_max=0;
+	curv=TimeTexture<float>(1,size);
+
+	//---- ATTENTION HORRIBLE
+	// Bug correction by duplicating a curvature computation method
+	// found in the main.cc of AimsGyriRegularization
+
+	//    std::cout << "SulcusCorticalSnake: compute mean curvatures by averaging normal curvatures" << std::endl;
+
+     mesh.updateNormals();
+
+     //    std::cout << "SulcusCorticalSnake: 1" << std::endl;
+
+     for (uint i=0; i<size; i++)
+     {
+    	 float nk=0.0;
+    	 std::set<uint> voi=neigh[i];
+    	 std::set<uint>::iterator voisIt=voi.begin();
+    	 float nx, ny, nz, vx, vy, vz;
+    	 float maxk=-100.0;
+    	 for ( ; voisIt != voi.end(); voisIt++)
+    	 {
+    		 nx=((mesh.normal())[i])[0];
+    		 ny=((mesh.normal())[i])[1];
+    		 nz=((mesh.normal())[i])[2];
+    		 vx=((mesh.vertex())[*voisIt])[0] - ((mesh.vertex())[i])[0];
+    		 vy=((mesh.vertex())[*voisIt])[1] - ((mesh.vertex())[i])[1];
+    		 vz=((mesh.vertex())[*voisIt])[2] - ((mesh.vertex())[i])[2];
+    		 float k=(float) 2*((nx*vx)+(ny*vy)+(nz*vz))/float(vx*vx + vy*vy + vz*vz);
+    		 if (k>maxk) maxk=k;
+    		 nk+=k;
+    	 }
+    	 nk /= (float)voi.size();
+    	 curv[0].item(i)=nk;
+     }
+
+     //    std::cout << "SulcusCorticalSnake: 2" << std::endl;
+
+
+
+
+//	CurvatureFactory CF;
+//	std::cout<<"DEBUG : ready to allocate curvature"<<std::endl;
+//	Curvature *curvat = CF.createCurvature(mesh,"fem");
+//	std::cout<<"DEBUG : ready to doit()"<<std::endl;
+//	curv[0] = curvat->doIt();
+//	std::cout<<"DEBUG : ready to regularize()"<<std::endl;
+//	curvat->regularize(curv[0],1);
+//	curvat->getTextureProperties(curv[0]);
+//	std::cout<<"DEBUG : ready to free curvature"<<std::endl;
+//	delete curvat;
+//
+     //	std::cout<<"DEBUG : OK for normalizing curv"<<std::endl;
+
+	h_min=100000.0;
+	h_max=-100000.0;
 	
 	for(uint j=0; j<size; j++)
 	{
@@ -717,6 +809,7 @@ void SulcusCorticalSnake::compute_curv()
 	{
 		curv[0].item(j) = (curv[0].item(j) -h_min) / (h_max-h_min);
 	}
+	//	std::cout<<"DEBUG : curv finished"<<std::endl;
 }
 
 
