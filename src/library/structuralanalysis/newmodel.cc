@@ -172,7 +172,7 @@ void NewModel::Run ( int verbose, bool doRun ){
             else
                 nb_under_threshold++;
 
-            cout << " T=" << temp << " it="<< ite++ << " " << flush ;
+            std::cout << " T=" << temp << " it="<< ite++ << " " << std::flush ;
 
             if ( this->labelsPath != "" ) {
                 for ( uint i0 = 0 ; i0 < sites.size() ; i0++ ) {
