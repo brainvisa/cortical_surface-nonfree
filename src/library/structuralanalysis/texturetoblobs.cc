@@ -542,7 +542,7 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
             (*iv)->getProperty( "nodes", nodes_list );
             (*iv)->getProperty( "x", latitudes );
             (*iv)->getProperty( "y", longitudes );
-            assert(nodes_list.size() == latitudes.size());
+//            assert(nodes_list.size() == latitudes.size());
 
             for ( uint i = 0 ; i < nodes_list.size() ; i++ ) {
 
