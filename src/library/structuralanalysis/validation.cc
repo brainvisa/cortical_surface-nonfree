@@ -92,18 +92,23 @@ void StructuralAnalysis_Validation::printFile(vector<double> &samples, FILE *f){
 
 
 std::vector<int> StructuralAnalysis_Validation::getCompConn( std::vector<uint> &indicesCliques, std::set<uint> &listeSites ) {
-    std::vector<int> comp( ssb->sites.size() );
+
+    std::vector<int> comp ( ssb->sites.size() );
     uint blob0, blob1;
     Site *s0, *s1;
-    int lcomp,nbcomp,aux;
+    int lcomp, nbcomp, aux;
     int label0,label1;
     std::set<uint>::iterator it;
+    
     for ( uint i = 0 ; i < ssb->sites.size() ; i++ )
         comp[i] = -1;
+    
     lcomp = 0;
     nbcomp = 0;
+
     for ( it = listeSites.begin() ; it != listeSites.end() ; it++ )
         comp[*it] = 0;
+
     for ( uint i = 0 ; i < indicesCliques.size() ; i++ )
         if ( ssb->cliques[indicesCliques[i]].type == SIMILARITY ) {
             s0 = ssb->cliques[indicesCliques[i]].blobs[0];
@@ -113,6 +118,7 @@ std::vector<int> StructuralAnalysis_Validation::getCompConn( std::vector<uint> &
             comp[blob0] = 0;
             comp[blob1] = 0;
         }
+    
     for ( uint i = 0 ; i < indicesCliques.size() ; i++ ) {
         if ( ssb->cliques[indicesCliques[i]].type == SIMILARITY ) {
 
@@ -163,6 +169,7 @@ std::vector<int> StructuralAnalysis_Validation::getCompConn( std::vector<uint> &
             }
         }
     }
+
     std::vector<uint> zeros;
     for ( uint i = 0 ; i < comp.size() ; i++ )
         if ( comp[i] == 0 ) 

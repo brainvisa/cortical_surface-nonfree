@@ -41,6 +41,7 @@ class StructuralAnalysis_Validation{
     std::vector<double> getBackup(std::vector<uint> &comp);
     uint nbcombinaisons(std::set<uint> &graphe, uint card);
     double WalshTest(std::vector<double> &samplesdist,int r);
+    StructuralAnalysis_Validation() {}
 };
 
 
