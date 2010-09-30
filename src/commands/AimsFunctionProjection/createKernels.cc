@@ -16,25 +16,25 @@ inline float calcule_distance ( const Point3df &p, const Point3df &t ) {
 
 inline float calcule_distance ( const Point3df &p, const Point3d &t ) {
     Point3df aux(p);
-    aux[0] -= t[0]; 
-    aux[1] -= t[1];  
+    aux[0] -= t[0];
+    aux[1] -= t[1];
     aux[2] -= t[2];
     return aux.dnorm();
 }
 
 inline float geod_weight_function ( const float &d, const float &d0 ) {
     float weight;
-    if ( d>d0 || d<0.0 ) 
+    if ( d>d0 || d<0.0 )
         weight = 0.0;
     else weight = -1/d0 * d + 1.0;
     return weight;
 }
 
-inline float cortical_distance ( const Point3d &nv3, 
-                                 const Point3df &vsize, 
-                                 const Point3df &v, 
-                                 const Point3df &n, 
-                                 const float &width, 
+inline float cortical_distance ( const Point3d &nv3,
+                                 const Point3df &vsize,
+                                 const Point3df &v,
+                                 const Point3df &n,
+                                 const float &width,
                                  const float &seuil ) {
     float weight;
     Point3df d ( nv3[0] * vsize[0] - v[0], nv3[1] * vsize[1] - v[1], nv3[2] * vsize[2] - v[2] );
@@ -68,8 +68,8 @@ inline std::vector<uint> nearest_vertices ( Point3df pf, AimsSurfaceTriangle &me
     std::vector<uint> v;
     for ( uint i = 0 ; i < mesh.vertex().size() ; i++ ) {
         Point3df t ( mesh[0].vertex()[i] );
-        if ( abs(t[0] - pf[0]) < rayon 
-                && abs(t[1] - pf[1]) < rayon 
+        if ( abs(t[0] - pf[0]) < rayon
+                && abs(t[1] - pf[1]) < rayon
                 && abs(t[2] - pf[2]) < rayon )
             v.push_back(i);
     }
@@ -85,10 +85,10 @@ std::pair<int, float> plus_proche_point ( Point3df p, AimsSurfaceTriangle &mesh 
         // Hypoth�e : les points p et q sont �moins de 5 mm de la surface corticale
         Point3df t( mesh[0].vertex()[vertices[i]] );
         dist = calcule_distance ( p, t );
-        if ( dist < min 
-                && 
-             ! ( mesh[0].normal()[i][0] == mesh[0].normal()[i][1] 
-                  && mesh[0].normal()[i][0] == mesh[0].normal()[i][2] 
+        if ( dist < min
+                &&
+             ! ( mesh[0].normal()[i][0] == mesh[0].normal()[i][1]
+                  && mesh[0].normal()[i][0] == mesh[0].normal()[i][2]
                   && mesh[0].normal()[i][0] == 0.0 ) ) {
             index = vertices[i];
             min = dist;
@@ -107,16 +107,16 @@ struct ltstr{
    }
 };
 
-void compute_kernel ( AimsData<float> &kernels, 
-                      uint time, 
-                      AimsSurfaceTriangle &mesh, 
-                      uint node, 
-                      const std::vector< std::map<uint,float> > &voisins2, 
-                      AimsData<long> &vertex, 
-                      AimsData<short> &classe, 
-                      const float &geod_decay, 
-                      const float &norm_decay, 
-                      Point3df &vsize, 
+void compute_kernel ( AimsData<float> &kernels,
+                      uint time,
+                      AimsSurfaceTriangle &mesh,
+                      uint node,
+                      const std::vector< std::map<uint,float> > &voisins2,
+                      AimsData<long> &vertex,
+                      AimsData<short> &classe,
+                      const float &geod_decay,
+                      const float &norm_decay,
+                      Point3df &vsize,
                       int size){
 
     std::map< uint, float >::iterator hit, ite;
@@ -164,19 +164,19 @@ void compute_kernel ( AimsData<float> &kernels,
         cour = curr;
         classe ( curr[0]-c[0], curr[1]-c[1], curr[2]-c[2], 0 ) = 2;
         neighbours.clear();
-        std::map< uint, float > vois1 = 
+        std::map< uint, float > vois1 =
             voisins2 [ vertex(curr[0]-c[0], curr[1]-c[1], curr[2]-c[2], 0) ];  // on r�up�e le set de voisins dans lequel on va chercher le point
 
         for ( x = -1 ; x <= 1 ; x++ ) {
             for ( y = -1 ; y <= 1 ; y++ ) {
                 for ( z = -1 ; z <= 1 ; z++ ) {
                     Point3d n ( curr[0]+x, curr[1]+y, curr[2]+z );       // n est un voxel voisin (26-voisinage) du voxel courant
-                    if ( n[0]-c[0] < size 
-                           && n[1]-c[1] < size 
+                    if ( n[0]-c[0] < size
+                           && n[1]-c[1] < size
                            && n[2]-c[2] < size
-                           && n[0]-c[0] >= 0 
-                           && n[1]-c[1] >= 0 
-                           && n[2]-c[2] >= 0 
+                           && n[0]-c[0] >= 0
+                           && n[1]-c[1] >= 0
+                           && n[2]-c[2] >= 0
                            && classe ( n[0]-c[0], n[1]-c[1], n[2]-c[2], 0 ) == 0 ) {
                                 neighbours.insert(n);
                                     classe ( n[0]-c[0], n[1]-c[1], n[2]-c[2], 0 ) = 3;    // on r�up�e les voisins qui n'ont pas ��trait� et on les marque comme �ant �traiter
@@ -190,8 +190,8 @@ void compute_kernel ( AimsData<float> &kernels,
         // ensuite on met �jour le voisin en question et on le passe dans current
         for ( it = neighbours.begin() ; it != neighbours.end() ; it++ ) {
             distance = 1000.0, min = 1000.0;
-            a1 = (*it)[0]-c[0]; 
-            a2 = (*it)[1]-c[1]; 
+            a1 = (*it)[0]-c[0];
+            a2 = (*it)[1]-c[1];
             a3 = (*it)[2]-c[2];
             hit = vois1.begin();
             for ( ite = vois1.begin() ; ite != vois1.end() ; ite++ ) {
@@ -208,31 +208,37 @@ void compute_kernel ( AimsData<float> &kernels,
 
             classe ( a1, a2, a3, 0 ) = 1;       // on marque ces voxels comme �ant de classe "1: voxel en cours de traitement"
 
-            wn = cortical_distance ( *it, 
-                                     vsize, 
+            wn = cortical_distance ( *it,
+                                     vsize,
                                      mesh[0].vertex() [(*hit).first],
-                                     mesh[0].normal() [(*hit).first], 
-                                     3.0, 
+                                     mesh[0].normal() [(*hit).first],
+                                     3.0,
                                      norm_decay );
-            
+            //std::cout << "wn:" << wn <<  " " << std::flush ;
+
             wg = geod_weight_function( (*hit).second, geod_decay );
 
-            //kernels ( a1, a2, a3, time ) = wg * wn ;
-            kernels ( a1, a2, a3, time ) = min ;
-            //current [ 1.0 - wg * wn ] = (*it);       // ce voxel trait�est ajout��la liste des voxels "courants", i.e. au front de propagation
-            current [ 1.0 - min ] = (*it);
+            //std::cout << "wg:" << wg <<  " " << std::flush ;
+
+            kernels ( a1, a2, a3, time ) = wg * wn ;
+
+            //std::cout << "wg:" << wg*wn <<  " " << std::flush ;
+
+
+            current [ 1.0 - wg * wn ] = (*it);       // ce voxel trait�est ajout��la liste des voxels "courants", i.e. au front de propagation
 
             sum += kernels ( a1, a2, a3, time );
 
         }
     }
-
+    //std::cout << "SUM:" << sum << std::endl;
     // 5�e �ape : normalisation au sein d'un seul noyau
-//    for ( x = 0 ; x < size ; x++ )
-//        for ( y = 0 ; y < size ; y++ )
-//            for ( z = 0 ; z < size ; z++ ) 
-//                kernels ( x, y, z, time ) /= sum;
-//            
+    assert( sum > 0.0 );
+    for ( x = 0 ; x < size ; x++ )
+        for ( y = 0 ; y < size ; y++ )
+            for ( z = 0 ; z < size ; z++ )
+                kernels ( x, y, z, time ) /= sum;
+
 }
 
 int kernel_index;
@@ -309,21 +315,21 @@ std::map<uint, float> LocalMeshDistanceMap ( AimsSurface<3,Void> *mesh,
 }
 
 
-AimsData<float> fast_marching_kernels ( std::string meshpath, 
-                                        int size, 
-                                        Point3df vsize, 
-                                        float geod_decay, 
+AimsData<float> fast_marching_kernels ( std::string meshpath,
+                                        int size,
+                                        Point3df vsize,
+                                        float geod_decay,
                                         float norm_decay ) {
     int operation = 2;
-    if ( kernel_index == -1 ) 
+    if ( kernel_index == -1 )
         operation = 0;
-    
+
     Reader<AimsSurfaceTriangle> r ( meshpath );
     AimsSurfaceTriangle mesh;
     r.read(mesh);
-    
+
     uint nb_nodes = mesh[0].vertex().size();
-    if ( kernel_index != -1 ) 
+    if ( kernel_index != -1 )
         nb_nodes = 1;
 
     AimsData<float> kernel ( size, size, size, nb_nodes );
@@ -334,7 +340,7 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
     std::set<uint>::iterator it, it2, it3, it4, it_min;
     std::set<uint> vois2;
     std::vector<std::map<uint,float> > voisins2 ( voisins.size() );
-    
+
 //    std::cerr << "Computing the 2nd-order neighbors :" << std::endl;
 //    for ( uint i = 0 ; i < voisins.size() ; i++ ) {
 //        if ( i%1000 == 0 ) std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << voisins.size() << std::flush;
@@ -352,8 +358,8 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
 //                for ( it3 = voisins[*it2].begin() ; it3 != voisins[*it2].end() ; it3++ ) {
 //                    it4 = voisins[i].find(*it3);
 //                    if ( it4 != voisins[i].end() ) { // on considère les voisins de *it2 qui sont aussi voisins de i
-//                        distance = std::min ( distance, 
-//                             calcule_distance ( mesh[0].vertex()[*it2], 
+//                        distance = std::min ( distance,
+//                             calcule_distance ( mesh[0].vertex()[*it2],
 //                                     mesh[0].vertex()[*it4]) + calcule_distance ( mesh[0].vertex()[*it4], mesh[0].vertex()[i] ) );
 //                    }
 //                }
@@ -363,7 +369,7 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
 //    }
 //    std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << voisins.size() << "/" << voisins.size() << std::endl;
     std::cerr << "Computing kernel for mesh \"" << meshpath << "\", size = " << size << " / voxel size = " << vsize << std::endl;
-    
+
     voisins2.clear();
     for ( uint i = 0 ; i < voisins.size() ; i++ ) {
         if ( i%1000 == 0 ) std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << voisins.size() << std::flush;
@@ -394,15 +400,15 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
                     kernel ( x, y, z, i ) = 0.0;
                 }
         if ( operation == 2 )
-            compute_kernel( kernel, i, mesh, kernel_index, voisins2, vertex, classe, geod_decay, norm_decay,vsize, kernel.dimX() );
+            compute_kernel( kernel, i, mesh, kernel_index, voisins2, vertex, classe, geod_decay, norm_decay, vsize, kernel.dimX() );
         else
             compute_kernel( kernel, i, mesh, i, voisins2, vertex, classe, geod_decay, norm_decay, vsize, kernel.dimX() );
     }
 
     std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << nb_nodes << "/" << nb_nodes << std::endl;
-    
-    
-    
+
+
+
     if ( kernel_index != -1 ) {
         std::cout << " node coordinates : (index = " << kernel_index << ") " << mesh[0].vertex()[kernel_index] << std::endl;
         Point3df &p = mesh[0].vertex()[kernel_index];     // le noeud dont on calcule le noyau de convolution
@@ -412,7 +418,7 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
 
         Point3d c ( (nv[0]-(int)(size/2)) * vsize[0],
                    (nv[1]-(int)(size/2)) * vsize[1],
-                   (nv[2]-(int)(size/2)) * vsize[2]); 
+                   (nv[2]-(int)(size/2)) * vsize[2]);
         std::cout << " transfo to get in the kernel ref : " << c << std::endl;
 
     }
