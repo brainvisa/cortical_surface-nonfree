@@ -36,17 +36,15 @@ std::vector< AimsData<float> > load_kernel ( std::string path ) {
 
 
 Texture<float> deconvolve ( AimsData<float> inFuncData, 
-                            std::vector< AimsData<float> > & kernel, 
+                            const std::vector< AimsData<float> > & kernel, 
                             AimsSurfaceTriangle mesh ) {
 
-    Texture<float> tex;
+    Texture<float> tex( mesh[0].vertex().size() );
     int size = kernel[0].dimX();
     float vsizeX = kernel[0].sizeX();
     float vsizeY = kernel[0].sizeY();
     float vsizeZ = kernel[0].sizeZ();
-    for ( uint i = 0 ; i < mesh[0].vertex().size() ; i++ ) {
-        tex.push_back(0.0);
-    }
+
     for ( uint i = 0 ; i < kernel.size() ; i++ ) {
         Point3df p ( mesh[0].vertex()[i] );
         Point3d nearest_voxel( (int) ( ( p[0] + ( vsizeX/2.0 ) ) / vsizeX ),
@@ -57,7 +55,35 @@ Texture<float> deconvolve ( AimsData<float> inFuncData,
                 for ( int z = -size/2, z0 = 0 ; z <= size/2 ; z++, z0++ ) {
                     Point3d vxl ( nearest_voxel );
                     vxl += Point3d ( x, y, z );
-                    tex.item(i) += kernel[i] ( x0, y0, z0, 0 ) * inFuncData ( vxl[0], vxl[1], vxl[2], 0 );
+                    assert( x0 < size && y0 < size && z0 < size );
+                    if (vxl[0]<0) {
+                        std::cout << vxl << std::endl;
+                    }
+                    
+                    
+                    int Zoffset =  - (int)(26.0/vsizeZ) ;
+
+                    //assert( vxl[0] >= 0 );
+                    //assert( vxl[1] >= 0 );
+                    //assert( vxl[2] + Zoffset >= 0 );
+                    //assert( vxl[0] < inFuncData.dimX() );
+                    //assert( vxl[1] < inFuncData.dimY() );
+                    //if (vxl[2] + Zoffset >= inFuncData.dimZ() )
+                    //    std::cout << vxl[2] << " " << inFuncData.dimZ() << std::endl;
+                    //assert( vxl[2] + Zoffset < inFuncData.dimZ() );
+                    if ( vxl[0] >= 0 && 
+                            vxl[1] >= 0 &&
+                            vxl[2] >= 0 &&
+                            vxl[2] + Zoffset >= 0 &&
+                            vxl[0] < inFuncData.dimX() &&
+                            vxl[1] < inFuncData.dimY() &&
+                            vxl[2] + Zoffset < inFuncData.dimZ() ) {
+                        
+                        tex.item(i) += kernel[i] ( x0, y0, z0, 0 ) * inFuncData ( vxl[0], vxl[1], vxl[2] + Zoffset, 0 );
+                    }
+                    else {
+                        std::cout << "Problem accessing the volume data" << std::endl;
+                    }
                 }
             }
         }

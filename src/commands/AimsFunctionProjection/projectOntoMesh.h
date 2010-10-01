@@ -8,7 +8,7 @@
 std::vector< AimsData<float> > load_kernel( std::string path );
 
 Texture<float> deconvolve ( AimsData<float> inFuncData, 
-                            std::vector< AimsData<float> > & kernel, 
+                            const std::vector< AimsData<float> > & kernel, 
                             AimsSurfaceTriangle mesh );
  
 #endif

@@ -149,6 +149,7 @@ void compute_kernel ( AimsData<float> &kernels,
     classe ( a1, a2, a3, 0 ) = 1;             // on remplit la case correspondante dans la matrice classe avec "1:voxel en cours de traitement"
     // et on remplit kernel avec le poids normal, consid�ant que le poids g�d�ique est �al �1
     kernels (a1, a2, a3, time) = 1.0;
+    sum += 1.0;
 
     Point3d cour = nv;
     uint totalsize = size * size * size;
@@ -218,21 +219,26 @@ void compute_kernel ( AimsData<float> &kernels,
 
             wg = geod_weight_function( (*hit).second, geod_decay );
 
-            //std::cout << "wg:" << wg <<  " " << std::flush ;
+            //std::cout << "dis:" << (*hit).second << " wg:" << wg <<  " " << std::flush ;
 
-            kernels ( a1, a2, a3, time ) = wg * wn ;
+            kernels ( a1, a2, a3, time ) = wg * wn ;            
 
-            //std::cout << "wg:" << wg*wn <<  " " << std::flush ;
+            //std::cout << "wg*wn:" << wg*wn <<  " " << std::flush ;
 
 
             current [ 1.0 - wg * wn ] = (*it);       // ce voxel trait�est ajout��la liste des voxels "courants", i.e. au front de propagation
 
-            sum += kernels ( a1, a2, a3, time );
+            sum = sum + kernels ( a1, a2, a3, time );
+            //std::cout << "sum:" << sum << " " << std::flush;
 
         }
     }
     //std::cout << "SUM:" << sum << std::endl;
     // 5�e �ape : normalisation au sein d'un seul noyau
+    if ( ! ( sum > 0.0) ) {
+        std::cout << "sum: " << sum << std::endl;
+        std::cout << "time: " << time << std::endl;        
+    }
     assert( sum > 0.0 );
     for ( x = 0 ; x < size ; x++ )
         for ( y = 0 ; y < size ; y++ )
@@ -323,7 +329,8 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
     int operation = 2;
     if ( kernel_index == -1 )
         operation = 0;
-
+    assert( geod_decay > 0.0 );
+    assert( norm_decay > 0.0 );
     Reader<AimsSurfaceTriangle> r ( meshpath );
     AimsSurfaceTriangle mesh;
     r.read(mesh);
@@ -368,12 +375,13 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
 //        }
 //    }
 //    std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << voisins.size() << "/" << voisins.size() << std::endl;
-    std::cerr << "Computing kernel for mesh \"" << meshpath << "\", size = " << size << " / voxel size = " << vsize << std::endl;
+    std::cerr << "Computing kernel for mesh " << meshpath << ", size = " << size << " / voxel size = " << vsize << std::endl;
 
     voisins2.clear();
     for ( uint i = 0 ; i < voisins.size() ; i++ ) {
         if ( i%1000 == 0 ) std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << voisins.size() << std::flush;
-        voisins2.push_back(LocalMeshDistanceMap( &(mesh[0]), voisins, i, 3.0) );
+        voisins2.push_back(LocalMeshDistanceMap( &(mesh[0]), voisins, i, 2.5) );
+        assert(voisins2[voisins2.size()-1].size() > 0);
     }
     std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << voisins.size() << "/" << voisins.size() << std::endl;
 
