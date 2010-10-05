@@ -61,16 +61,10 @@ Texture<float> deconvolve ( AimsData<float> inFuncData,
                     }
                     
                     
-                    int Zoffset =  - (int)(26.0/vsizeZ) ;
+                    int Zoffset =  0; 
 
-                    //assert( vxl[0] >= 0 );
-                    //assert( vxl[1] >= 0 );
-                    //assert( vxl[2] + Zoffset >= 0 );
-                    //assert( vxl[0] < inFuncData.dimX() );
-                    //assert( vxl[1] < inFuncData.dimY() );
-                    //if (vxl[2] + Zoffset >= inFuncData.dimZ() )
-                    //    std::cout << vxl[2] << " " << inFuncData.dimZ() << std::endl;
-                    //assert( vxl[2] + Zoffset < inFuncData.dimZ() );
+                    // introduction of an offset in Z to cope with partial brain acquisitions
+                                        
                     if ( vxl[0] >= 0 && 
                             vxl[1] >= 0 &&
                             vxl[2] >= 0 &&
