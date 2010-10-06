@@ -240,11 +240,16 @@ void compute_kernel ( AimsData<float> &kernels,
         std::cout << "time: " << time << std::endl;        
     }
     assert( sum > 0.0 );
+    float mini = 5.0, maxi = -5.0;
     for ( x = 0 ; x < size ; x++ )
         for ( y = 0 ; y < size ; y++ )
-            for ( z = 0 ; z < size ; z++ )
+            for ( z = 0 ; z < size ; z++ ) {
                 kernels ( x, y, z, time ) /= sum;
-
+                if ( kernels ( x, y, z, time ) < mini )
+                    mini = kernels ( x, y, z, time );
+                if ( kernels ( x, y, z, time ) > maxi )
+                    maxi = kernels ( x, y, z, time );
+            }
 }
 
 int kernel_index;
@@ -326,9 +331,6 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
                                         Point3df vsize,
                                         float geod_decay,
                                         float norm_decay ) {
-    int operation = 2;
-    if ( kernel_index == -1 )
-        operation = 0;
     assert( geod_decay > 0.0 );
     assert( norm_decay > 0.0 );
     Reader<AimsSurfaceTriangle> r ( meshpath );
@@ -407,7 +409,7 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
                     classe ( x, y, z, 0 ) = 0;
                     kernel ( x, y, z, i ) = 0.0;
                 }
-        if ( operation == 2 )
+        if ( kernel_index != -1 )
             compute_kernel( kernel, i, mesh, kernel_index, voisins2, vertex, classe, geod_decay, norm_decay, vsize, kernel.dimX() );
         else
             compute_kernel( kernel, i, mesh, i, voisins2, vertex, classe, geod_decay, norm_decay, vsize, kernel.dimX() );
@@ -415,7 +417,15 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
 
     std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << nb_nodes << "/" << nb_nodes << std::endl;
 
-
+    float mini = 5.0, maxi = -5.0;
+    for ( uint x = 0 ; x < size ; x++ )
+        for ( uint y = 0 ; y < size ; y++ )
+            for ( uint z = 0 ; z < size ; z++ ) {
+                if ( kernel ( x, y, z, 3114 ) < mini )
+                    mini = kernel ( x, y, z, 3114 );
+                if ( kernel ( x, y, z, 3114 ) > maxi )
+                    maxi = kernel ( x, y, z, 3114 );
+            }
 
     if ( kernel_index != -1 ) {
         std::cout << " node coordinates : (index = " << kernel_index << ") " << mesh[0].vertex()[kernel_index] << std::endl;

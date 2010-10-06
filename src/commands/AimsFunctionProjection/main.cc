@@ -52,9 +52,23 @@ int main ( int argc, const char **argv ) {
             get_kernelindex ( index );
            
             Point3df vsize ( vsizeX, vsizeY, vsizeZ );
-            AimsData<float> mask ( fast_marching_kernels ( meshpath, size, vsize, geod_decay, norm_decay) );
+            AimsData<float> kernel ( fast_marching_kernels ( meshpath, size, vsize, geod_decay, norm_decay) );
+//            float mini = 5.0, maxi = -5.0;
+//            for ( uint x = 0 ; x < size ; x++ )
+//                for ( uint y = 0 ; y < size ; y++ )
+//                    for ( uint z = 0 ; z < size ; z++ ) {
+//                        if ( kernel ( x, y, z, 3114 ) < mini )
+//                            mini = kernel ( x, y, z, 3114 );
+//                        if ( kernel ( x, y, z, 3114 ) > maxi )
+//                            maxi = kernel ( x, y, z, 3114 );
+//                    }
+//            std::cout << std::endl << " warning : MINI= " << mini << " MAXI=" << maxi << " time=" << time << " node=" << kernel(3,3,3,3114) << std::endl;
+//            std::cout << "milieu node avant= " << kernel(3,3,3,3110) << std::endl;
+//            for (uint i= 0;i<3115;i++) 
+//                std::cout << kernel(3,3,3,i) << " " << std::flush;
+            
             Writer<AimsData<float> > w ( outpath );
-            w.write ( mask );
+            w.write ( kernel );
                        
         }
         else if ( operation == 1 ) {
