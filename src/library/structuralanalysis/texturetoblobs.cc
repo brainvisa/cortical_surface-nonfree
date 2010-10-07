@@ -21,31 +21,40 @@ using namespace std;
 
 //##############################################################################
 
-vector<int> set2vector(set<int> &s){
-
-  vector<int> v;
-  set<int>::iterator it;
-  for (it=s.begin();it!=s.end();it++)
-    v.push_back(*it);
-  return v;
-
+std::vector<int> set2vector(std::set<int> &s){
+    std::vector<int> v;
+    std::set<int>::iterator it;
+    for ( it = s.begin() ; it != s.end() ; it++ )
+        v.push_back(*it);
+    return v;
+}
+std::vector<float> set2vector(std::set<float> &s){
+    std::vector<float> v;
+    std::set<float>::iterator it;
+    for ( it = s.begin() ; it != s.end() ; it++ )
+        v.push_back(*it);
+    return v;
 }
 
 //##############################################################################
 
-set<int> vector2set(vector<int> &v){
-
-  set<int> s;
-  for (uint i=0;i<v.size();i++)
-    s.insert(v[i]);
-  return s;
-
+std::set<int> vector2set(std::vector<int> &v){
+    std::set<int> s;
+    for ( uint i = 0 ; i < v.size() ; i++ )
+        s.insert(v[i]);
+    return s;
+}
+std::set<float> vector2set(std::vector<float> &v){
+    std::set<float> s;
+    for ( uint i = 0 ; i < v.size() ; i++ )
+        s.insert(v[i]);
+    return s;
 }
 
 //##############################################################################
 
 void storeCoordinatesInScaleSpace ( SubjectData &regionData, ScaleSpace<AimsSurface<3, Void>, Texture<float> >  &ss ) {
-    vector<Point3df> *coordinates;
+    std::vector<Point3df> *coordinates;
     coordinates = new vector<Point3df>();
 
     if ( regionData.coordinates == LATLON_2D ) {
@@ -65,16 +74,16 @@ void storeCoordinatesInScaleSpace ( SubjectData &regionData, ScaleSpace<AimsSurf
     ss.PutCoordinates(coordinates);
 }
 
-void TextureToBlobs::PrimalSketchRegionMode (   vector<surf::GreyLevelBlob *> &blobs,
-                                                vector<surf::ScaleSpaceBlob *> &ssblobs,
+void TextureToBlobs::PrimalSketchRegionMode (   std::vector<surf::GreyLevelBlob *> &blobs,
+                                                std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                                 surf::Region &region,
                                                 SubjectData &regionData,
-                                                string scaleSpacePath, string blobsPath,
+                                                std::string scaleSpacePath, string blobsPath,
                                                 bool recover,
                                                 float scale_max ) {
 
     // Creating the smoother...
-    cout << endl << "  ══ Smoother creation... " << endl;
+    std::cout << endl << "  ══ Smoother creation... " << std::endl;
     FiniteElementSmoother<3, float> smooth ( 0.01, regionData.mesh, regionData.weightLapl );
     ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss ( regionData.mesh, regionData.tex, &smooth );
 
@@ -595,6 +604,7 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
             float tmax,
                   tmin,
                   t;
+            std::vector<float> scales;
             std::string subject_id, label;
 
             ssblobs.push_back( new surf::ScaleSpaceBlob() );
@@ -602,6 +612,7 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
 
             (*iv)->getProperty( "tmax", tmax);
             (*iv)->getProperty( "tmin", tmin);
+            (*iv)->getProperty( "scales", scales);
             (*iv)->getProperty( "t", t);
             (*iv)->getProperty( "subject", subject_id);
             (*iv)->getProperty( "label", label);
@@ -613,6 +624,7 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
 
             ssblob->tmax = tmax;
             ssblob->tmin = tmin;
+            ssblob->scales = vector2set(scales);
             ssblob->t = t;
             ssblob->subject = subject_id;
             ssblob->label = atoi(label.data());
@@ -700,6 +712,7 @@ void TextureToBlobs::RecoverBlobsFromGLBOnly( Graph *graph,
         ssblob->subject = subject.subject_id;
         ssblob->tmin = blobs[iNbGLB + i]->scale;
         ssblob->tmax = blobs[iNbGLB + i]->scale;
+        ssblob->scales.insert(blobs[iNbGLB + i]->scale);
         ssblob->blobs.insert( blobs[iNbGLB + i] );
         ssblob->getNodesFromBlob( * (ssblob->blobs.begin()) );
         blobs[iNbGLB + i]->ssb_parent = ssblob;
@@ -865,6 +878,7 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         vert->setProperty( "subject", ssblobs[i]->subject);
         vert->setProperty( "tmin", ssblobs[i]->tmin);
         vert->setProperty( "tmax", ssblobs[i]->tmax);
+        vert->setProperty( "scales", set2vector(ssblobs[i]->scales) );
         listVertSSB[  i  ] = vert;
     }
     cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added... done" << endl;
@@ -1136,6 +1150,7 @@ void TextureToBlobs::AimsGroupGraph ( Graph *graph,
         vert->setProperty( "subject", ssblobs[i]->subject );
         vert->setProperty( "tmin", ssblobs[i]->tmin );
         vert->setProperty( "tmax", ssblobs[i]->tmax );
+        vert->setProperty( "scales", set2vector(ssblobs[i]->scales) );
         vert->setProperty( "nodes", set2vector((*(ssblobs[i]->blobs.begin()))->nodes) );
 
          // We associate the proper mesh patch from "objects" to the vertex

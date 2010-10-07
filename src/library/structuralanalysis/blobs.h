@@ -77,6 +77,7 @@ namespace surf{
             float t;
             int label;
             std::string subject;
+            std::set<float> scales;
             float tmin;
             float tmax;
             std::set<GreyLevelBlob *> blobs;
