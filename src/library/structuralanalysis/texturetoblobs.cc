@@ -1050,18 +1050,26 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
                     
                     Point3df d = p1-p2;
                     distance_moyenne += d.norm();
+                    std::cout << " DIS:" << distance_moyenne << " " << std::flush;
                 }
             }
                         
         }
-
-        distance_moyenne /= ( cluster_blobs.size() * (cluster_blobs.size()-1) / 2.0 );
+        std::cout << " DIS:" << distance_moyenne << " " << std::endl;
+        
+        std::cout << cluster_blobs.size() << std::endl;
+        if ( cluster_blobs.size() > 1 ){
+            distance_moyenne = distance_moyenne / ( cluster_blobs.size() * (cluster_blobs.size()-1) / 2.0 );
+            std::cout << " DIST:" << distance_moyenne << " " << std::endl;}
+        else 
+            assert(distance_moyenne == 0.0);
             
             
             
                 fprintf(f1, "charac_clusters[%d] = {\n", color);
-                
-                fprintf(f1, "\'dist_moy\' : %.3f,\n ", distance_moyenne );
+                std::cout << " DIS:" << distance_moyenne << " " << std::endl;
+                fprintf(f1, "\'dist_moy\' : %.3f,\n ", (float)distance_moyenne );
+                std::cout << " DIST:" << distance_moyenne << " " << std::endl;
                 fprintf(f1, "\'nb_total_blob\' : %d,\n ", cluster_blobs.size() );
                 fprintf(f1, "\'map_count_scales\' : {");
                 std::map< float, uint >::iterator ite3;
