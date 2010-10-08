@@ -1,11 +1,19 @@
 #ifndef SURF_REPRESENTATION_H
 #define SURF_REPRESENTATION_H
-#include <aims/getopt/getopt2.h>
+
 #include <aims/mesh/texture.h>
 #include <cortical_surface/structuralanalysis/blobs.h>
 
 
+float compareSurfBlobsScales ( const surf::GreyLevelBlob *s1, const surf::GreyLevelBlob *s2 );
 
+struct ltSurfBlobs
+{
+    bool operator()(const surf::GreyLevelBlob * s1, const surf::GreyLevelBlob * s2) const
+    {
+        return compareSurfBlobsScales(s1, s2) < 0.0;
+    }
+};
 
 //AimsSurfaceTriangle getFlatMap(vector<vector<int> > &nodes_lists, TimeTexture<float> &lat, TimeTexture<float> &lon, TimeTexture<float> &tex);
 

@@ -59,15 +59,5 @@ void GroupData::readData( bool verbose ) {
     }
 }
 
-inline float calcule_distance(const Point3df &p, const Point3df &t){
-    Point3df aux(p-t);
-    return aux.dnorm();
-}
-
-inline float calcule_distance(const Point3df &p, const Point3d &t){
-    Point3df aux(p);
-    aux[0] -= t[0]; aux[1] -= t[1];  aux[2] -= t[2];
-    return aux.dnorm();
-}
 
 

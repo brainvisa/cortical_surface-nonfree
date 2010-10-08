@@ -42,7 +42,10 @@ HEADERS = \
   structuralanalysis/blobs.h \
   structuralanalysis/subjectdata.h \
   structuralanalysis/region.h \
-  structuralanalysis/texturetoblobs.h 
+  structuralanalysis/texturetoblobs.h \ 
+  structuralanalysis/meshdistance.h \
+  structuralanalysis/primalsketch_operations.h \
+  
 
 
 
@@ -82,4 +85,7 @@ SOURCES = \
   structuralanalysis/blobs.cc \
   structuralanalysis/subjectdata.cc \
   structuralanalysis/region.cc \
-  structuralanalysis/texturetoblobs.cc 
+  structuralanalysis/texturetoblobs.cc \
+  structuralanalysis/meshdistance.cc \
+  structuralanalysis/primalsketch_operations.cc \
+  

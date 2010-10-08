@@ -9,8 +9,6 @@
 
 
 
-
-
 enum coordinatesMode{
     RAW_3D, LATLON_2D, LAT_1D
 };

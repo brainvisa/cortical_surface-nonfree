@@ -1,7 +1,6 @@
-#include <aims/getopt/getopt2.h>
+#include <cortical_surface/structuralanalysis/iograph.h>
 
 using namespace aims;
-using namespace carto;
 using namespace std;
 
 std::vector<std::string> getVectorStringFromGraph ( Graph &graph, std::string graph_property ) {
@@ -54,7 +53,7 @@ vector<string> splitGraphFile(string graphFile){
 }
 
 void LireGraphes(string graphFile, Graph &primal ){
-  vector<string> graphFiles = splitGraphFile(graphFile);
+  std::vector<std::string> graphFiles = splitGraphFile(graphFile);
 
   if( graphFiles.size() == 1 ){
     Reader<Graph> fr( graphFile );
@@ -68,11 +67,11 @@ void LireGraphes(string graphFile, Graph &primal ){
         (*iv)->setProperty( "subject", subject );
       cout << "Lecture FGraph OK." << endl;
     }
-    catch( parse_error & e )   {
+    catch( carto::parse_error & e )   {
       cerr << e.what() << " : " << e.filename() << ", line " << e.line() << endl;
       throw;
     }
-    catch( exception & e )  {
+    catch( std::exception & e )  {
       cerr << graphFile << ": " << e.what() << endl;
       throw;
     }
@@ -90,7 +89,7 @@ void LireGraphes(string graphFile, Graph &primal ){
         vg[0] = &test;
         ConcatenerGraphes( vg, primal, "sujet" ); // -----*****
       }
-      catch( parse_error & e ) {
+      catch( carto::parse_error & e ) {
         cerr << e.what() << " : " << e.filename() << ", line "  << e.line() << endl;
         throw;
       }
@@ -195,7 +194,7 @@ void SauvegarderGraphes(Graph &primal, string graphFile, string output){
         Writer<Graph> fw( outputs[i] );
         fw.write(tmpfg);
       }
-      catch( parse_error & e ) {
+      catch( carto::parse_error & e ) {
         cerr << e.what() << " : " << e.filename() << ", line "
             << e.line() << endl;
       }

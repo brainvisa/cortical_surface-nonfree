@@ -1,12 +1,12 @@
 #ifndef AIMS_SITES_H
 #define AIMS_SITES_H
+
 #include <aims/mesh/surface.h>
 #include <aims/mesh/texture.h>
-#include <cortical_surface/structuralanalysis/blobs.h>
+#include <graph/graph/graph.h>
 
 
-
-class Site{
+class Site {
     public :
         uint index;
         int graph_index;
@@ -32,9 +32,6 @@ class Site{
 
 
 std::vector<Site *> BuildSites(Graph &primal); //map<float, vector<pair<float, uint > > > &altmesh);
-
-//void convertSSBlobsToSites(std::vector<surf::ScaleSpaceBlob *> &ssblobs, std::vector<Site *> &sites);
-
 
 #endif
 

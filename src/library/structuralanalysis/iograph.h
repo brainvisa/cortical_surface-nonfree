@@ -1,6 +1,7 @@
 #ifndef AIMS_IOGRAPH_H
 #define AIMS_IOGRAPH_H
 
+#include <aims/getopt/getopt2.h>
 
 std::vector<std::string> getVectorStringFromGraph( Graph &graph, std::string graph_property );
 

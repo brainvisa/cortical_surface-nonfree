@@ -1,14 +1,7 @@
 #ifndef TEXTURETOBLOBS_H_
 #define TEXTURETOBLOBS_H_
 
-#include <aims/primalsketch/scalespace.h>
-#include <aims/primalsketch/primalSketch.h>
-#include <aims/primalsketch/finiteElementSmoother_d.h>
-
-#include <cortical_surface/structuralanalysis/blobs.h>
 #include <cortical_surface/structuralanalysis/region.h>
-
-
 
 enum filteringMode {
     GYRUS, AXIS, NO_FILTER, NO_REPRESENTATION
@@ -19,114 +12,81 @@ enum blobsMode {
 };
 
 
-class TextureToBlobs {
+namespace TextureToBlobs {
 
-    public:
+    std::set<int> getFilteringNodes( SubjectData & subject );
 
-        TextureToBlobs () { }
+    void filterBlobs ( SubjectData & subject,
+    		std::vector<surf::ScaleSpaceBlob *> & ssblobs,
+            std::vector<surf::GreyLevelBlob *> & filteredBlobs,
+            std::vector<surf::ScaleSpaceBlob *> & filteredSsblobs ) ;
 
-        static void PrimalSketchRegionMode ( vector<surf::GreyLevelBlob *> &blobs,
-                vector<surf::ScaleSpaceBlob *> &ssblobs,
-                surf::Region &region,
-                SubjectData &regionData,
-                string scaleSpacePath,
-                string blobsPath,
-                bool recover = false,
-                float scale_max = -1.0 );
 
-        static void PrimalSketchGlobalMode ( vector<surf::GreyLevelBlob *> &blobs,
-                vector<surf::ScaleSpaceBlob *> &ssblobs,
-                SubjectData &subject,
-                string scaleSpacePath,
-                string blobsPath,
-                bool recover = false,
-                float scale_max = -1.0 );
 
-        static void PrimalSketch ( vector<surf::GreyLevelBlob *> &blobs,
-                vector<surf::ScaleSpaceBlob *> &ssblobs,
-                SubjectData &subject,
-                string scaleSpacePath,
-                string blobsPath,
-                bool recover = false,
-                float scale_max = -1.0 ) {
-           PrimalSketchGlobalMode ( blobs, ssblobs, subject, scaleSpacePath, blobsPath, recover, scale_max );
-        }
 
-        static void PrimalSketch ( SubjectData &subject,
-                            std::vector<surf::GreyLevelBlob *> &blobs,
-                            std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                            ScaleSpace<AimsSurface<3, Void>, Texture<float> > *ss,
-                            TimeTexture<float> &blobs_texture,
-                            float scale_max = -1.0);
+    
+    void getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
+                                SubjectData &subject,
+                                std::vector<surf::GreyLevelBlob *> &blobs,
+                                bool initNull );
 
-        static void GreyLevelBlobsFromTexture ( SubjectData &subject,
-                std::vector<surf::GreyLevelBlob *> &blobs,
-                std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                std::string blobsPath ) ;
-
-        static void getBlobsFromPrimalSketch ( SubjectData & subject,
-                aims::PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch,
-                std::vector<surf::GreyLevelBlob *> &blobs,
-                std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                bool initNull = true ) ;
-
-        static std::set<int> getFilteringNodes( SubjectData & subject );
-
-        static void filterBlobs ( SubjectData & subject,
-        		std::vector<surf::ScaleSpaceBlob *> & ssblobs,
-                std::vector<surf::GreyLevelBlob *> & filteredBlobs,
-                std::vector<surf::ScaleSpaceBlob *> & filteredSsblobs ) ;
-
-//        static void RecoverBlobsFromIndivGraph( Graph *graph,
-//                                    std::vector<surf::GreyLevelBlob *> &blobs,
-//                                    std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-//                                    bool initNull = true);
-
-        static void getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
-                                    SubjectData &subject,
-                                    std::vector<surf::GreyLevelBlob *> &blobs,
-                                    bool initNull );
-
-        static void getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
-//                                    std::string subject_id,
-                                    std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                    std::map<int, std::set<int> > &listGLBindices,
-                                    bool initNull );
-
-        static void RecoverBlobsFromIndividualGraph( Graph *graph,
-                SubjectData &subject,
-                vector<surf::GreyLevelBlob *> &blobs,
-                vector<surf::ScaleSpaceBlob *> &ssblobs,
-                bool initNull = true);
-
-        static void RecoverBlobsFromGLBOnly( Graph *graph,
-                                    SubjectData &subject,
-                                    vector<surf::GreyLevelBlob *> &blobs,
-                                    vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                    bool initNull = true);
-        
-        static void AimsGraph( Graph *graph,
-						SubjectData & subject,
-						std::vector<surf::Blob *> & blobs ) ;
-        
-        static void AimsGraph( Graph *graph,
-                                SubjectData & subject,
-                                std::vector<surf::GreyLevelBlob *> & blobs,
-                                std::vector<surf::ScaleSpaceBlob *> & ssblobs ) ;
-
-        static void AimsGroupGraph( Graph *graph,
-                                std::map<std::string, SubjectData *> data,
+    void getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
                                 std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                std::vector<surf::SSBClique> &cliques );
+                                std::map<int, std::set<int> > &listGLBindices,
+                                bool initNull );
 
-        static void ReadAimsGroupGraph ( Graph &graph,
-                GroupData &data,
-                std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                std::vector<surf::SSBClique> &cliques,
-                std::vector<Vertex *> &listVertex );
+    void RecoverBlobsFromIndividualGraph( Graph *graph,
+            SubjectData &subject,
+            std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+            bool initNull = true);
 
+    void RecoverBlobsFromGLBOnly( Graph *graph,
+                                SubjectData &subject,
+                                std::vector<surf::GreyLevelBlob *> &blobs,
+                                std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                bool initNull = true);
+    
+    void AimsGraph( Graph *graph,
+					SubjectData & subject,
+					const std::vector<surf::Blob *> & blobs ) ;
+    
+    void AimsGraph ( Graph *graph,
+                            SubjectData & subject,
+                            //const std::vector<surf::GreyLevelBlob *> &blobs,
+                            const std::vector<surf::ScaleSpaceBlob *> &ssblobs );
 
+    void AimsGroupGraph( Graph *graph,
+                            std::map<std::string, SubjectData *> data,
+                            std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                            std::vector<surf::SSBClique> &cliques );
 
-};
+    void ReadAimsGroupGraph ( Graph &graph,
+            GroupData &data,
+            std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+            std::vector<surf::SSBClique> &cliques,
+            std::vector<Vertex *> &listVertex );
+
+    void DestroyBlobs ( std::vector<surf::ScaleSpaceBlob *> &ssblobs ) ;
+    
+    std::vector<uint> getClustersListsFromGLB ( std::vector< surf::GreyLevelBlob *> &blobs, 
+                                                  GroupData &data,
+                                                  float clustering_distance_threshold );
+    
+    void buildBlobsFromClustersLists ( std::vector< surf::GreyLevelBlob *> &blobs, 
+                                              GroupData & data,
+                                              std::vector<uint> &clusters,
+                                              std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs ) ;
+
+    void computeBlobsDispersion( std::vector<surf::ScaleSpaceBlob *> & ssblobs );
+
+    double getOverlapMeasure( Point2df bbmin1, Point2df bbmax1, Point2df bbmin2, Point2df bbmax2, uint *no_overlap );
+
+    bool isInside2DBox( Point2df p1, Point2df bbmin, Point2df bbmax);
+
+    void filteringBlobs (  std::vector<surf::ScaleSpaceBlob *> & ssblobs,
+            std::vector<surf::GreyLevelBlob *> &filteredBlobs,
+            std::vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
+            std::set< int > &nodes );
+}
 
 #endif /*TEXTURETOBLOBS_H_*/

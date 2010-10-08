@@ -1,6 +1,6 @@
 #include <cstdlib>
 #include <aims/getopt/getopt2.h>
-#include <cortical_surface/structuralanalysis/minimization.h>
+#include <cortical_surface/structuralanalysis/sites.h>
 
 using namespace aims;
 using namespace carto;
@@ -31,7 +31,7 @@ std::vector<Site *> BuildSites(Graph &primal) { //map<float, vector<pair<float, 
   for ( iv = primal.vertices().begin() ; iv != primal.vertices().end() ; ++iv ) {
     string test;
     (*iv)->getProperty( "index", index1);
-    (*iv)->getProperty(  "subject", subject1);
+    (*iv)->getProperty( "subject", subject1);
     (*iv)->getProperty( "label", test);
     (*iv)->getProperty( "gravity_center", bc1);
     (*iv)->getProperty( "tmin", tmin_1);
@@ -94,25 +94,4 @@ std::vector<Site *> BuildSites(Graph &primal) { //map<float, vector<pair<float, 
 
 //##############################################################################
 
-void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites( std::vector<surf::ScaleSpaceBlob *> &ssblobs, std::vector<Site *> &sites ) {
 
-    for ( uint i = 0 ; i < ssblobs.size() ; i++ ) {
-
-        sites.push_back(new Site());
-        Site *s = sites[sites.size() - 1];
-        s->index = ssblobs[i]->index;
-        s->graph_index = ssblobs[i]->index;
-        s->subject = ssblobs[i]->subject;
-        s->label = ssblobs[i]->label;
-        s->tmin = ssblobs[i]->tmin;
-        s->tmax = ssblobs[i]->tmax;
-        s->t = ssblobs[i]->t;
-        s->nodes_list = ssblobs[i]->nodes;
-        set<int> sTemp(sites[i]->nodes_list);
-        pair<Point2df, Point2df> bb = ssblobs[i]->get2DBoundingBox();
-        s->boundingbox_min = Point3df(bb.first[0], bb.first[1], 0);
-        s->boundingbox_max = Point3df(bb.second[0], bb.second[1], 0);
-
-    }
-
-}

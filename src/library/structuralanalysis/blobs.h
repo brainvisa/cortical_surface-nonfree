@@ -2,6 +2,8 @@
 #define SURF_BLOBS_H
 #include <aims/mesh/surface.h>
 #include <aims/mesh/texture.h>
+#include <cortical_surface/structuralanalysis/subjectdata.h>
+
 
 
 
@@ -45,10 +47,10 @@ namespace surf{
             float t;
             float scale;
             int label;
+            std::string subject;
 
             surf::ScaleSpaceBlob *ssb_parent;
 
-//            void getAimsMesh (  AimsSurface<3, Void> &mesh );
             void getAimsEllipsoid ( void );
             void getAimsEllipsoidAtMaxNode (  Texture<float> &tex ) ;
             void moveMeshToSphericalAtlas ( void ) ;
@@ -61,6 +63,7 @@ namespace surf{
             GreyLevelBlob( GreyLevelBlob *glb ) {
                 index = glb->index;
                 nodes = std::set<int>(glb->nodes);
+                subject = glb->subject;
 //                polygons = set::set<Point3di>(glb->polygons);
                 coordinates = std::map<int, std::vector<float> >(glb->coordinates);
                 raw_coordinates = std::map<int, std::vector<float> >(glb->raw_coordinates);
@@ -72,7 +75,7 @@ namespace surf{
 
     };
 
-    class ScaleSpaceBlob: public Blob{
+    class ScaleSpaceBlob: public Blob {
         public :
             float t;
             int label;
@@ -82,9 +85,6 @@ namespace surf{
             float tmax;
             std::set<GreyLevelBlob *> blobs;
             std::set<ScaleSpaceBlob *> topBlobs, bottomBlobs;
-
-//            void getAimsMesh ( AimsSurface<3, Void> &mesh );
-
 
             ScaleSpaceBlob(){}
             ~ScaleSpaceBlob(){}
@@ -138,32 +138,14 @@ namespace surf{
             SSBBifurcation ( std::set<ScaleSpaceBlob *> &s1, std::set< ScaleSpaceBlob *> &s2, std::string _type){topBlobs = std::set<ScaleSpaceBlob *>(s1); bottomBlobs = std::set<ScaleSpaceBlob *>(s2); type = _type;}
 
     };
+    
+
 }
 
 //##############################################################################
 
-void computeBlobsDispersion( std::vector<surf::ScaleSpaceBlob *> & ssblobs );
-
-double getOverlapMeasure( Point2df bbmin1, Point2df bbmax1, Point2df bbmin2, Point2df bbmax2, uint *no_overlap );
-
-bool isInside2DBox( Point2df p1, Point2df bbmin, Point2df bbmax);
-
-void filteringBlobs (  std::vector<surf::ScaleSpaceBlob *> & ssblobs,
-        std::vector<surf::GreyLevelBlob *> &filteredBlobs,
-        std::vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-        std::set< int > &nodes );
-
-//##############################################################################
 
 
 
-float compareBlobsScales(const surf::GreyLevelBlob *s1, const surf::GreyLevelBlob *s2);
-
-struct ltBlobs
-{
-  bool operator()(const surf::GreyLevelBlob * s1, const surf::GreyLevelBlob * s2) const
-  {
-    return compareBlobsScales(s1, s2) < 0.0;
-  }
-};
 #endif
+

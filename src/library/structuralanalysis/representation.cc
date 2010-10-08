@@ -8,6 +8,12 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
+float compareSurfBlobsScales ( const surf::GreyLevelBlob *s1, const surf::GreyLevelBlob *s2 ) {
+    ASSERT(s1->scale != s2->scale);
+    return (s1->scale - s2->scale);
+}
+
+
 
 //##############################################################################
 
@@ -235,9 +241,9 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
     AimsSurfaceTriangle mesh, *cyl;
 
     set<surf::GreyLevelBlob *> unsortedListGLB = ssb1->blobs;
-    set<surf::GreyLevelBlob *, ltBlobs> listGLB1, listGLB2;
+    set<surf::GreyLevelBlob *, ltSurfBlobs> listGLB1, listGLB2;
     set<surf::GreyLevelBlob *>::iterator itB;
-    set<surf::GreyLevelBlob *, ltBlobs>::iterator itB1, itB2;
+    set<surf::GreyLevelBlob *, ltSurfBlobs>::iterator itB1, itB2;
 //     cout << "bifMesh" << endl;
     for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
         listGLB1.insert(*itB);

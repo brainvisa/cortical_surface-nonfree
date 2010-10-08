@@ -1,6 +1,9 @@
 #include <aims/getopt/getopt2.h>
 #include <aims/math/random.h>
 #include <cortical_surface/structuralanalysis/minimization.h>
+#include <cortical_surface/structuralanalysis/texturetoblobs.h>
+
+
 
 using namespace aims;
 using namespace carto;
@@ -34,8 +37,6 @@ struct ltstr_vec
         }
     }
 };
-
-
 
 //###############################################################################################
 
@@ -129,42 +130,6 @@ void SurfaceBased_StructuralAnalysis::regionLabelsZones () {/* vector<pair<Point
 }
 
 //###############################################################################################
-
-
-//void SurfaceBased_StructuralAnalysis::MinimizationSetup(Graph &primal){
-//    std::cout << "Construction du vecteur de sites ..." << std::flush;
-//
-//    sites = BuildSites(primal);
-//    std::cout << "done (" << sites.size() << " sites)" << std::endl;
-//
-//
-//    std::cout << "Construction des cliques ... " << std::flush;
-//    cliques = BuildCliques(sites, cliquesDuSite);
-//
-//    std::set<std::string> subjects;
-//
-//    std::cout << std::endl << "  done" << std::endl;
-//    for ( uint i = 0 ; i < sites.size() ; i++ )
-//        subjects.insert(sites[i]->subject);
-//    nbsujets = subjects.size();
-//
-//    uint nb_cl_sim = 0, nb_cl_dd = 0, nb_cl_intraps = 0, nb_cl_lower = 0;
-//    for ( uint i = 0 ; i < cliques.size() ; i++ ) {
-//        if (cliques[i].type == SIMILARITY) nb_cl_sim++;
-//            else if (cliques[i].type == DATADRIVEN) nb_cl_dd++;
-//            else if (cliques[i].type == BESTLOWERSCALE) nb_cl_lower++;
-//            else if (cliques[i].type == INTRAPRIMALSKETCH) nb_cl_intraps++;
-//    }
-//    std::cout << " done (" << nb_cl_sim << " cliques de similarité ; " << nb_cl_dd << " cliques datadriven ; " << nb_cl_lower << " cliques lower ; " << nb_cl_intraps << " cliques intraps ; " << cliques.size() << " cliques en tout)" << std::endl;
-
-
-//}
-
-//SurfaceBased_StructuralAnalysis::SurfaceBased_StructuralAnalysis(Graph &primal){
-//    MinimizationSetup(primal);
-//}
-
-
 
 
 // Initialization Gets All Labels Set to 0 (if initLabel Set to True), Counts Labels
@@ -593,34 +558,274 @@ long double ft0(long double t){
   else return 1.0/8.0*t-8.0/8.0;
 }
 
-// long double SurfaceBased_StructuralAnalysis::getCompacite(set<uint> &comp, bool verb){
-//   set<string> subj;
-//   uint penal = 0;
-//   long double compac=0.0,rec=0.0;
-//   set<uint> auxcliques;
-//   set<uint>::iterator it;
-//   float t=0.0;
-//   for (it=comp.begin();it!=comp.end();it++){
-//     for (uint i=0;i<cliquesDuSite[*it].size();i++){
-//       uint aux=cliquesDuSite[*it][i],index0,index1;
-//       index0=cliques[aux].blobs[0]->index;
-//       index1=cliques[aux].blobs[1]->index;
-//       if ((comp.find(index0) != comp.end() && index0 != *it) || (comp.find(index1) != comp.end() && index1 != *it))
-//         auxcliques.insert(cliquesDuSite[*it][i]);
-//     }
-//
-//     compac += sites[*it]->t;
-//     if (subj.find(sites[*it]->subject)!=subj.end()) penal=penal+1;
-//     subj.insert(sites[*it]->subject);
-//   }
-//   compac /= comp.size();
-//   t = (float) compac;
-//
-//   if (verb) std::cout << "[" << t << ";" << -rec << ";" << subj.size() << ";" << penal <<"]";
-//
-//   return compac;
-//
-// }
+void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites( std::vector<surf::ScaleSpaceBlob *> &ssblobs, std::vector<Site *> &sites ) {
+
+    for ( uint i = 0 ; i < ssblobs.size() ; i++ ) {
+
+        sites.push_back(new Site());
+        Site *s = sites[sites.size() - 1];
+        s->index = ssblobs[i]->index;
+        s->graph_index = ssblobs[i]->index;
+        s->subject = ssblobs[i]->subject;
+        s->label = ssblobs[i]->label;
+        s->tmin = ssblobs[i]->tmin;
+        s->tmax = ssblobs[i]->tmax;
+        s->t = ssblobs[i]->t;
+        s->nodes_list = ssblobs[i]->nodes;
+        set<int> sTemp(sites[i]->nodes_list);
+        pair<Point2df, Point2df> bb = ssblobs[i]->get2DBoundingBox();
+        s->boundingbox_min = Point3df(bb.first[0], bb.first[1], 0);
+        s->boundingbox_max = Point3df(bb.second[0], bb.second[1], 0);
+
+    }
+
+}
+
+void SurfaceBased_StructuralAnalysis::GetSimilarityCliquesFromSSBCliques ( std::vector<surf::SSBClique> &ssbcliques,
+                                std::vector<Site *> &sites,
+                                std::vector<Clique> &cliques,
+                                std::vector<std::vector<int> > &cliquesDuSite){
+
+    cliquesDuSite = std::vector<std::vector<int> >( sites.size() );
+
+    for ( uint i = 0 ; i < ssbcliques.size() ; i++ ) {
+        Clique simc;
+        simc.type = SIMILARITY;
+        simc.similarity = ssbcliques[i].similarity;
+        simc.distance = ssbcliques[i].distance;
+        surf::ScaleSpaceBlob *ssb1, *ssb2;
+        int iSSB1, iSSB2;
+        ssb1 = ssbcliques[i].ssb1;
+        ssb2 = ssbcliques[i].ssb2;
+        iSSB1 = ssb1->index;
+        iSSB2 = ssb2->index;
+
+        cliquesDuSite[ sites[iSSB1]->index ].push_back(i);
+        cliquesDuSite[ sites[iSSB2]->index ].push_back(i);
+
+        simc.blobs.push_back( sites[iSSB1] );
+        simc.blobs.push_back( sites[iSSB2] );
+        cliques.push_back(simc);
+
+    }
+    
+    for ( uint i = 0 ; i < sites.size() ; i++ ) {
+
+        for ( uint n = 0 ; n < cliquesDuSite[i].size() ; n++ ) {
+
+            uint aux = cliquesDuSite[ i ][ n ];
+            if ( cliques[aux].type == SIMILARITY ) {
+                if ( cliques[aux].blobs[0]->index == (uint) i ) { }
+                else if (cliques[ aux ].blobs[1]->index == (uint) i ) { }
+                else {
+                    cout << i << " " << aux << " " << cliques[aux].type << " " << cliques[aux].blobs.size() << " " << cliques[aux].blobs[0]->index << " " << cliques[aux].blobs[1]->index << endl;
+                    ASSERT(false);
+                }
+            }
+        }
+    }
+    std::cout << cliques.size() << "cliques recovered from ssbcliques" << std::endl;
+
+}
+
+//##############################################################################
+
+// This function takes the "ssblobs" vector and figures out which pairs of blobs
+//  overlap. The resulting vector "cliques" associates to every relevant pair of
+//  scale-space blobs (noted by their indices) its calculated spatial overlap.
+
+std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCliques ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
+                                                 std::vector<std::vector<surf::GreyLevelBlob *> > &matchingblobs ) {
+
+    std::vector<surf::SSBClique > cliques;
+    matchingblobs = std::vector<std::vector<surf::GreyLevelBlob *> > (ssblobs.size());
+
+    std::set<surf::GreyLevelBlob *>::iterator itB1, itB2;
+    surf::GreyLevelBlob *b1max, *b2max;
+
+    // Start of cliques construction
+
+    for ( uint i = 0 ; i < ssblobs.size() - 1 ; i++ ) {
+        std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << ssblobs.size() << "(" << cliques.size() << ")" << std::flush;
+        for ( uint j = i + 1 ; j < ssblobs.size() ; j++ ) {
+
+            // For every single pair of scale-space blobs, computes a maximal overlap
+            //   between every possible pair of grey-level blobs.
+
+            // We consider only pairs of scale-space blobs from different subjects.
+            if ( ssblobs[i]->subject != ssblobs[j]->subject ) {
+
+                float overmax = -1.0;
+
+                for ( itB1 = ssblobs[i]->blobs.begin() ; itB1 != ssblobs[i]->blobs.end() ; itB1++ ) {
+                    for ( itB2 = ssblobs[j]->blobs.begin() ; itB2 != ssblobs[j]->blobs.end() ; itB2++ ) {
+
+                        // For every possible pair of grey-level blobs between these two scale-
+                        //   space blobs, we figure out their possible spatial overlap.
+
+                        // vector<int> listNodesB1(set2vector((*itB1)->nodes_list)),
+                        //             listNodesB2(set2vector((*itB2)->nodes_list));
+
+                        pair<Point2df,Point2df> bbi = (*itB1)->get2DBoundingBox(),
+                            //getBoundingBox((*itB1)->nodes, data[ssblobs[i]->subject].lat, data[ssblobs[i]->subject].lon),
+                                                bbj = (*itB2)->get2DBoundingBox();
+                            //(*itB2)->nodes, data[ssblobs[j]->subject].lat, data[ssblobs[j]->subject].lon);
+
+                        Point2df bbmin1 (bbi.first[0], bbi.first[1]),
+                                bbmax1 (bbi.second[0], bbi.second[1]),
+                                bbmin2 (bbj.first[0], bbj.first[1]),
+                                bbmax2 (bbj.second[0], bbj.second[1]) ;
+
+                        uint no_overlap = 2;
+                        double overlap = TextureToBlobs::getOverlapMeasure( bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap );
+                // cout << "bbi("<< (*itB1)->nodes.size() << "):" << bbi.first[0] << "-" << bbi.first[1] << " " <<
+                // bbi.second[0] << "-" << bbi.second[1] << " " <<
+                // "bbj("<< (*itB2)->nodes.size() << "):" << bbj.first[0] << " " << bbj.first[1] << " " <<
+                // bbj.second[0] << " " << bbj.second[1]  << endl;
+
+                        if ( no_overlap == 0 ){
+
+                            // If the current pair's overlap is maximal, then the glb indices are stored.
+
+                            //cout << "bbi("<< (*itB1)->nodes.size() << "):" << bbi.first[0] << "-" << bbi.first[1] << " " <<
+                            //   bbi.second[0] << "-" << bbi.second[1] << " " <<
+                            //   "bbj("<< (*itB2)->nodes.size() << "):" << bbj.first[0] << " " << bbj.first[1] << " " <<
+                            //   bbj.second[0] << " " << bbj.second[1] << " over:" << overlap << endl;
+                            //cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
+
+                            if ( overlap > overmax ) {
+                                overmax = overlap;
+                                b1max = *itB1;
+                                b2max = *itB2;
+                            }
+                        }
+
+                    }
+                }
+
+
+                // Here all the possible glb pairs have been processed for the two current ssb
+
+                if ( overmax > 0.10 &&
+                        !((ssblobs[j]->tmin > ssblobs[i]->tmax) || (ssblobs[i]->tmin > ssblobs[j]->tmax)) ) {
+
+                    // If the two scale-space blobs have at least one pair of grey-level
+                    //   overlapping (bounding-boxes) (+ scales overlapping), then a clique
+                    // is created between these two ssb and the max-overlapping pair of glb
+                    // is stored in "matchingblobs".
+
+
+
+                    cliques.push_back(surf::SSBClique(ssblobs[i], ssblobs[j], overmax));
+                    matchingblobs[i].push_back(b1max);
+                    matchingblobs[j].push_back(b2max);
+                    //cout << "max (" << ssblobs[i]->index <<","<< ssblobs[j]->index << ") between:" << b1max->index << " "
+                    //    << b2max->index << " overmax:" << overmax << endl;
+                    //cout << "scales: " << b1max->scale << " " << b1max->scale << endl;
+
+                }
+            }
+
+            // The next pair of scale-space blobs will now be processed.
+        }
+    }
+    std::cout << ssblobs.size() << "/" << ssblobs.size() << "(" << cliques.size() << ")" << std::endl;
+    // Construction of a representation blob for each scale-space blob
+    for ( uint i = 0 ; i < ssblobs.size() ; i++ ) {
+
+        // For every scale-space blob, we create a representation blob
+        //   from the set of grey-level blobs found to be max-matching
+        //   with some others (from other scale-space blobs)
+        std::set<uint>::iterator it;
+
+        if ( matchingblobs[i].size() != 0 )
+            std::cout << i << ":";
+
+        // for (it = matchingblobs[i].begin() ; it != matchingblobs[i].end() ; it++){
+        for ( uint j = 0 ; j < matchingblobs[i].size() ; j++ ) {
+            std::set<int> blobNodes( matchingblobs[i][j]->nodes );
+            ssblobs[i]->nodes.insert( blobNodes.begin(), blobNodes.end() );
+            std::cout << ssblobs[i]->nodes.size() << " " << std::flush;
+        }
+
+        if (matchingblobs[i].size()!=0)
+            cout << endl ;
+
+    }
+
+    return cliques;
+}
+
+////##############################################################################
+
+
+std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCliques3D ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
+                                                   GroupData &data,
+                                                   float threshold,
+                                                   float alpha,
+                                                   int type_distance ) {
+
+    std::vector<surf::SSBClique > cliques;
+
+    std::set<surf::GreyLevelBlob *>::iterator itB1, itB2;
+    surf::GreyLevelBlob *b1max, *b2max;
+
+    // Start of cliques construction
+    if ( type_distance == DISTANCE_LATITUDES )
+        std::cout << "DISTANCE_LATITUDES" << std::endl;
+    else if ( type_distance == DISTANCE_3DEUCLIDIAN )
+        std::cout << "DISTANCE_3DEUCLIDIAN" << std::endl;
+
+
+
+    for ( uint i = 0 ; i < ssblobs.size() - 1 ; i++ ) {
+
+        std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << ssblobs.size() << "(" << cliques.size() << ")" << std::flush;
+        for ( uint j = i + 1 ; j < ssblobs.size() ; j++ ) {
+
+            // For every single pair of scale-space blobs, computes a maximal overlap
+            //   between every possible pair of grey-level blobs.
+
+            // We consider only pairs of scale-space blobs from different subjects.
+            if ( ssblobs[i]->subject != ssblobs[j]->subject ) {
+
+                float distance=-1.0;
+                assert( ssblobs[i]->blobs.size() == 1 );
+                itB1 = ssblobs[i]->blobs.begin();
+                b1max = *itB1;
+                itB2 = ssblobs[j]->blobs.begin();
+                b2max = *itB2;
+                int max1 = b1max->getMaximumNode(*(data[ssblobs[i]->subject]->tex));
+                int max2 = b2max->getMaximumNode(*(data[ssblobs[j]->subject]->tex));
+
+                if ( type_distance == DISTANCE_LATITUDES ) {
+                    Point3df p1 (b1max->coordinates[max1][0], b1max->coordinates[max1][1], 0.0);
+                    Point3df p2 (b2max->coordinates[max2][0], b2max->coordinates[max2][1], 0.0);
+                    Point3df p = p1-p2;
+                    distance = sqrt(10*p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+                }
+                else if ( type_distance == DISTANCE_3DEUCLIDIAN ) {
+                    Point3df p1 (b1max->raw_coordinates[max1][0], b1max->raw_coordinates[max1][1], b1max->raw_coordinates[max1][2]);
+                    Point3df p2 (b2max->raw_coordinates[max2][0], b2max->raw_coordinates[max2][1], b2max->raw_coordinates[max2][2]);
+                    Point3df p = p1-p2;
+                    distance = p.norm();
+                }
+
+                // std::cout << distance << " " << std::flush;
+
+                if ( distance < threshold ) {
+                    cliques.push_back( surf::SSBClique(ssblobs[i], ssblobs[j], distance ) );
+                }
+            }
+            // The next pair of scale-space blobs will now be processed.
+        }
+    }
+    std::cout << endl;
+    std::cout << ssblobs.size() << "/" << ssblobs.size() << "(" << cliques.size() << ")" << std::endl;
+    return cliques;
+}
+
+//##############################################################################
 
 
 

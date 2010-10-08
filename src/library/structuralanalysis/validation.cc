@@ -7,75 +7,6 @@ using namespace carto;
 using namespace std;
 
 
-vector<int> StructuralAnalysis_Validation::creerHisto(vector<double> &samples, uint histosize, float *mini, float *step){
-
-  vector<int> histo(histosize);
-  for (uint j=0;j<histosize;j++)
-    histo[j]=0;
-  float maxi=-10000000.0;
-  *step=0.0;
-  *mini=10000000.0;
-  for (uint j=0; j<samples.size();j++){
-    if (samples[j]>maxi) maxi = samples[j];
-    if (samples[j]<*mini) *mini = samples[j];
-  }
-  *step = (maxi-*mini)/(float)histosize;
-  cout << "mini:"<<*mini<< " maxi:" << maxi << " step:" << *step << " nombre d'échantillons:" << samples.size() << endl;
-  for (uint j=0;j<samples.size();j++){
-    if(samples[j]==maxi) histo[histosize-1]++;
-    else histo[(samples[j]-*mini)/(maxi-*mini)*histosize]++;
-  }
-  cout << endl;
-
-
-  return histo;
-}
-
-vector<int> StructuralAnalysis_Validation::creerHisto2(vector<double> &samples, double step, float *mini){
-
-
-  float maxi=-10000000.0;
-  uint histosize;
-  *mini=10000000.0;
-  for (uint j=0; j<samples.size();j++){
-    if (samples[j]>maxi) maxi = samples[j];
-    if (samples[j]<*mini) *mini = samples[j];
-  }
-  histosize = (maxi-*mini)/(float)step;
-  vector<int> histo(histosize);
-  for (uint j=0;j<histosize;j++)
-    histo[j]=0;
-  cout << "mini:"<<*mini<< " maxi:" << maxi << " step:" << step << " histosize:" << histosize << " nombre d'échantillons:" << samples.size() << endl;
-  for (uint j=0;j<samples.size();j++){
-    if(samples[j]==maxi) histo[histosize-1]++;
-    else histo[(samples[j]-*mini)/(maxi-*mini)*histosize]++;
-  }
-  cout << endl;
-
-
-  return histo;
-}
-
-void StructuralAnalysis_Validation::printHisto(vector<int> &histo, float mini, float step, int type, FILE *f){
-  if (type==HORIZONTAL){
-    cout.precision(3);
-    for (uint j=0;j<histo.size();j++)
-      cout << (float)(j)*(float)step+(float)mini << "  ";
-    cout << endl;
-    for (uint j=0;j<histo.size();j++)
-      cout << histo[j] << "  ";
-    cout << endl;
-    cout.precision(5);
-  }
-  else if (type==VERTICAL){
-    for (uint j=0;j<histo.size();j++){
-//             cout << (float)(j)*(float)step+(float)mini << " " << histo[j] << endl;
-      fprintf(f, "%lf %d\n", (float)(j)*(float)step+(float)mini , histo[j]);
-    }
-    cout << endl;
-  }
-}
-
 void StructuralAnalysis_Validation::printFile(vector<double> &samples, FILE *f){
 
   for (uint j=0;j<samples.size();j++){
@@ -91,16 +22,18 @@ void StructuralAnalysis_Validation::printFile(vector<double> &samples, FILE *f){
 
 
 
-std::vector<int> StructuralAnalysis_Validation::getCompConn( std::vector<uint> &indicesCliques, std::set<uint> &listeSites ) {
+std::vector<int> StructuralAnalysis_Validation::getCompConn(  SurfaceBased_StructuralAnalysis &ssb, 
+                                                              std::vector<uint> &indicesCliques, 
+                                                              std::set<uint> &listeSites ) {
 
-    std::vector<int> comp ( ssb->sites.size() );
+    std::vector<int> comp ( ssb.sites.size() );
     uint blob0, blob1;
     Site *s0, *s1;
     int lcomp, nbcomp, aux;
     int label0,label1;
     std::set<uint>::iterator it;
     
-    for ( uint i = 0 ; i < ssb->sites.size() ; i++ )
+    for ( uint i = 0 ; i < ssb.sites.size() ; i++ )
         comp[i] = -1;
     
     lcomp = 0;
@@ -110,9 +43,9 @@ std::vector<int> StructuralAnalysis_Validation::getCompConn( std::vector<uint> &
         comp[*it] = 0;
 
     for ( uint i = 0 ; i < indicesCliques.size() ; i++ )
-        if ( ssb->cliques[indicesCliques[i]].type == SIMILARITY ) {
-            s0 = ssb->cliques[indicesCliques[i]].blobs[0];
-            s1 = ssb->cliques[indicesCliques[i]].blobs[1];
+        if ( ssb.cliques[indicesCliques[i]].type == SIMILARITY ) {
+            s0 = ssb.cliques[indicesCliques[i]].blobs[0];
+            s1 = ssb.cliques[indicesCliques[i]].blobs[1];
             blob0 = s0->index;
             blob1 = s1->index;
             comp[blob0] = 0;
@@ -120,10 +53,10 @@ std::vector<int> StructuralAnalysis_Validation::getCompConn( std::vector<uint> &
         }
     
     for ( uint i = 0 ; i < indicesCliques.size() ; i++ ) {
-        if ( ssb->cliques[indicesCliques[i]].type == SIMILARITY ) {
+        if ( ssb.cliques[indicesCliques[i]].type == SIMILARITY ) {
 
-            s0 = ssb->cliques[indicesCliques[i]].blobs[0];
-            s1 = ssb->cliques[indicesCliques[i]].blobs[1];
+            s0 = ssb.cliques[indicesCliques[i]].blobs[0];
+            s1 = ssb.cliques[indicesCliques[i]].blobs[1];
             blob0 = s0->index;
             blob1 = s1->index;
 
@@ -183,7 +116,7 @@ std::vector<int> StructuralAnalysis_Validation::getCompConn( std::vector<uint> &
     return comp;
 }
 
-std::vector<std::set<uint> > StructuralAnalysis_Validation::getCompConnVector(std::vector<int> &comp){
+std::vector<std::set<uint> > StructuralAnalysis_Validation::getCompConnVector ( std::vector<int> &comp){
     std::vector< std::set<uint> > cc;
     uint cpt = 0, cpt2, nbsites = 0;
     for ( uint i = 0 ; i < comp.size() ; i++ )
@@ -206,14 +139,15 @@ std::vector<std::set<uint> > StructuralAnalysis_Validation::getCompConnVector(st
 }
 
 
-uint StructuralAnalysis_Validation::nbcombinaisons(set<uint> &graphe, uint card){
+uint StructuralAnalysis_Validation::nbcombinaisons( SurfaceBased_StructuralAnalysis &ssb,
+                                                    std::set<uint> &graphe, uint card){
   uint nbfinal = 0;
   std::set<uint>::iterator it2;
   std::set<unsigned short int>::iterator it;
   std::set<std::set<unsigned short int> >::iterator itt;
   std::set<std::set<unsigned short int> > composantes;
   std::set<std::set<unsigned short int> > composantes_np1;
-  uint taille =2;
+  uint taille = 2;
 
   for (it2=graphe.begin();it2!=graphe.end();it2++){
       // cout << "\b\b\b\b\b\b\b\b\b\b\b\b\bit="<< *it << flush;
@@ -234,14 +168,14 @@ uint StructuralAnalysis_Validation::nbcombinaisons(set<uint> &graphe, uint card)
       set<unsigned short int> voisins;
 //       set<unsigned short int> currcomp(*itt);
       for (it = (*itt).begin();it!= (*itt).end(); it++){
-        for (uint i=0;i<ssb->cliquesDuSite[*it].size() ;i++){
-          uint currclique = ssb->cliquesDuSite[*it][i];
-          if (ssb->cliques[currclique].type==SIMILARITY){
+        for (uint i=0;i<ssb.cliquesDuSite[*it].size() ;i++){
+          uint currclique = ssb.cliquesDuSite[*it][i];
+          if (ssb.cliques[currclique].type==SIMILARITY){
 //         cout << "last="<<last << " i="<<i << " "<< flush; ;
-            if ((*itt).find(ssb->cliques[currclique].blobs[0]->index) == (*itt).end() && graphe.find(ssb->cliques[currclique].blobs[0]->index)!=graphe.end())
-              voisins.insert(ssb->cliques[currclique].blobs[0]->index);
-            if ((*itt).find(ssb->cliques[currclique].blobs[1]->index) == (*itt).end() && graphe.find(ssb->cliques[currclique].blobs[1]->index)!=graphe.end())
-              voisins.insert(ssb->cliques[currclique].blobs[1]->index);
+            if ((*itt).find(ssb.cliques[currclique].blobs[0]->index) == (*itt).end() && graphe.find(ssb.cliques[currclique].blobs[0]->index)!=graphe.end())
+              voisins.insert(ssb.cliques[currclique].blobs[0]->index);
+            if ((*itt).find(ssb.cliques[currclique].blobs[1]->index) == (*itt).end() && graphe.find(ssb.cliques[currclique].blobs[1]->index)!=graphe.end())
+              voisins.insert(ssb.cliques[currclique].blobs[1]->index);
           }
         }
       }
@@ -270,7 +204,7 @@ uint StructuralAnalysis_Validation::nbcombinaisons(set<uint> &graphe, uint card)
   return composantes_np1.size();
 }
 
-double StructuralAnalysis_Validation::WalshTest(vector<double> &samplesdist, int r){
+double StructuralAnalysis_Validation::WalshTest( std::vector<double> &samplesdist, int r){
 
   std::sort(samplesdist.begin(), samplesdist.end());
   double c =(double) ceil(sqrt(2.F*samplesdist.size())); uint k=r+c; double b2 = 1.0/0.05;
@@ -282,24 +216,30 @@ double StructuralAnalysis_Validation::WalshTest(vector<double> &samplesdist, int
 //   return res;
 }
 
-vector<double> StructuralAnalysis_Validation::getCaracSample(vector<uint> &composante){
-  double tmoy=0.0, rec=0.0, sum=0.0, compac=0.0, Ttest=0.0, compaccent;
-  uint nbblobsrec=0;
+std::vector<double> StructuralAnalysis_Validation::getCaracSample( SurfaceBased_StructuralAnalysis &ssb,
+                                                                   std::vector<uint> &composante ) {
+  double  tmoy = 0.0, 
+          rec = 0.0, 
+          sum = 0.0, 
+          compac = 0.0, 
+          Ttest = 0.0, 
+          compaccent;
+  uint nbblobsrec = 0;
 
 
-  for (uint k=0;k<composante.size();k++){
-    tmoy += ssb->sites[composante[k]]->tValue;
-    compac += ssb->sites[composante[k]]->t;
-//     compaccent += ssb->sites[composante[k]]->t2;
+  for ( uint k = 0 ; k < composante.size() ; k++ ) {
+    tmoy += ssb.sites[composante[k]]->tValue;
+    compac += ssb.sites[composante[k]]->t;
+//     compaccent += ssb.sites[composante[k]]->t2;
   }
   compac /= composante.size();
   for (uint k=0;k<composante.size();k++)
-    sum += pow(ssb->sites[composante[k]]->tValue-compac,2);
+    sum += pow(ssb.sites[composante[k]]->tValue-compac,2);
   Ttest = sqrt((float)(composante.size()*(composante.size()-1)))*compac/sqrt(sum);
   for (uint k=0;k<composante.size()-1;k++)
     for (uint m=k+1;m<composante.size();m++){
-    Point3df bbmax1=ssb->sites[composante[k]]->boundingbox_max, bbmax2=ssb->sites[composante[m]]->boundingbox_max;
-    Point3df bbmin1=ssb->sites[composante[k]]->boundingbox_min, bbmin2=ssb->sites[composante[m]]->boundingbox_min;
+    Point3df bbmax1=ssb.sites[composante[k]]->boundingbox_max, bbmax2=ssb.sites[composante[m]]->boundingbox_max;
+    Point3df bbmin1=ssb.sites[composante[k]]->boundingbox_min, bbmin2=ssb.sites[composante[m]]->boundingbox_min;
 
     uint no_overlap=1;
     float reco = getOverlap(bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap);
@@ -312,30 +252,31 @@ vector<double> StructuralAnalysis_Validation::getCaracSample(vector<uint> &compo
   sample.push_back(compac);
   sample.push_back(Ttest);
   sample.push_back(rec/(double)nbblobsrec);
-  sample.push_back(ssb->getClusterEnergy(composante));
+  sample.push_back(ssb.getClusterEnergy(composante));
   return sample;
 
 }
 
-vector<double> StructuralAnalysis_Validation::getBackup(vector<uint> &composante){
+std::vector<double> StructuralAnalysis_Validation::getBackup ( SurfaceBased_StructuralAnalysis &ssb, 
+                                                               std::vector<uint> &composante ) {
   double tmoy=0.0, rec=0.0, sum=0.0, compac=0.0, Ttest=0.0;
   uint nbblobsrec=0;
   vector<double> sample;
 
   for (uint k=0;k<composante.size();k++){
-    tmoy += ssb->sites[composante[k]]->t;
-    sample.push_back(ssb->sites[composante[k]]->tValue);
-    compac += ssb->sites[composante[k]]->tValue;
+    tmoy += ssb.sites[composante[k]]->t;
+    sample.push_back(ssb.sites[composante[k]]->tValue);
+    compac += ssb.sites[composante[k]]->tValue;
   }
   compac /= composante.size();
   for (uint k=0;k<composante.size();k++)
-    sum += pow(ssb->sites[composante[k]]->tValue-compac,2);
+    sum += pow(ssb.sites[composante[k]]->tValue-compac,2);
   Ttest = sqrt((float)(composante.size()*(composante.size()-1)))*compac/sqrt(sum);
 //         Ttest = compac/(sqrt(sum)/sqrt((float)composante.size()));
   for (uint k=0;k<composante.size()-1;k++)
     for (uint m=k+1;m<composante.size();m++){
-    Point3df bbmax1=ssb->sites[composante[k]]->boundingbox_max, bbmax2=ssb->sites[composante[m]]->boundingbox_max;
-    Point3df bbmin1=ssb->sites[composante[k]]->boundingbox_min, bbmin2=ssb->sites[composante[m]]->boundingbox_min;
+    Point3df bbmax1=ssb.sites[composante[k]]->boundingbox_max, bbmax2=ssb.sites[composante[m]]->boundingbox_max;
+    Point3df bbmin1=ssb.sites[composante[k]]->boundingbox_min, bbmin2=ssb.sites[composante[m]]->boundingbox_min;
 
     uint no_overlap=1;
     float reco = getOverlap(bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap);
@@ -357,13 +298,13 @@ vector<double> StructuralAnalysis_Validation::getBackup(vector<uint> &composante
 
 
 
-void StructuralAnalysis_Validation::ValidAround(){
+void StructuralAnalysis_Validation::ValidAround ( SurfaceBased_StructuralAnalysis &ssb ) {
 
       std::set <uint> existinglabels;
       std::set <uint>::iterator it;
-      for ( uint i = 0 ; i < ssb->sites.size() ; i++ )
-          if ( ssb->sites[i]->label != 0 )
-              existinglabels.insert( ssb->sites[i]->label );
+      for ( uint i = 0 ; i < ssb.sites.size() ; i++ )
+          if ( ssb.sites[i]->label != 0 )
+              existinglabels.insert( ssb.sites[i]->label );
       uint cpt = 0;
 
       
@@ -371,8 +312,8 @@ void StructuralAnalysis_Validation::ValidAround(){
       // activblobs[i] contains the different sites indices carrying a positive label 
       
       for ( it = existinglabels.begin() ; it != existinglabels.end() ; it++ ) {
-          for ( uint j = 0 ; j < ssb->sites.size() ; j++ )
-              if ( ssb->sites[j]->label == (int) *it )
+          for ( uint j = 0 ; j < ssb.sites.size() ; j++ )
+              if ( ssb.sites[j]->label == (int) *it )
                   activblobs[cpt].insert( j );
           cpt++;
       }
@@ -380,12 +321,12 @@ void StructuralAnalysis_Validation::ValidAround(){
       std::vector <uint> cliquesV;
       std::set <uint> sitesV;
 
-      for ( uint j = 0 ; j < ssb->cliques.size() ; j++ )
+      for ( uint j = 0 ; j < ssb.cliques.size() ; j++ )
           cliquesV.push_back( j );
-      for ( uint j = 0 ; j < ssb->sites.size() ; j++ )
+      for ( uint j = 0 ; j < ssb.sites.size() ; j++ )
           sitesV.insert( j );      
 
-      std::vector< int > ccc = getCompConn( cliquesV, sitesV );
+      std::vector< int > ccc = getCompConn( ssb, cliquesV, sitesV );
       std::vector< std::set<uint> > cc = getCompConnVector( ccc );
       uint startsite;
 
@@ -411,11 +352,11 @@ void StructuralAnalysis_Validation::ValidAround(){
               std::cout << endl;
 
               // on va tirer au sort des clusters de taille activblobs[i].size()
-              std::vector< int > select_cc, tirage( ssb->sites.size() );
+              std::vector< int > select_cc, tirage( ssb.sites.size() );
               for ( uint k = 0 ; k < cc.size() ; k++ )
                   if ( cc[k].size() >= activblobs[i].size() )
                       select_cc.push_back( k );
-              for ( uint k = 0 ; k < ssb->sites.size() ; k++ ) {
+              for ( uint k = 0 ; k < ssb.sites.size() ; k++ ) {
                   tirage[k] = -1;
                   if ( cc [ccc[k]].size() >= activblobs[i].size() )
                       tirage[k] = ccc[k];
@@ -426,16 +367,16 @@ void StructuralAnalysis_Validation::ValidAround(){
               uint j = 0;
               for ( it = activblobs[i].begin() ; it != activblobs[i].end() ; it++, j++ ) {
                   uint test = *it;
-                  for ( uint m = 0 ; m < ssb->cliquesDuSite[test].size() ; m++ ) {
-                      uint currclique = ssb->cliquesDuSite[test][m];
-                      if ( ssb->cliques[currclique].type == SIMILARITY ) {
-                          autorized.insert ( ssb->cliques[currclique].blobs[0]->index );
-                          autorized.insert ( ssb->cliques[currclique].blobs[1]->index );
+                  for ( uint m = 0 ; m < ssb.cliquesDuSite[test].size() ; m++ ) {
+                      uint currclique = ssb.cliquesDuSite[test][m];
+                      if ( ssb.cliques[currclique].type == SIMILARITY ) {
+                          autorized.insert ( ssb.cliques[currclique].blobs[0]->index );
+                          autorized.insert ( ssb.cliques[currclique].blobs[1]->index );
                       }
                   }
               }
 
-              std::cout << "restent :"<< ssb->sites.size() - forbidden.size() << std::endl;
+              std::cout << "restent :"<< ssb.sites.size() - forbidden.size() << std::endl;
 
               for ( uint j = 0 ; j < 10000 ; j++ ) {
     //                 cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << j << flush;
@@ -444,7 +385,7 @@ void StructuralAnalysis_Validation::ValidAround(){
 
                     std::set<uint> dejapris = std::set< uint > ( forbidden );
                     do {
-                        startsite = (float) UniformRandom() * ssb->sites.size();
+                        startsite = (float) UniformRandom() * ssb.sites.size();
                         }
                     while ( tirage[startsite] < 1 ||
                             dejapris.find( startsite ) != dejapris.end() );
@@ -457,13 +398,13 @@ void StructuralAnalysis_Validation::ValidAround(){
                     while ( composante.size() < activblobs[i].size() ) {
 
                         uint test = composante[ composante.size() - 1 ];
-                        for ( uint m = 0 ; m < ssb->cliquesDuSite[test].size() ; m++ ) {
-                            uint currclique = ssb->cliquesDuSite[test][m];
-                            if ( ssb->cliques[currclique].type == SIMILARITY ) {
-                                if ( dejapris.find(ssb->cliques[currclique].blobs[0]->index) == dejapris.end() )
-                                    voisins.insert( ssb->cliques[currclique].blobs[0]->index );
-                                if ( dejapris.find(ssb->cliques[currclique].blobs[1]->index) == dejapris.end() )
-                                    voisins.insert( ssb->cliques[currclique].blobs[1]->index );
+                        for ( uint m = 0 ; m < ssb.cliquesDuSite[test].size() ; m++ ) {
+                            uint currclique = ssb.cliquesDuSite[test][m];
+                            if ( ssb.cliques[currclique].type == SIMILARITY ) {
+                                if ( dejapris.find(ssb.cliques[currclique].blobs[0]->index) == dejapris.end() )
+                                    voisins.insert( ssb.cliques[currclique].blobs[0]->index );
+                                if ( dejapris.find(ssb.cliques[currclique].blobs[1]->index) == dejapris.end() )
+                                    voisins.insert( ssb.cliques[currclique].blobs[1]->index );
                             }
                         }
                         assert( voisins.size() != 0 );
@@ -476,10 +417,9 @@ void StructuralAnalysis_Validation::ValidAround(){
                           dejapris.insert(*it);
                           voisins.erase(it);
                         }
-    //                   }
                     }
 
-                    std::vector<double> sample( getCaracSample(composante) );
+                    std::vector<double> sample( getCaracSample(ssb, composante) );
                     samplesCarac.push_back( sample );
                     samples.push_back( sample[3] );
                     samplesT.push_back( sample[0] );
@@ -491,44 +431,9 @@ void StructuralAnalysis_Validation::ValidAround(){
               }
 
               float mini,step;
-    //           FILE *f,*ft,*frec,*fNeg,*fAct,*fActRec;
-    //           f=fopen("/volatile/operto/histo.txt","w");
-    //           ft=fopen("/volatile/operto/histo_t.txt","w");
-    //           frec=fopen("/volatile/operto/histo_rec.txt","w");
-    //           fNeg=fopen("/volatile/operto/histo_neg.txt","w");
-    //           fAct=fopen("/volatile/operto/barres_activ.txt","w");
-    //           fActRec=fopen("/volatile/operto/barres_activrec.txt","w");
+
               std::cout << endl << "nombre de neg:" << samplesNeg.size() << std::endl;
-              uint histosize = 40;
 
-
-              std::cout << "histoT" << std::endl;
-              std::vector<int> histoT( creerHisto(samplesT,histosize,&mini,&step) );
-    //           printHisto(histoT,mini,step,VERTICAL,ft);
-
-              std::cout << "histoRec" << std::endl;
-              std::vector<int> histoRec(creerHisto(samplesRec,histosize,&mini,&step));
-    //           printHisto(histoRec,mini,step,VERTICAL,frec);
-
-              std::cout << "histoTneg" << std::endl;
-              std::vector<int> histoNeg(creerHisto(samplesNeg,histosize,&mini,&step));
-    //           printHisto(histoNeg,mini,step,VERTICAL,fNeg);
-
-              std::cout << "histo" << std::endl;
-              std::vector<int> histo(creerHisto(samples,histosize,&mini,&step));
-    //           printHisto(histo,mini,step,VERTICAL,f);
-
-              int maxiheight = -10000,
-                  maxiheight2 = -10000;
-              for ( uint j = 0 ; j < histosize ; j++ ) {
-                  if ( histoT[j] > maxiheight )
-                      maxiheight = histoT[j];
-                  if ( histoRec[j] > maxiheight2 )
-                      maxiheight2 = histoRec[j];
-              }
-              maxiheight += 10;
-              maxiheight2 += 10;
-              std::cout << "maxiheight =" << maxiheight << std::endl;
 
               for ( uint j = 0 ; j < activblobs.size() ; j++ ) {
                   if ( activblobs[j].size() == activblobs[i].size() ) {
@@ -537,7 +442,7 @@ void StructuralAnalysis_Validation::ValidAround(){
 
                       for ( it = activblobs[j].begin() ; it != activblobs[j].end() ; it++ )
                           composante.push_back( *it );
-                      std::vector<double> sample ( getCaracSample(composante) );
+                      std::vector<double> sample ( getCaracSample( ssb, composante) );
                       samplesTri.push_back( sample[0] );
                       std::sort( samplesTri.begin(), samplesTri.end() );
                       double r;
@@ -546,9 +451,8 @@ void StructuralAnalysis_Validation::ValidAround(){
                             r++ ) { }
                       assert ( r!=samplesTri.size() );
                       std::cout << "perc. " << j << ":" << r / (double) samplesTri.size() * 100.0 << " " << sample[0] << std::endl;
-                      results[activindex].push_back( ssb->sites[*(activblobs[j].begin())]->label );
+                      results[activindex].push_back( ssb.sites[*(activblobs[j].begin())]->label );
                       results[activindex].push_back( r / (double) samplesTri.size() * 100.0 );
-        //                 fprintf(fAct,"%f %f\n", sample[0], (double)maxiheight);
                   }
                   if ( activblobs[j].size() == activblobs[i].size() ) {
                       std::vector<uint> composante;
@@ -556,7 +460,7 @@ void StructuralAnalysis_Validation::ValidAround(){
 
                       for ( it = activblobs[j].begin() ; it != activblobs[j].end() ; it++ )
                           composante.push_back(*it);
-                      std::vector<double> sample( getCaracSample(composante) );
+                      std::vector<double> sample( getCaracSample( ssb, composante) );
                       samplesTri.push_back( sample[2] );
                       std::sort( samplesTri.begin(), samplesTri.end() );
                       double r;
@@ -565,39 +469,30 @@ void StructuralAnalysis_Validation::ValidAround(){
                           r++ ) { }
 
                       assert ( r != samplesTri.size() );
-                      std::cout << "perc. " << ssb->sites[*(activblobs[j].begin())]->label << ":" << r / (double) samplesTri.size() * 100.0
+                      std::cout << "perc. " << ssb.sites[*(activblobs[j].begin())]->label << ":" << r / (double) samplesTri.size() * 100.0
                           << " " << sample[2] << std::endl;
                       results[activindex].push_back( r / (double) samplesTri.size() * 100.0 );
                       activindex++;
-    //                 fprintf(fActRec,"%f %f\n", sample[2], (double)maxiheight2);
                   }
               }
-
-    //           vector<double> sample(getCaracSample(composante));
-    //           vector<double> samplesdist2(samples);
-    //           long double energysample = ssb->getClusterEnergy(composante);
-    //           cout << "label " << j << " tmoy=" << sample[0] << " ttest =" << sample[1] <<" rec=" << sample[2] <<  endl;
-    //           cout << "label:" << j << " ttest=" << sample[1];
-    //           fclose(f);fclose(ft);fclose(frec);fclose(fNeg);fclose(fAct);fclose(fActRec);
-    //           cin>>mini;
           }
 
       }
       cout << "fin " << endl;
-      for ( uint i = 0 ; i < ssb->sites.size() ; i++ ) {
-          ssb->sites[*it]->t_rankperc = 0.0;
-          ssb->sites[*it]->sim_rankperc = 0.0;
-          ssb->sites[*it]->significance = 0.0;
+      for ( uint i = 0 ; i < ssb.sites.size() ; i++ ) {
+          ssb.sites[*it]->t_rankperc = 0.0;
+          ssb.sites[*it]->sim_rankperc = 0.0;
+          ssb.sites[*it]->significance = 0.0;
       }
       for ( uint i = 0 ; i < results.size() ; i++ ) {
           cerr << i << ":" << flush;
           cerr << "label " << results[i][0] << ": t-perc=" << results[i][1] << " sim-perc=" << results[i][2] << endl;
           uint j;
-          for ( j = 0 ; ssb->sites[*(activblobs[j].begin())]->label != results[i][0] && j<activblobs.size() ; j++ ) { }
+          for ( j = 0 ; ssb.sites[*(activblobs[j].begin())]->label != results[i][0] && j<activblobs.size() ; j++ ) { }
           for ( it = activblobs[j].begin() ; it != activblobs[j].end() ; it++ ) {
-              ssb->sites[*it]->t_rankperc = results[i][1];
-              ssb->sites[*it]->sim_rankperc = results[i][2];
-              ssb->sites[*it]->significance = (results[i][1]+results[i][2])/2.0;
+              ssb.sites[*it]->t_rankperc = results[i][1];
+              ssb.sites[*it]->sim_rankperc = results[i][2];
+              ssb.sites[*it]->significance = (results[i][1]+results[i][2])/2.0;
           }
 
 

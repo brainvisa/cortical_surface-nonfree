@@ -1,12 +1,8 @@
 #ifndef AIMS_RELAXMESHDISTANCE_H
 #define AIMS_RELAXMESHDISTANCE_H
 
-#include <aims/getopt/getopt2.h>
-#include <aims/io/reader.h>
-#include <aims/io/writer.h>
+
 #include <aims/mesh/surface.h>
-#include <aims/mesh/texture.h>
-#include <cortical_surface/structuralanalysis/sites.h>
 
 
 //vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uint> nodes,float dist_thresh);
@@ -14,6 +10,10 @@
 //map<float, vector<pair<float, uint> > > getAlternateMesh(AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &longit);
 //map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsigned> >    &neighbours,  int dep, float dist_thresh);
 
+std::map<uint, float> LocalMeshDistanceMap ( AimsSurface<3,Void> *mesh,
+                                             const std::vector< std::set<unsigned> >    &neighbours,
+                                             uint max_node,
+                                             float ind ) ;
 
 #endif
 

@@ -1,6 +1,8 @@
 #ifndef AIMS_MINIMIZATION_H
 #define AIMS_MINIMIZATION_H
+#include <cortical_surface/structuralanalysis/sites.h>
 #include <cortical_surface/structuralanalysis/cliques.h>
+#include <cortical_surface/structuralanalysis/blobs.h>
 
 
 enum typesMinim {

@@ -1,12 +1,9 @@
-#include <aims/getopt/getopt2.h>
 #include <aims/math/random.h>
 #include <cortical_surface/structuralanalysis/anneal.h>
 
 using namespace aims;
-using namespace carto;
+//using namespace carto;
 using namespace std;
-
-
 
 void Anneal::Step(std::vector<int> &random, long double temp, uint &mod){
 

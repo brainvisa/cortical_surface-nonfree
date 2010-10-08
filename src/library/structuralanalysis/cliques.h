@@ -3,8 +3,6 @@
 
 #include <math.h>
 #include <cortical_surface/structuralanalysis/sites.h>
-#include <cortical_surface/structuralanalysis/blobs.h>
-#include <cortical_surface/structuralanalysis/subjectdata.h>
 
 
 
@@ -245,10 +243,7 @@ void BuildMaximalOrderCliques(std::vector<Site *> &sites, std::vector<std::vecto
 void BuildDataDrivenCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
 void BuildGlobalClique( std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques );
 
-void getCliquesFromSSBCliques ( std::vector<surf::SSBClique> &ssbcliques,
-                                std::vector<Site *> &sites,
-                                std::vector<Clique> &cliques,
-                                std::vector<std::vector<int> > &cliquesDuSite);
+
 
 
 
