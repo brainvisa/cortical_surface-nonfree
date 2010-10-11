@@ -75,7 +75,8 @@ namespace TextureToBlobs {
     void buildBlobsFromClustersLists ( std::vector< surf::GreyLevelBlob *> &blobs, 
                                               GroupData & data,
                                               std::vector<uint> &clusters,
-                                              std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs ) ;
+                                              std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs,
+                                              float clustering_distance_threshold = -1.0) ;
 
     void computeBlobsDispersion( std::vector<surf::ScaleSpaceBlob *> & ssblobs );
 

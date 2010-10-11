@@ -1004,14 +1004,16 @@ std::vector<uint> TextureToBlobs::getClustersListsFromGLB ( std::vector<surf::Gr
 void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelBlob *> &blobs,
                                    GroupData & data,
                                    std::vector<uint> &clusters,
-                                   std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs ) {
+                                   std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs,
+                                   float clustering_distance_threshold ) {
 
 
                 FILE *f1;
-                f1 = fopen ( "/tmp/blobsCountTable.csv", "a" );
+                f1 = fopen ( "/tmp/blobsCountTable.py", "a" );
                 std::map<std::string, SubjectData *>::iterator it;
                 it = data.begin();
-                fprintf(f1, "charac_clusters_%s = {}\n", it->first.data());
+                fprintf(f1, "charac_clusters[\'%s\'][%.3f] = {}\n", it->first.data(), clustering_distance_threshold );
+                
 
 
     std::set<uint> colors;
@@ -1065,7 +1067,7 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
 
 
 
-                fprintf(f1, "charac_clusters_%s[%d] = {\n", it->first.data(), color);
+                fprintf(f1, "charac_clusters[\'%s\'][%.3f][%d] = {\n", it->first.data(), clustering_distance_threshold, color);
                 fprintf(f1, "\'dist_moy\' : %lf,\n ", (double)(distance_moyenne) );
                 fprintf(f1, "\'nb_total_blob\' : %d,\n ", cluster_blobs.size() );
                 fprintf(f1, "\'map_count_scales\' : {");
