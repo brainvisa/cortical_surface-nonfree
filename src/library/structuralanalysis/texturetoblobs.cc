@@ -169,7 +169,7 @@ void TextureToBlobs::DestroyBlobs ( std::vector<surf::ScaleSpaceBlob *> &ssblobs
     for ( uint i = 0 ; i < ssblobs.size() ; i++ ) {
         for ( it = ssblobs[i]->blobs.begin() ; it != ssblobs[i]->blobs.end() ; it ++ )
             blobs.push_back( *it );
-    }    
+    }
     for ( uint i = 0 ; i < blobs.size() ; i++ )
         delete ( blobs[i] );
     for ( uint i = 0 ; i < ssblobs.size() ; i++ )
@@ -205,7 +205,7 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
             (*iv)->getProperty( "nodes", nodes_list );
             (*iv)->getProperty( "x", latitudes );
             (*iv)->getProperty( "y", longitudes );
-            
+
 //            assert(nodes_list.size() == latitudes.size());
 
             for ( uint i = 0 ; i < nodes_list.size() ; i++ ) {
@@ -227,7 +227,7 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
             blob->label = label;
             index = blob->index;
             (*iv)->setProperty( "index", (int) index );
-            
+
             blob->subject = subject_id;
             blob->nodes = vector2set(nodes_list);
             blob->scale = scale;
@@ -322,8 +322,8 @@ void TextureToBlobs::RecoverBlobsFromIndividualGraph( Graph *graph,
     for ( uint i = 0 ; i < ssblobs.size() ; i++ ) {
         for ( it = ssblobs[i]->blobs.begin() ; it != ssblobs[i]->blobs.end() ; it ++ )
             blobs.push_back( *it );
-    }    
-    
+    }
+
     std::map <int, std::set<int> > listGLBindices;
     int iNbGLB = blobs.size();
     int iNbSSB = ssblobs.size();
@@ -946,94 +946,96 @@ void TextureToBlobs::ReadAimsGroupGraph (   Graph &graph,
 }
 
 
-std::vector<uint> TextureToBlobs::getClustersListsFromGLB ( std::vector<surf::GreyLevelBlob *> &blobs, 
-                                                   GroupData &data, 
+std::vector<uint> TextureToBlobs::getClustersListsFromGLB ( std::vector<surf::GreyLevelBlob *> &blobs,
+                                                   GroupData &data,
                                                    float clustering_distance_threshold ) {
-    
+
     std::vector<uint>  clusters ( blobs.size() );
     for ( uint i = 0 ; i < blobs.size() ; i++ )
         clusters[i] = i;
-    
+
     std::set<uint> dejapris;
-    uint isThereAbove = 0;
-    uint old = 0;
     for ( uint i = 0 ; i < blobs.size() ; i++ ) {
         std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << blobs.size() << std::flush ;
-    
+
         //assert( blobs[i]->blobs.size() == 1 );
-    
+
         uint max_node = blobs[i]->getMaximumNode( * (data[blobs[i]->subject]->tex) );
-    
+
         std::map<uint, float> distanceMap  = LocalMeshDistanceMap(
                     data[blobs[i]->subject]->mesh,
                     data[blobs[i]->subject]->neighbours,
                     max_node,
                     25.0 ); //clustering_distance_threshold + 1.0 );
+
         std::map<uint, float>::iterator it;
-    
+
         std::set<uint> voisins_max_node;
         for ( it = distanceMap.begin() ; it != distanceMap.end() ; it ++ )
             if ( it->second < clustering_distance_threshold )
                 voisins_max_node.insert( it->first );
-            else
-                isThereAbove++;
-    
+
         voisins_max_node.insert( max_node );
-    
+
         std::set<uint> blobs_voisins;
         for ( uint j = 0 ; j < blobs.size() ; j++ ) {
             uint max_node2 = blobs[j]->getMaximumNode( * (data[blobs[j]->subject]->tex) );
-    
+
             if ( blobs[i]->subject == blobs[j]->subject &&
                         voisins_max_node.find(max_node2) != voisins_max_node.end() ) {
                 blobs_voisins.insert( j);
             }
         }
+
         assert( blobs_voisins.find(i) != blobs_voisins.end() );
+
         std::set<uint>::iterator ite;
         uint color = clusters[i];
         for ( ite = blobs_voisins.begin() ; ite != blobs_voisins.end() ; ite ++ ) {
             clusters[*ite] = color;
         }
-    
+
     }
+    std::cout << std::endl;
     return clusters;
 }
 
 
-void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelBlob *> &blobs, 
+void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelBlob *> &blobs,
                                    GroupData & data,
                                    std::vector<uint> &clusters,
                                    std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs ) {
- 
-    
+
+
                 FILE *f1;
                 f1 = fopen ( "/tmp/blobsCountTable.csv", "a" );
-                fprintf(f1, "charac_clusters = {}\n");
-    
+                std::map<std::string, SubjectData *>::iterator it;
+                it = data.begin();
+                fprintf(f1, "charac_clusters_%s = {}\n", it->first.data());
+
 
     std::set<uint> colors;
     for ( uint i = 0 ; i <  clusters.size() ; i++ )
         colors.insert ( clusters[i] );
     std::set<uint>::iterator ite;
     std::cout << colors.size() << " clustered ssblobs" << std::endl;
-    
-    
+
+
     // Now processing each cluster that has previously been defined
     for ( ite = colors.begin() ; ite != colors.end() ; ite ++ ) {
-        
+
         uint color = *ite;
         std::vector<uint> cluster_blobs;
         for ( uint i = 0 ; i <  clusters.size() ; i++ )
             if ( clusters[i] == color )
                 cluster_blobs.push_back(i);
-        
+
         // Characterization of each cluster
         float distance_moyenne = 0.0;
         std::map< float, uint > mapCountScales;
-        
+
         for ( uint i = 0 ; i < cluster_blobs.size() ; i ++ ) {
-            
+
             uint max_node1 = blobs[cluster_blobs[i]]->getMaximumNode( * (data[blobs[cluster_blobs[i]]->subject]->tex) );
             Point3df p1 = data[blobs[cluster_blobs[i]]->subject]->mesh->vertex()[max_node1];
             if ( mapCountScales.find(blobs[cluster_blobs[i]]->scale) == mapCountScales.end() ) {
@@ -1042,53 +1044,47 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
             else {
                 mapCountScales[blobs[cluster_blobs[i]]->scale]++;
             }
-            
+
             if ( i < cluster_blobs.size() - 1 ) {
                 for ( uint j = i + 1 ; j < cluster_blobs.size() ; j ++ ) {
                     uint max_node2 = blobs[cluster_blobs[j]]->getMaximumNode( * (data[blobs[cluster_blobs[j]]->subject]->tex) );
-                    Point3df p2 = data[blobs[cluster_blobs[i]]->subject]->mesh->vertex()[max_node1];    
-                    
+                    Point3df p2 = data[blobs[cluster_blobs[i]]->subject]->mesh->vertex()[max_node2];
+
                     Point3df d = p1-p2;
                     distance_moyenne += d.norm();
-                    std::cout << " DIS:" << distance_moyenne << " " << std::flush;
                 }
             }
-                        
+
         }
-        std::cout << " DIS:" << distance_moyenne << " " << std::endl;
-        
+
         std::cout << cluster_blobs.size() << std::endl;
-        if ( cluster_blobs.size() > 1 ){
+        if ( cluster_blobs.size() > 1 )
             distance_moyenne = distance_moyenne / ( cluster_blobs.size() * (cluster_blobs.size()-1) / 2.0 );
-            std::cout << " DIST:" << distance_moyenne << " " << std::endl;}
-        else 
+        else
             assert(distance_moyenne == 0.0);
-            
-            
-            
-                fprintf(f1, "charac_clusters[%d] = {\n", color);
-                std::cout << " DIS:" << distance_moyenne << " " << std::endl;
-                fprintf(f1, "\'dist_moy\' : %.3f,\n ", (float)distance_moyenne );
-                std::cout << " DIST:" << distance_moyenne << " " << std::endl;
+
+
+
+                fprintf(f1, "charac_clusters_%s[%d] = {\n", it->first.data(), color);
+                fprintf(f1, "\'dist_moy\' : %lf,\n ", (double)(distance_moyenne) );
                 fprintf(f1, "\'nb_total_blob\' : %d,\n ", cluster_blobs.size() );
                 fprintf(f1, "\'map_count_scales\' : {");
                 std::map< float, uint >::iterator ite3;
                 for ( ite3 = mapCountScales.begin() ; ite3 != mapCountScales.end() ; ite3++ )
-                    fprintf(f1, " %.3f : %d, ", ite3->first, ite3->second );
+                    fprintf(f1, " %lf : %d, ", (double)(ite3->first), ite3->second );
                 fprintf(f1, "}\n");
-                
+
                 fprintf(f1, "}\n\n");
-                fclose(f1);
-        
-    
+
+
         clusteredSsblobs.push_back ( new surf::ScaleSpaceBlob() );
-    
+
         surf::ScaleSpaceBlob *ssb = clusteredSsblobs[ clusteredSsblobs.size() -1 ];
-    
+
         std::set<float> scales;
         ssb->blobs.insert( new surf::GreyLevelBlob() );
         surf::GreyLevelBlob *glb = *(ssb->blobs.begin());
-    
+
         for ( uint i = 0 ; i < cluster_blobs.size() ; i ++ ) {
             std::set<int>::iterator ite2;
             for ( ite2 = blobs[ cluster_blobs[i] ]->nodes.begin() ;
@@ -1126,7 +1122,7 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
         //    ssb->mesh = (*sph)[0];
         //}
     }
-
+    fclose(f1);
 }
 
 double TextureToBlobs::getOverlapMeasure( Point2df bbmin1,
