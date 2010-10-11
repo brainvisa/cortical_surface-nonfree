@@ -3,8 +3,10 @@
 
 
 #include <cortical_surface/structuralanalysis/texturetoblobs.h>
-#include <aims/primalsketch/primalSketch.h>
+
 #include <aims/primalsketch/scalespace.h>
+#include <aims/primalsketch/primalSketch.h>
+
 #include <aims/primalsketch/finiteElementSmoother_d.h>
 #include <aims/primalsketch/primalSketchUtil.h>
 

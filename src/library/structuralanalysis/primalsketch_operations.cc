@@ -3,7 +3,6 @@
 #include <cortical_surface/structuralanalysis/primalsketch_operations.h>
 
 
-
 void storeCoordinatesInScaleSpace ( SubjectData &regionData, ScaleSpace<AimsSurface<3, Void>, Texture<float> >  &ss ) {
     std::vector<Point3df> *coordinates;
     coordinates = new vector<Point3df>();
