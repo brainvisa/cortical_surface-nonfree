@@ -391,111 +391,110 @@ void TextureToBlobs::RecoverBlobsFromGLBOnly( Graph *graph,
 
 ////##############################################################################
 
-
-// Creates an Aims Graph for only ONE subject with scale-space blobs, grey-level
-//  blobs and links between both types
-
-void TextureToBlobs::AimsGraph (   Graph *graph,
-								   SubjectData & subject,
-                                   const vector<surf::Blob *> &blobs ) {
-
-    // From the two vectors, we build a graph containing the ssb, the glb and
-    //  the links between ssb and glb
-    vector<float> resolution, bbmin2D, bbmax2D;
-    vector<int> bbmin, bbmax;
-    resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0);
-
-    bbmin.push_back(-10); bbmin.push_back(-10); bbmin.push_back(-10);
-    bbmax.push_back(10); bbmax.push_back(10); bbmax.push_back(10);
-    graph->setProperty( "filename_base", "*");
-
-    graph->setProperty("voxel_size", resolution);
-    graph->setProperty("boundingbox_min", bbmin);
-    graph->setProperty("boundingbox_max", bbmax);
-    graph->setProperty("mesh", subject.paths.meshPath);
-    graph->setProperty("subject", subject.subject_id);
-    graph->setProperty("texture", subject.paths.texPath);
-    if ( subject.paths.latPath != "" )
-        graph->setProperty("latitude", subject.paths.latPath);
-    if ( subject.paths.lonPath != "" )
-        graph->setProperty("longitude", subject.paths.lonPath);
-
-    vector<set<int> > nodes_lists;
-    Vertex *vert;
-    carto::rc_ptr<AimsSurfaceTriangle> ptr;
-    GraphManip manip;
-
-    // Initializing blobs indices
-//    for (int i = 0 ; i < (int) blobs.size() ; i++)
-//        blobs[i]->index = i;
-
-    cout << "════ Extracting meshes for the grey-level blobs..." << endl;
-
-	cout << "      ░░░ mode Blobs Meshes From Mesh ░░░     " << endl;
-    for ( uint i = 0 ; i < blobs.size() ; i++ )
-        blobs[i]->getAimsSphereAtMaxNode ( *(subject.tex) );
-
-    cout << "════ Adding blobs..." << endl;
-
-    for ( int i = 0 ; i < (int) blobs.size() ; i++ ) {
-
-        // For every scale-space blob, we create a vertex in the Aims graph : we define
-        //   its properties and store a link between the created vertex and the blob index
-
-        cout << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
-        vert = graph->addVertex("glb");
-
-        vert->setProperty( "index", blobs[i]->index );
-        vert->setProperty( "nodes", blobs[i]->nodes );
-        vert->setProperty( "label", "0");
-
-        if ( blobs[i]->coordinates.size() != 0 ) {
-            vector<float> latitudes, longitudes;
-            set<int>::iterator it;
-            for ( it = blobs[i]->nodes.begin() ; it != blobs[i]->nodes.end() ; it++ ) {
-                latitudes.push_back( blobs[i]->coordinates[*it][0] );
-                if ( blobs[i]->coordinates[*it].size() >= 2 )
-                    longitudes.push_back( blobs[i]->coordinates[*it][1] );
-            }
-            vert->setProperty( "x", latitudes );
-            if ( latitudes.size() == longitudes.size() ) {
-                vert->setProperty( "y", longitudes );
-            }
-            else {
-                assert(longitudes.size() == 0);
-            }
-        }
-
-        // We associate the proper mesh patch from "objects" to the vertex
-        ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-        (*ptr)[0]=blobs[i]->mesh;
-        manip.storeAims(*graph, vert, "glb", ptr);
-    }
-    cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added in total (SSB and GLB)" << endl;
+//
+//// Creates an Aims Graph for only ONE subject with scale-space blobs, grey-level
+////  blobs and links between both types
 
 
 
-}
+//
+//void TextureToBlobs::AimsGraph (   Graph *graph,
+//								   SubjectData & subject,
+//                                   const vector<surf::Blob *> &blobs ) {
+//
+//    // From the two vectors, we build a graph containing the ssb, the glb and
+//    //  the links between ssb and glb
+//    vector<float> resolution, bbmin2D, bbmax2D;
+//    vector<int> bbmin, bbmax;
+//    resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0);
+//
+//    bbmin.push_back(-10); bbmin.push_back(-10); bbmin.push_back(-10);
+//    bbmax.push_back(10); bbmax.push_back(10); bbmax.push_back(10);
+//    graph->setProperty( "filename_base", "*");
+//
+//    graph->setProperty("voxel_size", resolution);
+//    graph->setProperty("boundingbox_min", bbmin);
+//    graph->setProperty("boundingbox_max", bbmax);
+//    graph->setProperty("mesh", subject.paths.meshPath);
+//    graph->setProperty("subject", subject.subject_id);
+//    graph->setProperty("texture", subject.paths.texPath);
+//    if ( subject.paths.latPath != "" )
+//        graph->setProperty("latitude", subject.paths.latPath);
+//    if ( subject.paths.lonPath != "" )
+//        graph->setProperty("longitude", subject.paths.lonPath);
+//
+//    vector<set<int> > nodes_lists;
+//    Vertex *vert;
+//    carto::rc_ptr<AimsSurfaceTriangle> ptr;
+//    GraphManip manip;
+//
+//    // Initializing blobs indices
+////    for (int i = 0 ; i < (int) blobs.size() ; i++)
+////        blobs[i]->index = i;
+//
+//    cout << "════ Extracting meshes for the grey-level blobs..." << endl;
+//
+//	cout << "      ░░░ mode Blobs Meshes From Mesh ░░░     " << endl;
+//    for ( uint i = 0 ; i < blobs.size() ; i++ )
+//        blobs[i]->getAimsSphereAtMaxNode ( *(subject.tex) );
+//
+//    cout << "════ Adding blobs..." << endl;
+//
+//    for ( int i = 0 ; i < (int) blobs.size() ; i++ ) {
+//
+//        // For every scale-space blob, we create a vertex in the Aims graph : we define
+//        //   its properties and store a link between the created vertex and the blob index
+//
+//        cout << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
+//        vert = graph->addVertex("glb");
+//
+//        vert->setProperty( "index", blobs[i]->index );
+//        vert->setProperty( "nodes", blobs[i]->nodes );
+//        vert->setProperty( "label", "0");
+//
+//        if ( blobs[i]->coordinates.size() != 0 ) {
+//            vector<float> latitudes, longitudes;
+//            set<int>::iterator it;
+//            for ( it = blobs[i]->nodes.begin() ; it != blobs[i]->nodes.end() ; it++ ) {
+//                latitudes.push_back( blobs[i]->coordinates[*it][0] );
+//                if ( blobs[i]->coordinates[*it].size() >= 2 )
+//                    longitudes.push_back( blobs[i]->coordinates[*it][1] );
+//            }
+//            vert->setProperty( "x", latitudes );
+//            if ( latitudes.size() == longitudes.size() ) {
+//                vert->setProperty( "y", longitudes );
+//            }
+//            else {
+//                assert(longitudes.size() == 0);
+//            }
+//        }
+//
+//        // We associate the proper mesh patch from "objects" to the vertex
+//        ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+//        (*ptr)[0]=blobs[i]->mesh;
+//        manip.storeAims(*graph, vert, "glb", ptr);
+//    }
+//    cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added in total (SSB and GLB)" << endl;
+//
+//
+//
+//}
 
 //##############################################################################
 
-// Creates an Aims Graph for only ONE subject with scale-space blobs, grey-level
-//  blobs and links between both types
-//
-void TextureToBlobs::AimsGraph (   Graph *graph,
-                                   SubjectData & subject,
-                                   //const std::vector<surf::GreyLevelBlob *> &blobs,
-                                   const std::vector<surf::ScaleSpaceBlob *> &ssblobs ) {
-    // From the two vectors, we build a graph containing the ssb, the glb and
-    //  the links between ssb and glb
+std::vector<surf::GreyLevelBlob *> recoverGreyLevelBlobs ( const std::vector<surf::ScaleSpaceBlob *> &ssblobs ) {
     std::vector<surf::GreyLevelBlob *> blobs;
-    std::set<surf::GreyLevelBlob *>::iterator it;
-    for ( uint i = 0 ; i < ssblobs.size() ; i++ ) {
-        for ( it = ssblobs[i]->blobs.begin() ; it != ssblobs[i]->blobs.end() ; it ++ ) {
+    std::set< surf::GreyLevelBlob *>::iterator it;
+    
+    for ( uint i = 0 ; i < ssblobs.size() ; i++ )
+        for ( it = ssblobs[i]->blobs.begin() ; it != ssblobs[i]->blobs.end() ; it ++ )
             blobs.push_back( *it );
-        }
-    }
+    
+    return blobs;
+}
 
+void defineGraphGlobalProperties ( Graph *graph, 
+                                   SubjectData & subject ) {
     std::vector<float> resolution, bbmin2D, bbmax2D;
     std::vector<int> bbmin, bbmax;
     resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0);
@@ -515,25 +514,30 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         graph->setProperty("latitude", subject.paths.latPath);
     if ( subject.paths.lonPath != "" )
         graph->setProperty("longitude", subject.paths.lonPath);
+    
+}
 
-    vector<set<int> > nodes_lists;
-    vector< pair<surf::GreyLevelBlob *, surf::GreyLevelBlob *> > blobsIndices;
-//    TimeTexture<float> lat, lon;
-    Vertex *vert;
+void addScaleSpaceBlobsToGraph ( Graph *graph, 
+                                 const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                 std::vector<Vertex *> &listVertSSB,
+                                 SubjectData &subject,
+                                 bool buildMeshes = true,
+                                 bool storeMeshes = true ) {
+    
     carto::rc_ptr<AimsSurfaceTriangle> ptr;
     aims::GraphManip manip;
-    vector<Vertex *> listVertSSB( ssblobs.size() ), listVertGLB( blobs.size() );
+    Vertex *vert;
 
-    // Initializing blobs indices
-    for (int i = 0 ; i < (int) ssblobs.size() ; i++)
-        ssblobs[i]->index = i;
-    for (int i = 0 ; i < (int) blobs.size() ; i++)
-        blobs[i]->index = i;
-
-
-    // Let's add the scale-space blobs
-    cout << "════ Adding scale-space blobs..." << endl;
-
+    if ( buildMeshes ) {
+        std::cout << "════ Extracting meshes for the scale-space blobs..." << std::endl;
+    
+        std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
+        for ( uint i = 0 ; i < ssblobs.size() ; i++ )
+            ssblobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.4);
+    }
+    
+    std::cout << "════ Adding scale-space blobs..." << std::endl;
+    listVertSSB = std::vector<Vertex *> ( ssblobs.size() );
     for ( int i = 0 ; i < (int) ssblobs.size() ; i++ ) {
 
         // For every scale-space blob, we create a vertex in the Aims graph : we define
@@ -549,35 +553,51 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         vert->setProperty( "tmax", ssblobs[i]->tmax);
         vert->setProperty( "scales", set2vector(ssblobs[i]->scales) );
         listVertSSB[  i  ] = vert;
+    
+        if ( storeMeshes ) {
+            ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+            (*ptr)[0] = ssblobs[i]->mesh;
+            manip.storeAims(*graph, vert, "ssb", ptr);
+        }
     }
-    cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added... done" << endl;
+    std::cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added... done" << std::endl;
+    
+}
 
-
-
-    // Let's add the grey-level blobs
-    cout << "════ Extracting meshes for the grey-level blobs..." << endl;
-
-    std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
-    for ( uint i = 0 ; i < blobs.size() ; i++ )
-//        blobs[i]->getAimsEllipsoidAtMaxNode ( *(subject.tex) );
-        blobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.3);
-
-
-    cout << "════ Adding grey-level blobs..." << endl;
-
+void addGreyLevelBlobsToGraph ( Graph *graph, 
+                                const std::vector<surf::GreyLevelBlob *> &blobs,
+                                std::vector<Vertex *> &listVertGLB,
+                                SubjectData &subject,
+                                bool buildMeshes = true,
+                                bool storeMeshes = true ) {
+    
+    carto::rc_ptr<AimsSurfaceTriangle> ptr;
+    aims::GraphManip manip;
+    Vertex *vert;
+    
+    if ( buildMeshes ) {
+        std::cout << "════ Extracting meshes for the grey-level blobs..." << endl;
+    
+        std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
+        for ( uint i = 0 ; i < blobs.size() ; i++ )
+            // blobs[i]->getAimsEllipsoidAtMaxNode ( *(subject.tex) );
+            blobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.4);
+    }
+     
+    std::cout << "════ Adding grey-level blobs..." << endl;
+    listVertGLB = std::vector<Vertex *> ( blobs.size() );
     for ( int i = 0 ; i < (int) blobs.size() ; i++ ) {
-
+ 
         // For every scale-space blob, we create a vertex in the Aims graph : we define
         //   its properties and store a link between the created vertex and the blob index
-
+ 
         std::cout << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << std::flush ;
         vert = graph->addVertex("glb");
-
+ 
         vert->setProperty( "t", blobs[i]->t);
         vert->setProperty( "scale", blobs[i]->scale );
         vert->setProperty( "subject", blobs[i]->ssb_parent->subject );
         vert->setProperty( "nodes", blobs[i]->nodes );
-
         if ( subject.coordinates == LATLON_2D ) {
             std::vector<float> latitudes, longitudes;
             std::set<int>::iterator it;
@@ -587,7 +607,7 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
                     longitudes.push_back( (float) blobs[i]->coordinates[*it][1] );
             }
             vert->setProperty( "x", latitudes );
-
+ 
             if ( latitudes.size() == longitudes.size() ) {
                 vert->setProperty( "y", longitudes );
             }
@@ -601,52 +621,132 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         else if ( subject.coordinates == LAT_1D ) {
             //TODO
             cout << "To Be Implemented" << endl;
-
+ 
         }
-
+ 
         listVertGLB[ i ] = vert;
-
-        // We associate the proper mesh patch from "objects" to the vertex
-        ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-        (*ptr)[0] = blobs[i]->mesh;
-        manip.storeAims(*graph, vert, "glb", ptr);
-
+ 
+        if ( storeMeshes ) {
+            // We associate the proper mesh patch from "objects" to the vertex
+            ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+            (*ptr)[0] = blobs[i]->mesh;
+            manip.storeAims(*graph, vert, "glb", ptr);
+        }
+ 
     }
-    cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added in total (SSB and GLB)" << endl;
+    std::cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added in total (SSB and GLB)" << std::endl;
+}
+
+void addBlobsToGraph ( Graph *graph, 
+                       const std::vector<surf::Blob *> &blobs,
+                       std::vector<Vertex *> &listVertGLB,
+                       SubjectData &subject,
+                       bool buildMeshes = true,
+                       bool storeMeshes = true ) {
+    
+    carto::rc_ptr<AimsSurfaceTriangle> ptr;
+    aims::GraphManip manip;
+    Vertex *vert;
+    
+    if ( buildMeshes ) {
+        std::cout << "════ Extracting meshes for the grey-level blobs..." << endl;
+    
+        std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
+        for ( uint i = 0 ; i < blobs.size() ; i++ )
+            // blobs[i]->getAimsEllipsoidAtMaxNode ( *(subject.tex) );
+            blobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.4);
+    }
+     
+    std::cout << "════ Adding grey-level blobs..." << endl;
+    listVertGLB = std::vector<Vertex *> ( blobs.size() );
+    for ( int i = 0 ; i < (int) blobs.size() ; i++ ) {
+ 
+        // For every scale-space blob, we create a vertex in the Aims graph : we define
+        //   its properties and store a link between the created vertex and the blob index
+ 
+        std::cout << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << std::flush ;
+        vert = graph->addVertex("glb");
+ 
+        vert->setProperty( "nodes", blobs[i]->nodes );
+        if ( subject.coordinates == LATLON_2D ) {
+            std::vector<float> latitudes, longitudes;
+            std::set<int>::iterator it;
+            for ( it = blobs[i]->nodes.begin() ; it != blobs[i]->nodes.end() ; it++ ) {
+                latitudes.push_back( (float) blobs[i]->coordinates[*it][0] );
+                if ( blobs[i]->coordinates[*it].size() >= 2 )
+                    longitudes.push_back( (float) blobs[i]->coordinates[*it][1] );
+            }
+            vert->setProperty( "x", latitudes );
+ 
+            if ( latitudes.size() == longitudes.size() ) {
+                vert->setProperty( "y", longitudes );
+            }
+            else {
+                if ( longitudes.size() != 0 ) {
+                    cout << latitudes.size() << " " << longitudes.size() << endl;
+                }
+                assert(longitudes.size() == 0);
+            }
+        }
+        else if ( subject.coordinates == LAT_1D ) {
+            //TODO
+            cout << "To Be Implemented" << endl;
+ 
+        }
+ 
+        listVertGLB[ i ] = vert;
+ 
+        if ( storeMeshes ) {
+            // We associate the proper mesh patch from "objects" to the vertex
+            ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+            (*ptr)[0] = blobs[i]->mesh;
+            manip.storeAims(*graph, vert, "glb", ptr);
+        }
+ 
+    }
+    std::cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added in total (SSB and GLB)" << std::endl;
+}
 
 
-    // Let's add the links between scale-space and grey-level blobs
-    cout << "════ Adding links between SSB and GLB (GLB forming SSB)..." << endl;
+void addScaleSpaceToGreyLevelBlobsRelations ( Graph *graph,
+                                              const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                              const std::vector<Vertex *> &listVertSSB,
+                                              const std::vector<Vertex *> &listVertGLB ) {
 
-    uint iNbLinks=0;
+    std::cout << "════ Adding links between SSB and GLB (GLB forming SSB)..." << std::endl;
+    uint iNbLinks = 0;
+    Vertex *v1, *v2;
     for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
 
-        set<surf::GreyLevelBlob *>::iterator itB1;
-        set<surf::GreyLevelBlob *> &listGLB = ssblobs[i]->blobs;
+        std::set<surf::GreyLevelBlob *>::iterator itB1;
+        std::set<surf::GreyLevelBlob *> &listGLB = ssblobs[i]->blobs;
 
         for (itB1 = listGLB.begin(); itB1 != listGLB.end() ; itB1++) {
 
-            Vertex *v1, *v2;
-
             v1 = listVertSSB[ i ];
             v2 = listVertGLB[(*itB1)->index];
-
             graph->addEdge(v1, v2, "s2g");
-
             iNbLinks++;
         }
     }
-    cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbLinks << " links added... done" << endl;
+    std::cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbLinks << " links added... done" << std::endl;
+}
 
-    // Let's add the links between grey-level blobs
-    cout << "════ Collecting the list of GLB relations..." << endl;
-    vector< pair<surf::GreyLevelBlob *, surf::GreyLevelBlob *> > blobsPairs;
+void addBetweenGreyLevelBlobsRelations ( Graph *graph, 
+                                         const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                         const std::vector<Vertex *> &listVertGLB ) {
+
+    carto::rc_ptr<AimsSurfaceTriangle> ptr;
+    aims::GraphManip manip;
+    
+    std::cout << "════ Collecting the list of GLB relations..." << std::endl;
+    std::vector< std::pair< surf::GreyLevelBlob *, surf::GreyLevelBlob *> > blobsPairs;
 
     for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
-        set<surf::GreyLevelBlob *>::iterator itB;
-        set<surf::GreyLevelBlob *> &unsortedListGLB = ssblobs[i]->blobs;
-        set<surf::GreyLevelBlob *, ltSurfBlobs> listGLB;
-        set<surf::GreyLevelBlob *, ltSurfBlobs>::iterator itB1, itB2;
+        std::set<surf::GreyLevelBlob *>::iterator itB;
+        std::set<surf::GreyLevelBlob *> &unsortedListGLB = ssblobs[i]->blobs;
+        std::set<surf::GreyLevelBlob *, ltSurfBlobs> listGLB;
+        std::set<surf::GreyLevelBlob *, ltSurfBlobs>::iterator itB1, itB2;
         for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
             listGLB.insert(*itB);
         ASSERT( unsortedListGLB.size() == listGLB.size() );
@@ -668,17 +768,17 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
             itB1++, itB2++;
         }
     }
-    cout << "  " << blobsPairs.size() << " paires de blobs" << endl;
+    std::cout << "  " << blobsPairs.size() << " blobs pairs" << std::endl;
 
-    cout << "════ Extracting meshes for the GLB relations..." << endl;
+    std::cout << "════ Extracting meshes for the GLB relations..." << std::endl;
     AimsSurfaceTriangle *relations = new AimsSurfaceTriangle();
     *relations = getG2GRelationsMeshes( blobsPairs, NODES_BARYCENTERS );
+    
+    std::cout << "════ Adding links between GLB from same SSB (with corresponding meshes for visualization)..." << std::endl;
 
-    cout << "════ Adding links between GLB from same SSB (with corresponding meshes for visualization)..." << endl;
-
-    iNbLinks=0;
+    uint iNbLinks = 0;
     for ( uint i = 0 ; i < blobsPairs.size() ; i++ ) {
-        cout << "\b\b\b\b\b\b\b\b\b\b\b" << i << flush;
+        std::cout << "\b\b\b\b\b\b\b\b\b\b\b" << i << std::flush;
         // We associate the proper mesh patch from "objects" to the vertex
 
         Vertex *v1, *v2;
@@ -695,21 +795,27 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
 
         iNbLinks++;
     }
-    cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbLinks << " links added... done" << endl;
+    std::cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbLinks << " links added... done" << std::endl;
+}
 
+void addBifurcationsRelations ( Graph *graph, 
+                                const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                const std::vector<Vertex *> &listVertSSB ) {
+    
+    carto::rc_ptr<AimsSurfaceTriangle> ptr;
+    aims::GraphManip manip;
 
-    // Let's add the links between scale-space blobs (bifurcations)
-    cout << "════ Collecting the list of existing bifurcations..." << endl;
-    vector< pair< surf::ScaleSpaceBlob *, surf::ScaleSpaceBlob *> > bifurcPairs;
+    std::cout << "════ Collecting the list of existing bifurcations..." << std::endl;
+    std::vector< std::pair< surf::ScaleSpaceBlob *, surf::ScaleSpaceBlob *> > bifurcPairs;
 
     for (int i = 0 ; i < (int) ssblobs.size() ; i++) {
 
-        set<surf::ScaleSpaceBlob *>::iterator itB1;
-        set<surf::ScaleSpaceBlob *> &listSSB = ssblobs[i]->topBlobs;
+        std::set<surf::ScaleSpaceBlob *>::iterator itB1;
+        std::set<surf::ScaleSpaceBlob *> &listSSB = ssblobs[i]->topBlobs;
         for (itB1 = listSSB.begin(); itB1 != listSSB.end() ; itB1++) {
 
             if ( ssblobs[i]->index < (*itB1)->index ) {
-                pair<surf::ScaleSpaceBlob *, surf::ScaleSpaceBlob *> p;
+                std::pair<surf::ScaleSpaceBlob *, surf::ScaleSpaceBlob *> p;
                 p.first = ssblobs[i];
                 p.second = (*itB1);
                 bifurcPairs.push_back(p);
@@ -727,14 +833,14 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         }
     }
 
-    cout << "════ Extracting meshes for the bifurcations relations..." << endl;
+    std::cout << "════ Extracting meshes for the bifurcations relations..." << std::endl;
     AimsSurfaceTriangle *bifurcations = new AimsSurfaceTriangle();
     *bifurcations = getBifurcationRelationsMeshes( bifurcPairs, NODES_BARYCENTERS );
-    cout << "  " << bifurcPairs.size() << " paires de bifurcations" << endl;
-    cout << "  " << bifurcations->size() << " bifurcations meshes" << endl;
+    std::cout << "  " << bifurcPairs.size() << " bifurcations pairs" << std::endl;
+    std::cout << "  " << bifurcations->size() << " bifurcations meshes" << std::endl;
 
-    cout << "════ Adding links between SSB (bifurcations)..." << endl;
-    iNbLinks=0;
+    std::cout << "════ Adding links between SSB (bifurcations)..." << std::endl;
+    uint iNbLinks = 0;
 
     for ( uint i = 0 ; i < bifurcPairs.size() ; i++ ) {
 
@@ -752,29 +858,147 @@ void TextureToBlobs::AimsGraph (   Graph *graph,
         iNbLinks++;
 
     }
-    cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbLinks << " bifurcations added... done" << endl;
-
+    std::cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbLinks << " bifurcations added... done" << std::endl;
 
 }
 
+void getGraphModeOptions ( const int graph_mode,
+                           bool &buildScaleSpaceBlobs,
+                           bool &buildScaleSpaceBlobsMeshes,
+                           bool &storeScaleSpaceBlobsMeshes,
+                           bool &buildGreyLevelBlobs,
+                           bool &buildGreyLevelBlobsMeshes,
+                           bool &storeGreyLevelBlobsMeshes,
+                           bool &buildSSBToGLBRelations,
+                           bool &buildGLBRelations,
+                           bool &buildBifurcations ) {
+    
+    buildScaleSpaceBlobs = false;
+    buildScaleSpaceBlobsMeshes = false;
+    storeScaleSpaceBlobsMeshes = false;
+    buildGreyLevelBlobs = false;
+    buildGreyLevelBlobsMeshes = false;
+    storeGreyLevelBlobsMeshes = false;
+    buildSSBToGLBRelations = false;
+    buildGLBRelations = false;
+    buildBifurcations = false;
+    
+    switch ( graph_mode ) {
+
+    case NO_SCALESPACEBLOBS_MESHES_AND_NO_RELATIONS:
+        buildScaleSpaceBlobs = true;
+        buildGreyLevelBlobs = true;
+        buildGreyLevelBlobsMeshes = true;
+        storeGreyLevelBlobsMeshes = true;
+    break;
+    case DEFAULT:
+        buildScaleSpaceBlobs = true;
+        buildScaleSpaceBlobsMeshes = true;
+        storeScaleSpaceBlobsMeshes = true;
+        buildGreyLevelBlobs = true;
+        buildGreyLevelBlobsMeshes = true;
+        storeGreyLevelBlobsMeshes = true;
+        buildSSBToGLBRelations = true;
+        buildGLBRelations = true;
+        buildBifurcations = true;
+    break;
+    }
+    
+}
+
+// Creates an Aims Graph for only ONE subject with scale-space blobs, grey-level
+//  blobs and links between both types
+
+void TextureToBlobs::AimsGraph ( Graph *graph,
+                                 SubjectData & subject,
+                                 const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                 int graph_mode ) {
+    
+     bool buildScaleSpaceBlobs, buildScaleSpaceBlobsMeshes, storeScaleSpaceBlobsMeshes, 
+          buildGreyLevelBlobs, buildGreyLevelBlobsMeshes, storeGreyLevelBlobsMeshes,
+          buildSSBToGLBRelations, buildGLBRelations, buildBifurcations;
+     
+     getGraphModeOptions ( graph_mode, buildScaleSpaceBlobs, buildScaleSpaceBlobsMeshes, 
+             storeScaleSpaceBlobsMeshes, buildGreyLevelBlobs, buildGreyLevelBlobsMeshes, 
+             storeGreyLevelBlobsMeshes, buildSSBToGLBRelations, buildGLBRelations, buildBifurcations );
+     
+        
+    // First We Recover The Grey-Level Blobs From The Vector of Scale-Space Blobs 
+        std::vector<surf::GreyLevelBlob *> blobs;
+        blobs = recoverGreyLevelBlobs ( ssblobs );
+        std::cout << blobs.size() << " blobs recovered " << std::endl;
+    
+    // We Define The Graph Global Properties
+        defineGraphGlobalProperties ( graph, subject );
+
+    // Initializing Blobs Indices
+        for (int i = 0 ; i < (int) ssblobs.size() ; i++)
+            ssblobs[i]->index = i;
+        for (int i = 0 ; i < (int) blobs.size() ; i++)
+            blobs[i]->index = i;
+    
+    //=========================================
+    // Let's Add Or Not The Scale-Space Blobs
+        
+        std::vector<Vertex *> listVertSSB, listVertGLB;
+        if ( buildScaleSpaceBlobs ) {
+            addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, subject, buildScaleSpaceBlobsMeshes, storeScaleSpaceBlobsMeshes );
+        }
+    
+    //=========================================
+    // Let's Add Or Not The Grey-Level Blobs
+        if ( buildGreyLevelBlobs ) {
+            addGreyLevelBlobsToGraph ( graph, blobs, listVertGLB, subject, buildGreyLevelBlobsMeshes, storeScaleSpaceBlobsMeshes );
+        }
+    
+    //===========================================================================
+    // Let's Add Or Not The Links Between Scale-Space Blobs And Grey-Level Blobs
+        if ( buildSSBToGLBRelations && ( buildScaleSpaceBlobs && buildGreyLevelBlobs ) ) { 
+            addScaleSpaceToGreyLevelBlobsRelations ( graph, ssblobs, listVertSSB, listVertGLB );
+        }
+    
+    //=======================================================
+    // Let's Add Or Not The Links Between Grey-Level Blobs
+        if ( buildGLBRelations && ( buildGreyLevelBlobs ) ) {
+            addBetweenGreyLevelBlobsRelations ( graph, ssblobs, listVertGLB );
+        }
+
+    //======================================================================
+    // Let's Add Or Not The Links Between Scale-Space Blobs (Bifurcations)
+        if ( buildBifurcations && ( buildScaleSpaceBlobs ) ) {
+            addBifurcationsRelations ( graph, ssblobs, listVertSSB );
+        }
+}
+
+void TextureToBlobs::AimsGraph ( Graph *graph,
+                                 SubjectData & subject,
+                                 const vector<surf::Blob *> &blobs ) {
+     
+     // We Define The Graph Global Properties
+         defineGraphGlobalProperties ( graph, subject );
+
+     // Initializing Blobs Indices
+         for (int i = 0 ; i < (int) blobs.size() ; i++)
+             blobs[i]->index = i;
+     
+     //=========================================
+     // Let's Add Or Not The Blobs
+         std::vector<Vertex *> listVert;
+         addBlobsToGraph ( graph, blobs, listVert, subject, true, true );
+         
+}
 
 //##############################################################################
 
-void TextureToBlobs::AimsGroupGraph ( Graph *graph,
-                        map<string, SubjectData *> data,
-//                       vector<Blob *> &blobs,
-                            vector<surf::ScaleSpaceBlob *> &ssblobs,
-                            vector<surf::SSBClique> &cliques ) {
-
-    std::cerr << "Construction du graphe de groupe..." << std::endl;
-    std::vector<float> resolution,bbmin2D,bbmax2D;
+void defineGroupGraphGlobalProperties ( Graph *graph, 
+                                        std::map<string, SubjectData *> data ) {
+    std::vector<float> resolution, bbmin2D, bbmax2D;
     std::vector<int> bbmin, bbmax;
     resolution.push_back(1.0); resolution.push_back(1.0); resolution.push_back(1.0);
     bbmin.push_back(-10); bbmin.push_back(-10); bbmin.push_back(-10);
     bbmax.push_back(10); bbmax.push_back(10); bbmax.push_back(10);
     graph->setProperty( "filename_base", "*");
     std::map <std::string, SubjectData *>::iterator it;
-
 
     std::vector<std::string> listTexPaths, listMeshPaths, listLatPaths, listLonPaths, listIndivGraphPaths, listSubjects;
     std::map <std::string,int> subj_names;
@@ -799,38 +1023,17 @@ void TextureToBlobs::AimsGroupGraph ( Graph *graph,
     graph->setProperty( "latitudes", listLatPaths );
     graph->setProperty( "longitudes", listLonPaths );
     graph->setProperty( "indiv_graphs", listIndivGraphPaths );
+    
+}
 
-    Vertex *vert;
+void addInterSubjectRelations ( Graph *graph, 
+                                std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                std::vector<surf::Clique> &cliques,
+                                std::vector<Vertex *> &listVertSSB ) {
+    
     carto::rc_ptr<AimsSurfaceTriangle> ptr;
     aims::GraphManip manip;
-    std::vector<Vertex *> listVertSSB( ssblobs.size() ), listVertGLB( ssblobs.size() );
-
-    for ( int i = 0 ; i < (int) ssblobs.size() ; i++ ) {
-
-        // For every scale-space blob, we create a vertex in the Aims graph : we define
-        //   its properties and store a link between the created vertex and the blob index
-
-        cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
-        vert = graph->addVertex("ssb");
-        ssblobs[i]->index = i;
-        vert->setProperty( "index", i );
-        vert->setProperty( "label", "0" );
-
-        vert->setProperty( "t", ssblobs[i]->t ); // subj_names[ssblobs[i]->subject]);
-        vert->setProperty( "subject", ssblobs[i]->subject );
-        vert->setProperty( "tmin", ssblobs[i]->tmin );
-        vert->setProperty( "tmax", ssblobs[i]->tmax );
-        vert->setProperty( "scales", set2vector(ssblobs[i]->scales) );
-        vert->setProperty( "nodes", set2vector((*(ssblobs[i]->blobs.begin()))->nodes) );
-
-         // We associate the proper mesh patch from "objects" to the vertex
-         ptr = carto::rc_ptr<AimsSurfaceTriangle>( new AimsSurfaceTriangle );
-         (*ptr)[0] = ssblobs[i]->mesh;
-         manip.storeAims( *graph, vert, "ssb", ptr );
-         vert->setProperty( "ssb_label", i );
-         listVertSSB[ i ] = vert;
-    }
-
+    
     std::cout << " nodes " << std::endl << "════ Extracting meshes for the interblobs relations..." << std::endl;
     AimsSurfaceTriangle *relations = new AimsSurfaceTriangle();
     *relations = getB2BRelationsMeshes( cliques, NODES_BARYCENTERS );
@@ -868,18 +1071,62 @@ void TextureToBlobs::AimsGroupGraph ( Graph *graph,
     }
 }
 
+
+void TextureToBlobs::AimsGroupGraph ( Graph *graph,
+                                      std::map<string, SubjectData *> data,
+                                      std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                      std::vector<surf::Clique> &cliques ) {
+
+    std::cerr << "Building Group Graph..." << std::endl;
+    defineGroupGraphGlobalProperties ( graph, data );
+
+//    Vertex *vert;
+//    carto::rc_ptr<AimsSurfaceTriangle> ptr;
+//    aims::GraphManip manip;
+//    std::vector<Vertex *> listVertSSB( ssblobs.size() ), listVertGLB( ssblobs.size() );
+//
+//    for ( int i = 0 ; i < (int) ssblobs.size() ; i++ ) {
+//
+//        // For every scale-space blob, we create a vertex in the Aims graph : we define
+//        //   its properties and store a link between the created vertex and the blob index
+//
+//        cerr << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
+//        vert = graph->addVertex("ssb");
+//        ssblobs[i]->index = i;
+//        vert->setProperty( "index", i );
+//        vert->setProperty( "label", "0" );
+//
+//        vert->setProperty( "t", ssblobs[i]->t ); // subj_names[ssblobs[i]->subject]);
+//        vert->setProperty( "subject", ssblobs[i]->subject );
+//        vert->setProperty( "tmin", ssblobs[i]->tmin );
+//        vert->setProperty( "tmax", ssblobs[i]->tmax );
+//        vert->setProperty( "scales", set2vector(ssblobs[i]->scales) );
+//        vert->setProperty( "nodes", set2vector((*(ssblobs[i]->blobs.begin()))->nodes) );
+//
+//         // We associate the proper mesh patch from "objects" to the vertex
+//         ptr = carto::rc_ptr<AimsSurfaceTriangle>( new AimsSurfaceTriangle );
+//         (*ptr)[0] = ssblobs[i]->mesh;
+//         manip.storeAims( *graph, vert, "ssb", ptr );
+//         vert->setProperty( "ssb_label", i );
+//         listVertSSB[ i ] = vert;
+//    }
+    
+    SubjectData _;
+    std::vector<Vertex *> listVertSSB;
+    addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, _, false, true );
+    addInterSubjectRelations ( graph, ssblobs, cliques, listVertSSB );
+
+}
+
 void TextureToBlobs::ReadAimsGroupGraph (   Graph &graph,
-                                            GroupData &data,
                                             vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                            vector<surf::SSBClique> &cliques,
-                                            vector<Vertex *> &listVertex   ) {
+                                            vector<surf::Clique> &cliques ) {
 
     std::cout << "Recovering the data..." << std::endl;
 
     std::set<Vertex *>::iterator iv;
     std::string sujet;
     int index;
-    int newindex=0;
 
     // Recovering The Scale-Space Blobs
 
@@ -932,7 +1179,7 @@ void TextureToBlobs::ReadAimsGroupGraph (   Graph &graph,
                                   (index == blobs_index2 && indexB2 == blobs_index1));
 
                                 if ( blobs_index1 < blobs_index2 ){
-                                  cliques.push_back( surf::SSBClique( ssblobs[ blobs_index1 ] , ssblobs[ blobs_index2 ], similarity) );
+                                  cliques.push_back( surf::Clique( ssblobs[ blobs_index1 ] , ssblobs[ blobs_index2 ], similarity) );
                                 }
                             }
                         }
@@ -1079,30 +1326,75 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
                 fprintf(f1, "}\n\n");
 
 
+                
+        // Creation of Blobs 
         clusteredSsblobs.push_back ( new surf::ScaleSpaceBlob() );
 
         surf::ScaleSpaceBlob *ssb = clusteredSsblobs[ clusteredSsblobs.size() -1 ];
-
+        ssb->subject = blobs[ cluster_blobs[0]]->subject;
+        
         std::set<float> scales;
-        ssb->blobs.insert( new surf::GreyLevelBlob() );
-        surf::GreyLevelBlob *glb = *(ssb->blobs.begin());
+        
+        bool uniqueGLB = false;
+        if ( uniqueGLB ) {
+            // Should there be one single GLB created by merging all existing GLB ?
 
-        for ( uint i = 0 ; i < cluster_blobs.size() ; i ++ ) {
-            std::set<int>::iterator ite2;
-            for ( ite2 = blobs[ cluster_blobs[i] ]->nodes.begin() ;
-                ite2 != blobs[ cluster_blobs[i] ]->nodes.end() ;
-                ite2++ ) {
-                    glb->nodes.insert( *ite2 );
-                    glb->raw_coordinates[ *ite2 ] = std::vector<float>(3);
-                    for ( uint k = 0 ; k < 3 ; k++ )
-                        glb->raw_coordinates[ *ite2 ][k] = blobs[ cluster_blobs[i]]->raw_coordinates[*ite2][k];
-                    if ( blobs[cluster_blobs[i]]->coordinates.size() != 0 ) {
-                        glb->coordinates[ *ite2 ] = std::vector<float>(2);
-                        for ( uint k = 0 ; k < 2 ; k++ )
-                            glb->coordinates[ *ite2 ][k] = blobs[ cluster_blobs[i]]->coordinates[*ite2][k];
-                    }
+            ssb->blobs.insert( new surf::GreyLevelBlob() );
+            surf::GreyLevelBlob *glb = *(ssb->blobs.begin());
+            glb->t = blobs[cluster_blobs[0] ]->t;
+            glb->scale = blobs[cluster_blobs[0] ]->scale;
+            
+            for ( uint i = 0 ; i < cluster_blobs.size() ; i ++ ) {
+                std::set<int>::iterator ite2;
+                for ( ite2 = blobs[ cluster_blobs[i] ]->nodes.begin() ;
+                    ite2 != blobs[ cluster_blobs[i] ]->nodes.end() ;
+                    ite2++ ) {
+                        glb->nodes.insert( *ite2 );
+                        glb->raw_coordinates[ *ite2 ] = std::vector<float>(3);
+                        for ( uint k = 0 ; k < 3 ; k++ )
+                            glb->raw_coordinates[ *ite2 ][k] = blobs[ cluster_blobs[i]]->raw_coordinates[*ite2][k];
+                        if ( blobs[cluster_blobs[i]]->coordinates.size() != 0 ) {
+                            glb->coordinates[ *ite2 ] = std::vector<float>(2);
+                            for ( uint k = 0 ; k < 2 ; k++ )
+                                glb->coordinates[ *ite2 ][k] = blobs[ cluster_blobs[i]]->coordinates[*ite2][k];
+                        }
+                }
+                scales.insert( blobs[cluster_blobs[i] ]->scale );
             }
-            scales.insert( blobs[cluster_blobs[i] ]->scale );
+            glb->ssb_parent = ssb;
+            glb->getAimsSphereAtMaxNode ( * (data[ssb->subject]->tex), 0.4 );
+            ssb->getNodesFromBlob(glb);
+            ssb->getAimsSphereAtMaxNode ( * (data[ssb->subject]->tex), 0.4 );
+        }
+        else {
+            //   Or should we keep track of original GLB ?
+
+            for ( uint i = 0 ; i < cluster_blobs.size() ; i ++ ) {
+
+                surf::GreyLevelBlob *glb = new surf::GreyLevelBlob(); 
+                ssb->blobs.insert( glb );
+                glb->t = blobs[cluster_blobs[i] ]->t;
+                glb->scale = blobs[cluster_blobs[i] ]->scale;
+                glb->ssb_parent = ssb;
+
+                std::set<int>::iterator ite2;
+                for ( ite2 = blobs[ cluster_blobs[i] ]->nodes.begin() ;
+                    ite2 != blobs[ cluster_blobs[i] ]->nodes.end() ;
+                    ite2++ ) {
+                        glb->nodes.insert( *ite2 );
+                        glb->raw_coordinates[ *ite2 ] = std::vector<float>(3);
+                        for ( uint k = 0 ; k < 3 ; k++ )
+                            glb->raw_coordinates[ *ite2 ][k] = blobs[ cluster_blobs[i]]->raw_coordinates[*ite2][k];
+                        if ( blobs[cluster_blobs[i]]->coordinates.size() != 0 ) {
+                            glb->coordinates[ *ite2 ] = std::vector<float>(2);
+                            for ( uint k = 0 ; k < 2 ; k++ )
+                                glb->coordinates[ *ite2 ][k] = blobs[ cluster_blobs[i]]->coordinates[*ite2][k];
+                        }
+                }
+                glb->getAimsSphereAtMaxNode ( * (data[ssb->subject]->tex), 0.4 );
+
+                scales.insert( blobs[cluster_blobs[i] ]->scale );
+            }
         }
         ssb->tmax = *(scales.rbegin());
         ssb->tmin = *(scales.begin());
@@ -1110,9 +1402,8 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
         std::cout << ssb->tmax << "-" << ssb->tmin << " " << std::flush;
         ssb->t = 0.0;
         ssb->label = 0;
-        ssb->subject = blobs[ cluster_blobs[0]]->subject;
-        ssb->getNodesFromBlob(glb);
-        ssb->getAimsSphereAtMaxNode ( * (data[ssb->subject]->tex), 0.4 );
+
+
         //else if ( type_distance == DISTANCE_LATITUDES ) {
         //    int maxim_node = ssb->getMaximumNode(* (data[ssb->subject]->tex));
         //    AimsSurfaceTriangle *sph;

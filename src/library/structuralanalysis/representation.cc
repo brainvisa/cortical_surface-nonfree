@@ -244,36 +244,22 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
     set<surf::GreyLevelBlob *, ltSurfBlobs> listGLB1, listGLB2;
     set<surf::GreyLevelBlob *>::iterator itB;
     set<surf::GreyLevelBlob *, ltSurfBlobs>::iterator itB1, itB2;
-//     cout << "bifMesh" << endl;
     for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
         listGLB1.insert(*itB);
     ASSERT( unsortedListGLB.size() == listGLB1.size() );
     unsortedListGLB = ssb2->blobs;
     for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
         listGLB2.insert(*itB);
-//     cout << ssb1->index << ":";
-//     for ( itB1 = listGLB1.begin(); itB1 != listGLB1.end() ; itB1++){
-//         cout << (*itB1)->scale << " " << flush;
-//     }
-//     cout << "/";
-//     cout << ssb2->index << ":";
-//     for ( itB1 = listGLB2.begin(); itB1 != listGLB2.end() ; itB1++){
-//         cout << (*itB1)->scale << " " << flush;
-//     }
-//     cout << endl;
     ASSERT( unsortedListGLB.size() == listGLB2.size() );
-//     cout << ssb1->index << " " << ssb1->blobs.size() << " " << ssb1->tmin << "-" << ssb1->tmax << " " << ssb2->index << " " << ssb2->blobs.size() << " " << ssb2->tmin << "-" << ssb2->tmax << endl;
     if ( ssb2->tmin > ssb1->tmax  ) { // RELIER LE GLB MAX DE SSB1 AU GLB MIN DE SSB2
         itB1 = listGLB1.end();
         itB1--;
         itB2 = listGLB2.begin();
-//         cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
     }
     else if ( ssb1->tmin > ssb2->tmax ) { // RELIER LE GLB MIN DE SSB1 AU GLB MAX DE SSB2
         itB1 = listGLB2.end();
         itB1--;
         itB2 = listGLB1.begin();
-//         cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
     }
     else {
         ASSERT(false);
@@ -318,7 +304,6 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
 
 AimsSurfaceTriangle getG2GRelationsMeshes ( vector< pair<surf::GreyLevelBlob *, surf::GreyLevelBlob *> > &blobsPairs,
                                             int representation_mode ) {
-
     AimsSurfaceTriangle meshes;
 
     for ( uint i = 0 ; i < blobsPairs.size() ; i ++ ) {
@@ -330,7 +315,7 @@ AimsSurfaceTriangle getG2GRelationsMeshes ( vector< pair<surf::GreyLevelBlob *, 
         meshes[i] = linkMesh[0];
     }
     ASSERT( meshes.size() == blobsPairs.size() );
-    cout << "  " << meshes.size() << " meshes created" << endl;
+    std::cout << "  " << meshes.size() << " meshes created" << std::endl;
     return meshes;
 }
 
@@ -351,7 +336,7 @@ AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector< pair< surf::ScaleSpa
     return meshes;
 }
 
-AimsSurfaceTriangle getB2BRelationsMeshes ( vector<surf::SSBClique> &cliques, int representation_mode ) {
+AimsSurfaceTriangle getB2BRelationsMeshes ( std::vector<surf::Clique> &cliques, int representation_mode ) {
 
     AimsSurfaceTriangle meshes;
 

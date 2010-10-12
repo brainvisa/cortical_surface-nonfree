@@ -11,6 +11,11 @@ enum blobsMode {
     PRIMALSKETCH, LABELS
 };
 
+enum graphMode {
+    DEFAULT, NO_SCALESPACEBLOBS_MESHES_AND_NO_RELATIONS 
+};
+
+
 
 namespace TextureToBlobs {
 
@@ -20,10 +25,6 @@ namespace TextureToBlobs {
     		std::vector<surf::ScaleSpaceBlob *> & ssblobs,
             std::vector<surf::GreyLevelBlob *> & filteredBlobs,
             std::vector<surf::ScaleSpaceBlob *> & filteredSsblobs ) ;
-
-
-
-
     
     void getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
                                 SubjectData &subject,
@@ -50,21 +51,20 @@ namespace TextureToBlobs {
 					SubjectData & subject,
 					const std::vector<surf::Blob *> & blobs ) ;
     
+    
     void AimsGraph ( Graph *graph,
-                            SubjectData & subject,
-                            //const std::vector<surf::GreyLevelBlob *> &blobs,
-                            const std::vector<surf::ScaleSpaceBlob *> &ssblobs );
+                     SubjectData & subject,
+                     const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                     int graph_mode = DEFAULT );
 
     void AimsGroupGraph( Graph *graph,
                             std::map<std::string, SubjectData *> data,
                             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                            std::vector<surf::SSBClique> &cliques );
+                            std::vector<surf::Clique> &cliques );
 
     void ReadAimsGroupGraph ( Graph &graph,
-            GroupData &data,
             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-            std::vector<surf::SSBClique> &cliques,
-            std::vector<Vertex *> &listVertex );
+            std::vector<surf::Clique> &cliques );
 
     void DestroyBlobs ( std::vector<surf::ScaleSpaceBlob *> &ssblobs ) ;
     

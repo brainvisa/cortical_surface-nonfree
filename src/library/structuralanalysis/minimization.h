@@ -85,26 +85,25 @@ class SurfaceBased_StructuralAnalysis {
             ConvertSSBlobsToSites ( ssblobs, this->sites );
         }
 
-        static void GetSimilarityCliquesFromSSBCliques ( std::vector<surf::SSBClique> &ssbcliques,
+        static void GetSimilarityCliquesFromSSBCliques ( std::vector<surf::Clique> &ssbcliques,
                                         std::vector<Site *> &sites,
                                         std::vector<Clique> &cliques,
                                         std::vector<std::vector<int> > &cliquesDuSite ) ;
 
-        static std::vector<surf::SSBClique> BuildSimilarityCliques ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
+        static std::vector<surf::Clique> BuildSimilarityCliques ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
                                                          std::vector<std::vector<surf::GreyLevelBlob *> > &matchingblobs ) ;
 
 
-        static std::vector<surf::SSBClique> BuildSimilarityCliques3D ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
+        static std::vector<surf::Clique> BuildSimilarityCliques3D ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
                                                            GroupData &data,
                                                            float threshold = 5.0,
-                                                           float alpha = 4.0,
                                                            int typeDistance = DISTANCE_3DEUCLIDIAN );
 
-        void importGraphCliquesFromSSBCliques ( std::vector<surf::SSBClique> &ssbcliques ) {
+        void importGraphCliquesFromSSBCliques ( std::vector<surf::Clique> &ssbcliques ) {
             GetSimilarityCliquesFromSSBCliques( ssbcliques, this->sites, this->cliques, this->cliquesDuSite );
         }
 
-        void importGraphNodesAndCliques ( std::vector<surf::ScaleSpaceBlob *> &ssblobs, std::vector<surf::SSBClique> &ssbcliques ) {
+        void importGraphNodesAndCliques ( std::vector<surf::ScaleSpaceBlob *> &ssblobs, std::vector<surf::Clique> &ssbcliques ) {
             ConvertSSBlobsToSites ( ssblobs, this->sites );
 
             GetSimilarityCliquesFromSSBCliques( ssbcliques, this->sites, this->cliques, this->cliquesDuSite );

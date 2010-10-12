@@ -109,13 +109,13 @@ namespace surf{
 
     };
 
-    class SSBClique{
+    class Clique{
         public :
             ScaleSpaceBlob *ssb1;
             ScaleSpaceBlob *ssb2;
             float similarity;
             float distance;
-            SSBClique(ScaleSpaceBlob *s1, ScaleSpaceBlob *s2, float dist ) {
+            Clique ( ScaleSpaceBlob *s1, ScaleSpaceBlob *s2, float dist ) {
                 ssb1 = s1;
                 ssb2 = s2;
                 distance = dist;
@@ -130,12 +130,12 @@ namespace surf{
 
     };
 
-    class SSBBifurcation{
+    class Bifurcation{
         public :
             std::set<ScaleSpaceBlob *> topBlobs;
             std::set<ScaleSpaceBlob *> bottomBlobs;
             std::string type;
-            SSBBifurcation ( std::set<ScaleSpaceBlob *> &s1, std::set< ScaleSpaceBlob *> &s2, std::string _type){topBlobs = std::set<ScaleSpaceBlob *>(s1); bottomBlobs = std::set<ScaleSpaceBlob *>(s2); type = _type;}
+            Bifurcation ( std::set<ScaleSpaceBlob *> &s1, std::set< ScaleSpaceBlob *> &s2, std::string _type){topBlobs = std::set<ScaleSpaceBlob *>(s1); bottomBlobs = std::set<ScaleSpaceBlob *>(s2); type = _type;}
 
     };
     

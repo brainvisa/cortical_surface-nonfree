@@ -33,7 +33,7 @@ AimsSurfaceTriangle getG2GRelationsMeshes ( std::vector< std::pair<surf::GreyLev
 AimsSurfaceTriangle getBifurcationRelationsMeshes ( std::vector< std::pair< surf::ScaleSpaceBlob *, surf::ScaleSpaceBlob *> > & bifurcPairs,
                                                     int representation_mode = SPHERE );
 
-AimsSurfaceTriangle getB2BRelationsMeshes ( std::vector<surf::SSBClique> &cliques, int representation_mode = SPHERE  ) ;
+AimsSurfaceTriangle getB2BRelationsMeshes ( std::vector<surf::Clique> &cliques, int representation_mode = SPHERE  ) ;
 
 #endif
 

@@ -512,9 +512,7 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
     std::set<Vertex *>::iterator iv, jv;
 
     int index;
-    int node, label_occur_number;
     std::string subject;
-    float value;
     primal.setProperty ( "global_energy", (float) energy );
 
     for ( iv = primal.vertices().begin() ; iv != primal.vertices().end() ; ++iv ) {
@@ -524,7 +522,7 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
 
         for ( uint i = 0 ; i < sites.size() ; i++ ) {
 
-            if ( sites[i]->index == index && sites[i]->subject == subject ) {
+            if ( sites[i]->index == (uint) index && sites[i]->subject == subject ) {
                 std::ostringstream s;
                 s << sites[i]->label ;
                 (*iv)->setProperty( "label", s.str());
@@ -581,7 +579,7 @@ void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites( std::vector<surf::S
 
 }
 
-void SurfaceBased_StructuralAnalysis::GetSimilarityCliquesFromSSBCliques ( std::vector<surf::SSBClique> &ssbcliques,
+void SurfaceBased_StructuralAnalysis::GetSimilarityCliquesFromSSBCliques ( std::vector<surf::Clique> &ssbcliques,
                                 std::vector<Site *> &sites,
                                 std::vector<Clique> &cliques,
                                 std::vector<std::vector<int> > &cliquesDuSite){
@@ -634,10 +632,10 @@ void SurfaceBased_StructuralAnalysis::GetSimilarityCliquesFromSSBCliques ( std::
 //  overlap. The resulting vector "cliques" associates to every relevant pair of
 //  scale-space blobs (noted by their indices) its calculated spatial overlap.
 
-std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCliques ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
+std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityCliques ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
                                                  std::vector<std::vector<surf::GreyLevelBlob *> > &matchingblobs ) {
 
-    std::vector<surf::SSBClique > cliques;
+    std::vector<surf::Clique > cliques;
     matchingblobs = std::vector<std::vector<surf::GreyLevelBlob *> > (ssblobs.size());
 
     std::set<surf::GreyLevelBlob *>::iterator itB1, itB2;
@@ -708,7 +706,6 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
 
                 if ( overmax > 0.10 &&
                         !((ssblobs[j]->tmin > ssblobs[i]->tmax) || (ssblobs[i]->tmin > ssblobs[j]->tmax)) ) {
-
                     // If the two scale-space blobs have at least one pair of grey-level
                     //   overlapping (bounding-boxes) (+ scales overlapping), then a clique
                     // is created between these two ssb and the max-overlapping pair of glb
@@ -716,7 +713,7 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
 
 
 
-                    cliques.push_back(surf::SSBClique(ssblobs[i], ssblobs[j], overmax));
+                    cliques.push_back(surf::Clique(ssblobs[i], ssblobs[j], overmax));
                     matchingblobs[i].push_back(b1max);
                     matchingblobs[j].push_back(b2max);
                     //cout << "max (" << ssblobs[i]->index <<","<< ssblobs[j]->index << ") between:" << b1max->index << " "
@@ -759,13 +756,12 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
 ////##############################################################################
 
 
-std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCliques3D ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
+std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityCliques3D ( std::vector<surf::ScaleSpaceBlob *>   &ssblobs,
                                                    GroupData &data,
                                                    float threshold,
-                                                   float alpha,
                                                    int type_distance ) {
 
-    std::vector<surf::SSBClique > cliques;
+    std::vector<surf::Clique > cliques;
 
     std::set<surf::GreyLevelBlob *>::iterator itB1, itB2;
     surf::GreyLevelBlob *b1max, *b2max;
@@ -814,7 +810,7 @@ std::vector<surf::SSBClique> SurfaceBased_StructuralAnalysis::BuildSimilarityCli
                 // std::cout << distance << " " << std::flush;
 
                 if ( distance < threshold ) {
-                    cliques.push_back( surf::SSBClique(ssblobs[i], ssblobs[j], distance ) );
+                    cliques.push_back( surf::Clique(ssblobs[i], ssblobs[j], distance ) );
                 }
             }
             // The next pair of scale-space blobs will now be processed.
