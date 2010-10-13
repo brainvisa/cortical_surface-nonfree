@@ -166,9 +166,11 @@ std::set<float> vector2set(std::vector<float> &v){
 void TextureToBlobs::DestroyBlobs ( std::vector<surf::ScaleSpaceBlob *> &ssblobs ) {
     std::vector<surf::GreyLevelBlob *> blobs;
     std::set<surf::GreyLevelBlob *>::iterator it;
+
     for ( uint i = 0 ; i < ssblobs.size() ; i++ ) {
-        for ( it = ssblobs[i]->blobs.begin() ; it != ssblobs[i]->blobs.end() ; it ++ )
+        for ( it = ssblobs[i]->blobs.begin() ; it != ssblobs[i]->blobs.end() ; it ++ ) {
             blobs.push_back( *it );
+        }
     }
     for ( uint i = 0 ; i < blobs.size() ; i++ )
         delete ( blobs[i] );
@@ -734,10 +736,12 @@ void addScaleSpaceToGreyLevelBlobsRelations ( Graph *graph,
 
 void addBetweenGreyLevelBlobsRelations ( Graph *graph, 
                                          const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                         const std::vector<Vertex *> &listVertGLB ) {
+                                         const std::vector<Vertex *> &listVertGLB,
+                                         bool buildAndStoreRelationsMeshes ) {
 
     carto::rc_ptr<AimsSurfaceTriangle> ptr;
     aims::GraphManip manip;
+    AimsSurfaceTriangle *relations;
     
     std::cout << "════ Collecting the list of GLB relations..." << std::endl;
     std::vector< std::pair< surf::GreyLevelBlob *, surf::GreyLevelBlob *> > blobsPairs;
@@ -770,9 +774,11 @@ void addBetweenGreyLevelBlobsRelations ( Graph *graph,
     }
     std::cout << "  " << blobsPairs.size() << " blobs pairs" << std::endl;
 
-    std::cout << "════ Extracting meshes for the GLB relations..." << std::endl;
-    AimsSurfaceTriangle *relations = new AimsSurfaceTriangle();
-    *relations = getG2GRelationsMeshes( blobsPairs, NODES_BARYCENTERS );
+    if ( buildAndStoreRelationsMeshes ) {
+        std::cout << "════ Extracting meshes for the GLB relations..." << std::endl;
+        relations = new AimsSurfaceTriangle();
+        *relations = getG2GRelationsMeshes( blobsPairs, NODES_BARYCENTERS );
+    }
     
     std::cout << "════ Adding links between GLB from same SSB (with corresponding meshes for visualization)..." << std::endl;
 
@@ -788,10 +794,12 @@ void addBetweenGreyLevelBlobsRelations ( Graph *graph,
         v1 = listVertGLB[glb1->index];
         v2 = listVertGLB[glb2->index];
         Edge *e = graph->addEdge(v1, v2, "g2g");
-
-        ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-        (*ptr)[0]=(*relations)[i];
-        manip.storeAims(*graph, e, "g2g", ptr);
+        
+        if ( buildAndStoreRelationsMeshes ) {
+            ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+            (*ptr)[0] = (*relations)[i];
+            manip.storeAims(*graph, e, "g2g", ptr);
+        }
 
         iNbLinks++;
     }
@@ -800,10 +808,12 @@ void addBetweenGreyLevelBlobsRelations ( Graph *graph,
 
 void addBifurcationsRelations ( Graph *graph, 
                                 const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                const std::vector<Vertex *> &listVertSSB ) {
+                                const std::vector<Vertex *> &listVertSSB,
+                                bool buildAndStoreRelationsMeshes ) {
     
     carto::rc_ptr<AimsSurfaceTriangle> ptr;
     aims::GraphManip manip;
+    AimsSurfaceTriangle *bifurcations;
 
     std::cout << "════ Collecting the list of existing bifurcations..." << std::endl;
     std::vector< std::pair< surf::ScaleSpaceBlob *, surf::ScaleSpaceBlob *> > bifurcPairs;
@@ -833,30 +843,34 @@ void addBifurcationsRelations ( Graph *graph,
         }
     }
 
-    std::cout << "════ Extracting meshes for the bifurcations relations..." << std::endl;
-    AimsSurfaceTriangle *bifurcations = new AimsSurfaceTriangle();
-    *bifurcations = getBifurcationRelationsMeshes( bifurcPairs, NODES_BARYCENTERS );
-    std::cout << "  " << bifurcPairs.size() << " bifurcations pairs" << std::endl;
-    std::cout << "  " << bifurcations->size() << " bifurcations meshes" << std::endl;
+    if ( buildAndStoreRelationsMeshes ) {
+        std::cout << "════ Extracting meshes for the bifurcations relations..." << std::endl;
+        bifurcations = new AimsSurfaceTriangle();
+        *bifurcations = getBifurcationRelationsMeshes( bifurcPairs, NODES_BARYCENTERS );
+        std::cout << "  " << bifurcPairs.size() << " bifurcations pairs" << std::endl;
+        std::cout << "  " << bifurcations->size() << " bifurcations meshes" << std::endl;
+    }
 
     std::cout << "════ Adding links between SSB (bifurcations)..." << std::endl;
     uint iNbLinks = 0;
 
     for ( uint i = 0 ; i < bifurcPairs.size() ; i++ ) {
-
         Vertex *v1, *v2;
-        ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-        (*ptr)[0] = (*bifurcations)[i];
         surf::ScaleSpaceBlob *ssb1, *ssb2;
         ssb1 = bifurcPairs[i].first;
         ssb2 = bifurcPairs[i].second;
         v1 = listVertSSB[ ssb1->index ];
         v2 = listVertSSB[ ssb2->index ];
-        Edge *e = graph->addEdge(v1, v2, "bifurcation");
-        manip.storeAims(*graph, e, "bifurcation", ptr);
+        Edge *e = graph->addEdge(v1, v2, "bifurcation");        
         e->setProperty("type", "test");
+        
+        if ( buildAndStoreRelationsMeshes ) {
+            ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+            (*ptr)[0] = (*bifurcations)[i];
+            manip.storeAims(*graph, e, "bifurcation", ptr);
+        }
+        
         iNbLinks++;
-
     }
     std::cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbLinks << " bifurcations added... done" << std::endl;
 
@@ -871,7 +885,9 @@ void getGraphModeOptions ( const int graph_mode,
                            bool &storeGreyLevelBlobsMeshes,
                            bool &buildSSBToGLBRelations,
                            bool &buildGLBRelations,
-                           bool &buildBifurcations ) {
+                           bool &buildAndStoreGLBRelationsMeshes,
+                           bool &buildBifurcations,
+                           bool &buildAndStoreBifurcationsMeshes ) {
     
     buildScaleSpaceBlobs = false;
     buildScaleSpaceBlobsMeshes = false;
@@ -881,15 +897,31 @@ void getGraphModeOptions ( const int graph_mode,
     storeGreyLevelBlobsMeshes = false;
     buildSSBToGLBRelations = false;
     buildGLBRelations = false;
+    buildAndStoreGLBRelationsMeshes = false;
     buildBifurcations = false;
+    buildAndStoreBifurcationsMeshes = false;
     
     switch ( graph_mode ) {
 
-    case NO_SCALESPACEBLOBS_MESHES_AND_NO_RELATIONS:
+    case NO_SCALESPACEBLOBS_MESHES:
         buildScaleSpaceBlobs = true;
         buildGreyLevelBlobs = true;
         buildGreyLevelBlobsMeshes = true;
         storeGreyLevelBlobsMeshes = true;
+        buildSSBToGLBRelations = true;
+        buildGLBRelations = true;
+        buildAndStoreGLBRelationsMeshes = true;
+        buildBifurcations = true;
+        buildAndStoreGLBRelationsMeshes = true;
+    break;
+    case NO_SCALESPACEBLOBS_MESHES_AND_NO_RELATIONS_MESHES:
+        buildScaleSpaceBlobs = true;
+        buildGreyLevelBlobs = true;
+        buildGreyLevelBlobsMeshes = true;
+        storeGreyLevelBlobsMeshes = true;
+        buildSSBToGLBRelations = true;
+        //buildGLBRelations = true;
+        //buildBifurcations = true;
     break;
     case DEFAULT:
         buildScaleSpaceBlobs = true;
@@ -900,7 +932,9 @@ void getGraphModeOptions ( const int graph_mode,
         storeGreyLevelBlobsMeshes = true;
         buildSSBToGLBRelations = true;
         buildGLBRelations = true;
+        buildAndStoreGLBRelationsMeshes = true;
         buildBifurcations = true;
+        buildAndStoreGLBRelationsMeshes = true;
     break;
     }
     
@@ -916,11 +950,13 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
     
      bool buildScaleSpaceBlobs, buildScaleSpaceBlobsMeshes, storeScaleSpaceBlobsMeshes, 
           buildGreyLevelBlobs, buildGreyLevelBlobsMeshes, storeGreyLevelBlobsMeshes,
-          buildSSBToGLBRelations, buildGLBRelations, buildBifurcations;
+          buildSSBToGLBRelations, buildGLBRelations, buildAndStoreGLBRelationsMeshes, 
+          buildBifurcations, buildAndStoreBifurcationsMeshes;
      
      getGraphModeOptions ( graph_mode, buildScaleSpaceBlobs, buildScaleSpaceBlobsMeshes, 
              storeScaleSpaceBlobsMeshes, buildGreyLevelBlobs, buildGreyLevelBlobsMeshes, 
-             storeGreyLevelBlobsMeshes, buildSSBToGLBRelations, buildGLBRelations, buildBifurcations );
+             storeGreyLevelBlobsMeshes, buildSSBToGLBRelations, buildGLBRelations, 
+             buildAndStoreGLBRelationsMeshes, buildBifurcations, buildAndStoreBifurcationsMeshes);
      
         
     // First We Recover The Grey-Level Blobs From The Vector of Scale-Space Blobs 
@@ -939,7 +975,6 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
     
     //=========================================
     // Let's Add Or Not The Scale-Space Blobs
-        
         std::vector<Vertex *> listVertSSB, listVertGLB;
         if ( buildScaleSpaceBlobs ) {
             addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, subject, buildScaleSpaceBlobsMeshes, storeScaleSpaceBlobsMeshes );
@@ -948,7 +983,7 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
     //=========================================
     // Let's Add Or Not The Grey-Level Blobs
         if ( buildGreyLevelBlobs ) {
-            addGreyLevelBlobsToGraph ( graph, blobs, listVertGLB, subject, buildGreyLevelBlobsMeshes, storeScaleSpaceBlobsMeshes );
+            addGreyLevelBlobsToGraph ( graph, blobs, listVertGLB, subject, buildGreyLevelBlobsMeshes, storeGreyLevelBlobsMeshes );
         }
     
     //===========================================================================
@@ -960,13 +995,13 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
     //=======================================================
     // Let's Add Or Not The Links Between Grey-Level Blobs
         if ( buildGLBRelations && ( buildGreyLevelBlobs ) ) {
-            addBetweenGreyLevelBlobsRelations ( graph, ssblobs, listVertGLB );
+            addBetweenGreyLevelBlobsRelations ( graph, ssblobs, listVertGLB, buildAndStoreGLBRelationsMeshes );
         }
 
     //======================================================================
     // Let's Add Or Not The Links Between Scale-Space Blobs (Bifurcations)
         if ( buildBifurcations && ( buildScaleSpaceBlobs ) ) {
-            addBifurcationsRelations ( graph, ssblobs, listVertSSB );
+            addBifurcationsRelations ( graph, ssblobs, listVertSSB, buildAndStoreGLBRelationsMeshes );
         }
 }
 
@@ -1400,6 +1435,7 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
         ssb->tmin = *(scales.begin());
         ssb->scales = scales;
         std::cout << ssb->tmax << "-" << ssb->tmin << " " << std::flush;
+        std::cout << "("<<ssb->blobs.size()<<")" << std::endl;
         ssb->t = 0.0;
         ssb->label = 0;
 
