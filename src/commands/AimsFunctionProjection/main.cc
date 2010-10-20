@@ -30,7 +30,7 @@ int main ( int argc, const char **argv ) {
         app.addOption( operation, "-op", "0 : computes convolution kernels from one anatomy ; 1 : projects functional volumes onto the surface (using kernels)");
         app.addOption( meshpath , "-m", "Grey/white matter mesh (.mesh)" );
         app.addOption( datapath , "-d", "Convolution kernels (.ima) to be used for projection (-op=1)", "" );
-        app.addOption( datapath1 , "-d1", "Functional volume (.ima/.img) to project onto the mesh (-op=1)", "" );
+        app.addOption( datapath1 , "-d1", "4D functional volume (.ima/.img) to project onto the mesh (-op=1)", "" );
         app.addOption( size, "-i", "Size of computed kernels (integer)", 7);
         app.addOption( vsizeX, "-vx", "X-resolution of kernels (float)", 3.0);
         app.addOption( vsizeY, "-vy", "Y-resolution of kernels (float)", 3.0);
@@ -86,11 +86,13 @@ int main ( int argc, const char **argv ) {
             std::cout << "kernel resolution : " << kernel[0].sizeX() << ";" << kernel[0].sizeY() << ";" << kernel[0].sizeZ() << std::endl;
             std::cout << "kernel size : " << kernel[0].dimX() << std::endl;
             std::cout << "volume resolution : " << funcdata.sizeX() << ";" << funcdata.sizeY() << ";" << funcdata.sizeZ() << std::endl;
-            Texture<float> tex ( deconvolve ( funcdata, kernel, mesh ) );
-            TimeTexture<float> ttex;
-            ttex[0] = tex;
-            Writer < TimeTexture<float> > ww ( outpath );
-            ww.write ( ttex );
+	    std::cout << "number of scans : " << funcdata.dimT() << std::endl;
+	    
+            TimeTexture<float> tex ( deconvolve ( funcdata, kernel, mesh ) );
+            //TimeTexture<float> ttex;
+            //ttex[0] = tex;
+            Writer < TimeTexture<float> > w ( outpath );
+            w.write ( tex );
         }
 
     }
