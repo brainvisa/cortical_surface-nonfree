@@ -74,7 +74,7 @@ namespace aims
 			{
 				//Computing neighbourhood
 // 				std::cout<<"Constructor!"<<std::endl;
-				std::cout<<"Constructeur SulcusCorticalSnake"<<std::endl;
+				//			std::cout<<"Constructeur SulcusCorticalSnake"<<std::endl;
 				neigh = SurfaceManip::surfaceNeighbours( mesh );
 				mesh_base=mesh[0];
 				vert = mesh_base.vertex();
@@ -86,10 +86,10 @@ namespace aims
 				
 				for(uint i=0;i<size;i++)
 				{
-					if(constraint_load[0].item(i)==value)
-						constraint[0].push_back(value);
+					if(fabs(constraint_load[0].item(i)-_value) < 0.01)
+						constraint[0].push_back(_value);
 					else
-						constraint[0].push_back(0);
+						constraint[0].push_back(0.0);
 				}
 // 				std::cout<<"size copie"<<constraint[0].nItem()<<std::endl;
 				for( uint i=0; i<constraint[0].nItem(); i++)
@@ -106,7 +106,7 @@ namespace aims
 			
 			~SulcusCorticalSnake()
 			{
-				std::cout<<"Destructeur SulcusCorticalSnake"<<std::endl;
+				//			std::cout<<"Destructeur SulcusCorticalSnake"<<std::endl;
 				neigh.clear();
 				vert.clear();
 				poly.clear();

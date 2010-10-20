@@ -321,7 +321,7 @@ std::map< int, std::map<int, std::string> > aims::createCorrespMap( std::string 
 		}*/
 	}
 	
-	cout << "listing" << endl;
+	//	cout << "listing" << endl;
 	
 	std::map< int, std::map<int, std::string> >::iterator itMap = map_global.begin();
 	for ( ; itMap != map_global.end(); ++itMap)
@@ -334,7 +334,7 @@ std::map< int, std::map<int, std::string> > aims::createCorrespMap( std::string 
 		}
 	}
 	
-	cout << "done" << endl;
+	//	cout << "done" << endl;
 	
 	
 	fclose(corres);
@@ -381,7 +381,7 @@ TimeTexture<float> aims::constraintCleaner(TimeTexture<float> & texture, std::ve
 			bool present=false;
 			it=vals.begin();
 			for( ; it!=vals.end(); ++it) 
-				if( (*it)==texture[0].item(i) )
+				if( fabs((*it)-texture[0].item(i))<0.01 )
 					present=true;
 			if(present==false)
 				vals.push_back( texture[0].item(i) );
@@ -395,7 +395,7 @@ TimeTexture<float> aims::constraintCleaner(TimeTexture<float> & texture, std::ve
 	
 	for(int j=0; j<size; j++)
 	{
-		tex_process[0].item(j)=0;
+		tex_process[0].item(j)=0.0;
 	}
 	
 	
@@ -405,20 +405,21 @@ TimeTexture<float> aims::constraintCleaner(TimeTexture<float> & texture, std::ve
 	for(; it!=vals.end(); ++it)
 	{
 		TimeTexture<float> thin(1,size);
-		std::cout<<"Cleaner pour Valeur="<<(*it)<<std::endl;
+		//		std::cout<<"Cleaner pour Valeur="<<(*it)<<std::endl;
 		//if( (*it)==71 )
 // 		thin=EconstraintCleaner(texture,neigh,mesh, (*it) );
 		SulcusCorticalSnake *k = new SulcusCorticalSnake( texture, (*it), contr, curvature, elasticity, mesh );
 		thin = (*k).compute_snake();
 		
+		//		std::cout << "Getting values" << std::endl;
 		for(int j=0; j<size; j++)
 		{
-			if(thin[0].item(j)!=0)
+			if(fabs(thin[0].item(j)) > 0.01)
 				tex_process[0].item(j)=(*it);
 		}
 		delete k;
 	}
-// 	std::cout<<"Done Cleaner"<<std::endl;
+	//	std::cout<<"Cleaner finished"<<std::endl;
 	
 	return tex_process;
 }
@@ -867,7 +868,7 @@ TimeTexture<float> aims::EconstraintCleaner(TimeTexture<float> & texture, std::v
 	
 	if(fl!=0)
 	{
-		cout<<"Remplacement xtremite"<<endl;
+		//		cout<<"Remplacement xtremite"<<endl;
 		TimeTexture<float> tmpt(1,size);
 		TimeTexture<float> rez_tmpt(1,size);
 		float val_maxy=0;
@@ -1126,11 +1127,11 @@ TimeTexture<float> aims::origin_meridian(TimeTexture<float> & tex, int nord, int
  	Writer<Texture1d> wTp2("test_morceaux_avec_poles.tex");
  	wTp2.write(testmor);*/
 	//Relie les 2 poles en passant par le meridien d'origine
-        cout<<"MeridianLink"<<endl;
+	//       cout<<"MeridianLink"<<endl;
 	meridianLink( pieces_meridian, constraint_meridian, 360, sud, nord, neigh, mesh, poles);//, constraint_meridian );
 
 	
-	cout<<"Fin MeridianLink"<<endl;
+	//	cout<<"Fin MeridianLink"<<endl;
 	
 // 	Writer<Texture1d> wT3ff("pieces_meridian.tex");
 // 	wT3ff.write(pieces_meridian);
@@ -1172,11 +1173,11 @@ TimeTexture<float> aims::origin_meridian(TimeTexture<float> & tex, int nord, int
 //  	Writer<Texture1d> wT3f("mer_fermeture.tex");
 //   	wT3f.write(constraint_meridian);
 	
-	std::cout<<"Debut graph"<<std::endl;
+	//	std::cout<<"Debut graph"<<std::endl;
 	GraphPath<float> gr;
 	thin=gr.process(constraint_meridian, mesh, 360, nord, sud);
 
-	std::cout<<"Fin graph"<<std::endl;
+	//	std::cout<<"Fin graph"<<std::endl;
 	
 // 	Writer<Texture1d> wT3h("test_long_thin.tex");
 // 	wT3h.write(thin);
@@ -1269,7 +1270,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 	{
 		std::vector< int > vect_temp;
 		std::vector< int > pairs_temp;
-                cout<<"Value="<<value<<endl;
+		//              cout<<"Value="<<value<<endl;
 		TimeTexture<float> tex_ext(1,size);
 		init_texture_single(tex_ext);
 		TimeTexture<float> tex_temp(1,size);
@@ -1277,7 +1278,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 	
 		int compteur=0;
 		//On enl�e les points non susceptibles d'etre des extremites
-                cout<<"Removing non Xt points"<<endl;
+		//               cout<<"Removing non Xt points"<<endl;
 		for(int j=0; j<size;j++)
 		{
 			int cpt=0;
@@ -1345,7 +1346,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 				}
 			}
 		}
-                cout<<"longest pcc"<<endl;
+		//               cout<<"longest pcc"<<endl;
 		
 		//on recupere le plus long des pcc
 		if(path_max!=0)
@@ -1354,7 +1355,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 			tex_path_temp=gr.process(tex_result,mesh,value,ext1,ext2);
 		}
 		
-                cout<<"done longest pcc"<<endl;
+		//               cout<<"done longest pcc"<<endl;
 		
 		if(ext1==ext2)
 		{
@@ -1367,7 +1368,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 			
 			pairs_temp.push_back(ext1);
 			pairs_temp.push_back(ext2);
-			std::cout<<"Push "<<ext1<<" et "<<ext2<<std::endl;
+			//			std::cout<<"Push "<<ext1<<" et "<<ext2<<std::endl;
 			meridian_pairs.push_back(pairs_temp);
 		}
 		
@@ -1442,7 +1443,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 		if( distance_poles[0].item( meridian_pairs[i][0])  > distance_poles[0].item( meridian_pairs[i][1] ) )
 		{
 			int pt= meridian_pairs[i][1];
-			cout<<"pt="<<pt<<endl;
+			//			cout<<"pt="<<pt<<endl;
 			meridian_pairs[i][1]=meridian_pairs[i][0];
 			meridian_pairs[i][0]=pt;
 		}
@@ -1475,7 +1476,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 
 	//Mise �jour de la carte de distance reference
 	
-	std::cout<<"Mise a jour carte"<<std::endl;
+	//	std::cout<<"Mise a jour carte"<<std::endl;
 	for(int k=0; k<size; k++)
 		if(k==nord)
 		{
@@ -1496,7 +1497,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 		{
 			if(tab[j]==0)
 			{
-				if(meridian_pairs[j][0]>=size) std::cout<<"OVERFLOW!!!!"<<std::endl;
+				if(meridian_pairs[j][0]>=size) std::cerr<<"OVERFLOW!!!!"<<std::endl;
 				if( dist[0].item(meridian_pairs[j][0]) <= top)
 				{
 					for(unsigned h=0; h<meridian_pairs[j].size(); h++)
@@ -1514,7 +1515,7 @@ void aims::meridianLink(TimeTexture<float> & origine, TimeTexture<float> & finis
 		//Remise �jour de la carte de distance avec une nouvelle branche
 		if(i<mark.size()-1)
 		{
-			std::cout<<"Remise a jour carte"<<std::endl;
+			//			std::cout<<"Remise a jour carte"<<std::endl;
 			for(int k=0; k<size; k++)
 				if(k==meridian_pairs[i+1][0])
 				{
@@ -1757,7 +1758,7 @@ void aims::findNearNeighPoles(int origine, int destination, TimeTexture<float> &
 			distp=pol[0].item(*itneigh);
 			if( distm < temp )
 			{
-				std::cout<<"\tVoisin "<<result <<" plus proche avec dist="<<distm<< " et dist pol.="<<distp<<"et dist_prec.="<<temp<<std::endl;
+				//				std::cout<<"\tVoisin "<<result <<" plus proche avec dist="<<distm<< " et dist pol.="<<distp<<"et dist_prec.="<<temp<<std::endl;
 				if( distp < temp_p )
 				{
 					temp_p=distp;
@@ -1810,7 +1811,7 @@ TimeTexture<float> aims::originNeighbourgs(TimeTexture<float> originMeridian, in
 	
 	std::set<uint>::const_iterator itneigh;
 
-     std::cerr << "entering origin neighbours" << std::endl;
+	//    std::cerr << "entering origin neighbours" << std::endl;
 	
 	for(int i=0; i<size; i++)
 	{
@@ -1903,7 +1904,7 @@ TimeTexture<float> aims::originNeighbourgs(TimeTexture<float> originMeridian, in
      TimeTexture<float> debugSides(bothSides);
 	
 	//repere le premier cote par un pcc
-     std::cerr << "\t origin neighbours : 1er graphe" << std::endl;
+     //    std::cerr << "\t origin neighbours : 1er graphe" << std::endl;
 
 	side1=gr.process(bothSides, mesh, 1, nord_temp, sud_temp);
 	/*
@@ -1929,7 +1930,7 @@ TimeTexture<float> aims::originNeighbourgs(TimeTexture<float> originMeridian, in
 	
 // 	Writer<Texture1d> wsI("sideInter.tex");
 // 	wsI.write(bothSides);
-     std::cerr << "\t origin neighbours : 2eme graphe" << std::endl;
+	//    std::cerr << "\t origin neighbours : 2eme graphe" << std::endl;
 
 	side2=gr.process(bothSides, mesh, 1, nord_temp, sud_temp);
 	
@@ -1979,7 +1980,7 @@ TimeTexture<float> aims::originNeighbourgs(TimeTexture<float> originMeridian, in
           }
      }
 	
-     std::cerr << "\t origin neighbours : sortie" << std::endl;
+     //    std::cerr << "\t origin neighbours : sortie" << std::endl;
 
 	return bothSides;
 	

@@ -1,8 +1,26 @@
-#include <aims/getopt/getopt2.h>
+#include <cortical_surface/structuralanalysis/iograph.h>
 
 using namespace aims;
-using namespace carto;
 using namespace std;
+
+std::vector<std::string> getVectorStringFromGraph ( Graph &graph, std::string graph_property ) {
+    std::vector<std::string> v;
+    if( graph.hasProperty( graph_property ) )  {
+        carto::Object slist = graph.getProperty( graph_property ); // note the different getProperty() method
+        // cout << "node with 'sujets' property:\n";
+        carto::Object oit = slist->objectIterator();  // iterator on the list
+        while( oit->isValid() ) {
+            carto::Object s = oit->currentValue(); // the list element, type Object
+            std::string ss = s->getString(); // extract as std::string or convert to string
+            std::cout << ss << ", ";
+            v.push_back(ss);
+            oit->next();
+        }
+        std::cout << std::endl;
+    }
+
+    return v;
+}
 
 void ConcatenerGraphes( const vector<Graph*> in, Graph & out, const string & subjectatt ){
   vector<Graph*>::const_iterator  ig, eg = in.end();
@@ -35,12 +53,12 @@ vector<string> splitGraphFile(string graphFile){
 }
 
 void LireGraphes(string graphFile, Graph &primal ){
-  vector<string> graphFiles = splitGraphFile(graphFile);
+  std::vector<std::string> graphFiles = splitGraphFile(graphFile);
 
   if( graphFiles.size() == 1 ){
     Reader<Graph> fr( graphFile );
     try{
-      cout << "Lecture du graphe sillons " << graphFile << endl;
+      cout << "Lecture du graphe " << graphFile << endl;
       fr.read(primal);
       Graph::iterator iv;
       string        subject;
@@ -49,11 +67,11 @@ void LireGraphes(string graphFile, Graph &primal ){
         (*iv)->setProperty( "subject", subject );
       cout << "Lecture FGraph OK." << endl;
     }
-    catch( parse_error & e )   {
+    catch( carto::parse_error & e )   {
       cerr << e.what() << " : " << e.filename() << ", line " << e.line() << endl;
       throw;
     }
-    catch( exception & e )  {
+    catch( std::exception & e )  {
       cerr << graphFile << ": " << e.what() << endl;
       throw;
     }
@@ -71,7 +89,7 @@ void LireGraphes(string graphFile, Graph &primal ){
         vg[0] = &test;
         ConcatenerGraphes( vg, primal, "sujet" ); // -----*****
       }
-      catch( parse_error & e ) {
+      catch( carto::parse_error & e ) {
         cerr << e.what() << " : " << e.filename() << ", line "  << e.line() << endl;
         throw;
       }
@@ -176,7 +194,7 @@ void SauvegarderGraphes(Graph &primal, string graphFile, string output){
         Writer<Graph> fw( outputs[i] );
         fw.write(tmpfg);
       }
-      catch( parse_error & e ) {
+      catch( carto::parse_error & e ) {
         cerr << e.what() << " : " << e.filename() << ", line "
             << e.line() << endl;
       }

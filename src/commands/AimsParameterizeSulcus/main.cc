@@ -96,13 +96,15 @@ int main( int argc, const char** argv )
       // read triangulation
       //
 
+//      std::cerr << "Reading all files" << std::endl;
+
       cout << "reading triangulation   : " << flush;
       AimsSurfaceTriangle surface;
       Reader<AimsSurfaceTriangle> triR( meshfile );
       triR >> surface;
       cout << "done" << endl;
 
-      cout << "reading bottom image  : " << flush;
+      cout << "reading bottom image  : " << bottomfile << flush;
       AimsData<short> bottom;
       Reader<AimsData<short> > bottomR(bottomfile );
       bottomR >> bottom;
@@ -131,9 +133,87 @@ int main( int argc, const char** argv )
                          poleDilation(1, ns),
                          topLine(1,ns), botLine(1,ns);
 
+//      bottomDil=AimsMorphoChamferDilation(bottom, 2.0);
+      for (int z=0; z<sz; z++)
+     	  for (int y=0; y<sy; y++)
+     		  for (int x=0; x<sx; x++)
+     		  {
+					  bottomDil(x,y,z)=0;
+					  hullDil(x,y,z)=0;
+     		  }
+      for (int z=1; z<sz-1; z++)
+    	  for (int y=1; y<sy-1; y++)
+    		  for (int x=1; x<sx-1; x++)
+    		  {
+    			  if (bottom(x,y,z)!=0)
+    			  {
+    				  bottomDil(x,y,z)=1;
+    				  bottomDil(x,y,z+1)=1;
+    				  bottomDil(x,y,z-1)=1;
+    				  bottomDil(x,y-1,z)=1;
+    				  bottomDil(x,y-1,z-1)=1;
+    				  bottomDil(x,y-1,z+1)=1;
+    				  bottomDil(x,y+1,z)=1;
+    				  bottomDil(x,y+1,z-1)=1;
+    				  bottomDil(x,y+1,z+1)=1;
+    				  bottomDil(x-1,y,z)=1;
+    				  bottomDil(x-1,y,z-1)=1;
+    				  bottomDil(x-1,y,z+1)=1;
+    				  bottomDil(x-1,y-1,z)=1;
+    				  bottomDil(x-1,y-1,z-1)=1;
+    				  bottomDil(x-1,y-1,z+1)=1;
+    				  bottomDil(x-1,y+1,z)=1;
+    				  bottomDil(x-1,y+1,z-1)=1;
+    				  bottomDil(x-1,y+1,z+1)=1;
+    				  bottomDil(x+1,y,z)=1;
+    				  bottomDil(x+1,y,z-1)=1;
+    				  bottomDil(x+1,y,z+1)=1;
+    				  bottomDil(x+1,y-1,z)=1;
+    				  bottomDil(x+1,y-1,z-1)=1;
+    				  bottomDil(x+1,y-1,z+1)=1;
+    				  bottomDil(x+1,y+1,z)=1;
+    				  bottomDil(x+1,y+1,z-1)=1;
+    				  bottomDil(x+1,y+1,z+1)=1;
+    			  }
+       			  if (hull(x,y,z)!=0)
+       			  {
+					  hullDil(x,y,z)=1;
+					  hullDil(x,y,z+1)=1;
+					  hullDil(x,y,z-1)=1;
+					  hullDil(x,y-1,z)=1;
+					  hullDil(x,y-1,z-1)=1;
+					  hullDil(x,y-1,z+1)=1;
+					  hullDil(x,y+1,z)=1;
+					  hullDil(x,y+1,z-1)=1;
+					  hullDil(x,y+1,z+1)=1;
+					  hullDil(x-1,y,z)=1;
+					  hullDil(x-1,y,z-1)=1;
+					  hullDil(x-1,y,z+1)=1;
+					  hullDil(x-1,y-1,z)=1;
+					  hullDil(x-1,y-1,z-1)=1;
+					  hullDil(x-1,y-1,z+1)=1;
+					  hullDil(x-1,y+1,z)=1;
+					  hullDil(x-1,y+1,z-1)=1;
+					  hullDil(x-1,y+1,z+1)=1;
+					  hullDil(x+1,y,z)=1;
+					  hullDil(x+1,y,z-1)=1;
+					  hullDil(x+1,y,z+1)=1;
+					  hullDil(x+1,y-1,z)=1;
+					  hullDil(x+1,y-1,z-1)=1;
+					  hullDil(x+1,y-1,z+1)=1;
+					  hullDil(x+1,y+1,z)=1;
+					  hullDil(x+1,y+1,z-1)=1;
+					  hullDil(x+1,y+1,z+1)=1;
+				  }
+    		  }
+//      std::cerr << "Writing dilation" << std::endl;
+//      Writer< AimsData<short> > bdilW("/Users/olivier/bottomDil");
+//      bdilW << bottomDil;
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // computing intersection of mesh with bottom and hull image for selection of "ridges"
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//      std::cerr << "Ridges 1" << std::endl;
 
      cout << "Detecting top and bottom ridges (new style)" << endl;
       
@@ -146,13 +226,13 @@ int main( int argc, const char** argv )
           x=int(floor(vert[0]/dx));
           y=int(floor(vert[1]/dy));
           z=int(floor(vert[2]/dz));
-          if (  (hull(x,y,z)!=0) || (hull(x,y,z+1)!=0) || (hull(x,y+1,z)!=0) || (hull(x,y+1,z+1)!=0)
-             || (hull(x+1,y,z)!=0) || (hull(x+1,y,z+1)!=0) || (hull(x+1,y+1,z)!=0) || (hull(x+1,y+1,z+1)!=0) )
+          if (  (hullDil(x,y,z)!=0) || (hullDil(x,y,z+1)!=0) || (hullDil(x,y+1,z)!=0) || (hullDil(x,y+1,z+1)!=0)
+             || (hullDil(x+1,y,z)!=0) || (hullDil(x+1,y,z+1)!=0) || (hullDil(x+1,y+1,z)!=0) || (hullDil(x+1,y+1,z+1)!=0) )
           {
               texHull[0].item(i)=short(RIDGE_TOP);
           }
-          if (  (bottom(x,y,z)!=0) || (bottom(x,y,z+1)!=0) || (bottom(x,y+1,z)!=0) || (bottom(x,y+1,z+1)!=0)
-             || (bottom(x+1,y,z)!=0) || (bottom(x+1,y,z+1)!=0) || (bottom(x+1,y+1,z)!=0) || (bottomDil(x+1,y+1,z+1)!=0) )
+          if (  (bottomDil(x,y,z)!=0) || (bottomDil(x,y,z+1)!=0) || (bottomDil(x,y+1,z)!=0) || (bottomDil(x,y+1,z+1)!=0)
+             || (bottomDil(x+1,y,z)!=0) || (bottomDil(x+1,y,z+1)!=0) || (bottomDil(x+1,y+1,z)!=0) || (bottomDil(x+1,y+1,z+1)!=0) )
           {
               texBot[0].item(i)=short(RIDGE_BOT);
           }
@@ -160,18 +240,18 @@ int main( int argc, const char** argv )
 
            // adding a second (different) pass for robustness
 
-     for (i=0; i<ns; i++)
-     {
-          texHull[0].item(i)=0;
-          texBot[0].item(i)=0;
-     }
+//     for (i=0; i<ns; i++)
+//     {
+//          texHull[0].item(i)=0;
+//          texBot[0].item(i)=0;
+//     }
      float fx, fy, fz;
      int count=0;
      for (z=0; z<sz; z++)
           for (y=0; y<sy; y++)
                for (x=0; x<sx; x++)
                {
-                    if (hull(x,y,z) != 0)
+                    if (hullDil(x,y,z) != 0)
                     {
                          float dist, distMin=10000.0;
                          uint imin=0;
@@ -189,7 +269,7 @@ int main( int argc, const char** argv )
                          }
                          texHull[0].item(imin)=short(RIDGE_TOP);
                     }
-                    if (bottom(x,y,z) != 0)
+                    if (bottomDil(x,y,z) != 0)
                     {
                          float dist, distMin=10000.0;
                          uint imin=0;
@@ -225,6 +305,8 @@ int main( int argc, const char** argv )
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // dilation of ridges
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//      std::cerr << "Ridges 2" << std::endl;
+
       topDilation[0]=MeshDilation<short>( surface[0], texHull[0], short(0), -1, 6.0, true); 
       botDilation[0]=MeshDilation<short>( surface[0], texBot[0], short(0), -1, 6.0, true);
       topClosing[0]=MeshErosion<short>( surface[0], topDilation[0], short(0), -1, 6.0-offset, true);// was 6.0
@@ -258,6 +340,8 @@ int main( int argc, const char** argv )
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
      // removing branches and triangles from skeletons using a graph shortest path algorithm
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+//      std::cerr << "Branches 1" << std::endl;
 
      cout << "\t Removing branches" << endl;
      GraphPath<float> shortest;
@@ -334,35 +418,72 @@ int main( int argc, const char** argv )
           }
      }
 
-     cout << "writing texture topRidge : " << flush;
-     Writer<TimeTexture<short> >  topRidgeW( "topRidge.tex" );
-     topRidgeW.write( topRidge );
-     cout << "done " << endl;
-     cout << "writing texture botRidge : " << flush;
-     Writer<TimeTexture<short> >  botRidgeW( "botRidge.tex" );
-     botRidgeW.write( botRidge );
-     cout << "done " << endl;
 
+     for (i=0; i<ns; i++)
+     {
+    	 if (botCand.find(i)!=botCand.end())
+    		 botRidge.item(i)=100;
+    	 else botRidge.item(i)=0;
+    	 if (topCand.find(i)!=topCand.end())
+    		 topRidge.item(i)=100;
+    	 else topRidge.item(i)=0;
+     }
+//     cout << "writing texture topRidge : " << flush;
+//     Writer<TimeTexture<short> >  topRidgeW( "topRidge.tex" );
+//     topRidgeW.write( topRidge );
+//     cout << "done " << endl;
+//     cout << "writing texture botRidge : " << flush;
+//     Writer<TimeTexture<short> >  botRidgeW( "botRidge.tex" );
+//     botRidgeW.write( botRidge );
+//     cout << "done " << endl;
+     for (i=0; i<ns; i++)
+     {
+    	 botRidge.item(i)=0;
+    	 topRidge.item(i)=0;
+     }
 
      cout << "\t OK, about to chose end points" << endl;
      // the choice of the start/end points is done amongst the candidates.
      // for each pair of points the shortest path within the skezleton is
      // computed. The pair having the longest of the shortest path is the one
 
+
+//     std::cerr << "End points 1" << std::endl;
+
+
      std::set<uint>::iterator topIt, topIt2, botIt, botIt2;
      uint cand1, cand2, tmp1, tmp2;
      float length, lengthmax=0.0;
      uint its, itn, ibs, ibn;
 
-     
+//     TimeTexture<short> debugPath(1,ns);
+//     for (i=0; i<ns; i++)
+//    	 debugPath.item(i)=0;
+
+//     std::cerr << "Initial Debug" << std::endl;
+
      for (topIt=topCand.begin(); topIt!=topCand.end(); ++topIt)
      {
           tmp1=(*topIt);
           topIt2=topIt; ++topIt2;
+//          std::cerr << "Initial Debug-loop top" << std::endl;
+
           for ( ; topIt2!=topCand.end(); ++topIt2 )
           {
                tmp2=(*topIt2);
+               length=1000.0;
                length=shortest.getLongueur(tmpTop, surface, RIDGE_TOP, tmp1, tmp2);
+//               debugPath.item(tmp1)=100;
+//               debugPath.item(tmp2)=100;
+//               std::ostringstream oss;
+//               oss << length;
+//               string nt="debugPath_" + oss.str();
+//
+//               std::cerr << "Writing path : " << nt << endl;
+//               Writer<TimeTexture<short> >  lengthW( nt.c_str() );
+//               lengthW.write( debugPath );
+//               debugPath.item(tmp1)=0;
+//               debugPath.item(tmp2)=0;
                if (length > lengthmax)
                {
                     lengthmax=length;
@@ -466,14 +587,14 @@ int main( int argc, const char** argv )
           botRidge[0].item(i)=val;
      }
      
-/*     cout << "writing texture topRidge : " << flush;
-     Writer<TimeTexture<short> >  topRidgeW( "topRidge.tex" );
-     topRidgeW.write( topRidge );
-     cout << "done " << endl;
-     cout << "writing texture botRidge : " << flush;
-     Writer<TimeTexture<short> >  botRidgeW( "botRidge.tex" );
-     botRidgeW.write( botRidge );
-     cout << "done " << endl;*/
+//     cout << "writing texture topRidge : " << flush;
+//     Writer<TimeTexture<short> >  topRidgeW2( "topRidge2.tex" );
+//     topRidgeW2.write( topRidge );
+//     cout << "done " << endl;
+//     cout << "writing texture botRidge : " << flush;
+//     Writer<TimeTexture<short> >  botRidgeW2( "botRidge2.tex" );
+//     botRidgeW2.write( botRidge );
+//     cout << "done " << endl;
      
 
 
@@ -546,9 +667,9 @@ int main( int argc, const char** argv )
 	          poleDilation[0].item(i)=0;
      }
 
-//      cout << "writing texture poles : " << flush;
-//      Writer<TimeTexture<short> >  polesW( "poles.tex" );
-//      polesW.write( poleDilation );
+  /*    cout << "writing texture poles : " << flush;
+      Writer<TimeTexture<short> >  polesW( "poles.tex" );
+      polesW.write( poleDilation );*/
 
      cout << "OK" << endl;
 
@@ -605,10 +726,10 @@ int main( int argc, const char** argv )
      
      
      // TO BE COMMENTED OR UNCOMMENTED ACCORDING TO DEBUG
-     cout << "writing texture topRidgeConnected : " << flush;
-     Writer<TimeTexture<short> >  topRidgeConW( "topRidgeConnected.tex" );
-     topRidgeConW.write( topRidge );
-     cout << "done " << endl;
+//     cout << "writing texture topRidgeConnected : " << flush;
+//     Writer<TimeTexture<short> >  topRidgeConW( "topRidgeConnected.tex" );
+//     topRidgeConW.write( topRidge );
+//     cout << "done " << endl;
      // -------------------------------------------------
      
      if (botRidge[0].item(pS) == 0)
@@ -631,10 +752,10 @@ int main( int argc, const char** argv )
      botRidge=shortestExt.process(botRidge, surface, RIDGE_BOT, pN, pS);
      cout << "OK" << endl;
      // TO BE COMMENTED OR UNCOMMENTED ACCORDING TO DEBUG
-     cout << "writing texture botRidgeConnected : " << flush;
-     Writer<TimeTexture<short> >  botRidgeConW( "botRidgeConnected.tex" );
-     botRidgeConW.write( botRidge );
-     cout << "done " << endl;
+//     cout << "writing texture botRidgeConnected : " << flush;
+//     Writer<TimeTexture<short> >  botRidgeConW( "botRidgeConnected.tex" );
+//     botRidgeConW.write( botRidge );
+//     cout << "done " << endl;
      //--------------------------------------------------------------
      
      // Here the poles are removed from the ridges 

@@ -10,7 +10,7 @@ using namespace aims;
 using namespace std;
 using namespace carto;
 
-map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsigned> >    &neighbours,  int dep, float dist_thresh){
+std::map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsigned> >    &neighbours,  int dep, float dist_thresh){
 
   unsigned i;
   multimap<float,unsigned>    front1, front2;
@@ -114,7 +114,7 @@ map<uint,float> getDistMap( AimsSurfaceTriangle *mesh,  map<unsigned, set<unsign
 //   return distmap;
 // }
 
-vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uint> nodes, float dist_thresh){
+std::vector< std::map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uint> nodes, float dist_thresh){
   // SURFACIQUE DISTMAP
   map<unsigned, set<unsigned> >    neighbours;
   unsigned v1b, v2, v3;
@@ -151,38 +151,91 @@ vector<map<uint,float> > CalculeCarteDistances(AimsSurfaceTriangle mesh, set<uin
     }
   }
 
-//   uint temp=0;
-//   float rec;
-//   for (uint i=0;i<sites.size();i++){
-//     for (uint j=i;j<sites.size();j++) {
-//       if (sites[i]->subject != sites[j]->subject) {
-//         map<uint,float> dmap(distmap[sites[i]->node]);
-//         map<uint,float>::iterator distit = dmap.find(sites[j]->node);
-//         if (distit != dmap.end())
-//           rec = distit->second;
-//         else
-//           rec = 999.0;
-//         if ((rec < 20.0)&& !((sites[j]->tmin > sites[i]->tmax) || (sites[i]->tmin > sites[j]->tmax))) temp++;
-//       }
-//     }
-//   }
-//   cout << "TEMP:"<< temp << endl;
   return distmap;
 }
 
-map<float, vector<pair<float, uint> > > getAlternateMesh(AimsSurfaceTriangle &mesh, TimeTexture<float> &lat, TimeTexture<float> &longit){
-  set<uint> v;
-  // LECTURE DU MAILLAGE "ATLAS" ET CREATION DE LA STRUCTURE ALTERNATIVE
-  uint ns=mesh.vertex().size();
-  float x, y;
-  vector<set<uint> > polyVert(ns), polyVtmp(ns);
-  map<float, vector<pair<float, uint> > > mesh2;
-  for (uint imesh=0;imesh<ns;imesh++) {
-    
-    x=lat[0].item(imesh);
-    y=longit[0].item(imesh);
-    mesh2[x].push_back(pair<float,uint>(y,imesh));
-  }
-  return mesh2;
+std::map<float, std::vector<std::pair<float, uint> > > getAlternateMesh ( AimsSurfaceTriangle &mesh, 
+                                                                          TimeTexture<float> &lat, 
+                                                                          TimeTexture<float> &longit ) {
+    std::set<uint> v;
+    // LECTURE DU MAILLAGE "ATLAS" ET CREATION DE LA STRUCTURE ALTERNATIVE
+    uint ns = mesh.vertex().size();
+    float x, y;
+    std::vector< std::set<uint> > polyVert(ns), 
+                                polyVtmp(ns);
+    std::map<float, std::vector<std::pair<float, uint> > > mesh2;
+    for ( uint imesh = 0 ; imesh < ns ; imesh++ ) {
+        x = lat[0].item ( imesh );
+        y = longit[0].item ( imesh );
+        mesh2[x].push_back ( std::pair<float,uint>(y,imesh) );
+    }
+    return mesh2;
 }
 
+
+std::map<uint, float> LocalMeshDistanceMap ( AimsSurface<3,Void> *mesh,
+                                             const std::vector< std::set<unsigned> >    &neighbours,
+                                             uint max_node,
+                                             float ind ) {
+    unsigned i;
+    std::multimap<float,unsigned> front1, front2;
+    std::multimap<float,unsigned> *cfront = &front1, *nfront = &front2, *tmpf;
+    std::multimap<float,unsigned>::iterator    iv, fv;
+    std::set<unsigned> neigh_local;
+    std::set<unsigned>::const_iterator in, fn;
+    float d, d2, l;
+    Point3df pos;
+    float dist = 0;
+    std::map< uint, float > distances;
+    distances[max_node] = 0.0;
+    std::map<uint,float>::iterator it;
+    for ( it = distances.begin() ; it != distances.end() ; it++ )
+        if ( it->second == 0.0 )
+            front1.insert( std::pair<float,unsigned>( 0, (*it).first ) );
+
+    while( dist <= ind ) {
+        nfront->clear();
+        neigh_local.clear();
+
+        for( iv = cfront->begin(), fv = cfront->end() ; iv != fv ; ++iv ) {
+
+            i = (*iv).second;
+            d = (*iv).first;
+            for( in = neighbours[i].begin(), fn = neighbours[i].end() ; in != fn ; ++in ) {
+
+                //d2 = tex.item( *in );
+                if ( distances.find(*in) == distances.end() )
+                    distances[*in] = FLT_MAX;
+                d2 = distances[*in];
+
+                pos = mesh->vertex()[i] - mesh->vertex()[*in];
+                l = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
+
+                if( d2 > d + l ) {
+                    //tex.item( *in ) = d + l;
+                    distances[*in] = d+l;
+                    neigh_local.insert( *in );
+
+                    dist = distances [ *in ];
+                }
+
+            }
+
+        }
+
+        for ( in = neigh_local.begin(), fn = neigh_local.end() ; in != fn ; ++in )
+            nfront->insert( std::pair<float,unsigned>( distances[*in], *in ) );
+
+        tmpf = cfront;
+        cfront = nfront;
+        nfront = tmpf;
+    }
+
+    front1.clear();
+    front2.clear();
+    (*cfront).clear();
+    (*nfront).clear();
+    (*tmpf).clear();
+
+    return ( distances );
+}

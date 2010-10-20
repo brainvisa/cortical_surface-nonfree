@@ -11,8 +11,8 @@ using namespace std;
 
 
 
-vector<int> SWC::getCompConn(vector<uint> &indicesCliques, set<uint> &listeSites){
-  vector<int> comp(sites.size());
+std::vector<int> SWC::getCompConn(vector<uint> &indicesCliques, set<uint> &listeSites){
+  std::vector<int> comp(sites.size());
   uint blob0,blob1;
   Site *s0, *s1;
   int lcomp,nbcomp,aux;
@@ -128,15 +128,15 @@ long double ft(long double t){
   else return 1.0/7.0*t-2.0/7.0;
 }
 
-vector<uint> SWC::getCliquesTurnedOn(float temp, vector<uint> &indicesCliques){
-  vector<uint> turnedOn;
+std::vector<uint> SWC::getCliquesTurnedOn(float temp, vector<uint> &indicesCliques){
+  std::vector<uint> turnedOn;
 
   for (uint i=0;i<indicesCliques.size();i++){
     if (cliques[indicesCliques[i]].type == SIMILARITY){
 //       if(cliques[indicesCliques[i]].blobs[0]->label==cliques[indicesCliques[i]].blobs[1]->label){
       long double tirage = ((long double)UniformRandom() * 1.0);
 //         long double qe= exp(-((cliques[indicesCliques[i]].rec)*(temp+1)));
-      long double frect = frec(cliques[indicesCliques[i]].rec)*ft(cliques[indicesCliques[i]].blobs[0]->t)*ft(cliques[indicesCliques[i]].blobs[1]->t);
+      long double frect = frec(cliques[indicesCliques[i]].similarity)*ft(cliques[indicesCliques[i]].blobs[0]->t)*ft(cliques[indicesCliques[i]].blobs[1]->t);
       long double qe = (1-exp(-frect*temp)); //(1-exp(-1.0));
 //         if ((cliques[indicesCliques[i]].blobs[0]->t+cliques[indicesCliques[i]].blobs[1]->t)/2.0 < 5.0) qe=0.0;
 //         qe += 0.1 * (-1.0/20.0*cliques[indicesCliques[i]].rec+1.0);
@@ -174,7 +174,7 @@ long double SWC::getCompacite(set<uint> &comp, bool verb){
       if ((comp.find(index0) != comp.end() && index0 != *it) || (comp.find(index1) != comp.end() && index1 != *it))
         auxcliques.insert(cliquesDuSite[*it][i]);
     }
-        
+
     compac += 1.0-ft(sites[*it]->tValue);
     if (subj.find(sites[*it]->subject)!=subj.end()) penal=penal+1;
     subj.insert(sites[*it]->subject);
@@ -183,19 +183,19 @@ long double SWC::getCompacite(set<uint> &comp, bool verb){
 //   cout << "compsize:" << comp.size() << endl ;
 //   cout << "compac:" << compac << endl;
   for (it=auxcliques.begin();it!=auxcliques.end();it++)
-    rec += frec(cliques[*it].rec); // /10.0+0.9;
-  
+    rec += frec(cliques[*it].similarity); // /10.0+0.9;
+
   compac += -rec;
 //   cout << "rec:" << rec<< endl;
   compac += penal*100.0;
-  
+
   if (verb) cout << "[" << t << ";" << -rec << ";" << subj.size() << ";" << penal <<"]";
 //   compac *=10.0;
 //   compac /= (float)comp.size();
 //   compac *= ((float)subj.size()/(float)nbsujets);
 //   compac /= (float)penal;
 //   cout << "= "<< compac << " - " ;
-  
+
   return compac;
 
 }
@@ -208,13 +208,13 @@ void SWC::Run2(){
   vector<uint> indicesCliques, turnedOn;
   set<uint> indicesSet, listeSites;
   set<uint>::iterator it,it1,it2,it3;
-  FILE * f1;   f1 = fopen (recuitpath.data(),"w");
+  FILE * f1;   f1 = fopen (labelsPath.data(),"w");
   int ite=0,acc;
   for (uint i=0;i<cliques.size();i++)
     indicesCliques.push_back(i);
   for (uint i=0;i<sites.size();i++)
     listeSites.insert(i);
-  
+
 
   vector<int> auxcomp(getCompConn(indicesCliques, listeSites));
   vector<set<uint> > ssgraphes;
@@ -234,9 +234,9 @@ void SWC::Run2(){
     fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
   }
   fprintf(f1, "\n");
-  
 
-  
+
+
   while (temp>0.001){
 
     cout << " T=" << temp << " it="<< ite++ << " ssg:" << ssgraphes.size() << " "  <<endl;
@@ -268,7 +268,7 @@ void SWC::Run2(){
     }
     cout << endl;
     cout << allCC.size() << " composantes connexes - " ;
-    
+
     for (uint j=0;j<allCC.size();j++)
       if (allCC[j].size()>1)
         allCompConn.push_back(allCC[j]);
@@ -294,14 +294,14 @@ void SWC::Run2(){
       compacDist.push_back(som2);
     }
     cout << endl;
-    
-    
+
+
 //     ssgraphes.clear();
 //     for (uint i= 0;i<allCompConn.size();i++)
 //       if (allCompConn[i].size()>0)
 //         ssgraphes.push_back(allCompConn[i]);
 //
-      
+
 //     for (uint i0=0;i0<sites.size();i0++){
 //       int cc=-1;
 //       for (uint j=0;cc==-1 && j<allCompConn.size();j++)
@@ -311,12 +311,12 @@ void SWC::Run2(){
 //       fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, cc+1);
 //     }
 
-    
-    
+
+
 //     for (uint j=0;j<allCompConn.size();j++)
 //       if (allCompConn[j].size()>0)
 //         cout << allCompConn[j].size() << " ";
-   
+
     uint tir = (uint)((double)UniformRandom() * allCompConn.size());
     cout << "tirage:" << tir <<" @ " ;
     indicesSet.clear();
@@ -349,8 +349,8 @@ void SWC::Run2(){
         }
       }
 //     cout << graphesAdjacents.size() << endl;
-    
-    
+
+
     long double compacSSGraph=0.0, compacCompConn=0.0;
     vector<long double> compacDistrib;
     vector<long double> compacListe;
@@ -393,9 +393,9 @@ void SWC::Run2(){
     cout << endl;
 // //     cout << "somme : "<< somme << " " ;
 //     long double somme2=0.0;
-// 
+//
 // //     cout << somme << endl;
-// 
+//
 //     for (uint i=0;i<compacDistrib.size();i++){
 //       somme2 += compacDistrib[i]/somme;
 //       compacDistrib[i] = somme2;
@@ -405,10 +405,10 @@ void SWC::Run2(){
     cout << "=" ;
 
 
-    
+
     float tirage = (double)UniformRandom();
-// 
-//     
+//
+//
     int graphAdjFus=0, indiceSite=0;
     if (false){
     for (acc=0;(uint)acc<compacDistrib.size() && compacDistrib[acc]<tirage;acc++) {}
@@ -527,7 +527,7 @@ void SWC::Run2(){
         ASSERT(chksum3==sites.size());
       cout << chksum3 << "/" << sites.size() << endl;
     }
-// 
+//
     uint chksum=0;
     for (uint i=0;i<sites.size();i++)
       sites[i]->label=0;
@@ -544,7 +544,7 @@ void SWC::Run2(){
         }
         lab++;
       }
-        
+
 //       }
 
     }
@@ -576,13 +576,13 @@ void SWC::Run2(){
         sites[*it]->label= 120.0;
       }
     }
-      
+
   }
   for (uint i0=0;i0<sites.size();i0++){
     fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
   }
   fprintf(f1, "\n");
-  
+
   fclose(f1);
 
 }
@@ -594,7 +594,7 @@ void SWC::Run(){
   set<uint> nodes;
   uint cpt=0,ite=0;
 
-  FILE * f1;   f1 = fopen (recuitpath.data(),"w");
+  FILE * f1;   f1 = fopen (labelsPath.data(),"w");
 
   while (temp>0.1){
 
@@ -607,11 +607,11 @@ void SWC::Run(){
     set<uint> listeSites;
     vector<int> comp(getCompConn(indicesCliques, listeSites));
 
-      
+
     for (uint i=0;i<sites.size();i++)
       if (comp[i]<0) sites[i]->label=0;
       else  sites[i]->label = comp[i];
-      
+
     cpt=0;
     cout << sites.size() << " ";
     for (uint i0=0;cpt<sites.size();i0++){
@@ -635,7 +635,7 @@ void SWC::Run(){
         cout << "L" << labels[i0] << ":" << conn.size() << ";" << moy << ";" << tirage << ">" << qe << "-";
     }
 
-          
+
     for (uint i=0;i<sites.size();i++)
       if (comp[i]<0) sites[i]->label=0;
     else  sites[i]->label = comp[i];
@@ -644,11 +644,11 @@ void SWC::Run(){
       fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
     }
     fprintf(f1, "\n");
-    temp=temp*0.99; 
+    temp=temp*0.99;
     cout << endl;
   }
 
-  
+
   for (uint i=0;i<cliques.size();i++)
     cliques[i].updateLabelsCount();
   fclose(f1);
@@ -656,7 +656,7 @@ void SWC::Run(){
 }
 
 void SWC::Step(vector<int> &random, long double temp, uint &mod){
-  
+
   long double somme=0.0;
   int old;
   mod=0;
@@ -682,7 +682,7 @@ void SWC::Step(vector<int> &random, long double temp, uint &mod){
       globalenergieslabels[k] = somme2;
 
     }
-      
+
     long double tirage = ((long double)UniformRandom() * 1.0);
     uint acc;
     for (acc=0;acc<globalenergieslabels.size() && globalenergieslabels[acc]<tirage;acc++) ; //cout << globalenergieslabels[acc] << " " ;

@@ -52,7 +52,7 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
      uint ns=initmesh.vertex().size();
 
 
-     std::cerr << "Shortest Path In" << std::endl;
+//     std::cerr << "Shortest Path In" << std::endl;
 
      // ici on construit la carte de distance avec le fast marching à la cathier
 //      typedef std::vector<std::vector<std::size_t> > CNeighborhoods;
@@ -154,7 +154,7 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
           if (inext==i)
           {
                std::cerr << "ShortestPath->GraphPath<Val>::process : problem. There is no path between start and end included in the provided set" << std::endl;
-               Writer<TimeTexture<Val> > debugW("~/debugTex.tex");
+               Writer<TimeTexture<Val> > debugW("debugTex.tex");
                debugTex[0].item(dep)=value*3;
                debugTex[0].item(arr)=value*3;
                debugW.write(debugTex);
@@ -166,7 +166,7 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
           result[0].item(i)=(Val) value;
      }
      while (i!=dep);
-     std::cerr << "Shortest Path Out" << std::endl;
+//     std::cerr << "Shortest Path Out" << std::endl;
 
      return(result);
      
@@ -179,6 +179,7 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
 template<typename Val>
 float GraphPath<Val>::getLongueur(TimeTexture<Val> & tex, AimsSurfaceTriangle & initmesh, Val value, int dep, int arr)
 {
+	 longueur=0;
      process(tex, initmesh, value, dep, arr);
      return longueur;
 }

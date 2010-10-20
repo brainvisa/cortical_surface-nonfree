@@ -8,88 +8,9 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
-
-//##############################################################################
-
-// Function that extracts mesh patches from a "mesh", being given a "blobs" vector.
-//   Blobs as Ellipses (length = area, height = scale, etc..)
-
-AimsSurfaceTriangle getBlobsEllipsoidMeshes ( vector<surf::GreyLevelBlob *> &blobs ){
-  AimsSurfaceTriangle objects;
-
-  for (uint i = 0 ; i < blobs.size() ; i++){
-
-    cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
-    blobs[i]->getAimsEllipsoid ( );
-    objects[i] = blobs[i]->mesh;
-
-  }
-
-  cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
-  return objects;
-}
-
-//##############################################################################
-
-// Function that extracts mesh patches from a "mesh", being given a "blobs" vector.
-//   On a sphere version
-
-AimsSurfaceTriangle getBlobsSphericalMeshes ( vector<surf::GreyLevelBlob *> &blobs,
-                                     AimsSurface<3, Void> &mesh){
-  AimsSurfaceTriangle objects;
-
-  for (uint i = 0 ; i < blobs.size() ; i++){
-
-    cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
-    blobs[i]->getAimsPatchOnASphere(mesh);
-    objects[i] = blobs[i]->mesh;
-
-  }
-
-  cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
-  return objects;
-}
-
-
-//##############################################################################
-// Function that extracts mesh patches from a "mesh", being given a "blobs" vector.
-//   All mesh patches are flat, belong to a same plane, and their z varies with
-//   their scale
-AimsSurfaceTriangle getBlobs2DMeshes ( vector<surf::GreyLevelBlob *> &blobs,
-                                     AimsSurface<3, Void> &mesh ){
-    AimsSurfaceTriangle objects;
-
-    for (uint i = 0 ; i < blobs.size() ; i++){
-
-        cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
-        blobs[i]->getAimsPatchOnAPlane(mesh);
-        objects[i] = blobs[i]->mesh;
-
-    }
-
-    cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
-    return objects;
-}
-
-
-//##############################################################################
-
-// Function that extracts mesh patches from a "mesh", being given a "blobs" vector,
-//   and returning a collection of "objects" plus a vector of "nodes_lists".
-AimsSurfaceTriangle getBlobsMeshes ( vector<surf::GreyLevelBlob *> &blobs,
-                                     AimsSurface<3, Void> &mesh){
-    AimsSurfaceTriangle objects;
-
-    for (uint i = 0 ; i < blobs.size() ; i++){
-
-        cerr << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << " " << objects.size() << flush ;
-        blobs[i]->getAimsMeshPatch(mesh);
-        objects[i] = blobs[i]->mesh;
-
-    }
-
-    cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << blobs.size() << endl;
-    return objects;
+float compareSurfBlobsScales ( const surf::GreyLevelBlob *s1, const surf::GreyLevelBlob *s2 ) {
+    ASSERT(s1->scale != s2->scale);
+    return (s1->scale - s2->scale);
 }
 
 
@@ -123,7 +44,7 @@ AimsSurfaceTriangle getBlobsMeshes ( vector<surf::GreyLevelBlob *> &blobs,
 //       }
 //     }
 //   }
-// 
+//
 //   return objects;
 // }
 
@@ -199,67 +120,67 @@ AimsSurfaceTriangle getLabelObjectsOnASphere( TimeTexture<short> &tex,
     return objects;
 }
 
-AimsSurfaceTriangle getLabelObjectsOnAMesh( TimeTexture<short> &tex,
-                                AimsSurface<3,Void> &mesh,
-                                vector<set<int> > &nodes_lists){
-
-    int labelmax=0;
-    for (uint i=0;i<tex[0].nItem();i++){
-    if (tex[0].item(i)>labelmax)
-        labelmax=tex[0].item(i);
-    }
-    AimsSurfaceTriangle objects;
-    nodes_lists=vector<set<int> >(labelmax+1);
-    vector<set<uint> > triangles(labelmax+1);
-
-    set<uint>::iterator it;
-    set<uint> tri,comp;
-    uint p1,p2,p3;  int L1,L2,L3;
-
-    for (uint i=0;i<mesh.polygon().size();i++){
-        p1=mesh.polygon()[i][0];
-        p2=mesh.polygon()[i][1];
-        p3=mesh.polygon()[i][2];
-
-        L1=tex[0].item(p1); L2=tex[0].item(p2); L3=tex[0].item(p3);
-
-        if (L1==L2 || L1==L3)
-            triangles[L1].insert(i);
-        else if (L2==L3)
-            triangles[L2].insert(i);
-    }
-    vector<uint> corres;
-
-    for (uint i=0;i<triangles.size();i++){
-        tri = triangles[i];
-
-        comp.clear();
-        for (it=tri.begin();it!=tri.end();it++){
-            p1=mesh.polygon()[*it][0];
-            p2=mesh.polygon()[*it][1];
-            p3=mesh.polygon()[*it][2];
-            comp.insert(p1); comp.insert(p2); comp.insert(p3);
-        }
-        corres=vector<uint>(mesh.vertex().size());
-        for (it=comp.begin();it!=comp.end();it++){
-            assert(*it<corres.size());
-            assert(*it<mesh.vertex().size());
-            assert(i<nodes_lists.size());
-            (objects)[i].vertex().push_back(mesh.vertex()[*it]);
-            corres[*it]=(objects)[i].vertex().size()-1;
-            nodes_lists[i].insert(*it);
-
-        }
-        cout << (objects)[i].vertex().size() << endl;
-        for (it=tri.begin();it!=tri.end();it++){
-            p1=mesh.polygon()[*it][0];
-            p2=mesh.polygon()[*it][1];
-            p3=mesh.polygon()[*it][2];
-            (objects)[i].polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
-        }
-    }
-    return objects;
-}
+//AimsSurfaceTriangle getLabelObjectsOnAMesh( TimeTexture<short> &tex,
+//                                AimsSurface<3,Void> &mesh,
+//                                vector<set<int> > &nodes_lists){
+//
+//    int labelmax=0;
+//    for (uint i=0;i<tex[0].nItem();i++){
+//    if (tex[0].item(i)>labelmax)
+//        labelmax=tex[0].item(i);
+//    }
+//    AimsSurfaceTriangle objects;
+//    nodes_lists=vector<set<int> >(labelmax+1);
+//    vector<set<uint> > triangles(labelmax+1);
+//
+//    set<uint>::iterator it;
+//    set<uint> tri,comp;
+//    uint p1,p2,p3;  int L1,L2,L3;
+//
+//    for (uint i=0;i<mesh.polygon().size();i++){
+//        p1=mesh.polygon()[i][0];
+//        p2=mesh.polygon()[i][1];
+//        p3=mesh.polygon()[i][2];
+//
+//        L1=tex[0].item(p1); L2=tex[0].item(p2); L3=tex[0].item(p3);
+//
+//        if (L1==L2 || L1==L3)
+//            triangles[L1].insert(i);
+//        else if (L2==L3)
+//            triangles[L2].insert(i);
+//    }
+//    vector<uint> corres;
+//
+//    for (uint i=0;i<triangles.size();i++){
+//        tri = triangles[i];
+//
+//        comp.clear();
+//        for (it=tri.begin();it!=tri.end();it++){
+//            p1=mesh.polygon()[*it][0];
+//            p2=mesh.polygon()[*it][1];
+//            p3=mesh.polygon()[*it][2];
+//            comp.insert(p1); comp.insert(p2); comp.insert(p3);
+//        }
+//        corres=vector<uint>(mesh.vertex().size());
+//        for (it=comp.begin();it!=comp.end();it++){
+//            assert(*it<corres.size());
+//            assert(*it<mesh.vertex().size());
+//            assert(i<nodes_lists.size());
+//            (objects)[i].vertex().push_back(mesh.vertex()[*it]);
+//            corres[*it]=(objects)[i].vertex().size()-1;
+//            nodes_lists[i].insert(*it);
+//
+//        }
+//        cout << (objects)[i].vertex().size() << endl;
+//        for (it=tri.begin();it!=tri.end();it++){
+//            p1=mesh.polygon()[*it][0];
+//            p2=mesh.polygon()[*it][1];
+//            p3=mesh.polygon()[*it][2];
+//            (objects)[i].polygon().push_back(AimsVector<uint,3>(corres[p1],corres[p2],corres[p3]));
+//        }
+//    }
+//    return objects;
+//}
 
 //##############################################################################
 
@@ -294,51 +215,51 @@ AimsSurfaceTriangle getLinkMesh ( surf::GreyLevelBlob *glb1, surf::GreyLevelBlob
     }
 
 
-    cyl = SurfaceGenerator::cylinder(p1, p2, 0.1, 0.1, 10, true, true);
+    cyl = SurfaceGenerator::cylinder(p1, p2, 0.01, 0.01, 10, true, true);
     mesh[0] = (*cyl)[0];
 
     return mesh;
 }
 
+AimsSurfaceTriangle getLinkMesh ( surf::Blob *b1, surf::Blob * b2 ) {
+    AimsSurfaceTriangle mesh, *cyl;
+
+    Point3df    p1, p2;
+    p1 = b1->getBlobBarycenterFromMesh();
+    p2 = b2->getBlobBarycenterFromMesh();
+
+    cyl = SurfaceGenerator::cylinder(p1, p2, 0.01, 0.01, 10, true, true);
+    mesh[0] = (*cyl)[0];
+
+    return mesh;
+}
+
+
 AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
                                          surf::ScaleSpaceBlob *ssb2,
                                          int representation_mode = SPHERE ) {
     AimsSurfaceTriangle mesh, *cyl;
-    
+
     set<surf::GreyLevelBlob *> unsortedListGLB = ssb1->blobs;
-    set<surf::GreyLevelBlob *, ltBlobs> listGLB1, listGLB2;
+    set<surf::GreyLevelBlob *, ltSurfBlobs> listGLB1, listGLB2;
     set<surf::GreyLevelBlob *>::iterator itB;
-    set<surf::GreyLevelBlob *, ltBlobs>::iterator itB1, itB2;
-//     cout << "bifMesh" << endl;
+    set<surf::GreyLevelBlob *, ltSurfBlobs>::iterator itB1, itB2;
     for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
         listGLB1.insert(*itB);
     ASSERT( unsortedListGLB.size() == listGLB1.size() );
     unsortedListGLB = ssb2->blobs;
     for ( itB = unsortedListGLB.begin() ; itB != unsortedListGLB.end() ; itB ++ )
         listGLB2.insert(*itB);
-//     cout << ssb1->index << ":";
-//     for ( itB1 = listGLB1.begin(); itB1 != listGLB1.end() ; itB1++){
-//         cout << (*itB1)->scale << " " << flush;
-//     }
-//     cout << "/";
-//     cout << ssb2->index << ":";
-    for ( itB1 = listGLB2.begin(); itB1 != listGLB2.end() ; itB1++){
-        cout << (*itB1)->scale << " " << flush;
-    }
-//     cout << endl;
     ASSERT( unsortedListGLB.size() == listGLB2.size() );
-//     cout << ssb1->index << " " << ssb1->blobs.size() << " " << ssb1->tmin << "-" << ssb1->tmax << " " << ssb2->index << " " << ssb2->blobs.size() << " " << ssb2->tmin << "-" << ssb2->tmax << endl;
     if ( ssb2->tmin > ssb1->tmax  ) { // RELIER LE GLB MAX DE SSB1 AU GLB MIN DE SSB2
         itB1 = listGLB1.end();
         itB1--;
         itB2 = listGLB2.begin();
-//         cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
     }
     else if ( ssb1->tmin > ssb2->tmax ) { // RELIER LE GLB MIN DE SSB1 AU GLB MAX DE SSB2
         itB1 = listGLB2.end();
         itB1--;
         itB2 = listGLB1.begin();
-//         cout << (*itB1)->scale << " " << (*itB2)->scale << endl;
     }
     else {
         ASSERT(false);
@@ -370,11 +291,11 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
             p1 = glb1->getBlobBarycenterFromMesh();
             p2 = glb2->getBlobBarycenterFromMesh();
         break;
-        
+
     }
     cyl = SurfaceGenerator::cylinder(p1, p2, 0.5, 0.5, 10, true, true);
     mesh[0] = (*cyl)[0];
-    
+
     return mesh;
 }
 
@@ -383,7 +304,6 @@ AimsSurfaceTriangle getBifurcationMesh ( surf::ScaleSpaceBlob *ssb1,
 
 AimsSurfaceTriangle getG2GRelationsMeshes ( vector< pair<surf::GreyLevelBlob *, surf::GreyLevelBlob *> > &blobsPairs,
                                             int representation_mode ) {
-    
     AimsSurfaceTriangle meshes;
 
     for ( uint i = 0 ; i < blobsPairs.size() ; i ++ ) {
@@ -395,13 +315,13 @@ AimsSurfaceTriangle getG2GRelationsMeshes ( vector< pair<surf::GreyLevelBlob *, 
         meshes[i] = linkMesh[0];
     }
     ASSERT( meshes.size() == blobsPairs.size() );
-    cout << "G2GRelationMeshes : " << meshes.size() << flush;
+    std::cout << "  " << meshes.size() << " meshes created" << std::endl;
     return meshes;
 }
 
 AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector< pair< surf::ScaleSpaceBlob *, surf::ScaleSpaceBlob *> > &bifurcPairs,
                                             int representation_mode ) {
-    
+
     AimsSurfaceTriangle meshes, linkMesh;
     uint j = 0;
     set<uint>::iterator it;
@@ -412,6 +332,23 @@ AimsSurfaceTriangle getBifurcationRelationsMeshes ( vector< pair< surf::ScaleSpa
         linkMesh = getBifurcationMesh( ssb1, ssb2, representation_mode );
         meshes[i] = linkMesh[0];
     }
-    cout << "bifurcationRelationsMeshes : " << meshes.size() << endl;
+    cout << "  " << meshes.size() << " meshes created" << endl;
+    return meshes;
+}
+
+AimsSurfaceTriangle getB2BRelationsMeshes ( std::vector<surf::Clique> &cliques, int representation_mode ) {
+
+    AimsSurfaceTriangle meshes;
+
+    for ( uint i = 0 ; i < cliques.size() ; i ++ ) {
+        surf::ScaleSpaceBlob *ssb1, *ssb2;
+        ssb1 = cliques[i].ssb1;
+        ssb2 = cliques[i].ssb2;
+        AimsSurfaceTriangle linkMesh;
+        linkMesh = getLinkMesh( ssb1, ssb2 );
+        meshes[i] = linkMesh[0];
+    }
+    ASSERT( meshes.size() == cliques.size() );
+    cout << "  " << meshes.size() << " meshes created" << endl;
     return meshes;
 }

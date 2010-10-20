@@ -2,7 +2,7 @@
 #include <aims/io/writer.h>
 #include <aims/getopt/getopt2.h>
 #include <aims/mesh/texture.h>
-#include "gyri_parameterization.h"
+#include <cortical_surface/surfacereferential/gyri/gyri_parameterization.h>
 
 using namespace aims;
 using namespace std;
@@ -24,7 +24,7 @@ int main( int argc, const char** argv )
    //
    // Parser of options
    //
-      AimsApplication app( argc, argv, "Paramétrisation de la surface corticale à partir d'une parcellisation en gyri");
+      AimsApplication app( argc, argv, "ParamÃ©trisation de la surface corticale Ã  partir d'une parcellisation en gyri");
       app.addOption( meshfile, "-i", "inputMesh");
       app.alias( "--inMesh", "-i" );
       app.addOption( intexfile, "-t", "gyral parcellation inputTexture");

@@ -28,5 +28,7 @@ PSUBDIRS = AimsConstraintCleaner \
   AimsPlotCoordinatesOnMesh \ 
   PlotFociForValidation \
   AimsCoordinatesToIndex \
-  AimsGyriRegularization
+  AimsGyriRegularization \
+  AimsGroupGyri
+  
 

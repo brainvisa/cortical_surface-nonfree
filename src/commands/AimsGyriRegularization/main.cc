@@ -50,11 +50,11 @@ int main( int argc, const char** argv )
      app.alias( "--in", "-i" );
      app.addOption( fileOut, "-o", "output gyri texture" );
      app.alias( "--out", "-o" );
-     app.addOption( weight, "-w", "data-driven term weight", 1.0);
+     app.addOption( weight, "-w", "data-driven term weight", 0.1);
      app.alias( "--weight", "-w" );
      app.addOption( opti, "-a", "annealing (0=no, ICM; 1=yes", 1);
      app.alias( "--anneal", "-a");
-     app.addOption(smooth, "-s", "Smoothing of probability maps (default=80)", 80);
+     app.addOption(smooth, "-s", "Smoothing of probability maps (default=80)", 50);
      app.alias( "--smooth", "-s");
      app.initialize();
 
@@ -71,6 +71,9 @@ int main( int argc, const char** argv )
      texGyriR >> texGyriF;
      cout << "done " << endl;
      
+     float T0=100.0;
+     float kT=0.999;
+
      uint size=surface.vertex().size();
 
      // Somebody tell me why gyri are in float textures !!!
@@ -127,7 +130,7 @@ int main( int argc, const char** argv )
      maxW << normalMax ;
 
  	GyriRegularization regul(surface, texGyri, normalMax, weight, smooth);
- 	if (opti==1) regul.runAnnealing(2000.0, 0.999);
+ 	if (opti==1) regul.runAnnealing(T0, kT);
  	else regul.runICM();
 
 // 	regul.debugCliques();

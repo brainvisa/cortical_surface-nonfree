@@ -1,14 +1,16 @@
 #ifndef AIMS_FUNCTION_PROJECTION_H
 #define AIMS_FUNCTION_PROJECTION_H
 
-using namespace aims;
-using namespace carto;
-using namespace std;
-using namespace aims::meshdistance;
+#include <aims/io/reader.h>
+#include <aims/mesh/texture.h>
+#include <aims/getopt/getopt2.h>
 
-vector<AimsData<float> > load_kernel(string path);
+std::vector< AimsData<float> > load_kernel( std::string path );
 
-Texture<float> deconvolve(AimsData<float> inFuncData, vector<AimsData<float> > &kernel, AimsSurfaceTriangle mesh);
-
+TimeTexture<float> deconvolve ( AimsData<float> inFuncData, 
+                            const std::vector< AimsData<float> > & kernel, 
+                            AimsSurfaceTriangle mesh,
+			    bool verbose = false );
+ 
 #endif
 
