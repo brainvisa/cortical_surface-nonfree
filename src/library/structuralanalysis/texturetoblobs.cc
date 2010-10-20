@@ -549,7 +549,7 @@ void addScaleSpaceBlobsToGraph ( Graph *graph,
         vert = graph->addVertex("ssb");
 
         vert->setProperty( "label", "0");
-        assert(ssblobs[i]->nodes.size() != 0);
+        //assert(ssblobs[i]->nodes.size() != 0);
         vert->setProperty( "nodes", set2vector(ssblobs[i]->nodes));
         vert->setProperty( "t", ssblobs[i]->t);
         vert->setProperty( "subject", ssblobs[i]->subject);
