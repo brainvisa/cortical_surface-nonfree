@@ -29,10 +29,10 @@ surf::Region::Region( SubjectData *subject, std::vector<uint> &gyrusVertices  ) 
 
     this->subject = subject;
 
-    nodes = vector<uint>( gyrusVertices );
+    nodes = std::vector<uint>( gyrusVertices );
 
 //    vector<uint> corres;
-    map<unsigned, set< pair<unsigned,float> > > globalWeightLapl = AimsMeshWeightFiniteElementLaplacian ( *(subject->mesh), 0.98 );
+    std::map<unsigned, std::set< std::pair<unsigned,float> > > globalWeightLapl = AimsMeshWeightFiniteElementLaplacian ( *(subject->mesh), 0.98 );
 	// Extracting the gyrus mesh
 	AimsSurfaceTriangle gyrusMesh ( getGyrusMesh ( *(subject->mesh), gyrusVertices, corres ) ) ;
 
