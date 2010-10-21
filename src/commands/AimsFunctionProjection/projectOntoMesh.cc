@@ -49,13 +49,13 @@ TimeTexture<float> deconvolve ( AimsData<float> inFuncData,
     for ( uint timepoint = 0 ; timepoint < inFuncData.dimT() ; timepoint++ ) {
 	std::cout << timepoint << "/" << inFuncData.dimT() << std::endl;
 	for ( uint i = 0 ; i < kernel.size() ; i++ ) {
-	    Point3df p ( mesh[0].vertex()[i] );
-	    Point3d nearest_voxel( (int) ( ( p[0] + ( vsizeX/2.0 ) ) / vsizeX ),
-				(int) ( ( p[1] + ( vsizeY/2.0 ) ) / vsizeY ),
-				(int) ( ( p[2] + ( vsizeZ/2.0 ) ) / vsizeZ) );
-	    for ( int x = -size/2, x0 = 0 ; x <= size/2 ; x++, x0++ ) {
+      Point3df p ( mesh[0].vertex()[i] );
+      Point3d nearest_voxel( (int) ( ( p[0] + ( vsizeX/2.0 ) ) / vsizeX ),
+                             (int) ( ( p[1] + ( vsizeY/2.0 ) ) / vsizeY ),
+                             (int) ( ( p[2] + ( vsizeZ/2.0 ) ) / vsizeZ) );
+      for ( int x = -size/2, x0 = 0 ; x <= size/2 ; x++, x0++ ) {
 		for ( int y = -size/2, y0 = 0 ; y <= size/2 ; y++, y0++ ) {
-		    for ( int z = -size/2, z0 = 0 ; z <= size/2 ; z++, z0++ ) {
+          for ( int z = -size/2, z0 = 0 ; z <= size/2 ; z++, z0++ ) {
 			Point3d vxl ( nearest_voxel );
 			vxl += Point3d ( x, y, z );
 			assert( x0 < size && y0 < size && z0 < size );
@@ -66,7 +66,6 @@ TimeTexture<float> deconvolve ( AimsData<float> inFuncData,
 			
 			int Zoffset =  0; // - (int)(26.0/vsizeZ) ;
 
-<<<<<<< .mine
 			//assert( vxl[0] >= 0 );
 			//assert( vxl[1] >= 0 );
 			//assert( vxl[2] + Zoffset >= 0 );
@@ -76,61 +75,22 @@ TimeTexture<float> deconvolve ( AimsData<float> inFuncData,
 			//    std::cout << vxl[2] << " " << inFuncData.dimZ() << std::endl;
 			//assert( vxl[2] + Zoffset < inFuncData.dimZ() );
 			if ( vxl[0] >= 0 && 
-				vxl[1] >= 0 &&
-				vxl[2] >= 0 &&
-				vxl[2] + Zoffset >= 0 &&
-				vxl[0] < inFuncData.dimX() &&
-				vxl[1] < inFuncData.dimY() &&
-				vxl[2] + Zoffset < inFuncData.dimZ() ) {
+                 vxl[1] >= 0 &&
+                 vxl[2] >= 0 &&
+                 vxl[2] + Zoffset >= 0 &&
+                 vxl[0] < inFuncData.dimX() &&
+                 vxl[1] < inFuncData.dimY() &&
+                 vxl[2] + Zoffset < inFuncData.dimZ() ) {
 			    
-			    tex[timepoint].item(i) += kernel[i] ( x0, y0, z0, 0 ) * inFuncData ( vxl[0], vxl[1], vxl[2] + Zoffset, timepoint );
+              tex[timepoint].item(i) += kernel[i] ( x0, y0, z0, 0 ) * inFuncData ( vxl[0], vxl[1], vxl[2] + Zoffset, timepoint );
 			}
 			else {
-			    if ( verbose )
+              if ( verbose )
 				std::cout << "Problem accessing the volume data (" << vxl << ")" << std::endl;
 			}
-		    }
+          }
 		}
-	    }
-	}		
-=======
-    for ( uint i = 0 ; i < kernel.size() ; i++ ) {
-        Point3df p ( mesh[0].vertex()[i] );
-        Point3d nearest_voxel( (int) ( ( p[0] + ( vsizeX/2.0 ) ) / vsizeX ),
-			    (int) ( ( p[1] + ( vsizeY/2.0 ) ) / vsizeY ),
-			    (int) ( ( p[2] + ( vsizeZ/2.0 ) ) / vsizeZ) );
-        for ( int x = -size/2, x0 = 0 ; x <= size/2 ; x++, x0++ ) {
-            for ( int y = -size/2, y0 = 0 ; y <= size/2 ; y++, y0++ ) {
-                for ( int z = -size/2, z0 = 0 ; z <= size/2 ; z++, z0++ ) {
-                    Point3d vxl ( nearest_voxel );
-                    vxl += Point3d ( x, y, z );
-                    assert( x0 < size && y0 < size && z0 < size );
-                    if (vxl[0]<0) {
-                        std::cout << vxl << std::endl;
-                    }
-                    
-                    
-                    int Zoffset =  0; 
-
-                    // introduction of an offset in Z to cope with partial brain acquisitions
-                                        
-                    if ( vxl[0] >= 0 && 
-                            vxl[1] >= 0 &&
-                            vxl[2] >= 0 &&
-                            vxl[2] + Zoffset >= 0 &&
-                            vxl[0] < inFuncData.dimX() &&
-                            vxl[1] < inFuncData.dimY() &&
-                            vxl[2] + Zoffset < inFuncData.dimZ() ) {
-                        
-                        tex.item(i) += kernel[i] ( x0, y0, z0, 0 ) * inFuncData ( vxl[0], vxl[1], vxl[2] + Zoffset, 0 );
-                    }
-                    else {
-                        std::cout << "Problem accessing the volume data" << std::endl;
-                    }
-                }
-            }
-        }
->>>>>>> .r39575
-    }
+      }
+	}
     return tex;
 }
