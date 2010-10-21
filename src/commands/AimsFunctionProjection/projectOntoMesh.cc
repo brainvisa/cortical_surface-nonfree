@@ -92,5 +92,6 @@ TimeTexture<float> deconvolve ( AimsData<float> inFuncData,
 		}
       }
 	}
+	}
     return tex;
 }
