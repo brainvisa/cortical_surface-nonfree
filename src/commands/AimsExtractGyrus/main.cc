@@ -410,7 +410,54 @@ int main( int argc, const char** argv )
    texName=fileOut+"_lat.tex";
    Writer<TimeTexture<float> > latW(texName);
    latW << latG;
-   cout << "Finished." << endl;
+
+   std::cout << "Computing various curvatures" << std::endl;
+   TimeTexture<float> normalMean(1, ng), normalMax(1, ng), normalMin(1, ng), normalGauss(1, ng);
+   std::vector<std::set<uint> >  neighG = SurfaceManip::surfaceNeighbours(surfaceG);
+   surfaceG.updateNormals();
+
+   for (i=0; i<ng; i++)
+   {
+	   float nk=0.0;
+	   std::set<uint> voisins=neighG[i];
+	   std::set<uint>::iterator vGIt=voisins.begin();
+	   float nx, ny, nz, vx, vy, vz;
+	   float maxk=-100.0;
+	   float mink=100.0;
+	   for ( ; vGIt != voisins.end(); vGIt++)
+	   {
+		   nx=((surfaceG.normal())[i])[0];
+		   ny=((surfaceG.normal())[i])[1];
+		   nz=((surfaceG.normal())[i])[2];
+		   vx=((surfaceG.vertex())[*vGIt])[0] - ((surfaceG.vertex())[i])[0];
+		   vy=((surfaceG.vertex())[*vGIt])[1] - ((surfaceG.vertex())[i])[1];
+		   vz=((surfaceG.vertex())[*vGIt])[2] - ((surfaceG.vertex())[i])[2];
+		   float k=(float) 2*((nx*vx)+(ny*vy)+(nz*vz))/float(vx*vx + vy*vy + vz*vz);
+		   if (k>maxk) maxk=k;
+		   if (k<mink) mink=k;
+		   nk+=k;
+	   }
+	   nk /= (float)voisins.size();
+	   normalMean[0].item(i)=nk;
+	   normalMax[0].item(i)=maxk;
+	   normalMin[0].item(i)=mink;
+	   normalGauss[0].item(i)=mink*maxk;
+    }
+   std::cout << "Saving textures" << std::endl;
+   texName=fileOut+"_k1.tex";
+   Writer<TimeTexture<float> > k1W(texName);
+   k1W << normalMin;
+   texName=fileOut+"_k2.tex";
+   Writer<TimeTexture<float> > k2W(texName);
+   k2W << normalMax;
+   texName=fileOut+"_H.tex";
+   Writer<TimeTexture<float> > HW(texName);
+   HW << normalMean;
+   texName=fileOut+"_G.tex";
+   Writer<TimeTexture<float> > GW(texName);
+   GW << normalGauss;
+
+    cout << "Finished." << endl;
 
    return EXIT_SUCCESS;
 
