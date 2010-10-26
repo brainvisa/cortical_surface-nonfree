@@ -76,7 +76,8 @@ namespace TextureToBlobs {
                                               GroupData & data,
                                               std::vector<uint> &clusters,
                                               std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs,
-                                              float clustering_distance_threshold = -1.0) ;
+                                              float clustering_distance_threshold = -1.0, 
+                                              std::string outputTextFile = "/tmp/blobsCountTable.py") ;
 
     void computeBlobsDispersion( std::vector<surf::ScaleSpaceBlob *> & ssblobs );
 

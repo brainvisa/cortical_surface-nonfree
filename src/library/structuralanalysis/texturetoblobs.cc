@@ -1289,11 +1289,12 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
                                    GroupData & data,
                                    std::vector<uint> &clusters,
                                    std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs,
-                                   float clustering_distance_threshold ) {
+                                   float clustering_distance_threshold,
+                                   std::string outputTextFile ) {
 
 
                 FILE *f1;
-                f1 = fopen ( "/tmp/blobsCountTable.py", "a" );
+                f1 = fopen ( outputTextFile.data(), "a" );
                 std::map<std::string, SubjectData *>::iterator it;
                 it = data.begin();
                 fprintf(f1, "charac_clusters[\'%s\'][%.3f] = {}\n", it->first.data(), clustering_distance_threshold );
