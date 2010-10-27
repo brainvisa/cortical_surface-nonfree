@@ -31,10 +31,6 @@ namespace surf {
             Texture<float> getGlobalTexture( float background_value );
             Texture<float> getGlobalFromLocalTexture( Texture<float> &corticalTex, float background_value = 0.0 );
             Texture<float> getLocalFromGlobalTexture ( Texture<float> &corticalTex );
-
-
-
-
     };
 }
 

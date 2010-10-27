@@ -11,12 +11,15 @@ enum typesRepresentation {
     RAW, SPHERE, FLAT, NODES_BARYCENTERS
 };
 
-namespace surf{
+namespace surf {
 
     class Blob{
         public:
             int index;
             std::set<int> nodes;
+            std::string subject;
+            float t;
+
             std::map<int, std::vector<float> > coordinates;
             std::map<int, std::vector<float> > raw_coordinates;
             AimsSurface<3, Void> mesh;
@@ -44,10 +47,8 @@ namespace surf{
 
     class GreyLevelBlob: public Blob {
         public :
-            float t;
             float scale;
             int label;
-            std::string subject;
 
             surf::ScaleSpaceBlob *ssb_parent;
 

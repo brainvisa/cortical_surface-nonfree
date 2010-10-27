@@ -20,11 +20,6 @@ enum graphMode {
 namespace TextureToBlobs {
 
     std::set<int> getFilteringNodes( SubjectData & subject );
-
-    void filterBlobs ( SubjectData & subject,
-    		std::vector<surf::ScaleSpaceBlob *> & ssblobs,
-            std::vector<surf::GreyLevelBlob *> & filteredBlobs,
-            std::vector<surf::ScaleSpaceBlob *> & filteredSsblobs ) ;
     
     void getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
                                 SubjectData &subject,
@@ -35,7 +30,17 @@ namespace TextureToBlobs {
                                 std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                 std::map<int, std::set<int> > &listGLBindices,
                                 bool initNull );
-
+    
+    void BlobsFromLabelTexture ( std::vector<surf::Blob *> &blobs,
+                                 SubjectData &subject );
+    
+    void BlobsFromLabelTextureGlobalMode ( std::vector<surf::Blob *> &blobs,
+                                           SubjectData &subject ); 
+    
+    void BlobsFromLabelTextureRegionMode ( std::vector<surf::Blob *> &blobs,
+                                           surf::Region &region,
+                                           SubjectData &regionData );
+    
     void RecoverBlobsFromIndividualGraph( Graph *graph,
             SubjectData &subject,
             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
@@ -67,6 +72,7 @@ namespace TextureToBlobs {
             std::vector<surf::Clique> &cliques );
 
     void DestroyBlobs ( std::vector<surf::ScaleSpaceBlob *> &ssblobs ) ;
+    void DestroyBlobs ( std::vector<surf::Blob *> &blobs ) ;
     
     std::vector<uint> getClustersListsFromGLB ( std::vector< surf::GreyLevelBlob *> &blobs, 
                                                   GroupData &data,
@@ -78,8 +84,6 @@ namespace TextureToBlobs {
                                               std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs,
                                               float clustering_distance_threshold = -1.0, 
                                               std::string outputTextFile = "/tmp/blobsCountTable.py") ;
-
-    void computeBlobsDispersion( std::vector<surf::ScaleSpaceBlob *> & ssblobs );
 
     double getOverlapMeasure( Point2df bbmin1, Point2df bbmax1, Point2df bbmin2, Point2df bbmax2, uint *no_overlap );
 
