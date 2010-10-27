@@ -496,7 +496,6 @@ void addBlobsToGraph ( Graph *graph,
         std::cout << "      ░░░ mode AimsMesh ░░░     " << std::endl;
         for ( uint i = 0 ; i < blobs.size() ; i++ )
             blobs[i]->getAimsMesh ( *(subject.mesh) );
-
     }
 
     std::cout << "════ Adding grey-level blobs..." << endl;
