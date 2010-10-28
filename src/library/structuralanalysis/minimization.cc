@@ -145,6 +145,7 @@ void SurfaceBased_StructuralAnalysis::Initialization( bool initLabel ){
         sites[i]->label = labels[0];
     }
     else {
+      std::cout << "No label initialization" << std::endl;
       for ( uint i = 0 ; i < sites.size() ; i++ )
           std::cout << sites[i]->label << " " << std::flush;
     }

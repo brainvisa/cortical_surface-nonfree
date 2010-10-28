@@ -28,8 +28,6 @@ class Clique{
                 case DATADRIVEN:
                     ASSERT( blobs.size() == 1 );
                     if ( blobs[0]->label != 0 ){
-
-                        
                         if ( energy > ddx1 )
                             energy = ddh;
                         else if ( energy < ddx2 )
@@ -44,14 +42,14 @@ class Clique{
                     energy *= CLIQUESNBSUJETS;
 
                 break;
-                    // case BESTLOWERSCALE:
-                    //     ASSERT(blobs.size()==1);
-                    //     if (blobs[0]->label != 0)
-                    //     energy = lsweight * blobs[0]->trep;
-                    //     else
-                    //     energy = 0.0;
-                    //     energy *= CLIQUESNBSUJETS;
-                    //     break;
+                case BESTLOWERSCALE:
+                    ASSERT(blobs.size()==1);
+                    if (blobs[0]->label != 0)
+                    energy = lsweight * blobs[0]->trep;
+                    else
+                    energy = 0.0;
+                    energy *= CLIQUESNBSUJETS;
+                    break;
                 case INTRAPRIMALSKETCH:
                     energy = 0;
                     for ( uint i = 1 ; i < labelscount.size() ; i++ ) {
@@ -65,12 +63,13 @@ class Clique{
                 case SIMILARITY:
                     ASSERT( blobs.size() == 2 );
                     if ( blobs[0]->label == blobs[1]->label && blobs[0]->label != 0 ) {
-                        if ( distance < simx2 )
+                        // ATENTION MODE OVERLAP (INVERSE DE DIST)
+                        if ( distance > simx2 )
                             energy = -1.0;
-                        else if ( distance > simx1 )
+                        else if ( distance < simx1 )
                             energy = 0.0;
                         else 
-                            energy = (- 1.0) / (simx2 - simx1) * ( distance - simx2 ) - 1.0;
+                            energy = (- 1.0) / (simx1 - simx2) * ( distance - simx1 ) - 1.0;
 
                         energy *= simweight;
                     }
@@ -111,12 +110,12 @@ class Clique{
                         energy = - energie;
 //                    energy = 0.0;
                 break;
-                    // case BESTLOWERSCALE:
-                    //     if (old == 0 && blobs[0]->label != 0)
-                    //     energy = computeEnergy(false, CLIQUESNBSUJETS);
-                    //     else if (old != 0 && blobs[0]->label == 0)
-                    //     energy = -energie;
-                    //     break;
+                case BESTLOWERSCALE:
+                    if (old == 0 && blobs[0]->label != 0)
+                    energy = computeEnergy(false, CLIQUESNBSUJETS);
+                    else if (old != 0 && blobs[0]->label == 0)
+                    energy = -energie;
+                    break;
                 case SIMILARITY:
                     ASSERT((uint)blobs.size()==2);
                         // ASSERT(((uint)blobs[0]->index == (uint)node || (uint)blobs[1]->index == (uint)node));
@@ -239,9 +238,10 @@ class Clique{
 
 double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bbmax2, uint *no_overlap);
 
-void BuildMaximalOrderCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
-void BuildDataDrivenCliques(std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
-void BuildGlobalClique( std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques );
+void BuildMaximalOrderCliques ( std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
+void BuildDataDrivenCliques ( std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
+void BuildGlobalClique ( std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques );
+void BuildLowerScaleCliques ( std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques );
 
 
 

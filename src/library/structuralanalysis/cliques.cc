@@ -257,20 +257,30 @@ void BuildMaximalOrderCliques ( vector<Site *> &sites,
 }
 
 
-void BuildDataDrivenCliques( vector<Site *> &sites,
-                                  vector<vector<int> > &cliquesDuSite,
-                                  vector<Clique> &cliques ) {
+void BuildDataDrivenCliques ( std::vector <Site *> &sites,
+                              std::vector < std::vector<int> > &cliquesDuSite,
+                              std::vector < Clique > &cliques ) {
 
-  for ( uint i = 0 ; i < sites.size() ; i++ ){
-      Clique c;
-      c.type = DATADRIVEN; /*ls.type = BESTLOWERSCALE;*/
-      cliquesDuSite[ sites[i]->index ].push_back( cliques.size() );
-      c.blobs.push_back( sites[i] );
-      cliques.push_back( c );
-        // cliquesDuSite[sites[i]->index].push_back(cliques.size());
-        // ls.blobs.push_back(sites[i]);
-        // cliques.push_back(ls);
-  }
+    for ( uint i = 0 ; i < sites.size() ; i++ ){
+        Clique c;
+        c.type = DATADRIVEN;
+        cliquesDuSite[ sites[i]->index ].push_back( cliques.size() );
+        c.blobs.push_back( sites[i] );
+        cliques.push_back( c );
+    }
+}
+
+void BuildLowerScaleCliques ( std::vector < Site *> &sites,
+                              std::vector < std::vector<int> > &cliquesDuSite,
+                              std::vector < Clique > &cliques ) {
+
+    for ( uint i = 0 ; i < sites.size() ; i++ ){
+        Clique ls;
+        ls.type = BESTLOWERSCALE;
+        cliquesDuSite[ sites[i]->index ].push_back( cliques.size() );
+        ls.blobs.push_back( sites[i] );
+        cliques.push_back( ls);
+    }
 }
 
 void BuildGlobalClique( vector<Site *> &sites,

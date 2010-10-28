@@ -111,6 +111,7 @@ class SurfaceBased_StructuralAnalysis {
             BuildGlobalClique( this->sites, this->cliquesDuSite, this->cliques );
             BuildDataDrivenCliques( this->sites, this->cliquesDuSite, this->cliques );
             BuildMaximalOrderCliques( this->sites, this->cliquesDuSite, this->cliques );
+            BuildLowerScaleCliques( this->sites, this->cliquesDuSite, this->cliques );
 
             for ( uint i = 0 ; i < this->cliques.size() ; i++ ) {
                 if ( this->cliques[i].type == INTRAPRIMALSKETCH )
