@@ -29,6 +29,7 @@ PSUBDIRS = AimsConstraintCleaner \
   PlotFociForValidation \
   AimsCoordinatesToIndex \
   AimsGyriRegularization \
-  AimsGroupGyri
+  AimsGroupGyri \
+  AimsGeodesicPath
   
 
