@@ -126,7 +126,7 @@ namespace surf {
                 //else
                     //similarity = - 0.5 * (distance-3.0) +1.0;}
                     //similarity = - 1.0 / (threshold - alpha) * (distance - alpha) + 1.0;
-                    //similarity = 
+                    //similarity =
             }
 
     };
@@ -139,7 +139,7 @@ namespace surf {
             Bifurcation ( std::set<ScaleSpaceBlob *> &s1, std::set< ScaleSpaceBlob *> &s2, std::string _type){topBlobs = std::set<ScaleSpaceBlob *>(s1); bottomBlobs = std::set<ScaleSpaceBlob *>(s2); type = _type;}
 
     };
-    
+
 
 }
 

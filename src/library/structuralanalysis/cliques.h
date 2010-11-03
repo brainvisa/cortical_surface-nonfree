@@ -45,7 +45,7 @@ class Clique{
                 case BESTLOWERSCALE:
                     ASSERT(blobs.size()==1);
                     if (blobs[0]->label != 0)
-                    energy = lsweight * blobs[0]->trep;
+                    energy = lsweight * (blobs[0]->tmax + blobs[0]->tmin) / 2.0;
                     else
                     energy = 0.0;
                     energy *= CLIQUESNBSUJETS;
@@ -68,7 +68,7 @@ class Clique{
                             energy = -1.0;
                         else if ( distance < simx1 )
                             energy = 0.0;
-                        else 
+                        else
                             energy = (- 1.0) / (simx1 - simx2) * ( distance - simx1 ) - 1.0;
 
                         energy *= simweight;
@@ -176,7 +176,7 @@ class Clique{
 
                             if ( k < blobs.size() )
                                 energy += 0.0;
-                            else 
+                            else
                                 energy += _globalweight;
                         }
 
@@ -199,9 +199,9 @@ class Clique{
                     if (save){
                         if ( k == blobs.size() )
                             subjectscount[old].erase(blobs[j]->subject);
-                        
+
                         subjectscount[blobs[j]->label].insert(blobs[j]->subject);
-                        
+
                     }
                 break;
             }
@@ -213,26 +213,26 @@ class Clique{
 
         void updateSubjectsCount();
 
-        static void setParameters ( float _ddweight, 
-                                    float _intrapsweight, 
-                                    float _simweight, 
-                                    float _lsweight, 
-                                    float _ddx2, 
-                                    float _ddx1, 
+        static void setParameters ( float _ddweight,
+                                    float _intrapsweight,
+                                    float _simweight,
+                                    float _lsweight,
+                                    float _ddx2,
+                                    float _ddx1,
                                     float _simx1,
                                     float _simx2,
-                                    float _ddh, 
+                                    float _ddh,
                                     float _globalweight );
 
         static float getIntraPSWeight() { return intrapsweight; }
-        Clique() { 
-            type = UNKNOWN; 
-            energie = 0.0; 
-            blobs = std::vector<Site *>(); 
-            labelscount = std::map<int,uint>();  
+        Clique() {
+            type = UNKNOWN;
+            energie = 0.0;
+            blobs = std::vector<Site *>();
+            labelscount = std::map<int,uint>();
             subjectscount = std::map<int, std::set<std::string> >();
         }
-        
+
 
 };
 

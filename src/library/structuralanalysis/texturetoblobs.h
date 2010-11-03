@@ -15,12 +15,10 @@ enum graphMode {
     DEFAULT, NO_SCALESPACEBLOBS_MESHES_AND_NO_RELATIONS_MESHES, NO_SCALESPACEBLOBS_MESHES
 };
 
-
-
 namespace TextureToBlobs {
 
     std::set<int> getFilteringNodes( SubjectData & subject );
-    
+
     void getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
                                 SubjectData &subject,
                                 std::vector<surf::GreyLevelBlob *> &blobs,
@@ -30,17 +28,17 @@ namespace TextureToBlobs {
                                 std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                 std::map<int, std::set<int> > &listGLBindices,
                                 bool initNull );
-    
+
     void BlobsFromLabelTexture ( std::vector<surf::Blob *> &blobs,
                                  SubjectData &subject );
-    
+
     void BlobsFromLabelTextureGlobalMode ( std::vector<surf::Blob *> &blobs,
-                                           SubjectData &subject ); 
-    
+                                           SubjectData &subject );
+
     void BlobsFromLabelTextureRegionMode ( std::vector<surf::Blob *> &blobs,
                                            surf::Region &region,
                                            SubjectData &regionData );
-    
+
     void RecoverBlobsFromIndividualGraph( Graph *graph,
             SubjectData &subject,
             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
@@ -51,12 +49,12 @@ namespace TextureToBlobs {
                                 std::vector<surf::GreyLevelBlob *> &blobs,
                                 std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                 bool initNull = true);
-    
+
     void AimsGraph( Graph *graph,
 					SubjectData & subject,
 					const std::vector<surf::Blob *> & blobs ) ;
-    
-    
+
+
     void AimsGraph ( Graph *graph,
                      SubjectData & subject,
                      const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
@@ -73,17 +71,18 @@ namespace TextureToBlobs {
 
     void DestroyBlobs ( std::vector<surf::ScaleSpaceBlob *> &ssblobs ) ;
     void DestroyBlobs ( std::vector<surf::Blob *> &blobs ) ;
-    
-    std::vector<uint> getClustersListsFromGLB ( std::vector< surf::GreyLevelBlob *> &blobs, 
+
+    std::vector<uint> getClustersListsFromGLB ( std::vector< surf::GreyLevelBlob *> &blobs,
                                                   GroupData &data,
                                                   float clustering_distance_threshold );
-    
-    void buildBlobsFromClustersLists ( std::vector< surf::GreyLevelBlob *> &blobs, 
+
+    void buildBlobsFromClustersLists ( std::vector< surf::GreyLevelBlob *> &blobs,
                                               GroupData & data,
                                               std::vector<uint> &clusters,
                                               std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs,
-                                              float clustering_distance_threshold = -1.0, 
-                                              std::string outputTextFile = "/tmp/blobsCountTable.py") ;
+                                              float clustering_distance_threshold = -1.0,
+                                              std::string outputTextFile = "/tmp/blobsCountTable.py",
+                                              bool uniqueGLB = false ) ;
 
     double getOverlapMeasure( Point2df bbmin1, Point2df bbmax1, Point2df bbmin2, Point2df bbmax2, uint *no_overlap );
 

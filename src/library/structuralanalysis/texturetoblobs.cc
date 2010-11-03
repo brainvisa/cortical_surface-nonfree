@@ -281,24 +281,24 @@ void TextureToBlobs::RecoverBlobsFromGLBOnly( Graph *graph,
 
 void TextureToBlobs::BlobsFromLabelTexture ( std::vector<surf::Blob *> &blobs,
                              SubjectData &subject ) {
-    
+
     std::set<short> labels;
     std::set<short>::iterator it;
-    for ( uint i = 0 ; i < subject.tex->nItem() ; i++ ) 
+    for ( uint i = 0 ; i < subject.tex->nItem() ; i++ )
         labels.insert( subject.tex->item(i) );
     std::cout << labels.size() << " labels detected" << std::endl;
-    
+
     for ( it = labels.begin() ; it != labels.end() ; it ++ ) {
         if ( *it > 0 ) {
             std::cout << *it << std::endl;
             surf::Blob *blob = new surf::Blob();
             blobs.push_back(blob);
-            
+
             blob->t = *it;
             blob->subject = subject.subject_id;
             blob->raw_coordinates = std::map<int, std::vector<float> > ();
-            for ( uint i = 0 ; i < subject.tex->nItem() ; i++ ) 
-                if ( subject.tex->item(i) == *it ) { 
+            for ( uint i = 0 ; i < subject.tex->nItem() ; i++ )
+                if ( subject.tex->item(i) == *it ) {
                     blob->nodes.insert(i);
                     blob->raw_coordinates[i] = std::vector<float>();
                     for ( uint j = 0 ; j < 3 ; j ++ )
@@ -306,9 +306,9 @@ void TextureToBlobs::BlobsFromLabelTexture ( std::vector<surf::Blob *> &blobs,
                 }
         }
     }
-    
+
     std::cout << blobs.size() << " blobs extracted" << std::endl;
-    
+
 
 }
 
@@ -488,11 +488,11 @@ void addBlobsToGraph ( Graph *graph,
         //std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
         //for ( uint i = 0 ; i < blobs.size() ; i++ )
         //    blobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.4);
-        
+
         //std::cout << "      ░░░ mode AimsEllipsoidAtMaxNode ░░░     " << std::endl;
         //for ( uint i = 0 ; i < blobs.size() ; i++ )
         //    blobs[i]->getAimsEllipsoidAtMaxNode ( *(subject.tex) );
-        
+
         std::cout << "      ░░░ mode AimsMesh ░░░     " << std::endl;
         for ( uint i = 0 ; i < blobs.size() ; i++ )
             blobs[i]->getAimsMesh ( *(subject.mesh) );
@@ -934,6 +934,9 @@ void addInterSubjectRelations ( Graph *graph,
         assert( aux1 != ssblobs.size() && aux2 != ssblobs.size() );
         v1 = listVertSSB[aux1];
         v2 = listVertSSB[aux2];
+        //if ( ( ssblobs[aux1]->subject == "Vil1" && ssblobs[aux2]->subject == "Yel1" ) ||
+        //        ( ssblobs[aux2]->subject == "Vil1" && ssblobs[aux1]->subject == "Yel1" ) )
+        //    std::cout << ssblobs[aux1]->index << "-" << ssblobs[aux2]->index << std::endl;
         Edge *edge = graph->addEdge( v1, v2, "b2b" );
 
         edge->setProperty( "similarity", cliques[i].similarity );
@@ -1128,23 +1131,23 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
                                    std::vector<uint> &clusters,
                                    std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs,
                                    float clustering_distance_threshold,
-                                   std::string outputTextFile ) {
+                                   std::string outputTextFile,
+                                   bool uniqueGLB ) {
 
+    FILE *f1;
+    std::map<std::string, SubjectData *>::iterator it;
 
-                FILE *f1;
+            if ( outputTextFile != "" ) {
                 f1 = fopen ( outputTextFile.data(), "a" );
-                std::map<std::string, SubjectData *>::iterator it;
                 it = data.begin();
                 fprintf(f1, "charac_clusters[\'%s\'][%.3f] = {}\n", it->first.data(), clustering_distance_threshold );
-
-
+            }
 
     std::set<uint> colors;
     for ( uint i = 0 ; i <  clusters.size() ; i++ )
         colors.insert ( clusters[i] );
     std::set<uint>::iterator ite;
     std::cout << colors.size() << " clustered ssblobs" << std::endl;
-
 
     // Now processing each cluster that has previously been defined
     for ( ite = colors.begin() ; ite != colors.end() ; ite ++ ) {
@@ -1188,8 +1191,7 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
         else
             assert(distance_moyenne == 0.0);
 
-
-
+            if ( outputTextFile != "" ) {
                 fprintf(f1, "charac_clusters[\'%s\'][%.3f][%d] = {\n", it->first.data(), clustering_distance_threshold, color);
                 fprintf(f1, "\'dist_moy\' : %lf,\n ", (double)(distance_moyenne) );
                 fprintf(f1, "\'nb_total_blob\' : %d,\n ", cluster_blobs.size() );
@@ -1198,9 +1200,8 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
                 for ( ite3 = mapCountScales.begin() ; ite3 != mapCountScales.end() ; ite3++ )
                     fprintf(f1, " %lf : %d, ", (double)(ite3->first), ite3->second );
                 fprintf(f1, "}\n");
-
                 fprintf(f1, "}\n\n");
-
+            }
 
 
         // Creation of Blobs
@@ -1211,7 +1212,7 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
 
         std::set<float> scales;
         surf::GreyLevelBlob nodes_dummyglb;
-        bool uniqueGLB = false;
+        //bool uniqueGLB = false;
         if ( uniqueGLB ) {
             // Should there be one single GLB created by merging all existing GLB ?
 
@@ -1280,17 +1281,18 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
 
                 scales.insert( blobs[cluster_blobs[i] ]->scale );
             }
+
+            ssb->getNodesFromBlob(&nodes_dummyglb);
+
         }
+
         ssb->tmax = *(scales.rbegin());
         ssb->tmin = *(scales.begin());
-        ssb->getNodesFromBlob(&nodes_dummyglb);
-
         ssb->scales = scales;
         std::cout << ssb->tmax << "-" << ssb->tmin << " " << std::flush;
         std::cout << "("<<ssb->blobs.size()<<")" << std::endl;
         ssb->t = data[ssb->subject]->tex->item(ssb->getMaximumNode(*(data[ssb->subject]->tex) ) );
         ssb->label = 0;
-
 
         //else if ( type_distance == DISTANCE_LATITUDES ) {
         //    int maxim_node = ssb->getMaximumNode(* (data[ssb->subject]->tex));
@@ -1303,7 +1305,9 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
         //    ssb->mesh = (*sph)[0];
         //}
     }
-    fclose(f1);
+
+    if ( outputTextFile != "" )
+        fclose(f1);
 }
 
 double TextureToBlobs::getOverlapMeasure( Point2df bbmin1,
@@ -1464,8 +1468,8 @@ void TextureToBlobs::filteringBlobs (  std::vector<surf::ScaleSpaceBlob *> & ssb
                        std::vector<surf::GreyLevelBlob *> &filteredBlobs,
                        std::vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
                        std::set<int> &nodes ){
-    // Not much used : allows to filter in blobs provided their support intersects 
-    //    with nodes belonging to a given set 
+    // Not much used : allows to filter in blobs provided their support intersects
+    //    with nodes belonging to a given set
 
     for (uint i = 0 ; i < ssblobs.size() ; i++ )
         ssblobs [i] -> index = i;

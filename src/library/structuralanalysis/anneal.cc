@@ -14,7 +14,7 @@ void Anneal::Step(std::vector<int> &random, long double temp, uint &mod){
 
     // Iterating On The Vector Of Sites (In Randomized Order) (long loop)
     for (uint i = 0 ; i < random.size() ; i++){
-        somme=0.0;
+        somme = 0.0;
 
         old = sites[random[i]]->label;
 
@@ -82,7 +82,7 @@ void Anneal::Step(std::vector<int> &random, long double temp, uint &mod){
         //       globalenergieslabels[k] += Clique::intrapsweight * total[k];
 
             somme += exp( - globalenergieslabels[k] / temp );
-            assert ( !isnan(somme) );
+            assert ( !isnan(somme) || ( std::cout << globalenergieslabels[k] << "/" << temp << std::endl && false ) );
         }
 
         long double somme2 = 0.0;
