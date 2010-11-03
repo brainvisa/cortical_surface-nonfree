@@ -13,7 +13,9 @@ float Clique::ddweight,
       Clique::ddx1, 
       Clique::ddx2, 
       Clique::simx1, 
-      Clique::simx2, 
+      Clique::simx2,
+      Clique::lsx1, 
+      Clique::lsx2, 
       Clique::ddh, 
       Clique::globalweight;
 
@@ -25,6 +27,8 @@ void Clique::setParameters ( float _ddweight,
                              float _ddx2,
                              float _simx1,
                              float _simx2,
+                             float _lsx1,
+                             float _lsx2,
                              float _ddh, 
                              float _globalweight ){
     ddweight = _ddweight; 
@@ -35,6 +39,8 @@ void Clique::setParameters ( float _ddweight,
     ddx2 = _ddx2; 
     simx1 = _simx1;
     simx2 = _simx2;
+    lsx1 = _lsx1;
+    lsx2 = _lsx2;
     ddh = _ddh;
     globalweight = _globalweight;
 }
@@ -228,8 +234,8 @@ void BuildMaximalOrderCliques ( vector<Site *> &sites,
                                vector<vector<int> > &cliquesDuSite,
                                vector<Clique> &cliques ) {
 
-    vector< Clique > intraps;
-    vector< string > subjects;
+    std::vector< Clique > intraps;
+    std::vector< std::string > subjects;
 
     for ( uint i = 0 ; i < sites.size() ; i++ ) {
         uint j = 0;
@@ -253,14 +259,12 @@ void BuildMaximalOrderCliques ( vector<Site *> &sites,
             cliquesDuSite[ intraps[i].blobs[j]->index ].push_back( cliques.size() - 1 );
         }
     }
-
 }
 
 
 void BuildDataDrivenCliques ( std::vector <Site *> &sites,
                               std::vector < std::vector<int> > &cliquesDuSite,
                               std::vector < Clique > &cliques ) {
-
     for ( uint i = 0 ; i < sites.size() ; i++ ){
         Clique c;
         c.type = DATADRIVEN;
@@ -273,30 +277,25 @@ void BuildDataDrivenCliques ( std::vector <Site *> &sites,
 void BuildLowerScaleCliques ( std::vector < Site *> &sites,
                               std::vector < std::vector<int> > &cliquesDuSite,
                               std::vector < Clique > &cliques ) {
-
     for ( uint i = 0 ; i < sites.size() ; i++ ){
         Clique ls;
         ls.type = BESTLOWERSCALE;
         cliquesDuSite[ sites[i]->index ].push_back( cliques.size() );
         ls.blobs.push_back( sites[i] );
-        cliques.push_back( ls);
+        cliques.push_back( ls );
     }
 }
 
-void BuildGlobalClique( vector<Site *> &sites,
-                                  vector<vector<int> > &cliquesDuSite,
-                                  vector<Clique> &cliques ) {
+void BuildGlobalClique ( std::vector<Site *> &sites,
+                         std::vector<vector<int> > &cliquesDuSite,
+                         std::vector<Clique> &cliques ) {
     Clique c;
     c.type = GLOBAL;
-
     for ( uint i = 0 ; i < sites.size() ; i++ ) {
-
         cliquesDuSite[ sites[i]->index ].push_back( cliques.size() );
         c.blobs.push_back( sites[i] );
     }
     cliques.push_back( c );
-
-
 }
 
 //##############################################################################

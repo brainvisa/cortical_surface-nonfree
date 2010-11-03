@@ -1035,15 +1035,21 @@ void TextureToBlobs::ReadAimsGroupGraph (   Graph &graph,
 
                 if ( e->getSyntax() == "b2b" ){
 
-                    float similarity;
+                    float similarity, distance;
+                    assert (!( e->hasProperty("similarity") && e->hasProperty("distance") ));
                     e->getProperty( "similarity", similarity );
+                    e->getProperty( "distance", distance );
+                    if ( e->hasProperty("similarity") )
+                        distance = -1.0;
+                    else if ( e->hasProperty("distance") )
+                        similarity = -1.0;
 
                     for ( kv = e->begin() ; kv != e->end() ; kv++ ){
 
                         if ( (*kv)->getSyntax() == "ssb" ){
 
                             int indexB2;
-                            string sujetB2;
+                            std::string sujetB2;
                             (*kv)->getProperty( "sites_index", indexB2 );
                             (*kv)->getProperty( "subject", sujetB2 );
 
@@ -1056,9 +1062,8 @@ void TextureToBlobs::ReadAimsGroupGraph (   Graph &graph,
                                 assert ( (index==blobs_index1 && indexB2 == blobs_index2) ||
                                   (index == blobs_index2 && indexB2 == blobs_index1));
 
-                                if ( blobs_index1 < blobs_index2 ){
-                                  cliques.push_back( surf::Clique( ssblobs[ blobs_index1 ] , ssblobs[ blobs_index2 ], similarity) );
-                                }
+                                if ( blobs_index1 < blobs_index2 )
+                                    cliques.push_back( surf::Clique( ssblobs[ blobs_index1 ] , ssblobs[ blobs_index2 ], distance, similarity ) );
                             }
                         }
                     }

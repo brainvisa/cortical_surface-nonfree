@@ -163,8 +163,8 @@ void SurfaceBased_StructuralAnalysis::Initialization( bool initLabel ){
 long double SurfaceBased_StructuralAnalysis::getClusterEnergy ( std::vector<uint> &composante ) {
     std::vector<int> old;
     for ( uint i = 0 ; i < sites.size() ; i++ ) {
-        old.push_back(sites[i]->label);
-        sites[i]->label=0;
+        old.push_back ( sites[i]->label );
+        sites[i]->label = 0;
     }
     for ( uint i = 0 ; i < composante.size() ; i++ )
         sites[composante[i]]->label = 1;
@@ -194,13 +194,14 @@ long double SurfaceBased_StructuralAnalysis::getLabelEnergy(int label, int type)
                 if ( cliques[i].type == DATADRIVEN ) {
                     energydd += cliques[i].energie;
                 }
-                else if ( cliques[i].type == BESTLOWERSCALE ) {
+                else if ( cliques[i].type == BESTLOWERSCALE ) { 
                     energyls += cliques[i].energie;
                 }
                 else if ( cliques[i].type == SIMILARITY )  {
-                    nclsim++; energysim += cliques[i].energie;
+                    nclsim++; 
+                    energysim += cliques[i].energie;
                 }
-
+                    
     //         if (false && cliques[i].type==SIMILARITY) std::cout << "(("<<cliques[i].rec << "(" << cliques[i].blobs[0]->label << "(" <<  cliques[i].blobs[0]->node << ")" << "-" << cliques[i].blobs[1]->label <<"(" <<  cliques[i].blobs[1]->node << ")" << ")=>" << cliques[i].energie << ")) ";
             }
     //       if (cliques[i].type == INTRAPRIMALSKETCH && cliques[i].labelscount[label] > 1 && label != 0) {energy += (cliques[i].labelscount[label]-1)*Clique::getIntraPSWeight();}
@@ -257,7 +258,7 @@ long double SurfaceBased_StructuralAnalysis::getTotalEnergy(){
             energy += cliques[i].computeEnergy( true, nbsujets );
         }
         else if ( cliques[i].type == SIMILARITY ) {
-            energy += cliques[i].computeEnergy( true,nbsujets );
+            energy += cliques[i].computeEnergy( true, nbsujets );
             if ( cliques[i].blobs[0]->label == cliques[i].blobs[1]->label && cliques[i].blobs[0]->label != 0 )
                 nclsim++;
         }
@@ -266,31 +267,22 @@ long double SurfaceBased_StructuralAnalysis::getTotalEnergy(){
     for ( uint k = 1 ; k < labels.size() ; k++ ) {
 
         energy += - (long double) cliques[globalclique].subjectscount[labels[k]].size() * Clique::globalweight * nbsujets;
-
-        uint i, j;
-        for ( uint n = 0 ; n < ipscliques.size() ; n++ ) {
+        for ( uint n = 0 ; n < ipscliques.size() ; n++ ) 
             bysub[n] = cliques[ipscliques[n]].labelscount[labels[k]];
             // std::cout << bysub[n] << " " ;
-        }
         // std::cout << std::endl;
         uint nb = 0;
-        for ( i = 0 ; i < nbsujets - 1 ; i++ ) {
-            for ( j = i + 1 ; j < nbsujets ; j++ ) {
+        for ( uint i = 0 ; i < nbsujets - 1 ; i++ ) 
+            for ( uint j = i + 1 ; j < nbsujets ; j++ ) 
                 nb += bysub[i] * bysub[j];
-            }
-        }
         //  std::cout << "nb"<< nb << " ";
         nbips += nb;
-        for ( i = 0 ; i < nbsujets ; i++ )
+        for ( uint i = 0 ; i < nbsujets ; i++ )
             if ( bysub[i] > 1 )
                 nb2 += bysub[i] - 1;
     }
 
-
-
-    //   Esimil = 4.0*(nbips-nclsim);
-    ASSERT(nbips>=nclsim || (std::cout << nbips << ">=" << nclsim << endl && false));
-    //   energy += Clique::intrapsweight*(nbips-nclsim);
+    ASSERT( nbips >= nclsim || (std::cout << nbips << ">=" << nclsim << endl && false ));
     energy += Clique::intrapsweight * nb2 * nbsujets;
 
     return energy;
@@ -328,7 +320,7 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
 
             if ( ( cliques[i].type == DATADRIVEN || cliques[i].type == BESTLOWERSCALE )
                     && cliques[i].blobs[0]->label == labels[lab] ) {
-                energy += cliques[i].computeEnergy ( true, nbsujets );
+                //energy += cliques[i].computeEnergy ( true, nbsujets );
                 if ( cliques[i].type == DATADRIVEN )
                     Edd += cliques[i].computeEnergy ( true, nbsujets );
                 if ( cliques[i].type == BESTLOWERSCALE )
@@ -337,7 +329,7 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
             else if ( cliques[i].type == SIMILARITY
                     && cliques[i].blobs[0]->label == cliques[i].blobs[1]->label
                     && cliques[i].blobs[0]->label== labels[lab] ) {
-                energy += cliques[i].computeEnergy ( true,nbsujets );
+                energy += cliques[i].computeEnergy ( true, nbsujets );
                 Esim += cliques[i].computeEnergy ( true, nbsujets );
                 if ( cliques[i].blobs[0]->label == cliques[i].blobs[1]->label
                         && cliques[i].blobs[0]->label != 0 )
@@ -365,16 +357,17 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
         Eglob += - (long double)cliques[globalclique].subjectscount[labels[lab]].size() * Clique::globalweight * nbsujets;
 
 
-        ASSERT(nbips>=nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false));
+        ASSERT( nbips >= nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false ));
     //     Esub += Clique::intrapsweight*(nbips-nclsim);
         energy += Clique::intrapsweight * nb2 * nbsujets;
-        energy += - (long double)cliques[globalclique].subjectscount[labels[lab]].size() * Clique::globalweight * nbsujets;
+        energy += - (long double) cliques[globalclique].subjectscount[labels[lab]].size() * Clique::globalweight * nbsujets;
         Eintra += Clique::intrapsweight * nb2 * nbsujets;
         Etotal += energy;
 
 
         ASSERT ( pow ( Edd + Els + Esim + Esub + Eintra + Eglob - energy,2)<0.01);
         ASSERT ( Esub < 0.0001 );
+        ASSERT ( Eglob < 0.0001 );
 
         nblabel = 0;
         for ( uint il = 0 ; il < ipscliques.size() ; il++ ) {
@@ -382,7 +375,7 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels(){
         }
         if ( nblabel != 0 ) {
             std::cout << "label " << labels[lab] << " : " << cliques[globalclique].subjectscount[ labels[lab] ].size() << \
-            " subjects (" << Edd << ";" << Esim << ";" << Esub<<";" <<Eintra<<";"<< Eglob<<";"<< Els<<") " << energy << " " << std::flush;
+            " subjects (" << Edd << ";" << Esim << ";" << Els << ";" <<Eintra<<";"<< Eglob<<";"<< Esub<<") " << energy << " " << std::flush;
 
             std::cout << nblabel << " - " << std::endl;
             // fprintf(f,"label %d : (%3lf;%3lf) %i;\n", labels[lab],(double)Edd,(double)Esim,nblabel);
@@ -450,7 +443,6 @@ void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
                     << "-" << cliques[i].blobs[1]->subject << std::endl;
                 if (cliques[i].blobs[0]->label == cliques[i].blobs[1]->label && cliques[i].blobs[0]->label != 0)
                     nclsim++;
-
             }
         }
         assert( ipscliques.size() == nbsujets ) ;
@@ -520,9 +512,11 @@ void SurfaceBased_StructuralAnalysis::setModelParameters ( float _ddweight,
                                                            float _ddx2,
                                                            float _simx1,
                                                            float _simx2,
+                                                           float _lsx1,
+                                                           float _lsx2,
                                                            float _ddh,
                                                            float _globalweight ) {
-    Clique::setParameters ( _ddweight, _intrapsweight, _simweight, _lsweight, _ddx1, _ddx2, _simx1, _simx2, _ddh, _globalweight);
+    Clique::setParameters ( _ddweight, _intrapsweight, _simweight, _lsweight, _ddx1, _ddx2, _simx1, _simx2, _lsx1, _lsx2, _ddh, _globalweight);
 }
 
 void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
@@ -606,8 +600,10 @@ void SurfaceBased_StructuralAnalysis::GetSimilarityCliquesFromSSBCliques ( std::
     for ( uint i = 0 ; i < ssbcliques.size() ; i++ ) {
         Clique simc;
         simc.type = SIMILARITY;
+        
         simc.similarity = ssbcliques[i].similarity;
         simc.distance = ssbcliques[i].distance;
+        assert (simc.similarity == -1.0 || simc.distance == -1.0);
         surf::ScaleSpaceBlob *ssb1, *ssb2;
         int iSSB1, iSSB2;
         ssb1 = ssbcliques[i].ssb1;
@@ -633,7 +629,7 @@ void SurfaceBased_StructuralAnalysis::GetSimilarityCliquesFromSSBCliques ( std::
                 if ( cliques[aux].blobs[0]->index == (uint) i ) { }
                 else if (cliques[ aux ].blobs[1]->index == (uint) i ) { }
                 else {
-                    cout << i << " " << aux << " " << cliques[aux].type << " " << cliques[aux].blobs.size() << " " << cliques[aux].blobs[0]->index << " " << cliques[aux].blobs[1]->index << endl;
+                    std::cout << i << " " << aux << " " << cliques[aux].type << " " << cliques[aux].blobs.size() << " " << cliques[aux].blobs[0]->index << " " << cliques[aux].blobs[1]->index << std::endl;
                     ASSERT(false);
                 }
             }
@@ -730,7 +726,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
 
 
 
-                    cliques.push_back(surf::Clique(ssblobs[i], ssblobs[j], overmax));
+                    cliques.push_back(surf::Clique(ssblobs[i], ssblobs[j], -1.0, overmax));
                     matchingblobs[i].push_back(b1max);
                     matchingblobs[j].push_back(b2max);
                     //cout << "max (" << ssblobs[i]->index <<","<< ssblobs[j]->index << ") between:" << b1max->index << " "
@@ -827,7 +823,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
                 // std::cout << distance << " " << std::flush;
 
                 if ( distance < threshold ) {
-                    cliques.push_back( surf::Clique(ssblobs[i], ssblobs[j], distance ) );
+                    cliques.push_back( surf::Clique(ssblobs[i], ssblobs[j], distance, -1.0 ) );
                 }
             }
             // The next pair of scale-space blobs will now be processed.

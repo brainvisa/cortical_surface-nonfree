@@ -104,10 +104,7 @@ namespace surf {
                 bottomBlobs = ssb->bottomBlobs;
                 mesh = ssb->mesh;
             }
-
             std::pair<Point2df, Point2df> get2DBoundingBox ( );
-
-
     };
 
     class Clique{
@@ -116,17 +113,11 @@ namespace surf {
             ScaleSpaceBlob *ssb2;
             float similarity;
             float distance;
-            Clique ( ScaleSpaceBlob *s1, ScaleSpaceBlob *s2, float dist ) {
+            Clique ( ScaleSpaceBlob *s1, ScaleSpaceBlob *s2, float _distance, float _similarity ) {
                 ssb1 = s1;
                 ssb2 = s2;
-                distance = dist;
-                similarity = dist;
-                //if (distance < threshold)
-                    //similarity = 1.0;
-                //else
-                    //similarity = - 0.5 * (distance-3.0) +1.0;}
-                    //similarity = - 1.0 / (threshold - alpha) * (distance - alpha) + 1.0;
-                    //similarity =
+                distance = _distance;
+                similarity = _similarity;
             }
 
     };

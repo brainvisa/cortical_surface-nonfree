@@ -5,7 +5,7 @@ using namespace aims;
 //using namespace carto;
 using namespace std;
 
-void Anneal::Step(std::vector<int> &random, long double temp, uint &mod){
+void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
 
     long double somme = 0.0;
     int old;
@@ -43,12 +43,14 @@ void Anneal::Step(std::vector<int> &random, long double temp, uint &mod){
                 uint aux = cliquesDuSite[ random[i] ][ n ];
 
                 // Updating The System Depending On The Clique Type
-                if ( cliques[ aux ].type == DATADRIVEN || cliques[ aux ].type == INTRAPRIMALSKETCH ){
+                if ( cliques[ aux ].type == DATADRIVEN ||
+                        cliques[ aux ].type == INTRAPRIMALSKETCH ||
+                        cliques[ aux ].type == BESTLOWERSCALE ) {
 
                     globalenergieslabels[ k ] += cliques[ aux ].updateEnergy( random[ i ], old, false, nbsujets );
 
                 }
-                else if ( cliques[aux].type == SIMILARITY ){
+                else if ( cliques[aux].type == SIMILARITY ) {
 
                     globalenergieslabels[ k ] += cliques[aux].updateEnergy( random[i], old, false, nbsujets );
                     uint index = 0;
@@ -56,9 +58,8 @@ void Anneal::Step(std::vector<int> &random, long double temp, uint &mod){
                         index = 1;
                     else if ( cliques[aux].blobs[1]->index == (uint) random[i] )
                         index = 0;
-                    else {
+                    else 
                         ASSERT(false);
-                    }
                     if ( cliques[aux].blobs[index]->label == zoneLab[k] && zoneLab[k] != 0 ) nclsim1++;
                     if ( cliques[aux].blobs[index]->label == old && old != 0 ) nclsim2++;
 
@@ -79,8 +80,6 @@ void Anneal::Step(std::vector<int> &random, long double temp, uint &mod){
 
             total[k] = ( nbips1 - nclsim1 - (nbips2 - nclsim2) );
 
-        //       globalenergieslabels[k] += Clique::intrapsweight * total[k];
-
             somme += exp( - globalenergieslabels[k] / temp );
             assert ( !isnan(somme) || ( std::cout << globalenergieslabels[k] << "/" << temp << std::endl && false ) );
         }
@@ -95,7 +94,7 @@ void Anneal::Step(std::vector<int> &random, long double temp, uint &mod){
 			}
         else {
             if ( somme > exp(700.0) )
-                cout << "dist:[";
+                std::cout << "dist:[";
 
             for ( uint k = 0 ; k < zoneLab.size() ; k++ ) {
                 somme2 += exp ( - globalenergieslabels[k] / temp ) / somme;
@@ -114,84 +113,78 @@ void Anneal::Step(std::vector<int> &random, long double temp, uint &mod){
         }
         if ( old != zoneLab[acc] ) {
 
-            sites[ random[i] ]->label = zoneLab [acc];
+            sites[random[i]]->label = zoneLab[acc];
             for ( uint m = 0 ; m < cliquesDuSite[random[i]].size() ; m++ ) {
-                energy += cliques [cliquesDuSite[random[i]][m]].updateEnergy(random[i], old, true, nbsujets);
+                energy += cliques [cliquesDuSite[random[i]][m]].updateEnergy( random[i], old, true, nbsujets );
             }
-        //       energy += Clique::intrapsweight*total[acc];
             mod++;
         }
         else {
             sites[random[i]]->label = old;
         }
-
     }
-
-
 }
 
 void Anneal::Run ( int verbose ){
 
-  std::vector< int >  indices_start;
-  for( uint i = 0 ; i < sites.size() ; i++ )
-    indices_start.push_back(i);
+    std::vector< int >  indices_start;
+    for( uint i = 0 ; i < sites.size() ; i++ )
+      indices_start.push_back(i);
 
-  long double temp = 300.0;
+    double temp = 300.0;
 
-  uint mod = 1, ite = 0, nb_under_threshold = 0, test = 1;
+    uint mod = 1, ite = 0, nb_under_threshold = 0, test = 1;
 
-  std::cout.precision(2);
+    std::cout.precision(2);
 
-  FILE * f1, *f;
-  if ( labelsPath != "" )
-    f1 = fopen ( labelsPath.data(), "w" );
-  if ( energyPath != "" ) {
-      f = fopen ( energyPath.data(), "a" );
-      fprintf(f, "== DEBUT NOUVEAU RECUIT ==\n");
-  }
+    FILE * f1, *f;
+    if ( labelsPath != "" )
+        f1 = fopen ( labelsPath.data(), "w" );
+    if ( energyPath != "" ) {
+        f = fopen ( energyPath.data(), "a" );
+        fprintf(f, "== DEBUT NOUVEAU RECUIT ==\n");
+    }
 
     for ( uint k = 0 ; k < cliques.size() ; k++ ){
         cliques[k].updateLabelsCount();
         cliques[k].computeEnergy(true, nbsujets);
     }
 
-        while ( nb_under_threshold < 5 || mod != 0 ) {
+    while ( nb_under_threshold < 5 || mod != 0 ) {
 
-            if ( mod != 0 )
-                nb_under_threshold = 0;
-            else
-                nb_under_threshold++;
+        if ( mod != 0 )
+            nb_under_threshold = 0;
+        else
+            nb_under_threshold++;
 
-            std::cout << " T=" << temp << " it="<< ite++ << " " << std::flush ;
+        std::cout << " T=" << temp << " it="<< ite++ << " " << std::flush ;
 
-            if ( this->labelsPath != "" ) {
-                for ( uint i0 = 0 ; i0 < sites.size() ; i0++ ) {
-                    fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
-                }
-                fprintf(f1, "\n");
+        if ( this->labelsPath != "" ) {
+            for ( uint i0 = 0 ; i0 < sites.size() ; i0++ ) {
+                fprintf(f1, "%s %d %d %d-", sites[i0]->subject.data(), sites[i0]->index, sites[i0]->graph_index, sites[i0]->label);
             }
-            std::vector< int > indices( indices_start );
-            std::vector< int > random;
-
-            for ( uint i = 0 ; i < sites.size() ; i++ ) {
-                int index = (int)(UniformRandom() * indices.size());
-                random.push_back(indices[index]);
-                indices.erase(indices.begin()+index);
-            }
-            ASSERT(random.size() == sites.size());
-            Step(random, temp, mod);
-
-            cout << " chg:" << mod << " " << flush;
-
-
-            if (verbose == 1) ShortSummaryLabels();
-            // double everif= getTotalEnergy();
-            std::cout << " E=" << energy << std::endl; //" Everif=" << everif << endl;
-
-            temp = temp * 0.99;
-
+            fprintf(f1, "\n");
         }
-//    }
+        std::vector< int > indices( indices_start );
+        std::vector< int > random;
+
+        for ( uint i = 0 ; i < sites.size() ; i++ ) {
+            int index = (int)(UniformRandom() * indices.size());
+            random.push_back(indices[index]);
+            indices.erase(indices.begin()+index);
+        }
+        ASSERT(random.size() == sites.size());
+        Step(random, temp, mod);
+
+        std::cout << " chg:" << mod << " " << std::flush;
+
+        if (verbose == 1) ShortSummaryLabels();
+        double everif = getTotalEnergy();
+        std::cout << " E=" << energy << " Everif=" << everif << endl;
+
+        temp = temp * 0.99;
+
+    }
 
     for ( uint k = 0 ; k < cliques.size() ; k++ ) {
         cliques[k].updateLabelsCount();
@@ -199,7 +192,7 @@ void Anneal::Run ( int verbose ){
     }
     energy = getTotalEnergy();
 
-    cout << "final energy : " << energy << endl;
+    std::cout << "final energy : " << energy << std::endl;
     ShortSummaryLabels();
     if ( this->energyPath != "" ) {
         fprintf(f, "%3lf\nFIN RECUIT\n", (float)energy);
