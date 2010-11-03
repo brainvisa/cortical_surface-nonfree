@@ -45,7 +45,7 @@ class Clique{
                 case BESTLOWERSCALE:
                     ASSERT( blobs.size() == 1 );
                     if ( blobs[0]->label != 0 ) {
-                        float mean_scale = (blobs[0]->tmax + blobs[0]->tmin) / 2.0
+                        float mean_scale = (blobs[0]->tmax + blobs[0]->tmin) / 2.0;
                         if ( mean_scale > lsx1 )
                             energy = 0.0;
                         else if ( mean_scale < lsx2 )
@@ -57,7 +57,7 @@ class Clique{
                         energy = 0.0;
                     energy *= lsweight;
                     energy *= CLIQUESNBSUJETS;
-                    break;
+                break;
                 case INTRAPRIMALSKETCH:
                     energy = 0;
                     for ( uint i = 1 ; i < labelscount.size() ; i++ ) {
@@ -96,7 +96,6 @@ class Clique{
                         energy = 0.0;
                     }
                     energy *= simweight;
-
                 break;
                 case GLOBAL:
                     energy = 0;
