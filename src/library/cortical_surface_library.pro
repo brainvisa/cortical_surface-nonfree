@@ -12,7 +12,7 @@ HEADERS = \
   surfacereferential/corticalConstraints.h \
   surfacereferential/corticalReferential.h \
   surfacereferential/corticalTools.h \
-  surfacereferential/geodesicpath.h \
+  surfacereferential/shortestPath.h \
   surfacereferential/sulcusCleaner.h \
   surfacereferential/sulcusCorticalSnake.h \
   surfacereferential/sulcusCorticalSnake_energy.h \
