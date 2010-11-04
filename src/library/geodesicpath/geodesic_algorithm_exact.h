@@ -549,7 +549,8 @@ inline void GeodesicAlgorithmExact::propagate(std::vector<SurfacePoint>& sources
 
 	while(!m_queue.empty())
 	{
-		m_queue_max_size = std::max(m_queue.size(), m_queue_max_size);
+		m_queue_max_size = std::max(m_queue.size(),
+                                            (size_t) m_queue_max_size);
 
 		unsigned const check_period = 10;
     	if(++m_iterations % check_period == 0)		//check if we covered all required vertices
