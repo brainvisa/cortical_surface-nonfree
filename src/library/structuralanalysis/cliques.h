@@ -4,9 +4,6 @@
 #include <math.h>
 #include <cortical_surface/structuralanalysis/sites.h>
 
-
-
-
 enum typesCliques {
     DATADRIVEN, BESTLOWERSCALE, INTRAPRIMALSKETCH, SIMILARITY, UNKNOWN, GLOBAL
 };
@@ -15,20 +12,21 @@ class Clique{
     public:
         static float ddweight, intrapsweight, globalweight, simweight, lsweight, ddx1, ddx2, simx1, simx2, lsx1, lsx2, ddh;
 
-        double energie;
+        long double energie;
         short type;
         std::vector< Site * > blobs;
-        float similarity, distance;
+        double similarity, distance;
         std::map<int, uint> labelscount;
         std::map<int, std::set<std::string> > subjectscount;
+        long double pot;
 
-        float computeEnergy ( bool save, uint CLIQUESNBSUJETS ) {
-            float energy = -1.0;
+        long double computeEnergy ( bool save, uint CLIQUESNBSUJETS ) {
+            long double energy = 0.0;
             switch ( type ) {
                 case DATADRIVEN:
                     ASSERT( blobs.size() == 1 );
                     if ( blobs[0]->label != 0 ) {
-                        float measure = blobs[0]->t;
+                        long double measure = blobs[0]->t;
                         if ( measure > ddx1 )
                             energy = ddh;
                         else if ( measure < ddx2 )
@@ -45,7 +43,7 @@ class Clique{
                 case BESTLOWERSCALE:
                     ASSERT( blobs.size() == 1 );
                     if ( blobs[0]->label != 0 ) {
-                        float mean_scale = (blobs[0]->tmax + blobs[0]->tmin) / 2.0;
+                        long double mean_scale = (blobs[0]->tmax + blobs[0]->tmin) / 2.0;
                         if ( mean_scale > lsx1 )
                             energy = 0.0;
                         else if ( mean_scale < lsx2 )
@@ -71,10 +69,12 @@ class Clique{
                 case SIMILARITY:
                     ASSERT( blobs.size() == 2 );
                     if ( blobs[0]->label == blobs[1]->label && blobs[0]->label != 0 ) {
+                          
+                        assert ( distance < 0.0 || similarity < 0.0 );
+//                        std::cout << distance << "/" << similarity << " " << std::flush;
                         
-                        assert ( distance == -1.0 || similarity == -1.0 );
                         // MODE OVERLAP
-                        if ( similarity != -1.0 ) {
+                        if ( similarity > 0.0 ) {
                             if ( similarity > simx2 )
                                 energy = -1.0;
                             else if ( similarity < simx1 )
@@ -83,7 +83,7 @@ class Clique{
                                 energy = (- 1.0) / (simx2 - simx1) * ( similarity - simx2 ) - 1.0;
                         }
                         // MODE DISTANCE
-                        else if ( distance != -1.0 ) {
+                        else if ( distance > 0.0 ) {
                             if ( distance < simx2 )
                                 energy = -1.0;
                             else if ( distance > simx1 )
@@ -91,6 +91,14 @@ class Clique{
                             else
                                 energy = (- 1.0) / (simx2 - simx1) * ( distance - simx2 ) - 1.0;
                         }
+//                        std::cout << blobs[0]->index << "-" << blobs[1]->index << "=" << energy << " " << std::flush;
+//                        if (pot == 100) 
+//                            pot = energy;
+//                        else {
+//                            assert( pot == energy );
+//                            if (pot != 0.0) // && pot != -1.0)
+//                                std::cout << "p:" << pot << " " << std::flush;
+//                        }
                     }
                     else {
                         energy = 0.0;
@@ -98,13 +106,13 @@ class Clique{
                     energy *= simweight;
                 break;
                 case GLOBAL:
-                    energy = 0;
-                    assert( subjectscount.size() > 0 );
-                    for ( uint j = 1 ; j < subjectscount.size() ; j++ ) {
-                        assert( subjectscount[j].size() <= CLIQUESNBSUJETS );
-                        energy += - globalweight * subjectscount[j].size();
-                    }
-                    energy *= CLIQUESNBSUJETS;
+                    //energy = 0;
+                    //assert( subjectscount.size() > 0 );
+                    //for ( uint j = 1 ; j < subjectscount.size() ; j++ ) {
+                    //    assert( subjectscount[j].size() <= CLIQUESNBSUJETS );
+                    //    energy += - globalweight * subjectscount[j].size();
+                    //}
+                    //energy *= CLIQUESNBSUJETS;
 
                 break;
             }
@@ -112,9 +120,9 @@ class Clique{
             return energy;
         }
 
-        float updateEnergy( uint node, int old, bool save, uint CLIQUESNBSUJETS ) {
+        long double updateEnergy( uint node, int old, bool save, uint CLIQUESNBSUJETS ) {
 
-            float energy = 0.0;
+            long double energy = 0.0;
             float _intrapsweight, _globalweight;
 
             switch ( type ) {
@@ -145,7 +153,6 @@ class Clique{
                         if ( ( blobs[0]->label != blobs[1]->label ) || ( blobs[1]->label == 0 || blobs[0]->label == 0 ) )
                             energy = -energie;
                     }
-
                 break;
                 case INTRAPRIMALSKETCH:
                     _intrapsweight = intrapsweight;
@@ -167,48 +174,47 @@ class Clique{
                             energy += _intrapsweight;
                     }
                     energy *= CLIQUESNBSUJETS;
-                    if (save){
+                    if ( save ) {
                         labelscount[blobs[i]->label]++;
                         labelscount[old]--;
                     }
                 break;
                 case GLOBAL:
-                    _globalweight = globalweight;
-                    uint j, k;
-                    for ( j = 0 ; j < blobs.size() && (uint) blobs[j]->index != (uint) node ; j++ )
-                    {}
-                    ASSERT( j < blobs.size() );
-                    k = 0;
-                    while ( k < blobs.size() && !(blobs[k]->subject == blobs[j]->subject && blobs[k]->label == old ) ){
-                        k++;
-                    }
-                    if ( old == blobs[j]->label )
-                        energy = 0.0;
-                    else {
-                        if ( old == 0 && blobs[j]->label == 0 )
-                            energy = 0.0;
-                        else if ( old != 0 ) { 
-                            if ( k < blobs.size() )
-                                energy += 0.0;
-                            else
-                                energy += _globalweight;
-                        }
-
-                        if ( blobs[j]->label != 0 ) {
-                            if (subjectscount[blobs[j]->label].find(blobs[j]->subject) == subjectscount[blobs[j]->label].end()) {
-                                energy += -_globalweight;
-                            }
-                        }
-                    }
-                    energy *= CLIQUESNBSUJETS;
-            //           energy = 0.0;
-                    if (save){
-                        if ( k == blobs.size() )
-                            subjectscount[old].erase(blobs[j]->subject);
-
-                        subjectscount[blobs[j]->label].insert(blobs[j]->subject);
-
-                    }
+                    //_globalweight = globalweight;
+                    //uint j, k;
+                    //for ( j = 0 ; j < blobs.size() && (uint) blobs[j]->index != (uint) node ; j++ )
+                    //{}
+                    //ASSERT( j < blobs.size() );
+                    //k = 0;
+                    //while ( k < blobs.size() && !(blobs[k]->subject == blobs[j]->subject && blobs[k]->label == old ) ){
+                    //    k++;
+                    //}
+                    //if ( old == blobs[j]->label )
+                    //    energy = 0.0;
+                    //else {
+                    //    if ( old == 0 && blobs[j]->label == 0 )
+                    //        energy = 0.0;
+                    //    else if ( old != 0 ) { 
+                    //        if ( k < blobs.size() )
+                    //            energy += 0.0;
+                    //        else
+                    //            energy += _globalweight;
+                    //    }
+                    //
+                    //    if ( blobs[j]->label != 0 ) {
+                    //        if (subjectscount[blobs[j]->label].find(blobs[j]->subject) == subjectscount[blobs[j]->label].end()) {
+                    //            energy += -_globalweight;
+                    //        }
+                    //    }
+                    //}
+                    //energy *= CLIQUESNBSUJETS;
+                    //if (save){
+                    //    if ( k == blobs.size() )
+                    //        subjectscount[old].erase(blobs[j]->subject);
+                    //
+                    //    subjectscount[blobs[j]->label].insert(blobs[j]->subject);
+                    //
+                    //}
                 break;
             }
             if (save) energie += energy;
@@ -233,14 +239,15 @@ class Clique{
                                     float _globalweight );
 
         static float getIntraPSWeight() { return intrapsweight; }
+        
         Clique() {
             type = UNKNOWN;
             energie = 0.0;
+            pot = 100.0;
             blobs = std::vector<Site *>();
             labelscount = std::map<int,uint>();
             subjectscount = std::map<int, std::set<std::string> >();
         }
-
 
 };
 
@@ -250,11 +257,6 @@ void BuildMaximalOrderCliques ( std::vector<Site *> &sites, std::vector<std::vec
 void BuildDataDrivenCliques ( std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques);
 void BuildGlobalClique ( std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques );
 void BuildLowerScaleCliques ( std::vector<Site *> &sites, std::vector<std::vector<int> > &cliquesDuSite, std::vector<Clique> &cliques );
-
-
-
-
-
 
 #endif
 

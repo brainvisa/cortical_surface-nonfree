@@ -76,20 +76,13 @@ void Clique::updateSubjectsCount ( ) {
             }
             subjectscount[blobs[i]->label].insert(blobs[i]->subject);
         }
-
-//        std::map<int, std::set<std::string> >::iterator itset;
-//        for ( itset = subjectscount.begin() ; itset != subjectscount.end() ; itset++ ) {
-//            std::cout << (*itset).second.size() << " " << std::flush;
-//        }
-//        std::cout << std::endl;
-
     }
 }
 
 
 double getOverlap(Point3df bbmin1, Point3df bbmax1, Point3df bbmin2, Point3df bbmax2, uint *no_overlap){
 
-  float overlap_x,overlap_y,aux;
+  float overlap_x, overlap_y, aux;
   double rec = 0.0;
 
   if ( sqrt(pow(bbmin1[0]-bbmax1[0],2)) < 0.0001 ) { bbmax1[0] += 0.5; /*cout << "bbmax10+ ";*/ }
@@ -212,13 +205,13 @@ else if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2
 
     if (*no_overlap==0) {
 
-      rec=overlap_x*overlap_y;
-      double div=( ((bbmax1[0]-bbmin1[0])*(bbmax1[1]-bbmin1[1]))
+      rec = overlap_x*overlap_y;
+      double div = ( ((bbmax1[0]-bbmin1[0])*(bbmax1[1]-bbmin1[1]))
             + ((bbmax2[0]-bbmin2[0])*(bbmax2[1]-bbmin2[1])));
 
   // if (*no_overlap==0 && rec > div/2.0) {cout << "rec: " << bbmin1[0] << " " << bbmin1[1] << " " << bbmax1[0] << " " << bbmax1[1] << " " << bbmin2[0] << " " << bbmin2[1] << " " << bbmax2[0] << " " << bbmax2[1] << " " << endl; cout << rec << " " << div << " " << 2*rec/div << endl;}
   // assert((rec > div/2.0) || !(cout << bbmax1[0] << " " << bbmax1[1] << " " << bbmax1[2] << " "
-      rec=2 * rec / div;
+      rec = 2 * rec / div;
   // cout << rec << " " ;
   // assert(rec<1.0 || !(cout << "!" << rec << "!"<< flush));
 

@@ -2,7 +2,6 @@
 #include <cortical_surface/structuralanalysis/anneal.h>
 
 using namespace aims;
-//using namespace carto;
 using namespace std;
 
 void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
@@ -11,9 +10,10 @@ void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
     int old;
     mod = 0;
     std::set<uint>::iterator it;
-
+    long double sum_update = 0.0;
+    
     // Iterating On The Vector Of Sites (In Randomized Order) (long loop)
-    for (uint i = 0 ; i < random.size() ; i++){
+    for ( uint i = 0 ; i < random.size() ; i++ ) {
         somme = 0.0;
 
         old = sites[random[i]]->label;
@@ -32,11 +32,11 @@ void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
         // Iterating On These Labels
         for ( uint k = 0 ; k < zoneLab.size() ; k++ ) {
 
-//             cout << zoneLab[k] << " " << flush;
+            // cout << zoneLab[k] << " " << flush;
             sites[ random[i] ]->label = zoneLab[ k ];
             globalenergieslabels[ k ] = energy;
 
-            int nclsim1 = 0, nclsim2 = 0, nbips1 = 0, nbips2 = 0;
+            int nclsim1 = 0, nclsim2 = 0;
 
             // Iterating On The Cliques The Current Site Is Involved In
             for ( uint n = 0 ; n < cliquesDuSite[ random[i] ].size() ; n++ ) {
@@ -66,21 +66,21 @@ void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
                 }
             }
             // Iterating On The Intra Primal Sketch Cliques
-            for ( uint n = 0 ; n < ipscliques.size() ; n++ ){
+            uint nbips1 = 0, nbips2 = 0;
+            for ( uint n = 0 ; n < ipscliques.size() ; n++ ) {
 
                 uint aux = ipscliques[n];
-                if ( cliques[aux].blobs[0]->subject != sites[ random[i] ]->subject ){
+                if ( cliques[aux].blobs[0]->subject != sites[ random[i] ]->subject ) {
                     if ( zoneLab[k] != 0 )
                         nbips1 += cliques[aux].labelscount[ zoneLab[k] ];
                     if (old != 0)
                         nbips2 += cliques[aux].labelscount[ old ];
                 }
-
             }
 
             total[k] = ( nbips1 - nclsim1 - (nbips2 - nclsim2) );
 
-            somme += exp( - globalenergieslabels[k] / temp );
+            somme += exp ( - globalenergieslabels[k] / temp );
             assert ( !isnan(somme) || ( std::cout << globalenergieslabels[k] << "/" << temp << std::endl && false ) );
         }
 
@@ -90,22 +90,21 @@ void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
             acc = 0;
             for ( uint k = 0 ; k < zoneLab.size() ; k++ )
 				if ( globalenergieslabels[k] < globalenergieslabels[acc] ) acc = k;
-
-			}
+		}
         else {
-            if ( somme > exp(700.0) )
+            if ( somme > exp (700.0) )
                 std::cout << "dist:[";
 
             for ( uint k = 0 ; k < zoneLab.size() ; k++ ) {
                 somme2 += exp ( - globalenergieslabels[k] / temp ) / somme;
                 expenergies[k] = somme2;
                 if ( somme > exp(700.0) )
-                    cout << somme2 << " " ;
+                    std::cout << somme2 << " " ;
 
             }
-            if (somme > exp(700.0)) cout << "]";
+            if ( somme > exp (700.0) ) cout << "]";
 
-			long double tirage = ((long double)UniformRandom() * 1.0);
+			long double tirage = (long double) UniformRandom() * 1.0 ;
 
 			for ( 	acc = 0 ;
 					acc < expenergies.size() && expenergies[acc] < tirage ;
@@ -114,8 +113,18 @@ void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
         if ( old != zoneLab[acc] ) {
 
             sites[random[i]]->label = zoneLab[acc];
+
             for ( uint m = 0 ; m < cliquesDuSite[random[i]].size() ; m++ ) {
-                energy += cliques [cliquesDuSite[random[i]][m]].updateEnergy( random[i], old, true, nbsujets );
+                if ( cliques [cliquesDuSite[random[i]][m]].type == DATADRIVEN ||
+                    cliques [cliquesDuSite[random[i]][m]].type == SIMILARITY ||
+                    cliques [cliquesDuSite[random[i]][m]].type == BESTLOWERSCALE ||
+                    cliques [cliquesDuSite[random[i]][m]].type == INTRAPRIMALSKETCH ) {
+                        long double update = cliques [cliquesDuSite[random[i]][m]].updateEnergy( random[i], old, true, nbsujets );
+                        sum_update += update;
+                        if (update != 0.0)
+                            std::cout << "p:" <<  update << " " << std::flush;
+                        energy += update;
+                }
             }
             mod++;
         }
@@ -123,13 +132,14 @@ void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
             sites[random[i]]->label = old;
         }
     }
+    std::cout << "UP:" << sum_update << " " << std::endl;
 }
 
 void Anneal::Run ( int verbose ){
 
     std::vector< int >  indices_start;
     for( uint i = 0 ; i < sites.size() ; i++ )
-      indices_start.push_back(i);
+        indices_start.push_back(i);
 
     double temp = 300.0;
 
@@ -173,7 +183,7 @@ void Anneal::Run ( int verbose ){
             random.push_back(indices[index]);
             indices.erase(indices.begin()+index);
         }
-        ASSERT(random.size() == sites.size());
+        ASSERT ( random.size() == sites.size() );
         Step(random, temp, mod);
 
         std::cout << " chg:" << mod << " " << std::flush;

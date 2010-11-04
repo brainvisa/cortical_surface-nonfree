@@ -1036,13 +1036,13 @@ void TextureToBlobs::ReadAimsGroupGraph (   Graph &graph,
                 if ( e->getSyntax() == "b2b" ){
 
                     float similarity, distance;
-                    assert (!( e->hasProperty("similarity") && e->hasProperty("distance") ));
                     e->getProperty( "similarity", similarity );
                     e->getProperty( "distance", distance );
-                    if ( e->hasProperty("similarity") )
-                        distance = -1.0;
-                    else if ( e->hasProperty("distance") )
+                    assert (!( e->hasProperty("similarity") && e->hasProperty("distance") ) || (similarity == -1.0 || distance == -1.0));
+                    if ( ! e->hasProperty("similarity") )
                         similarity = -1.0;
+                    else if ( ! e->hasProperty("distance") )
+                        distance = -1.0;
 
                     for ( kv = e->begin() ; kv != e->end() ; kv++ ){
 
