@@ -34,7 +34,7 @@ class SurfaceBased_StructuralAnalysis {
 
         std::string energyPath, labelsPath;
         uint save;
-        void noLabelsZones();
+        void noLabelsZones( int number_of_labels = 21 );
         void regionLabelsZones();
         //void MinimizationSetup(Graph &primal);
 
