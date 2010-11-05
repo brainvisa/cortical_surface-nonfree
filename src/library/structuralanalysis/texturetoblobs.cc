@@ -911,7 +911,7 @@ void addInterSubjectRelations ( Graph *graph,
 
     std::cout << " nodes " << std::endl << "════ Extracting meshes for the interblobs relations..." << std::endl;
     AimsSurfaceTriangle *relations = new AimsSurfaceTriangle();
-    *relations = getB2BRelationsMeshes( cliques, NODES_BARYCENTERS );
+//     *relations = getB2BRelationsMeshes( cliques, NODES_BARYCENTERS );
 
     std::cout << "Building cliques in the Aims group graph..." << endl;
     for ( uint i = 0 ; i < cliques.size() ; i++ ) {
@@ -942,10 +942,10 @@ void addInterSubjectRelations ( Graph *graph,
         edge->setProperty( "similarity", cliques[i].similarity );
         edge->setProperty( "distance", cliques[i].distance );
 
-        ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-        (*ptr)[0]=(*relations)[i];
-        manip.storeAims( *graph, edge, "b2b", ptr );
-        edge->setProperty( "b2b_label", i );
+//         ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+//         (*ptr)[0]=(*relations)[i];
+//         manip.storeAims( *graph, edge, "b2b", ptr );
+//         edge->setProperty( "b2b_label", i );
     }
 }
 
