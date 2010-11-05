@@ -44,18 +44,7 @@ HEADERS = \
   structuralanalysis/region.h \
   structuralanalysis/texturetoblobs.h \ 
   structuralanalysis/meshdistance.h \
-  structuralanalysis/primalsketch_operations.h \
-  geodesicpath/geodesic_algorithm_base.h \
-  geodesicpath/geodesic_algorithm_subdivision.h \
-  geodesicpath/geodesic_algorithm_dijkstra_alternative.h \
-  geodesicpath/geodesic_constants_and_simple_functions.h \
-  geodesicpath/geodesic_algorithm_dijkstra.h \
-  geodesicpath/geodesic_memory.h \
-  geodesicpath/geodesic_algorithm_exact_elements.h \
-  geodesicpath/geodesic_mesh_elements.h \
-  geodesicpath/geodesic_algorithm_exact.h \
-  geodesicpath/geodesic_mesh.h \
-  geodesicpath/geodesic_algorithm_graph_base.h
+  structuralanalysis/primalsketch_operations.h
 
 
 
