@@ -41,7 +41,7 @@ struct ltstr_vec
 //###############################################################################################
 
 
-void SurfaceBased_StructuralAnalysis::noLabelsZones () {/* vector<pair<Point2df,Point2df> > &labelsZones,
+void SurfaceBased_StructuralAnalysis::noLabelsZones ( int number_of_labels ) {/* vector<pair<Point2df,Point2df> > &labelsZones,
                                                            vector<set<uint> > &zonesListesBlobs,
                                                            vector<set<uint> > &listeZones ){*/
     listeZones = std::vector<std::set<uint> > (sites.size());
@@ -54,13 +54,13 @@ void SurfaceBased_StructuralAnalysis::noLabelsZones () {/* vector<pair<Point2df,
 //         labelsZones.push_back(zone);
 //     }
 
-    for ( uint i = 0 ; i < 21 ; i++ )
+    for ( uint i = 0 ; i < number_of_labels ; i++ )
         labels.push_back(i);
 
     for ( uint j = 0 ; j < sites.size() ; j++ ) {
 //         listeZones[j].insert(0);
 //         zonesListesBlobs[0].insert(j);
-        for ( uint k = 0 ; k < 21 ; k++ ) {
+        for ( uint k = 0 ; k < number_of_labels ; k++ ) {
             listeZones[j].insert(k);
 //             zonesListesBlobs[k+1].insert(j);
         }
