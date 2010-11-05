@@ -2,7 +2,7 @@
 #include <aims/math/random.h>
 #include <cortical_surface/structuralanalysis/minimization.h>
 #include <cortical_surface/structuralanalysis/texturetoblobs.h>
-
+#include <float.h>
 
 
 using namespace aims;
@@ -293,7 +293,7 @@ double SurfaceBased_StructuralAnalysis::getTotalEnergy ( ) {
 
 void SurfaceBased_StructuralAnalysis::SummaryLabels ( ) {
     
-    double Edd, Els, Esim, energy, Esub, Eintra, Eglob;
+    double Edd, Els, Esim, energy, Eintra, Eglob;
     std::cout << labels[0] << ":";
     uint nblabel = 0;
     for ( uint il = 0 ; il < cliques.size() ; il++ ) {
@@ -310,7 +310,7 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels ( ) {
 //    fprintf(f, "== SUMMARYLABELS ==\n");
 //   }
     for ( uint lab = 1 ; lab < labels.size() ; lab++ ) {
-        Edd = 0.0; Els = 0.0; Esim = 0.0; Esub = 0.0; Eintra = 0.0; Eglob = 0.0;
+        Edd = 0.0; Els = 0.0; Esim = 0.0; Eintra = 0.0; Eglob = 0.0;
 
         energy = 0.0;
         int nclsim = 0, nbips = 0;
@@ -339,13 +339,12 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels ( ) {
             }
         }
 
-        uint k, j;
         for ( uint n = 0 ; n < ipscliques.size() ; n++ ) {
             bysub[n] = cliques[ipscliques[n]].labelscount[labels[lab]];
         }
         uint nb = 0;
-        for ( k = 0 ; k < nbsujets - 1 ; k++ ) {
-            for ( j = k + 1 ; j < nbsujets ; j++ ) {
+        for ( uint k = 0 ; k < nbsujets - 1 ; k++ ) {
+            for ( uint j = k + 1 ; j < nbsujets ; j++ ) {
                 nb += bysub[k] * bysub[j];
             }
         }
@@ -358,7 +357,6 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels ( ) {
 
         Eglob += - (double)cliques[globalclique].subjectscount[labels[lab]].size() * Clique::globalweight * nbsujets;
 
-
         ASSERT( nbips >= nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false ));
     //     Esub += Clique::intrapsweight*(nbips-nclsim);
         energy += Clique::intrapsweight * nb2 * nbsujets;
@@ -367,8 +365,7 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels ( ) {
         Etotal += energy;
 
 
-        ASSERT ( pow ( Edd + Els + Esim + Esub + Eintra + Eglob - energy,2)<0.01);
-        ASSERT ( Esub < 0.0001 );
+        ASSERT ( fabs(Edd + Els + Esim + Eintra + Eglob - energy) < DBL_EPSILON );
         ASSERT ( Eglob < 0.0001 );
 
         nblabel = 0;
@@ -377,7 +374,7 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels ( ) {
         }
         if ( nblabel != 0 ) {
             std::cout << "label " << labels[lab] << " : " << cliques[globalclique].subjectscount[ labels[lab] ].size() << \
-            " subjects (" << Edd << ";" << Esim << ";" << Els << ";" <<Eintra<<";"<< Eglob<<";"<< Esub<<") " << energy << " " << std::flush;
+            " subjects (" << Edd << ";" << Esim << ";" << Els << ";" <<Eintra<<";"<< Eglob<<") " << energy << " " << std::flush;
 
             std::cout << nblabel << " - " << std::endl;
             // fprintf(f,"label %d : (%3lf;%3lf) %i;\n", labels[lab],(double)Edd,(double)Esim,nblabel);
