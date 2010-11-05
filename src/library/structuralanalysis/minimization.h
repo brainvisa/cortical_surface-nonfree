@@ -20,7 +20,7 @@ class SurfaceBased_StructuralAnalysis {
         std::vector<uint> ipscliques;
         int globalclique;
 
-        long double energy;
+        double energy;
         uint nbsujets;
         std::vector<int> labels;
         std::vector<std::pair<Point2df,Point2df> > labelsZones;
@@ -71,10 +71,10 @@ class SurfaceBased_StructuralAnalysis {
                                   float _ddh = 0.0,
                                   float _globalweight = 0.0 );
 
-        long double getLabelEnergy ( int label, int type = UNKNOWN );
-        long double getClusterEnergy ( std::vector<uint> &composante );
-        long double getTypeEnergy ( int type );
-        long double getTotalEnergy ();
+        double getLabelEnergy ( int label, int type = UNKNOWN );
+        double getClusterEnergy ( std::vector<uint> &composante );
+        double getTypeEnergy ( int type );
+        double getTotalEnergy ();
 
         void SummaryLabels();
         void StoreToGraph(Graph &primal);

@@ -4,13 +4,13 @@
 using namespace aims;
 using namespace std;
 
-void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
+void Anneal::Step ( std::vector<int> &random, double temp, uint &mod ) {
 
-    long double somme = 0.0;
+    double somme = 0.0;
     int old;
     mod = 0;
     std::set<uint>::iterator it;
-    long double sum_update = 0.0;
+    double sum_update = 0.0;
     
     // Iterating On The Vector Of Sites (In Randomized Order) (long loop)
     for ( uint i = 0 ; i < random.size() ; i++ ) {
@@ -25,7 +25,7 @@ void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
         for ( it = listeZones[ random[i] ].begin() ; it != listeZones[ random[i] ].end() ; it++)
             zoneLab.push_back( *it );
 
-        std::vector<long double> globalenergieslabels( zoneLab.size() ),
+        std::vector<double> globalenergieslabels( zoneLab.size() ),
                             expenergies( zoneLab.size() ),
                             total( zoneLab.size() );
 
@@ -84,7 +84,7 @@ void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
             assert ( !isnan(somme) || ( std::cout << globalenergieslabels[k] << "/" << temp << std::endl && false ) );
         }
 
-        long double somme2 = 0.0;
+        double somme2 = 0.0;
         uint acc;
         if ( somme > exp(700.0) ) {
             acc = 0;
@@ -92,37 +92,28 @@ void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
 				if ( globalenergieslabels[k] < globalenergieslabels[acc] ) acc = k;
 		}
         else {
-            if ( somme > exp (700.0) )
-                std::cout << "dist:[";
-
             for ( uint k = 0 ; k < zoneLab.size() ; k++ ) {
                 somme2 += exp ( - globalenergieslabels[k] / temp ) / somme;
                 expenergies[k] = somme2;
-                if ( somme > exp(700.0) )
-                    std::cout << somme2 << " " ;
-
             }
-            if ( somme > exp (700.0) ) cout << "]";
 
-			long double tirage = (long double) UniformRandom() * 1.0 ;
+			double tirage = (double) UniformRandom() * 1.0 ;
 
-			for ( 	acc = 0 ;
-					acc < expenergies.size() && expenergies[acc] < tirage ;
-					acc++ )    { }  //cout << globalenergieslabels[acc] << " " ;
+			for ( acc = 0 ;
+				  acc < expenergies.size() && expenergies[acc] < tirage ;
+				  acc++ )    { }  //cout << globalenergieslabels[acc] << " " ;
         }
         if ( old != zoneLab[acc] ) {
 
             sites[random[i]]->label = zoneLab[acc];
-
             for ( uint m = 0 ; m < cliquesDuSite[random[i]].size() ; m++ ) {
                 if ( cliques [cliquesDuSite[random[i]][m]].type == DATADRIVEN ||
                     cliques [cliquesDuSite[random[i]][m]].type == SIMILARITY ||
                     cliques [cliquesDuSite[random[i]][m]].type == BESTLOWERSCALE ||
                     cliques [cliquesDuSite[random[i]][m]].type == INTRAPRIMALSKETCH ) {
-                        long double update = cliques [cliquesDuSite[random[i]][m]].updateEnergy( random[i], old, true, nbsujets );
+                        
+                        double update = cliques [cliquesDuSite[random[i]][m]].updateEnergy ( random[i], old, true, nbsujets );
                         sum_update += update;
-                        if (update != 0.0)
-                            std::cout << "p:" <<  update << " " << std::flush;
                         energy += update;
                 }
             }
@@ -132,7 +123,6 @@ void Anneal::Step ( std::vector<int> &random, long double temp, uint &mod ) {
             sites[random[i]]->label = old;
         }
     }
-    std::cout << "UP:" << sum_update << " " << std::endl;
 }
 
 void Anneal::Run ( int verbose ){
@@ -189,8 +179,8 @@ void Anneal::Run ( int verbose ){
         std::cout << " chg:" << mod << " " << std::flush;
 
         if (verbose == 1) ShortSummaryLabels();
-        double everif = getTotalEnergy();
-        std::cout << " E=" << energy << " Everif=" << everif << endl;
+        //double everif = getTotalEnergy();
+        std::cout << " E=" << energy << std::endl; //" Everif=" << everif << endl;
 
         temp = temp * 0.99;
 

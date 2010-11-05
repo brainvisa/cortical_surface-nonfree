@@ -1433,7 +1433,7 @@ double TextureToBlobs::getOverlapMeasure( Point2df bbmin1,
                 overlap_y = ( bbmax1[1] < bbmax2[1] ? bbmax1[1] : bbmax2[1] ) - bbmin1[1];
         if ( *no_overlap == 0 ) {
             rec = overlap_x * overlap_y;
-            double div=  ( bbmax1[0] - bbmin1[0] ) * ( bbmax1[1] - bbmin1[1] )
+            double div =  ( bbmax1[0] - bbmin1[0] ) * ( bbmax1[1] - bbmin1[1] )
                 + ( bbmax2[0] - bbmin2[0] ) * ( bbmax2[1] - bbmin2[1] ) ;
 
             rec = 2 * rec / div;

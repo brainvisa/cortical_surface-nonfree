@@ -2,6 +2,7 @@
 #define AIMS_CLIQUES_H
 
 #include <math.h>
+#include <float.h>
 #include <cortical_surface/structuralanalysis/sites.h>
 
 enum typesCliques {
@@ -12,21 +13,21 @@ class Clique{
     public:
         static float ddweight, intrapsweight, globalweight, simweight, lsweight, ddx1, ddx2, simx1, simx2, lsx1, lsx2, ddh;
 
-        long double energie;
+        double energie;
         short type;
         std::vector< Site * > blobs;
         double similarity, distance;
         std::map<int, uint> labelscount;
         std::map<int, std::set<std::string> > subjectscount;
-        long double pot;
+        double pot;
 
-        long double computeEnergy ( bool save, uint CLIQUESNBSUJETS ) {
-            long double energy = 0.0;
+        double computeEnergy ( bool save, uint CLIQUESNBSUJETS ) {
+            double energy = 0.0;
             switch ( type ) {
                 case DATADRIVEN:
                     ASSERT( blobs.size() == 1 );
                     if ( blobs[0]->label != 0 ) {
-                        long double measure = blobs[0]->t;
+                        float measure = blobs[0]->t;
                         if ( measure > ddx1 )
                             energy = ddh;
                         else if ( measure < ddx2 )
@@ -43,7 +44,7 @@ class Clique{
                 case BESTLOWERSCALE:
                     ASSERT( blobs.size() == 1 );
                     if ( blobs[0]->label != 0 ) {
-                        long double mean_scale = (blobs[0]->tmax + blobs[0]->tmin) / 2.0;
+                        double mean_scale = (blobs[0]->tmax + blobs[0]->tmin) / 2.0;
                         if ( mean_scale > lsx1 )
                             energy = 0.0;
                         else if ( mean_scale < lsx2 )
@@ -91,14 +92,6 @@ class Clique{
                             else
                                 energy = (- 1.0) / (simx2 - simx1) * ( distance - simx2 ) - 1.0;
                         }
-//                        std::cout << blobs[0]->index << "-" << blobs[1]->index << "=" << energy << " " << std::flush;
-//                        if (pot == 100) 
-//                            pot = energy;
-//                        else {
-//                            assert( pot == energy );
-//                            if (pot != 0.0) // && pot != -1.0)
-//                                std::cout << "p:" << pot << " " << std::flush;
-//                        }
                     }
                     else {
                         energy = 0.0;
@@ -120,9 +113,9 @@ class Clique{
             return energy;
         }
 
-        long double updateEnergy( uint node, int old, bool save, uint CLIQUESNBSUJETS ) {
+        double updateEnergy( uint node, int old, bool save, uint CLIQUESNBSUJETS ) {
 
-            long double energy = 0.0;
+            double energy = 0.0;
             float _intrapsweight, _globalweight;
 
             switch ( type ) {
@@ -145,7 +138,7 @@ class Clique{
                         // ASSERT(((uint)blobs[0]->index == (uint)node || (uint)blobs[1]->index == (uint)node));
                         // if ((uint)blobs[0]->index == (uint)node) index = 0;
                         // else if ((uint)blobs[1]->index == (uint)node) index = 1;
-                    if ( energie * energie < 0.0001 ) {
+                    if ( fabs(energie) < DBL_EPSILON ) {
                         if ( (uint) blobs[0]->label == (uint) blobs[1]->label && (uint) blobs[0]->label != 0 )
                             energy = computeEnergy ( false, CLIQUESNBSUJETS );
                     }
