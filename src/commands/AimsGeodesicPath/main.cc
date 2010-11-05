@@ -23,10 +23,10 @@
 //#include <aims/def/path.h>
 //#include <cartobase/stream/fileutil.h>
 
-#include <cortical_surface/geodesicpath/geodesic_mesh.h>
-#include <cortical_surface/geodesicpath/geodesic_algorithm_dijkstra.h>
-#include <cortical_surface/geodesicpath/geodesic_algorithm_subdivision.h>
-#include <cortical_surface/geodesicpath/geodesic_algorithm_exact.h>
+#include <aims/geodesicpath/geodesic_mesh.h>
+#include <aims/geodesicpath/geodesic_algorithm_dijkstra.h>
+#include <aims/geodesicpath/geodesic_algorithm_subdivision.h>
+#include <aims/geodesicpath/geodesic_algorithm_exact.h>
 //#include <cortical_surface/geodesicpath/geodesic_algorithm_graph_base.h>
 
 
