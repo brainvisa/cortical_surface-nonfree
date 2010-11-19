@@ -45,9 +45,9 @@ class Clique{
                     ASSERT( blobs.size() == 1 );
                     if ( blobs[0]->label != 0 ) {
                         double mean_scale = (blobs[0]->tmax + blobs[0]->tmin) / 2.0;
-                        if ( mean_scale > lsx1 )
+                        if ( mean_scale < lsx1 )
                             energy = 0.0;
-                        else if ( mean_scale < lsx2 )
+                        else if ( mean_scale > lsx2 )
                             energy = 1.0;
                         else
                             energy = 1.0 / (lsx2 - lsx1) * ( mean_scale - lsx2 ) + 1.0;
