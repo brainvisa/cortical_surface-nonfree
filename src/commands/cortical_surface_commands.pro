@@ -30,6 +30,8 @@ PSUBDIRS = AimsConstraintCleaner \
   AimsCoordinatesToIndex \
   AimsGyriRegularization \
   AimsGroupGyri \
-  AimsGeodesicPath
+  AimsGeodesicPath \
+  AimsInterpolateVolumeToSurface
+  
   
 
