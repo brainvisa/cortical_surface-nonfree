@@ -22,14 +22,17 @@ int main(int argc, const char **argv)
 	std::string adress_mesh;
 	std::string adress_texOut;
 	std::string adress_vol;
+	int type=0;
 
-	AimsApplication     app( argc, argv, "Projection d'un volume sur une surface par simple interpolation linéaire des noeuds de la surface dans le volume ");
+	AimsApplication     app( argc, argv, "Projection d'un volume sur une surface par interpolation des noeuds de la surface dans le volume ");
 	app.addOption( adress_mesh, "-im", "input Mesh");
 	app.alias( "--inMesh", "-im" );
 	app.addOption( adress_vol, "-iv", "input Volume");
 	app.alias( "--inVol", "-iv" );
 	app.addOption( adress_texOut, "-o", "output Texture");
 	app.alias( "--outTex", "-o" );
+	app.addOption( type, "-t", "type d'interpolation (default: 0=trilinéaire, 1=plus proche voisin", 0);
+	app.alias( "--type", "-t");
 
 	app.initialize();
 
@@ -56,31 +59,45 @@ int main(int argc, const char **argv)
 
 	TimeTexture<float> fTex(1, nv);
 
-	std::cout << "Interpolating" << std::endl;
-
-	for (uint i=0; i< nv; i++)
+	std::cout << "Interpolating: ";
+	if (type==0)
 	{
-		float xf=vert[i][0],yf=vert[i][1],zf=vert[i][2];
-		int x=int(floor(xf/sx));
-		int y=int(floor(yf/sy));
-		int z=int(floor(zf/sz));
+		std::cout << "tri-linear"<< std::endl;
+		for (uint i=0; i< nv; i++)
+		{
+			float xf=vert[i][0],yf=vert[i][1],zf=vert[i][2];
+			int x=int(floor(xf/sx));
+			int y=int(floor(yf/sy));
+			int z=int(floor(zf/sz));
 
-		float tx=(xf-float(x))/sx;
-		float ty=(yf-float(y))/sy;
-		float tz=(zf-float(z))/sz;
+			float tx=(xf-float(x))/sx;
+			float ty=(yf-float(y))/sy;
+			float tz=(zf-float(z))/sz;
 
-		float val=float( (1-tx)*(1-ty)*(1-tz)* func(x,y,z)
-				+  tx*(1-ty)*(1-tz)    * func(x+1,y,z)
-				+  (1-tx)*ty*(1-tz)    * func(x,y+1,z)
-				+  tx*ty*(1-tz)        * func(x+1,y+1,z)
-				+  (1-tx)*(1-ty)*tz    * func(x,y,z+1)
-				+  tx*(1-ty)*tz        * func(x+1,y,z+1)
-				+  (1-tx)*ty*tz        * func(x,y+1,z+1)
-				+  tx*ty*tz            * func(x+1,y+1,z+1)
-				);
-		fTex[0].item(i)=val;
+			float val=float( (1-tx)*(1-ty)*(1-tz)* func(x,y,z)
+					+  tx*(1-ty)*(1-tz)    * func(x+1,y,z)
+					+  (1-tx)*ty*(1-tz)    * func(x,y+1,z)
+					+  tx*ty*(1-tz)        * func(x+1,y+1,z)
+					+  (1-tx)*(1-ty)*tz    * func(x,y,z+1)
+					+  tx*(1-ty)*tz        * func(x+1,y,z+1)
+					+  (1-tx)*ty*tz        * func(x,y+1,z+1)
+					+  tx*ty*tz            * func(x+1,y+1,z+1));
+			fTex[0].item(i)=val;
+		}
 	}
-
+	else if (type==1)
+	{
+		std::cout << "nearest neighbor" << std::endl;
+		for (uint i=0; i< nv; i++)
+		{
+			float xf=vert[i][0],yf=vert[i][1],zf=vert[i][2];
+			int x=int((xf/sx)+0.5);
+			int y=int((yf/sy)+0.5);
+			int z=int((zf/sz)+0.5);
+			float val=float(func(x,y,z));
+			fTex[0].item(i)=val;
+		}
+	}
 	std::cout << "Writing texture" << std::endl;
 	Writer<TimeTexture<float> > texW(adress_texOut);
 	texW.write(fTex);
