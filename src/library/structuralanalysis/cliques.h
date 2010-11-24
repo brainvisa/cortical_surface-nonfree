@@ -11,7 +11,7 @@ enum typesCliques {
 
 class Clique{
     public:
-        static float ddweight, intrapsweight, globalweight, simweight, lsweight, ddx1, ddx2, simx1, simx2, lsx1, lsx2, ddh;
+        static float ddweight, intrapsweight, simweight, lsweight, ddx1, ddx2, simx1, simx2, lsx1, lsx2, ddh;
 
         double energie;
         short type;
@@ -99,24 +99,17 @@ class Clique{
                     energy *= simweight;
                 break;
                 case GLOBAL:
-                    //energy = 0;
-                    //assert( subjectscount.size() > 0 );
-                    //for ( uint j = 1 ; j < subjectscount.size() ; j++ ) {
-                    //    assert( subjectscount[j].size() <= CLIQUESNBSUJETS );
-                    //    energy += - globalweight * subjectscount[j].size();
-                    //}
-                    //energy *= CLIQUESNBSUJETS;
-
+                    energy = 0.0;
                 break;
             }
             if (save) energie = energy;
             return energy;
         }
 
-        double updateEnergy( uint node, int old, bool save, uint CLIQUESNBSUJETS ) {
+        double updateEnergy ( uint node, int old, bool save, uint CLIQUESNBSUJETS ) {
 
             double energy = 0.0;
-            float _intrapsweight, _globalweight;
+            float _intrapsweight;
 
             switch ( type ) {
 
@@ -125,7 +118,6 @@ class Clique{
                         energy = computeEnergy ( false, CLIQUESNBSUJETS );
                     else if ( old != 0 && blobs[0]->label == 0 )
                         energy = - energie;
-//                    energy = 0.0;
                 break;
                 case BESTLOWERSCALE:
                     if ( old == 0 && blobs[0]->label != 0 )
@@ -173,41 +165,20 @@ class Clique{
                     }
                 break;
                 case GLOBAL:
-                    //_globalweight = globalweight;
-                    //uint j, k;
-                    //for ( j = 0 ; j < blobs.size() && (uint) blobs[j]->index != (uint) node ; j++ )
-                    //{}
-                    //ASSERT( j < blobs.size() );
-                    //k = 0;
-                    //while ( k < blobs.size() && !(blobs[k]->subject == blobs[j]->subject && blobs[k]->label == old ) ){
-                    //    k++;
-                    //}
-                    //if ( old == blobs[j]->label )
-                    //    energy = 0.0;
-                    //else {
-                    //    if ( old == 0 && blobs[j]->label == 0 )
-                    //        energy = 0.0;
-                    //    else if ( old != 0 ) { 
-                    //        if ( k < blobs.size() )
-                    //            energy += 0.0;
-                    //        else
-                    //            energy += _globalweight;
-                    //    }
-                    //
-                    //    if ( blobs[j]->label != 0 ) {
-                    //        if (subjectscount[blobs[j]->label].find(blobs[j]->subject) == subjectscount[blobs[j]->label].end()) {
-                    //            energy += -_globalweight;
-                    //        }
-                    //    }
-                    //}
-                    //energy *= CLIQUESNBSUJETS;
-                    //if (save){
-                    //    if ( k == blobs.size() )
-                    //        subjectscount[old].erase(blobs[j]->subject);
-                    //
-                    //    subjectscount[blobs[j]->label].insert(blobs[j]->subject);
-                    //
-                    //}
+                    uint j, k;
+                    for ( j = 0 ; j < blobs.size() && (uint) blobs[j]->index != (uint) node ; j++ )
+                    {}
+                    ASSERT( j < blobs.size() );
+                    k = 0;
+                    while ( k < blobs.size() && !(blobs[k]->subject == blobs[j]->subject && blobs[k]->label == old ) ) {
+                        k++;
+                    }
+                    if ( save ) {
+                        if ( k == blobs.size() )
+                            subjectscount[old].erase(blobs[j]->subject);
+                    
+                        subjectscount[blobs[j]->label].insert(blobs[j]->subject);
+                    }
                 break;
             }
             if (save) energie += energy;
@@ -228,8 +199,7 @@ class Clique{
                                     float _simx2,
                                     float _lsx1,
                                     float _lsx2,
-                                    float _ddh,
-                                    float _globalweight );
+                                    float _ddh );
 
         static float getIntraPSWeight() { return intrapsweight; }
         

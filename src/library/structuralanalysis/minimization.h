@@ -36,7 +36,6 @@ class SurfaceBased_StructuralAnalysis {
         uint save;
         void noLabelsZones( int number_of_labels = 21 );
         void regionLabelsZones();
-        //void MinimizationSetup(Graph &primal);
 
         void PrintCliquesNumbers(){
             uint nb_cl_sim = 0, nb_cl_dd = 0, nb_cl_intraps = 0, nb_cl_lower = 0;
@@ -56,7 +55,6 @@ class SurfaceBased_StructuralAnalysis {
         }
 
         SurfaceBased_StructuralAnalysis(){}
-//        SurfaceBased_StructuralAnalysis(Graph &primal);
 
         void setModelParameters ( float _ddweight = 0.0,
                                   float _intrapsweight = 0.0,
@@ -68,8 +66,7 @@ class SurfaceBased_StructuralAnalysis {
                                   float _simx2 = 0.0,
                                   float _lsx1 = 0.0,
                                   float _lsx2 = 0.0,
-                                  float _ddh = 0.0,
-                                  float _globalweight = 0.0 );
+                                  float _ddh = 0.0 );
 
         double getLabelEnergy ( int label, int type = UNKNOWN );
         double getClusterEnergy ( std::vector<uint> &composante );

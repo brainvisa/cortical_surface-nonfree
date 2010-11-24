@@ -16,8 +16,7 @@ float Clique::ddweight,
       Clique::simx2,
       Clique::lsx1, 
       Clique::lsx2, 
-      Clique::ddh, 
-      Clique::globalweight;
+      Clique::ddh;
 
 void Clique::setParameters ( float _ddweight, 
                              float _intrapsweight, 
@@ -29,8 +28,7 @@ void Clique::setParameters ( float _ddweight,
                              float _simx2,
                              float _lsx1,
                              float _lsx2,
-                             float _ddh, 
-                             float _globalweight ){
+                             float _ddh ) {
     ddweight = _ddweight; 
     intrapsweight = _intrapsweight; 
     simweight = _simweight; 
@@ -42,7 +40,6 @@ void Clique::setParameters ( float _ddweight,
     lsx1 = _lsx1;
     lsx2 = _lsx2;
     ddh = _ddh;
-    globalweight = _globalweight;
 }
 
 void Clique::updateLabelsCount ( ) {
@@ -223,9 +220,9 @@ else if (sqrt(pow(bbmin1[0]-bbmax1[0],2)) >150 && sqrt(pow(bbmin2[0]-bbmax2[0],2
 }
 
 
-void BuildMaximalOrderCliques ( vector<Site *> &sites,
-                               vector<vector<int> > &cliquesDuSite,
-                               vector<Clique> &cliques ) {
+void BuildMaximalOrderCliques ( std::vector<Site *> &sites,
+                                std::vector<std::vector<int> > &cliquesDuSite,
+                                std::vector<Clique> &cliques ) {
 
     std::vector< Clique > intraps;
     std::vector< std::string > subjects;
@@ -280,7 +277,7 @@ void BuildLowerScaleCliques ( std::vector < Site *> &sites,
 }
 
 void BuildGlobalClique ( std::vector<Site *> &sites,
-                         std::vector<vector<int> > &cliquesDuSite,
+                         std::vector< std::vector<int> > &cliquesDuSite,
                          std::vector<Clique> &cliques ) {
     Clique c;
     c.type = GLOBAL;
