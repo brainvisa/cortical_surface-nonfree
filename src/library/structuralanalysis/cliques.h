@@ -72,7 +72,6 @@ class Clique{
                     if ( blobs[0]->label == blobs[1]->label && blobs[0]->label != 0 ) {
                           
                         assert ( distance < 0.0 || similarity < 0.0 );
-//                        std::cout << distance << "/" << similarity << " " << std::flush;
                         
                         // MODE OVERLAP
                         if ( similarity > 0.0 ) {

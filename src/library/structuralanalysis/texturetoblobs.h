@@ -3,12 +3,16 @@
 
 #include <cortical_surface/structuralanalysis/region.h>
 
-enum filteringMode {
-    GYRUS, AXIS, NO_FILTER, NO_REPRESENTATION
-};
+//enum filteringMode {
+//    GYRUS, AXIS, NO_FILTER, NO_REPRESENTATION
+//};
 
-enum blobsMode {
-    PRIMALSKETCH, LABELS
+//enum blobsMode {
+//    PRIMALSKETCH, LABELS
+//};
+
+enum representationMode {
+    CORTICAL_PATCHES, SPHERES, NONE
 };
 
 enum graphMode {
@@ -60,10 +64,11 @@ namespace TextureToBlobs {
                      const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                      int graph_mode = DEFAULT );
 
-    void AimsGroupGraph( Graph *graph,
+    void AimsGroupGraph ( Graph *graph,
                             std::map<std::string, SubjectData *> data,
                             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                            std::vector<surf::Clique> &cliques );
+                            std::vector<surf::Clique> &cliques,
+                            bool buildAndStoreRelationsMeshes = false );
 
     void ReadAimsGroupGraph ( Graph &graph,
             std::vector<surf::ScaleSpaceBlob *> &ssblobs,

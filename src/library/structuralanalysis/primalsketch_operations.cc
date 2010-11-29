@@ -33,7 +33,7 @@ void TextureToBlobs::PrimalSketchRegionMode (   std::vector<surf::GreyLevelBlob 
                                                 float scale_max ) {
 
     // Creating the smoother...
-    std::cout << endl << "  ══ Smoother creation... " << std::endl;
+    std::cout << std::endl << "  ══ Smoother creation... " << std::endl;
     FiniteElementSmoother<3, float> smooth ( 0.01, regionData.mesh, regionData.weightLapl );
     ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss ( regionData.mesh, regionData.tex, &smooth );
 
@@ -53,18 +53,18 @@ void TextureToBlobs::PrimalSketchRegionMode (   std::vector<surf::GreyLevelBlob 
             regionScaleSpace[i-1] = region.getLocalFromGlobalTexture( scale_space[i] );
 
         // Recovering Previously Computed Scale-Space
-        cerr << "   ══ Recovering scale-space " << endl;
+        std::cerr << "      Recovering scale-space " << std::flush;
         ss.uploadPreviouslyComputedScaleSpace(regionScaleSpace);
 
     }
     else {
 
         // Generating A Scale-Space And Writing It Onto Hard Disk
-        cerr << "══ Computing scale-space " << endl;
+        std::cerr << "   Computing scale-space " << std::endl;
 
         ss.GenerateDefaultScaleSpace( 128.0 );
 
-        cout << "══ Writing scale-space (after rebuilding the whole texture from the gyrus-specific data)..." << endl;
+        std::cout << "══ Writing scale-space (after rebuilding the whole texture from the gyrus-specific data)..." << std::endl;
         TimeTexture<float> regionScaleSpace = ss.getScaleSpaceTexture( );
 
         TimeTexture<float> scale_space;
@@ -81,10 +81,10 @@ void TextureToBlobs::PrimalSketchRegionMode (   std::vector<surf::GreyLevelBlob 
 
     // Update Coordinates With Conversion Gyrus/Global Indices
     for ( uint i = 0 ; i < blobs.size() ; i ++ ) {
-        set<int>::iterator it;
-        set<int> nodes_aux (blobs[i]->nodes);
-        map<int, vector<float> > coordinates_aux (blobs[i]->coordinates);
-        map<int, vector<float> > raw_coordinates_aux (blobs[i]->raw_coordinates);
+        std::set<int>::iterator it;
+        std::set<int> nodes_aux (blobs[i]->nodes);
+        std::map<int, vector<float> > coordinates_aux (blobs[i]->coordinates);
+        std::map<int, vector<float> > raw_coordinates_aux (blobs[i]->raw_coordinates);
 
         blobs[i]->nodes.clear();
         blobs[i]->coordinates.clear();
@@ -99,7 +99,7 @@ void TextureToBlobs::PrimalSketchRegionMode (   std::vector<surf::GreyLevelBlob 
     }
 
     TimeTexture<float> blobs_tex;
-    cout << "══ Writing blobs texture (after rebuilding the whole texture from the gyrus-specific data)..." << endl;
+    std::cout << "══ Writing blobs texture (after rebuilding the whole texture from the gyrus-specific data)..." << std::endl;
     for ( uint i = 0 ; i < regionBlobsTex.size() ; i++ )
         blobs_tex[i] = region.getGlobalFromLocalTexture( regionBlobsTex[i] );
     Writer<TimeTexture<float> > wtrBlobs ( blobsPath );
@@ -122,7 +122,7 @@ void TextureToBlobs::PrimalSketchGlobalMode (   vector<surf::GreyLevelBlob *> &b
     if ( subject.coordinates == LATLON_2D || subject.coordinates == LAT_1D ) {
         storeCoordinatesInScaleSpace( subject, ss );
     }
-    cout << subject.mesh->vertex().size() << " " << subject.tex->nItem() << endl;
+    std::cout << subject.mesh->vertex().size() << " " << subject.tex->nItem() << std::endl;
 
     if ( recover ) {
         TimeTexture<float> scale_space;
@@ -134,15 +134,15 @@ void TextureToBlobs::PrimalSketchGlobalMode (   vector<surf::GreyLevelBlob *> &b
 
 //        cout << "  Checking that the scale-space has more than just one texture..." << flush;
         assert( scale_space.size() > 1 );
-//        cout << "OK (" << scale_space.size() << ") ( tex[0] is supposed to be the original texture (scale : 0) )" << endl;
+//        cout << "OK (" << scale_space.size() << ") ( tex[0] is supposed to be the original texture (scale : 0) )" << std::endl;
 //        uint nb_scales = scale_space.size() - 1;
         TimeTexture<float> scaleSpaceTex;
 //        cout << "Filtering in the first " << nb_scales << " scales (to allow using bigger pre-computed scale-spaces)..." << flush;
         for ( uint i = 1 ; i < scale_space.size() ; i++ )
             scaleSpaceTex[i-1] = scale_space[i];
 //
-//        cout << "OK" << endl;
-        cerr << "   ══ Recovering scale-space " << endl;
+//        cout << "OK" << std::endl;
+        std::cerr << "      Recovering scale-space " << std::endl;
 
         ss.uploadPreviouslyComputedScaleSpace(scaleSpaceTex);
 
@@ -150,20 +150,20 @@ void TextureToBlobs::PrimalSketchGlobalMode (   vector<surf::GreyLevelBlob *> &b
     else {
 
         // Generating A Scale-Space And Writing It Onto Hard Disk
-        cerr << "══ Computing scale-space " << endl;
+        std::cerr << "══ Computing scale-space " << std::endl;
         ss.GenerateDefaultScaleSpace( 128.0 );
         TimeTexture<float> scale_space;
-        cout << "══ Writing scale-space..." << endl;
+        std::cout << "══ Writing scale-space..." << std::endl;
         scale_space = ss.getScaleSpaceTexture( );
         Writer<TimeTexture<float> > wtrScaleSpace ( scaleSpacePath );
         wtrScaleSpace.write ( scale_space );
 
     }
 
-    cout << "══ Computing primal sketch..." << endl;
+    std::cout << "══ Computing primal sketch..." << std::endl;
     TimeTexture<float> blobs_tex;
     TextureToBlobs::PrimalSketch ( subject, blobs, ssblobs, &ss, blobs_tex, scale_max );
-    cout << "══ Writing blobs texture..." << endl;
+    std::cout << "══ Writing blobs texture..." << std::endl;
     Writer<TimeTexture<float> > wtrBlobs ( blobsPath );
     wtrBlobs.write ( blobs_tex );
 
@@ -180,7 +180,7 @@ void TextureToBlobs::PrimalSketch ( SubjectData &subject,
 
     // Constructing A Primal-Sketch
     aims::PrimalSketch<AimsSurface<3, Void>, Texture<float> > sketch ( subject.subject_id, SURFACE );
-    cout << "  ══ setting scale-space..." << endl;
+    std::cout << "  ══ Setting scale-space..." << std::endl;
     sketch.SetScaleSpace(ss);
 
     // Scale_max == -1.0 Enforces Scale_max To Be Autodetermined (Max Scale From Ss)
@@ -193,20 +193,20 @@ void TextureToBlobs::PrimalSketch ( SubjectData &subject,
                 scale_max = *it;
     }
 
-    cout << "  ══ Computing primal sketch..." << endl;
+    std::cout << "  ══ Computing primal sketch..." << std::endl;
     // Launching The Computation Of The PS (tmin, tmax, statfile, intersection_criterium)
     sketch.ComputePrimalSketch( 1.0, scale_max, "", 1 );
 
     // Writing A Blob Texture
-    cerr << "   ══ Getting scale-space blob texture... " << endl;
+    std::cerr << "      Getting scale-space blob texture... " << std::endl;
     blobs_texture = GetSSBlobTexture( & sketch );
 
     // Getting The Blobs From The Primal Sketch Structure
-    cerr << "    ▪ Blobs vectors construction..." << endl;
+    std::cerr << "      Blobs vectors construction..." << std::endl;
     getBlobsFromPrimalSketch ( subject, sketch, blobs, ssblobs );
 
 
-    cout << blobs.size() << " grey-level blobs / " << ssblobs.size() << " scale-space blobs" << endl;
+    std::cout << blobs.size() << " grey-level blobs / " << ssblobs.size() << " scale-space blobs" << std::endl;
 
 }
 
@@ -224,7 +224,7 @@ void TextureToBlobs::GreyLevelBlobsFromTexture ( SubjectData &subject,
     if ( subject.coordinates == LATLON_2D || subject.coordinates == LAT_1D )
         storeCoordinatesInScaleSpace( subject, ss );
 
-    cout << "══ Computing primal sketch..." << endl;
+    std::cout << "   Computing primal sketch..." << std::endl;
     TimeTexture<float> blobs_tex;
     TextureToBlobs::PrimalSketch( subject, blobs, ssblobs, &ss, blobs_tex, 1.0 );
 

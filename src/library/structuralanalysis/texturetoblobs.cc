@@ -353,19 +353,25 @@ void addScaleSpaceBlobsToGraph ( Graph *graph,
                                  const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                  std::vector<Vertex *> &listVertSSB,
                                  SubjectData &subject,
-                                 bool buildMeshes = true,
-                                 bool storeMeshes = true ) {
+                                 bool storeMeshes = true,
+                                 int representationMode = SPHERES ) {
 
     carto::rc_ptr<AimsSurfaceTriangle> ptr;
     aims::GraphManip manip;
     Vertex *vert;
+        
 
-    if ( buildMeshes ) {
+    if ( representationMode == SPHERES ) {
         std::cout << "════ Extracting meshes for the scale-space blobs..." << std::endl;
-
         std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
         for ( uint i = 0 ; i < ssblobs.size() ; i++ )
             ssblobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.4);
+    }
+    else if ( representationMode == CORTICAL_PATCHES ) {
+        std::cout << "════ Extracting meshes for the scale-space blobs..." << std::endl;
+        std::cout << "      ░░░ mode AimsMesh ░░░     " << std::endl;
+        for ( uint i = 0 ; i < ssblobs.size() ; i++ )
+            ssblobs[i]->getAimsMesh( *(subject.mesh) );
     }
 
     std::cout << "════ Adding scale-space blobs..." << std::endl;
@@ -402,20 +408,25 @@ void addGreyLevelBlobsToGraph ( Graph *graph,
                                 const std::vector<surf::GreyLevelBlob *> &blobs,
                                 std::vector<Vertex *> &listVertGLB,
                                 SubjectData &subject,
-                                bool buildMeshes = true,
-                                bool storeMeshes = true ) {
+                                //bool buildMeshes = true,
+                                bool storeMeshes = true,
+                                int representationMode = SPHERES ) {
 
     carto::rc_ptr<AimsSurfaceTriangle> ptr;
     aims::GraphManip manip;
     Vertex *vert;
 
-    if ( buildMeshes ) {
+    if ( representationMode == SPHERES ) {
         std::cout << "════ Extracting meshes for the grey-level blobs..." << endl;
-
         std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
         for ( uint i = 0 ; i < blobs.size() ; i++ )
-            // blobs[i]->getAimsEllipsoidAtMaxNode ( *(subject.tex) );
             blobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.4);
+    }
+    else if ( representationMode == CORTICAL_PATCHES ) {
+        std::cout << "════ Extracting meshes for the grey-level blobs..." << endl;
+        std::cout << "      ░░░ mode AimsMesh ░░░     " << std::endl;
+        for ( uint i = 0 ; i < blobs.size() ; i++ )
+            blobs[i]->getAimsMesh( *(subject.mesh) );
     }
 
     std::cout << "════ Adding grey-level blobs..." << endl;
@@ -475,27 +486,25 @@ void addBlobsToGraph ( Graph *graph,
                        const std::vector<surf::Blob *> &blobs,
                        std::vector<Vertex *> &listVertGLB,
                        SubjectData &subject,
-                       bool buildMeshes = true,
-                       bool storeMeshes = true ) {
+                       //bool buildMeshes = true,
+                       bool storeMeshes = true,
+                       int representationMode = CORTICAL_PATCHES ) {
 
     carto::rc_ptr<AimsSurfaceTriangle> ptr;
     aims::GraphManip manip;
     Vertex *vert;
 
-    if ( buildMeshes ) {
+    if ( representationMode == SPHERES ) {
         std::cout << "════ Extracting meshes for the grey-level blobs..." << endl;
-
-        //std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
-        //for ( uint i = 0 ; i < blobs.size() ; i++ )
-        //    blobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.4);
-
-        //std::cout << "      ░░░ mode AimsEllipsoidAtMaxNode ░░░     " << std::endl;
-        //for ( uint i = 0 ; i < blobs.size() ; i++ )
-        //    blobs[i]->getAimsEllipsoidAtMaxNode ( *(subject.tex) );
-
+        std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
+        for ( uint i = 0 ; i < blobs.size() ; i++ )
+            blobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.4);
+    }
+    else if ( representationMode == CORTICAL_PATCHES ) {
+        std::cout << "════ Extracting meshes for the grey-level blobs..." << endl;
         std::cout << "      ░░░ mode AimsMesh ░░░     " << std::endl;
         for ( uint i = 0 ; i < blobs.size() ; i++ )
-            blobs[i]->getAimsMesh ( *(subject.mesh) );
+            blobs[i]->getAimsMesh( *(subject.mesh) );
     }
 
     std::cout << "════ Adding grey-level blobs..." << endl;
@@ -718,10 +727,10 @@ void addBifurcationsRelations ( Graph *graph,
 
 void getGraphModeOptions ( const int graph_mode,
                            bool &buildScaleSpaceBlobs,
-                           bool &buildScaleSpaceBlobsMeshes,
+                           int &scaleSpaceBlobsMeshesRepresentationMode,
                            bool &storeScaleSpaceBlobsMeshes,
                            bool &buildGreyLevelBlobs,
-                           bool &buildGreyLevelBlobsMeshes,
+                           int &greyLevelBlobsMeshesRepresentationMode,
                            bool &storeGreyLevelBlobsMeshes,
                            bool &buildSSBToGLBRelations,
                            bool &buildGLBRelations,
@@ -730,10 +739,10 @@ void getGraphModeOptions ( const int graph_mode,
                            bool &buildAndStoreBifurcationsMeshes ) {
 
     buildScaleSpaceBlobs = false;
-    buildScaleSpaceBlobsMeshes = false;
+    scaleSpaceBlobsMeshesRepresentationMode = NONE;
     storeScaleSpaceBlobsMeshes = false;
     buildGreyLevelBlobs = false;
-    buildGreyLevelBlobsMeshes = false;
+    greyLevelBlobsMeshesRepresentationMode = NONE;
     storeGreyLevelBlobsMeshes = false;
     buildSSBToGLBRelations = false;
     buildGLBRelations = false;
@@ -746,7 +755,7 @@ void getGraphModeOptions ( const int graph_mode,
     case NO_SCALESPACEBLOBS_MESHES:
         buildScaleSpaceBlobs = true;
         buildGreyLevelBlobs = true;
-        buildGreyLevelBlobsMeshes = true;
+        greyLevelBlobsMeshesRepresentationMode = SPHERES;
         storeGreyLevelBlobsMeshes = true;
         buildSSBToGLBRelations = true;
         buildGLBRelations = true;
@@ -757,7 +766,7 @@ void getGraphModeOptions ( const int graph_mode,
     case NO_SCALESPACEBLOBS_MESHES_AND_NO_RELATIONS_MESHES:
         buildScaleSpaceBlobs = true;
         buildGreyLevelBlobs = true;
-        buildGreyLevelBlobsMeshes = true;
+        greyLevelBlobsMeshesRepresentationMode = SPHERES;
         storeGreyLevelBlobsMeshes = true;
         buildSSBToGLBRelations = true;
         //buildGLBRelations = true;
@@ -765,10 +774,10 @@ void getGraphModeOptions ( const int graph_mode,
     break;
     case DEFAULT:
         buildScaleSpaceBlobs = true;
-        buildScaleSpaceBlobsMeshes = true;
+        scaleSpaceBlobsMeshesRepresentationMode = SPHERES;
         storeScaleSpaceBlobsMeshes = true;
         buildGreyLevelBlobs = true;
-        buildGreyLevelBlobsMeshes = true;
+        greyLevelBlobsMeshesRepresentationMode = SPHERES;
         storeGreyLevelBlobsMeshes = true;
         buildSSBToGLBRelations = true;
         buildGLBRelations = true;
@@ -788,13 +797,14 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
                                  const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                  int graph_mode ) {
 
-     bool buildScaleSpaceBlobs, buildScaleSpaceBlobsMeshes, storeScaleSpaceBlobsMeshes,
-          buildGreyLevelBlobs, buildGreyLevelBlobsMeshes, storeGreyLevelBlobsMeshes,
+     bool buildScaleSpaceBlobs, storeScaleSpaceBlobsMeshes,
+          buildGreyLevelBlobs, storeGreyLevelBlobsMeshes,
           buildSSBToGLBRelations, buildGLBRelations, buildAndStoreGLBRelationsMeshes,
           buildBifurcations, buildAndStoreBifurcationsMeshes;
+     int scaleSpaceBlobsMeshesRepresentationMode, greyLevelBlobsMeshesRepresentationMode;
 
-     getGraphModeOptions ( graph_mode, buildScaleSpaceBlobs, buildScaleSpaceBlobsMeshes,
-             storeScaleSpaceBlobsMeshes, buildGreyLevelBlobs, buildGreyLevelBlobsMeshes,
+     getGraphModeOptions ( graph_mode, buildScaleSpaceBlobs, scaleSpaceBlobsMeshesRepresentationMode,
+             storeScaleSpaceBlobsMeshes, buildGreyLevelBlobs, greyLevelBlobsMeshesRepresentationMode,
              storeGreyLevelBlobsMeshes, buildSSBToGLBRelations, buildGLBRelations,
              buildAndStoreGLBRelationsMeshes, buildBifurcations, buildAndStoreBifurcationsMeshes);
 
@@ -817,13 +827,13 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
     // Let's Add Or Not The Scale-Space Blobs
         std::vector<Vertex *> listVertSSB, listVertGLB;
         if ( buildScaleSpaceBlobs ) {
-            addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, subject, buildScaleSpaceBlobsMeshes, storeScaleSpaceBlobsMeshes );
+            addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, subject, storeScaleSpaceBlobsMeshes, scaleSpaceBlobsMeshesRepresentationMode );
         }
 
     //=========================================
     // Let's Add Or Not The Grey-Level Blobs
         if ( buildGreyLevelBlobs ) {
-            addGreyLevelBlobsToGraph ( graph, blobs, listVertGLB, subject, buildGreyLevelBlobsMeshes, storeGreyLevelBlobsMeshes );
+            addGreyLevelBlobsToGraph ( graph, blobs, listVertGLB, subject, storeGreyLevelBlobsMeshes, greyLevelBlobsMeshesRepresentationMode );
         }
 
     //===========================================================================
@@ -859,7 +869,7 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
      //=========================================
      // Let's Add Or Not The Blobs
          std::vector<Vertex *> listVert;
-         addBlobsToGraph ( graph, blobs, listVert, subject, true, true );
+         addBlobsToGraph ( graph, blobs, listVert, subject, true, CORTICAL_PATCHES );
 
 }
 
@@ -904,14 +914,20 @@ void defineGroupGraphGlobalProperties ( Graph *graph,
 void addInterSubjectRelations ( Graph *graph,
                                 std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                 std::vector<surf::Clique> &cliques,
-                                std::vector<Vertex *> &listVertSSB ) {
+                                std::vector<Vertex *> &listVertSSB,
+                                bool buildAndStoreRelationsMeshes = false ) {
 
     carto::rc_ptr<AimsSurfaceTriangle> ptr;
     aims::GraphManip manip;
 
-    std::cout << " nodes " << std::endl << "════ Extracting meshes for the interblobs relations..." << std::endl;
-    AimsSurfaceTriangle *relations = new AimsSurfaceTriangle();
-//     *relations = getB2BRelationsMeshes( cliques, NODES_BARYCENTERS );
+    AimsSurfaceTriangle *relations;
+
+    if ( buildAndStoreRelationsMeshes ) {
+        std::cout << " nodes " << std::endl << "════ Extracting meshes for the interblobs relations..." << std::endl;
+        relations = new AimsSurfaceTriangle();
+        *relations = getB2BRelationsMeshes( cliques, NODES_BARYCENTERS );
+    }
+        
 
     std::cout << "Building cliques in the Aims group graph..." << endl;
     for ( uint i = 0 ; i < cliques.size() ; i++ ) {
@@ -942,18 +958,24 @@ void addInterSubjectRelations ( Graph *graph,
         edge->setProperty( "similarity", cliques[i].similarity );
         edge->setProperty( "distance", cliques[i].distance );
 
-//         ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
-//         (*ptr)[0]=(*relations)[i];
-//         manip.storeAims( *graph, edge, "b2b", ptr );
-//         edge->setProperty( "b2b_label", i );
+        if ( buildAndStoreRelationsMeshes ) {
+            ptr = carto::rc_ptr<AimsSurfaceTriangle> ( new AimsSurfaceTriangle );
+            (*ptr)[0] = (*relations)[i];
+            manip.storeAims ( *graph, edge, "b2b", ptr );
+            edge->setProperty( "b2b_label", i );
+        }
     }
+    
+    if ( buildAndStoreRelationsMeshes ) 
+        delete relations;
 }
 
 
 void TextureToBlobs::AimsGroupGraph ( Graph *graph,
                                       std::map<string, SubjectData *> data,
                                       std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                      std::vector<surf::Clique> &cliques ) {
+                                      std::vector<surf::Clique> &cliques,
+                                      bool buildAndStoreRelationsMeshes ) {
 
     std::cerr << "Building Group Graph..." << std::endl;
     defineGroupGraphGlobalProperties ( graph, data );
@@ -991,8 +1013,8 @@ void TextureToBlobs::AimsGroupGraph ( Graph *graph,
 
     SubjectData _;
     std::vector<Vertex *> listVertSSB;
-    addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, _, false, true );
-    addInterSubjectRelations ( graph, ssblobs, cliques, listVertSSB );
+    addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, _, true, NONE );
+    addInterSubjectRelations ( graph, ssblobs, cliques, listVertSSB, buildAndStoreRelationsMeshes );
 
 }
 
