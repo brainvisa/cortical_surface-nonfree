@@ -218,43 +218,42 @@ double StructuralAnalysis_Validation::WalshTest( std::vector<double> &samplesdis
 
 std::vector<double> StructuralAnalysis_Validation::getCaracSample( SurfaceBased_StructuralAnalysis &ssb,
                                                                    std::vector<uint> &composante ) {
-  double  tmoy = 0.0, 
-          rec = 0.0, 
-          sum = 0.0, 
-          compac = 0.0, 
-          Ttest = 0.0, 
-          compaccent;
-  uint nbblobsrec = 0;
+    double tmoy = 0.0, 
+           rec = 0.0, 
+           sum = 0.0, 
+           compac = 0.0, 
+           Ttest = 0.0, 
+           compaccent;
+    uint nbblobsrec = 0;
 
 
-  for ( uint k = 0 ; k < composante.size() ; k++ ) {
-    tmoy += ssb.sites[composante[k]]->tValue;
-    compac += ssb.sites[composante[k]]->t;
-//     compaccent += ssb.sites[composante[k]]->t2;
-  }
-  compac /= composante.size();
-  for (uint k=0;k<composante.size();k++)
-    sum += pow(ssb.sites[composante[k]]->tValue-compac,2);
-  Ttest = sqrt((float)(composante.size()*(composante.size()-1)))*compac/sqrt(sum);
-  for (uint k=0;k<composante.size()-1;k++)
-    for (uint m=k+1;m<composante.size();m++){
-    Point3df bbmax1=ssb.sites[composante[k]]->boundingbox_max, bbmax2=ssb.sites[composante[m]]->boundingbox_max;
-    Point3df bbmin1=ssb.sites[composante[k]]->boundingbox_min, bbmin2=ssb.sites[composante[m]]->boundingbox_min;
-
-    uint no_overlap=1;
-    float reco = getOverlap(bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap);
-    if (no_overlap==0) {
-      rec += reco;
+    for ( uint k = 0 ; k < composante.size() ; k++ ) {
+        tmoy += ssb.sites[composante[k]]->tValue;
+        compac += ssb.sites[composante[k]]->t;
+        //compaccent += ssb.sites[composante[k]]->t2;
     }
-    nbblobsrec++;
-    }
-  vector<double> sample;
-  sample.push_back(compac);
-  sample.push_back(Ttest);
-  sample.push_back(rec/(double)nbblobsrec);
-  sample.push_back(ssb.getClusterEnergy(composante));
-  return sample;
-
+    compac /= composante.size();
+    for (uint k=0;k<composante.size();k++)
+        sum += pow(ssb.sites[composante[k]]->tValue-compac,2);
+    Ttest = sqrt((float)(composante.size()*(composante.size()-1)))*compac/sqrt(sum);
+    for (uint k=0;k<composante.size()-1;k++)
+        for (uint m=k+1;m<composante.size();m++) {
+            Point3df bbmax1 = ssb.sites[composante[k]]->boundingbox_max, bbmax2=ssb.sites[composante[m]]->boundingbox_max;
+            Point3df bbmin1 = ssb.sites[composante[k]]->boundingbox_min, bbmin2=ssb.sites[composante[m]]->boundingbox_min;
+        
+            uint no_overlap = 1;
+            float reco = getOverlap(bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap);
+            if ( no_overlap == 0 ) {
+                rec += reco;
+            }
+            nbblobsrec++;
+        }
+    std::vector<double> sample;
+    sample.push_back(compac);
+    sample.push_back(Ttest);
+    sample.push_back(rec/(double)nbblobsrec);
+    sample.push_back(ssb.getClusterEnergy(composante));
+    return sample;
 }
 
 std::vector<double> StructuralAnalysis_Validation::getBackup ( SurfaceBased_StructuralAnalysis &ssb, 
@@ -478,15 +477,15 @@ void StructuralAnalysis_Validation::ValidAround ( SurfaceBased_StructuralAnalysi
           }
 
       }
-      cout << "fin " << endl;
+      std::cout << "fin " << std::endl;
       for ( uint i = 0 ; i < ssb.sites.size() ; i++ ) {
           ssb.sites[*it]->t_rankperc = 0.0;
           ssb.sites[*it]->sim_rankperc = 0.0;
           ssb.sites[*it]->significance = 0.0;
       }
       for ( uint i = 0 ; i < results.size() ; i++ ) {
-          cerr << i << ":" << flush;
-          cerr << "label " << results[i][0] << ": t-perc=" << results[i][1] << " sim-perc=" << results[i][2] << endl;
+          std::cerr << i << ":" << std::flush;
+          std::cerr << "label " << results[i][0] << ": t-perc=" << results[i][1] << " sim-perc=" << results[i][2] << std::endl;
           uint j;
           for ( j = 0 ; ssb.sites[*(activblobs[j].begin())]->label != results[i][0] && j<activblobs.size() ; j++ ) { }
           for ( it = activblobs[j].begin() ; it != activblobs[j].end() ; it++ ) {

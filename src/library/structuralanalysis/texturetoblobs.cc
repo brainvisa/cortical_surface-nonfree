@@ -726,6 +726,7 @@ void addBifurcationsRelations ( Graph *graph,
 }
 
 void getGraphModeOptions ( const int graph_mode,
+                           const int representation_mode,
                            bool &buildScaleSpaceBlobs,
                            int &scaleSpaceBlobsMeshesRepresentationMode,
                            bool &storeScaleSpaceBlobsMeshes,
@@ -755,7 +756,7 @@ void getGraphModeOptions ( const int graph_mode,
     case NO_SCALESPACEBLOBS_MESHES:
         buildScaleSpaceBlobs = true;
         buildGreyLevelBlobs = true;
-        greyLevelBlobsMeshesRepresentationMode = SPHERES;
+        greyLevelBlobsMeshesRepresentationMode = representation_mode;
         storeGreyLevelBlobsMeshes = true;
         buildSSBToGLBRelations = true;
         buildGLBRelations = true;
@@ -766,18 +767,16 @@ void getGraphModeOptions ( const int graph_mode,
     case NO_SCALESPACEBLOBS_MESHES_AND_NO_RELATIONS_MESHES:
         buildScaleSpaceBlobs = true;
         buildGreyLevelBlobs = true;
-        greyLevelBlobsMeshesRepresentationMode = SPHERES;
+        greyLevelBlobsMeshesRepresentationMode = representation_mode;
         storeGreyLevelBlobsMeshes = true;
         buildSSBToGLBRelations = true;
-        //buildGLBRelations = true;
-        //buildBifurcations = true;
     break;
     case DEFAULT:
         buildScaleSpaceBlobs = true;
-        scaleSpaceBlobsMeshesRepresentationMode = SPHERES;
+        scaleSpaceBlobsMeshesRepresentationMode = representation_mode;
         storeScaleSpaceBlobsMeshes = true;
         buildGreyLevelBlobs = true;
-        greyLevelBlobsMeshesRepresentationMode = SPHERES;
+        greyLevelBlobsMeshesRepresentationMode = representation_mode;
         storeGreyLevelBlobsMeshes = true;
         buildSSBToGLBRelations = true;
         buildGLBRelations = true;
@@ -786,7 +785,6 @@ void getGraphModeOptions ( const int graph_mode,
         buildAndStoreGLBRelationsMeshes = true;
     break;
     }
-
 }
 
 // Creates an Aims Graph for only ONE subject with scale-space blobs, grey-level
@@ -795,7 +793,8 @@ void getGraphModeOptions ( const int graph_mode,
 void TextureToBlobs::AimsGraph ( Graph *graph,
                                  SubjectData & subject,
                                  const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                 int graph_mode ) {
+                                 int graph_mode, 
+                                 int representation_mode ) {
 
      bool buildScaleSpaceBlobs, storeScaleSpaceBlobsMeshes,
           buildGreyLevelBlobs, storeGreyLevelBlobsMeshes,
@@ -803,7 +802,7 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
           buildBifurcations, buildAndStoreBifurcationsMeshes;
      int scaleSpaceBlobsMeshesRepresentationMode, greyLevelBlobsMeshesRepresentationMode;
 
-     getGraphModeOptions ( graph_mode, buildScaleSpaceBlobs, scaleSpaceBlobsMeshesRepresentationMode,
+     getGraphModeOptions ( graph_mode, representation_mode, buildScaleSpaceBlobs, scaleSpaceBlobsMeshesRepresentationMode,
              storeScaleSpaceBlobsMeshes, buildGreyLevelBlobs, greyLevelBlobsMeshesRepresentationMode,
              storeGreyLevelBlobsMeshes, buildSSBToGLBRelations, buildGLBRelations,
              buildAndStoreGLBRelationsMeshes, buildBifurcations, buildAndStoreBifurcationsMeshes);
@@ -857,7 +856,8 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
 
 void TextureToBlobs::AimsGraph ( Graph *graph,
                                  SubjectData & subject,
-                                 const std::vector<surf::Blob *> &blobs ) {
+                                 const std::vector<surf::Blob *> &blobs,
+                                 int representation_mode ) {
 
      // We Define The Graph Global Properties
          defineGraphGlobalProperties ( graph, subject );
@@ -869,7 +869,7 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
      //=========================================
      // Let's Add Or Not The Blobs
          std::vector<Vertex *> listVert;
-         addBlobsToGraph ( graph, blobs, listVert, subject, true, CORTICAL_PATCHES );
+         addBlobsToGraph ( graph, blobs, listVert, subject, true, representation_mode );
 
 }
 
@@ -1099,8 +1099,8 @@ void TextureToBlobs::ReadAimsGroupGraph (   Graph &graph,
 
 
 std::vector<uint> TextureToBlobs::getClustersListsFromGLB ( std::vector<surf::GreyLevelBlob *> &blobs,
-                                                   GroupData &data,
-                                                   float clustering_distance_threshold ) {
+                                                            GroupData &data,
+                                                            float clustering_distance_threshold ) {
 
     std::vector<uint>  clusters ( blobs.size() );
     for ( uint i = 0 ; i < blobs.size() ; i++ )
@@ -1118,7 +1118,8 @@ std::vector<uint> TextureToBlobs::getClustersListsFromGLB ( std::vector<surf::Gr
                     data[blobs[i]->subject]->mesh,
                     data[blobs[i]->subject]->neighbours,
                     max_node,
-                    25.0 ); //clustering_distance_threshold + 1.0 );
+                    clustering_distance_threshold + 10.0 ); 
+        // 10.0mm being a distance larger than the maximum internode distance 
 
         std::map<uint, float>::iterator it;
 
@@ -1159,7 +1160,8 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
                                    std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs,
                                    float clustering_distance_threshold,
                                    std::string outputTextFile,
-                                   bool uniqueGLB ) {
+                                   bool uniqueGLB,
+                                   int representation_mode ) {
 
     FILE *f1;
     std::map<std::string, SubjectData *>::iterator it;
@@ -1209,7 +1211,6 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
                     distance_moyenne += d.norm();
                 }
             }
-
         }
 
         std::cout << cluster_blobs.size() << std::endl;
@@ -1218,17 +1219,17 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
         else
             assert(distance_moyenne == 0.0);
 
-            if ( outputTextFile != "" ) {
-                fprintf(f1, "charac_clusters[\'%s\'][%.3f][%d] = {\n", it->first.data(), clustering_distance_threshold, color);
-                fprintf(f1, "\'dist_moy\' : %lf,\n ", (double)(distance_moyenne) );
-                fprintf(f1, "\'nb_total_blob\' : %d,\n ", cluster_blobs.size() );
-                fprintf(f1, "\'map_count_scales\' : {");
-                std::map< float, uint >::iterator ite3;
-                for ( ite3 = mapCountScales.begin() ; ite3 != mapCountScales.end() ; ite3++ )
-                    fprintf(f1, " %lf : %d, ", (double)(ite3->first), ite3->second );
-                fprintf(f1, "}\n");
-                fprintf(f1, "}\n\n");
-            }
+        if ( outputTextFile != "" ) {
+            fprintf(f1, "charac_clusters[\'%s\'][%.3f][%d] = {\n", it->first.data(), clustering_distance_threshold, color);
+            fprintf(f1, "\'dist_moy\' : %lf,\n ", (double)(distance_moyenne) );
+            fprintf(f1, "\'nb_total_blob\' : %d,\n ", cluster_blobs.size() );
+            fprintf(f1, "\'map_count_scales\' : {");
+            std::map< float, uint >::iterator ite3;
+            for ( ite3 = mapCountScales.begin() ; ite3 != mapCountScales.end() ; ite3++ )
+                fprintf(f1, " %lf : %d, ", (double)(ite3->first), ite3->second );
+            fprintf(f1, "}\n");
+            fprintf(f1, "}\n\n");
+        }
 
 
         // Creation of Blobs
@@ -1267,9 +1268,15 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
                 scales.insert( blobs[cluster_blobs[i] ]->scale );
             }
             glb->ssb_parent = ssb;
-            glb->getAimsSphereAtMaxNode ( * (data[ssb->subject]->tex), 0.4 );
+            
+            if ( representation_mode == SPHERES)
+                glb->getAimsSphereAtMaxNode ( * (data[ssb->subject]->tex), 0.4 );
+            else if ( representation_mode == CORTICAL_PATCHES )
+                glb->getAimsMesh ( * (data[ssb->subject]->mesh) );
+            
             ssb->getNodesFromBlob(glb);
-            ssb->getAimsSphereAtMaxNode ( * (data[ssb->subject]->tex), 0.4 );
+            
+
         }
         else {
             //   Or should we keep track of original GLB ?
@@ -1303,8 +1310,10 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
                             }
                         }
                 }
-                glb->getAimsSphereAtMaxNode ( * (data[ssb->subject]->tex), 0.4 );
-
+                if ( representation_mode == SPHERES)
+                    glb->getAimsSphereAtMaxNode ( * (data[ssb->subject]->tex), 0.4 );
+                else if ( representation_mode == CORTICAL_PATCHES )
+                    glb->getAimsMesh ( * (data[ssb->subject]->mesh) );
 
                 scales.insert( blobs[cluster_blobs[i] ]->scale );
             }
@@ -1320,6 +1329,11 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
         std::cout << "("<<ssb->blobs.size()<<")" << std::endl;
         ssb->t = data[ssb->subject]->tex->item(ssb->getMaximumNode(*(data[ssb->subject]->tex) ) );
         ssb->label = 0;
+        
+        if ( representation_mode == SPHERES)
+            ssb->getAimsSphereAtMaxNode ( * (data[ssb->subject]->tex), 0.4 );
+        else if ( representation_mode == CORTICAL_PATCHES )
+            ssb->getAimsMesh ( * (data[ssb->subject]->mesh) );
 
         //else if ( type_distance == DISTANCE_LATITUDES ) {
         //    int maxim_node = ssb->getMaximumNode(* (data[ssb->subject]->tex));

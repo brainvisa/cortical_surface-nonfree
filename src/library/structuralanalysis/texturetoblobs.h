@@ -3,14 +3,6 @@
 
 #include <cortical_surface/structuralanalysis/region.h>
 
-//enum filteringMode {
-//    GYRUS, AXIS, NO_FILTER, NO_REPRESENTATION
-//};
-
-//enum blobsMode {
-//    PRIMALSKETCH, LABELS
-//};
-
 enum representationMode {
     CORTICAL_PATCHES, SPHERES, NONE
 };
@@ -56,13 +48,15 @@ namespace TextureToBlobs {
 
     void AimsGraph( Graph *graph,
 					SubjectData & subject,
-					const std::vector<surf::Blob *> & blobs ) ;
+					const std::vector<surf::Blob *> & blobs,
+					int representation_mode = CORTICAL_PATCHES) ;
 
 
     void AimsGraph ( Graph *graph,
                      SubjectData & subject,
                      const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                     int graph_mode = DEFAULT );
+                     int graph_mode = DEFAULT,
+                     int representation_mode = NONE );
 
     void AimsGroupGraph ( Graph *graph,
                             std::map<std::string, SubjectData *> data,
@@ -87,7 +81,8 @@ namespace TextureToBlobs {
                                               std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs,
                                               float clustering_distance_threshold = -1.0,
                                               std::string outputTextFile = "/tmp/blobsCountTable.py",
-                                              bool uniqueGLB = false ) ;
+                                              bool uniqueGLB = false,
+                                              int representation_mode = SPHERES ) ;
 
     double getOverlapMeasure( Point2df bbmin1, Point2df bbmax1, Point2df bbmin2, Point2df bbmax2, uint *no_overlap );
 

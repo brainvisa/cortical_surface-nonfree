@@ -506,7 +506,7 @@ void SurfaceBased_StructuralAnalysis::setModelParameters ( float _ddweight,
     Clique::setParameters ( _ddweight, _intrapsweight, _simweight, _lsweight, _ddx1, _ddx2, _simx1, _simx2, _lsx1, _lsx2, _ddh );
 }
 
-void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
+void SurfaceBased_StructuralAnalysis::StoreToGraph ( Graph &primal ) {
     std::set<Vertex *>::iterator iv, jv;
 
     int index;
@@ -525,20 +525,46 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph(Graph &primal){
                 s << sites[i]->label ;
                 (*iv)->setProperty( "label", s.str());
                 (*iv)->setProperty( "name", s.str());
-                //node = sites[i]->node;
-                //(*iv)->setProperty( "node", node);
-                //label_occur_number = sites[i]->label_occur_number;
-                //(*iv)->setProperty( "label_occur_number", label_occur_number);
-                //value = sites[i]->significance;
-                //(*iv)->setProperty( "significance", value);
-                //value = sites[i]->t_rankperc;
-                //(*iv)->setProperty( "t_rankperc", value);
-                //value = sites[i]->sim_rankperc;
-                //(*iv)->setProperty( "sim_rankperc", value);
+//                node = sites[i]->node;
+//                (*iv)->setProperty( "node", node);
+//                label_occur_number = sites[i]->label_occur_number;
+//                (*iv)->setProperty( "label_occur_number", label_occur_number);
+//                value = sites[i]->significance;
+//                (*iv)->setProperty( "significance", value);
+//                value = sites[i]->t_rankperc;
+//                (*iv)->setProperty( "t_rankperc", value);
+//                value = sites[i]->sim_rankperc;
+//                (*iv)->setProperty( "sim_rankperc", value);
             }
         }
     }
+}
 
+void SurfaceBased_StructuralAnalysis::StoreSignificanceToGraph ( Graph &primal ) {
+    std::set<Vertex *>::iterator iv, jv;
+    int index, label_occur_number;
+    float value;
+    std::string subject;
+    
+    for ( iv = primal.vertices().begin() ; iv != primal.vertices().end() ; ++iv ) {
+        std::string test;
+        (*iv)->getProperty( "index", index );
+        (*iv)->getProperty( "subject", subject );
+
+        for ( uint i = 0 ; i < sites.size() ; i++ ) {
+
+            if ( sites[i]->index == (uint) index && sites[i]->subject == subject ) {
+                label_occur_number = sites[i]->label_occur_number;
+                (*iv)->setProperty( "label_occur_number", label_occur_number);
+                value = sites[i]->significance;
+                (*iv)->setProperty( "significance", value);
+                value = sites[i]->t_rankperc;
+                (*iv)->setProperty( "t_rankperc", value);
+                value = sites[i]->sim_rankperc;
+                (*iv)->setProperty( "sim_rankperc", value);
+            }
+        }
+    }
 }
 
 void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites( std::vector<surf::ScaleSpaceBlob *> &ssblobs, std::vector<Site *> &sites ) {
@@ -757,10 +783,12 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
     // Start of cliques construction
     if ( type_distance == DISTANCE_LATITUDES )
         std::cout << "DISTANCE_LATITUDES" << std::endl;
+    else if ( type_distance == DISTANCE_LONGITUDES )
+        std::cout << "DISTANCE_LONGITUDES" << std::endl;
+    else if ( type_distance == DISTANCE_LATLON )
+            std::cout << "DISTANCE_LATLON" << std::endl;
     else if ( type_distance == DISTANCE_3DEUCLIDIAN )
         std::cout << "DISTANCE_3DEUCLIDIAN" << std::endl;
-
-
 
     for ( uint i = 0 ; i < ssblobs.size() - 1 ; i++ ) {
 
@@ -786,7 +814,19 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
                     Point3df p1 (b1max->coordinates[max1][0], b1max->coordinates[max1][1], 0.0);
                     Point3df p2 (b2max->coordinates[max2][0], b2max->coordinates[max2][1], 0.0);
                     Point3df p = p1-p2;
-                    distance = sqrt(10*p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+                    distance = sqrt(p[0]*p[0]);
+                }
+                else if ( type_distance == DISTANCE_LONGITUDES ) {
+                    Point3df p1 (b1max->coordinates[max1][0], b1max->coordinates[max1][1], 0.0);
+                    Point3df p2 (b2max->coordinates[max2][0], b2max->coordinates[max2][1], 0.0);
+                    Point3df p = p1-p2;
+                    distance = sqrt(p[1]*p[1]);
+                }
+                else if ( type_distance == DISTANCE_LATLON ) {
+                    Point3df p1 (b1max->coordinates[max1][0], b1max->coordinates[max1][1], 0.0);
+                    Point3df p2 (b2max->coordinates[max2][0], b2max->coordinates[max2][1], 0.0);
+                    Point3df p = p1-p2;
+                    distance = sqrt(p[0]*p[0] + p[1]*p[1]);
                 }
                 else if ( type_distance == DISTANCE_3DEUCLIDIAN ) {
                     Point3df p1 (b1max->raw_coordinates[max1][0], b1max->raw_coordinates[max1][1], b1max->raw_coordinates[max1][2]);

@@ -74,7 +74,8 @@ class SurfaceBased_StructuralAnalysis {
         double getTotalEnergy ();
 
         void SummaryLabels();
-        void StoreToGraph(Graph &primal);
+        void StoreToGraph ( Graph &primal );
+        void StoreSignificanceToGraph ( Graph &primal );
         void Initialization( bool initLabels = true );
 
 
