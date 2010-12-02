@@ -23,7 +23,6 @@ class Site {
         float sim_rankperc;
         int rank;
         Point3df gravitycenter;
-//        int node;
         Point3df boundingbox_max;
         Point3df boundingbox_min;
         std::set<int> nodes_list;
