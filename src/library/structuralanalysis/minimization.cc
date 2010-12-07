@@ -567,7 +567,85 @@ void SurfaceBased_StructuralAnalysis::StoreSignificanceToGraph ( Graph &primal )
     }
 }
 
-void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites( std::vector<surf::ScaleSpaceBlob *> &ssblobs, std::vector<Site *> &sites ) {
+void SurfaceBased_StructuralAnalysis::BuildSites ( Graph &primal, std::vector<Site *> sites ) {    
+
+    std::set<Vertex *>::iterator iv;
+    std::vector<float> bc;
+    float tmin = -1.0,
+        tmax = -1.0,
+        trep = -1.0,
+        tvalue = -1.0,
+        t = -1.0;
+        //x = -1.0,
+        //y = -1.0;
+    int index = -1,
+        rank = -1;
+    std::string subject = "";
+    int newindex = 0;
+
+    std::vector< int > listepts;
+    std::vector< float > bbmax, bbmin;
+
+    for ( iv = primal.vertices().begin() ; iv != primal.vertices().end() ; ++iv ) {
+        std::string test;
+        (*iv)->getProperty( "index", index);
+        (*iv)->getProperty( "subject", subject);
+        (*iv)->getProperty( "label", test);
+        (*iv)->getProperty( "gravity_center", bc);
+        (*iv)->getProperty( "tmin", tmin);
+        (*iv)->getProperty( "tmax", tmax);
+        (*iv)->getProperty( "trep", trep);
+        (*iv)->getProperty( "t", t);
+        (*iv)->getProperty( "tValue", tvalue);
+        (*iv)->getProperty( "rank", rank);
+        (*iv)->getProperty( "nodes_list", listepts);
+        (*iv)->getProperty( "boundingbox_max", bbmax);
+        (*iv)->getProperty( "boundingbox_min", bbmin);
+
+        sites.push_back( new Site() );
+        Site *s = sites[sites.size()-1];
+
+        s->label = atoi(test.data());    
+        (*iv)->setProperty("label", test);
+        (*iv)->setProperty( "name", test);
+        (*iv)->getProperty( "label", test);
+        (*iv)->getProperty( "name", test);
+        s->index = newindex++;
+        s->graph_index = index;
+        s->subject = subject;
+    
+        if ( bc.size() == 3 ) {
+            s->gravitycenter = Point3df();
+            s->gravitycenter[0] = bc[0];
+            s->gravitycenter[1] = bc[1];
+            s->gravitycenter[2] = bc[2];
+        }
+        s->tmin = tmin;
+        s->tmax = tmax;
+        s->trep = trep;
+        s->rank = rank;
+        if ( bbmax.size() == 3 ) {
+            s->boundingbox_max[0] = bbmax[0];
+            s->boundingbox_max[1] = bbmax[1];
+            s->boundingbox_max[2] = bbmax[2];
+        }
+        if ( bbmin.size() == 3 ) {
+            s->boundingbox_min[0] = bbmin[0];
+            s->boundingbox_min[1] = bbmin[1];
+            s->boundingbox_min[2] = bbmin[2];
+        }
+
+        s->t = t;
+        s->tValue = tvalue;
+        for ( uint i = 0 ; i < listepts.size() ; i++ )
+            s->nodes_list.insert( listepts[i] );
+
+        (*iv)->setProperty( "sites_index", sites.size() - 1 );
+    }
+    //return sites;
+}
+
+void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites ( std::vector<surf::ScaleSpaceBlob *> &ssblobs, std::vector<Site *> &sites ) {
 
     for ( uint i = 0 ; i < ssblobs.size() ; i++ ) {
 
@@ -581,8 +659,17 @@ void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites( std::vector<surf::S
         s->tmax = ssblobs[i]->tmax;
         s->t = ssblobs[i]->t;
         s->nodes_list = ssblobs[i]->nodes;
-        set<int> sTemp(sites[i]->nodes_list);
-        pair<Point2df, Point2df> bb = ssblobs[i]->get2DBoundingBox();
+        
+        if ( ssblobs[i]->nodes.size() == 1 ) {
+            // if the ssblobs are provided with one point in vector raw_coordinates,
+            //  it means that the graph was provided with a gravity_center for every ssb node
+            int node = *(ssblobs[i]->nodes.begin());
+            s->gravitycenter = Point3df ( ssblobs[i]->raw_coordinates[node][0],
+                                          ssblobs[i]->raw_coordinates[node][1],
+                                          ssblobs[i]->raw_coordinates[node][2] ) ;
+        }
+        
+        std::pair<Point2df, Point2df> bb = ssblobs[i]->get2DBoundingBox();
         s->boundingbox_min = Point3df(bb.first[0], bb.first[1], 0);
         s->boundingbox_max = Point3df(bb.second[0], bb.second[1], 0);
 

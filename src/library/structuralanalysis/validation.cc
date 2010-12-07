@@ -223,7 +223,7 @@ std::vector<double> StructuralAnalysis_Validation::getCaracSample ( SurfaceBased
         sum += pow ( ssb.sites[composante[k]]->tValue - compac, 2 );
     Ttest = sqrt ( (float) ( composante.size() * ( composante.size() - 1 ) ) ) * compac / sqrt(sum);
     
-    for ( uint k = 0 ; k < composante.size() - 1 ; k++ )
+    for ( uint k = 0 ; k < composante.size() - 1 ; k++ ) {
         for ( uint m = k + 1 ; m < composante.size() ; m++ ) {
             Point3df bbmax1 = ssb.sites[composante[k]]->boundingbox_max, 
                      bbmax2 = ssb.sites[composante[m]]->boundingbox_max;
@@ -235,12 +235,24 @@ std::vector<double> StructuralAnalysis_Validation::getCaracSample ( SurfaceBased
                 rec += reco;
             nbblobsrec++;
         }
+        barycentre += ssb.sites[composante[k]]->gravitycenter;
+    }
+    barycentre /= composante.size();
+    
+    double distance_moy = 0.0;
+    
+    for ( uint k = 0 ; k < composante.size() - 1 ; k++ ) { 
+        Point3df aux = ssb.sites[composante[k]]->gravitycenter - barycentre;
+        distance_moy += aux.norm();
+    }
+    distance_moy /= composante.size();
+    
     std::vector<double> sample;
     sample.push_back ( compac );
     sample.push_back ( Ttest );
     sample.push_back ( rec / (double) nbblobsrec );
     sample.push_back ( ssb.getClusterEnergy(composante) );
-
+    sample.push_back ( distance_moy );
     return sample;
 }
 
@@ -361,8 +373,8 @@ void StructuralAnalysis_Validation::saveSignificanceInfo ( uint label,
     for ( uint i = 0 ; i < composantes.size() ; i ++) {
         std::vector<double> sample( getCaracSample(swc, composantes[i]) );
         //samplesCarac.push_back( sample );
-        fprintf(f, "%d, %.3f, %.3f, %.3f\n", label, sample[3], sample[0], sample[2] );
-        printf("%d, %.3f, %.3f, %.3f\n", label, sample[3], sample[0], sample[2] );
+        fprintf(f, "%d, %.3f, %.3f, %.3f, %.3f\n", label, sample[3], sample[0], sample[2], sample[3] );
+        printf("%d, %.3f, %.3f, %.3f, %.3f\n", label, sample[3], sample[0], sample[2], sample[3] );
         //samplesT.push_back( sample[0] );
         //samplesRec.push_back( sample[2] );
         //if ( sample[3] < 0.0 )

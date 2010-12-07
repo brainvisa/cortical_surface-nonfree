@@ -78,6 +78,7 @@ class SurfaceBased_StructuralAnalysis {
         void StoreSignificanceToGraph ( Graph &primal );
         void Initialization( bool initLabels = true );
 
+        static void BuildSites ( Graph &primal, std::vector<Site *> ); //map<float, vector<pair<float, uint > > > &altmesh);
 
         static void ConvertSSBlobsToSites ( std::vector<surf::ScaleSpaceBlob *> &ssblobs, std::vector<Site *> &sites );
 

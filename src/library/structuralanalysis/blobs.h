@@ -13,7 +13,7 @@ enum typesRepresentation {
 
 namespace surf {
 
-    class Blob{
+    class Blob {
         public:
             int index;
             std::set<int> nodes;
@@ -44,12 +44,10 @@ namespace surf {
     };
     class ScaleSpaceBlob;
 
-
     class GreyLevelBlob: public Blob {
         public :
             float scale;
             int label;
-
             surf::ScaleSpaceBlob *ssb_parent;
 
             void getAimsEllipsoid ( void );
@@ -65,7 +63,6 @@ namespace surf {
                 index = glb->index;
                 nodes = std::set<int>(glb->nodes);
                 subject = glb->subject;
-//                polygons = set::set<Point3di>(glb->polygons);
                 coordinates = std::map<int, std::vector<float> >(glb->coordinates);
                 raw_coordinates = std::map<int, std::vector<float> >(glb->raw_coordinates);
                 ssb_parent = glb->ssb_parent;
@@ -80,7 +77,6 @@ namespace surf {
         public :
             float t;
             int label;
-            std::string subject;
             std::set<float> scales;
             float tmin;
             float tmax;
@@ -107,7 +103,7 @@ namespace surf {
             std::pair<Point2df, Point2df> get2DBoundingBox ( );
     };
 
-    class Clique{
+    class Clique {
         public :
             ScaleSpaceBlob *ssb1;
             ScaleSpaceBlob *ssb2;
@@ -122,7 +118,7 @@ namespace surf {
 
     };
 
-    class Bifurcation{
+    class Bifurcation {
         public :
             std::set<ScaleSpaceBlob *> topBlobs;
             std::set<ScaleSpaceBlob *> bottomBlobs;

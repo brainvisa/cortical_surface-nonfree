@@ -30,7 +30,5 @@ class Site {
 };
 
 
-std::vector<Site *> BuildSites(Graph &primal); //map<float, vector<pair<float, uint > > > &altmesh);
-
 #endif
 

@@ -108,7 +108,6 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
                     ( blob->coordinates)[nodes_list[i]][0] = latitudes[i];
                     ( blob->coordinates)[nodes_list[i]][1] = longitudes[i];
                 }
-
             }
 
             blob->index = iNbGLB++;
@@ -137,6 +136,7 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
     Edge *e;
     Vertex::iterator jv;
     Edge::iterator kv;
+    
 
     listGLBindices = std::map<int, std::set<int> >();
     int iNbLinks = 0;
@@ -144,12 +144,14 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
 
     for ( iv = graph->vertices().begin() ; iv != graph->vertices().end() ; ++iv ) {
         if ( (*iv)->getSyntax() == "ssb" ) {
-            int index;
+            int index,
+                node;
             float tmax,
                   tmin,
                   t;
             std::vector<float> scales;
             std::string subject_id, label;
+            std::vector<float> bc;
 
             ssblobs.push_back( new surf::ScaleSpaceBlob() );
             surf::ScaleSpaceBlob *ssblob = ssblobs[ssblobs.size()-1];
@@ -160,6 +162,7 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
             (*iv)->getProperty( "t", t);
             (*iv)->getProperty( "subject", subject_id);
             (*iv)->getProperty( "label", label);
+            (*iv)->getProperty( "gravity_center", bc);
 
             ssblob->index = iNbSSB++;
             index = ssblob->index;
@@ -172,9 +175,15 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
             ssblob->t = t;
             ssblob->subject = subject_id;
             ssblob->label = atoi(label.data());
+            ssblob->nodes = std::set<int>();
+            ssblob->nodes.insert(node);
+            ssblob->raw_coordinates = std::map<int, std::vector<float> >();
+            ssblob->raw_coordinates[node] = std::vector<float> ( bc.size() );
+            for ( uint i = 0 ; i < bc.size() ; i++ )
+                ssblob->raw_coordinates[node][i] = bc[i];
 
             if ( listGLBindices.find( index ) == listGLBindices.end() )
-                listGLBindices[index] = set<int>();
+                listGLBindices[index] = std::set<int>();
 
             for ( jv = (*iv)->begin() ; jv != (*iv)->end() ; jv++ ) {
                 e = *jv;
@@ -195,8 +204,6 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
             }
         }
     }
-
-
 }
 
 
@@ -352,26 +359,25 @@ void defineGraphGlobalProperties ( Graph *graph,
 void addScaleSpaceBlobsToGraph ( Graph *graph,
                                  const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                  std::vector<Vertex *> &listVertSSB,
-                                 SubjectData &subject,
+                                 std::map<string, SubjectData *> &data,
                                  bool storeMeshes = true,
                                  int representationMode = SPHERES ) {
 
     carto::rc_ptr<AimsSurfaceTriangle> ptr;
     aims::GraphManip manip;
     Vertex *vert;
-        
 
     if ( representationMode == SPHERES ) {
         std::cout << "════ Extracting meshes for the scale-space blobs..." << std::endl;
         std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
         for ( uint i = 0 ; i < ssblobs.size() ; i++ )
-            ssblobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.4);
+            ssblobs[i]->getAimsSphereAtMaxNode( *(data[ssblobs[i]->subject]->tex), 0.4);
     }
     else if ( representationMode == CORTICAL_PATCHES ) {
         std::cout << "════ Extracting meshes for the scale-space blobs..." << std::endl;
         std::cout << "      ░░░ mode AimsMesh ░░░     " << std::endl;
         for ( uint i = 0 ; i < ssblobs.size() ; i++ )
-            ssblobs[i]->getAimsMesh( *(subject.mesh) );
+            ssblobs[i]->getAimsMesh( *(data[ssblobs[i]->subject]->mesh) );
     }
 
     std::cout << "════ Adding scale-space blobs..." << std::endl;
@@ -392,6 +398,17 @@ void addScaleSpaceBlobsToGraph ( Graph *graph,
         vert->setProperty( "tmin", ssblobs[i]->tmin);
         vert->setProperty( "tmax", ssblobs[i]->tmax);
         vert->setProperty( "scales", set2vector(ssblobs[i]->scales) );
+        
+        uint node = ssblobs[i]->getMaximumNode(*(data[ssblobs[i]->subject]->tex));
+        
+        //std::cout << "NODE:" << node << "/" << data[ssblobs[i]->subject]->mesh->vertex().size() << std::endl;
+        Point3df maxnode = data[ssblobs[i]->subject]->mesh->vertex()[ node ];
+        //std::cout << maxnode << std::endl;
+        std::vector<float> bc(3);
+        for ( uint j = 0 ; j < bc.size() ; j++ )
+            bc[j] = maxnode[j];
+        vert->setProperty ( "gravity_center", bc );
+        
         listVertSSB[  i  ] = vert;
 
         if ( storeMeshes ) {
@@ -791,7 +808,7 @@ void getGraphModeOptions ( const int graph_mode,
 //  blobs and links between both types
 
 void TextureToBlobs::AimsGraph ( Graph *graph,
-                                 SubjectData & subject,
+                                 SubjectData &subject,
                                  const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                  int graph_mode, 
                                  int representation_mode ) {
@@ -825,8 +842,12 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
     //=========================================
     // Let's Add Or Not The Scale-Space Blobs
         std::vector<Vertex *> listVertSSB, listVertGLB;
+        std::map<std::string, SubjectData *> data;
+        std::pair<std::string, SubjectData *> p;
+        p.first = subject.subject_id;
+        p.second = &subject;
         if ( buildScaleSpaceBlobs ) {
-            addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, subject, storeScaleSpaceBlobsMeshes, scaleSpaceBlobsMeshesRepresentationMode );
+            addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, data, storeScaleSpaceBlobsMeshes, scaleSpaceBlobsMeshesRepresentationMode );
         }
 
     //=========================================
@@ -1013,7 +1034,7 @@ void TextureToBlobs::AimsGroupGraph ( Graph *graph,
 
     SubjectData _;
     std::vector<Vertex *> listVertSSB;
-    addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, _, true, NONE );
+    addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, data, true, NONE );
     addInterSubjectRelations ( graph, ssblobs, cliques, listVertSSB, buildAndStoreRelationsMeshes );
 
 }

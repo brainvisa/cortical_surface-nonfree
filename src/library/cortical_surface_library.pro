@@ -72,7 +72,6 @@ SOURCES = \
   surfacereferential/gyri/vertices_operations.cc \
   surfacereferential/gyri/gyri_parameterization.cc \
   structuralanalysis/iograph.cc \
-  structuralanalysis/sites.cc \
   structuralanalysis/cliques.cc \
   structuralanalysis/minimization.cc \
   structuralanalysis/icm.cc \
