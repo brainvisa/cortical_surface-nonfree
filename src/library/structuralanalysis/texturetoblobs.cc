@@ -235,12 +235,11 @@ void TextureToBlobs::RecoverBlobsFromIndividualGraph( Graph *graph,
         for ( it = listGLBindices[index].begin() ; it != listGLBindices[index].end() ; it++ ) {
             ssblobs[i]->blobs.insert( blobs[blobs.size() - iNbGLB + *it] );
             blobs[blobs.size() - iNbGLB + *it]->ssb_parent = ssblobs[i];
-
         }
     }
 
-    cout << iNbGLB << " blobs added" << endl;
-    cout << iNbSSB << " ssblobs added " << endl;
+    std::cout << iNbGLB << " blobs added" << std::endl 
+        << iNbSSB << " ssblobs added " << std::endl;
 
     for (uint i = blobs.size() - iNbGLB ; i < blobs.size() ; i++)
         assert(blobs[i]->ssb_parent != NULL);
@@ -277,8 +276,8 @@ void TextureToBlobs::RecoverBlobsFromGLBOnly( Graph *graph,
 
     assert( blobs.size() - iNbGLB == ssblobs.size() - iNbSSB );
 
-    cout << blobs.size() - iNbGLB << " blobs added" << endl;
-    cout << ssblobs.size() - iNbSSB << " ssblobs added " << endl;
+    cout << blobs.size() - iNbGLB << " blobs added" << std::endl;
+    cout << ssblobs.size() - iNbSSB << " ssblobs added " << std::endl;
 
     for (uint i = blobs.size() - iNbGLB ; i < blobs.size() ; i++)
         assert(blobs[i]->ssb_parent != NULL);
@@ -391,7 +390,6 @@ void addScaleSpaceBlobsToGraph ( Graph *graph,
         vert = graph->addVertex("ssb");
 
         vert->setProperty( "label", "0");
-        //assert(ssblobs[i]->nodes.size() != 0);
         vert->setProperty( "nodes", set2vector(ssblobs[i]->nodes));
         vert->setProperty( "t", ssblobs[i]->t);
         vert->setProperty( "subject", ssblobs[i]->subject);
@@ -425,7 +423,6 @@ void addGreyLevelBlobsToGraph ( Graph *graph,
                                 const std::vector<surf::GreyLevelBlob *> &blobs,
                                 std::vector<Vertex *> &listVertGLB,
                                 SubjectData &subject,
-                                //bool buildMeshes = true,
                                 bool storeMeshes = true,
                                 int representationMode = SPHERES ) {
 
@@ -434,19 +431,19 @@ void addGreyLevelBlobsToGraph ( Graph *graph,
     Vertex *vert;
 
     if ( representationMode == SPHERES ) {
-        std::cout << "════ Extracting meshes for the grey-level blobs..." << endl;
+        std::cout << "════ Extracting meshes for the grey-level blobs..." << std::endl;
         std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
         for ( uint i = 0 ; i < blobs.size() ; i++ )
             blobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.4);
     }
     else if ( representationMode == CORTICAL_PATCHES ) {
-        std::cout << "════ Extracting meshes for the grey-level blobs..." << endl;
+        std::cout << "════ Extracting meshes for the grey-level blobs..." << std::endl;
         std::cout << "      ░░░ mode AimsMesh ░░░     " << std::endl;
         for ( uint i = 0 ; i < blobs.size() ; i++ )
             blobs[i]->getAimsMesh( *(subject.mesh) );
     }
 
-    std::cout << "════ Adding grey-level blobs..." << endl;
+    std::cout << "════ Adding grey-level blobs..." << std::endl;
     listVertGLB = std::vector<Vertex *> ( blobs.size() );
     for ( int i = 0 ; i < (int) blobs.size() ; i++ ) {
 
@@ -475,14 +472,14 @@ void addGreyLevelBlobsToGraph ( Graph *graph,
             }
             else {
                 if ( longitudes.size() != 0 ) {
-                    cout << latitudes.size() << " " << longitudes.size() << endl;
+                    cout << latitudes.size() << " " << longitudes.size() << std::endl;
                 }
                 assert(longitudes.size() == 0);
             }
         }
         else if ( subject.coordinates == LAT_1D ) {
             //TODO
-            cout << "To Be Implemented" << endl;
+            cout << "To Be Implemented" << std::endl;
 
         }
 
@@ -503,7 +500,6 @@ void addBlobsToGraph ( Graph *graph,
                        const std::vector<surf::Blob *> &blobs,
                        std::vector<Vertex *> &listVertGLB,
                        SubjectData &subject,
-                       //bool buildMeshes = true,
                        bool storeMeshes = true,
                        int representationMode = CORTICAL_PATCHES ) {
 
@@ -512,19 +508,19 @@ void addBlobsToGraph ( Graph *graph,
     Vertex *vert;
 
     if ( representationMode == SPHERES ) {
-        std::cout << "════ Extracting meshes for the grey-level blobs..." << endl;
+        std::cout << "════ Extracting meshes for the grey-level blobs..." << std::endl;
         std::cout << "      ░░░ mode AimsSphereAtMaxNode ░░░     " << std::endl;
         for ( uint i = 0 ; i < blobs.size() ; i++ )
             blobs[i]->getAimsSphereAtMaxNode( *(subject.tex), 0.4);
     }
     else if ( representationMode == CORTICAL_PATCHES ) {
-        std::cout << "════ Extracting meshes for the grey-level blobs..." << endl;
+        std::cout << "════ Extracting meshes for the grey-level blobs..." << std::endl;
         std::cout << "      ░░░ mode AimsMesh ░░░     " << std::endl;
         for ( uint i = 0 ; i < blobs.size() ; i++ )
             blobs[i]->getAimsMesh( *(subject.mesh) );
     }
 
-    std::cout << "════ Adding grey-level blobs..." << endl;
+    std::cout << "════ Adding grey-level blobs..." << std::endl;
     listVertGLB = std::vector<Vertex *> ( blobs.size() );
     for ( int i = 0 ; i < (int) blobs.size() ; i++ ) {
 
@@ -551,14 +547,14 @@ void addBlobsToGraph ( Graph *graph,
             }
             else {
                 if ( longitudes.size() != 0 ) {
-                    cout << latitudes.size() << " " << longitudes.size() << endl;
+                    std::cout << latitudes.size() << " " << longitudes.size() << std::endl;
                 }
                 assert(longitudes.size() == 0);
             }
         }
         else if ( subject.coordinates == LAT_1D ) {
             //TODO
-            cout << "To Be Implemented" << endl;
+            cout << "To Be Implemented" << std::endl;
 
         }
 
@@ -568,7 +564,7 @@ void addBlobsToGraph ( Graph *graph,
             // We associate the proper mesh patch from "objects" to the vertex
             ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
             (*ptr)[0] = blobs[i]->mesh;
-            manip.storeAims(*graph, vert, "glb", ptr);
+            manip.storeAims ( *graph, vert, "glb", ptr );
         }
 
     }
@@ -739,7 +735,6 @@ void addBifurcationsRelations ( Graph *graph,
         iNbLinks++;
     }
     std::cout << "\b\b\b\b\b\b\b\b\b\b\b  " << iNbLinks << " bifurcations added... done" << std::endl;
-
 }
 
 void getGraphModeOptions ( const int graph_mode,
@@ -950,7 +945,7 @@ void addInterSubjectRelations ( Graph *graph,
     }
         
 
-    std::cout << "Building cliques in the Aims group graph..." << endl;
+    std::cout << "Building cliques in the Aims group graph..." << std::endl;
     for ( uint i = 0 ; i < cliques.size() ; i++ ) {
 
         // For every clique, we get the two corresponding vertices from listVertices
@@ -1585,7 +1580,7 @@ void TextureToBlobs::filteringBlobs (  std::vector<surf::ScaleSpaceBlob *> & ssb
         else
             delete(ssb);
     }
-    cerr << filteredBlobs.size() << " filtered blobs - " << filteredSsblobs.size() << " filtered ssblobs" << endl;
+    std::cerr << filteredBlobs.size() << " filtered blobs - " << filteredSsblobs.size() << " filtered ssblobs" << std::endl;
 
 
     // Now that the blobs are filtered, we add the correct bifurcations

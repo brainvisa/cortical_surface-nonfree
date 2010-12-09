@@ -285,7 +285,7 @@ double SurfaceBased_StructuralAnalysis::getTotalEnergy ( ) {
                 nb2 += bysub[i] - 1;
     }
 
-    ASSERT( nbips >= nclsim || (std::cout << nbips << ">=" << nclsim << endl && false ));
+    ASSERT( nbips >= nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false ));
     energy += Clique::intrapsweight * nb2 * nbsujets;
 
     return energy;
@@ -358,7 +358,6 @@ void SurfaceBased_StructuralAnalysis::SummaryLabels ( ) {
                 nb2 += bysub[i] - 1;
 
         ASSERT( nbips >= nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false ));
-    //     Esub += Clique::intrapsweight*(nbips-nclsim);
         energy += Clique::intrapsweight * nb2 * nbsujets;
         Eintra += Clique::intrapsweight * nb2 * nbsujets;
 
@@ -743,7 +742,6 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
     surf::GreyLevelBlob *b1max, *b2max;
 
     // Start of cliques construction
-
     for ( uint i = 0 ; i < ssblobs.size() - 1 ; i++ ) {
         std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << ssblobs.size() << "(" << cliques.size() << ")" << std::flush;
         for ( uint j = i + 1 ; j < ssblobs.size() ; j++ ) {
@@ -755,7 +753,6 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
             if ( ssblobs[i]->subject != ssblobs[j]->subject ) {
 
                 float overmax = -1.0;
-
                 for ( itB1 = ssblobs[i]->blobs.begin() ; itB1 != ssblobs[i]->blobs.end() ; itB1++ ) {
                     for ( itB2 = ssblobs[j]->blobs.begin() ; itB2 != ssblobs[j]->blobs.end() ; itB2++ ) {
 
@@ -765,7 +762,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
                         // vector<int> listNodesB1(set2vector((*itB1)->nodes_list)),
                         //             listNodesB2(set2vector((*itB2)->nodes_list));
 
-                        pair<Point2df,Point2df> bbi = (*itB1)->get2DBoundingBox(),
+                        std::pair<Point2df,Point2df> bbi = (*itB1)->get2DBoundingBox(),
                             //getBoundingBox((*itB1)->nodes, data[ssblobs[i]->subject].lat, data[ssblobs[i]->subject].lon),
                                                 bbj = (*itB2)->get2DBoundingBox();
                             //(*itB2)->nodes, data[ssblobs[j]->subject].lat, data[ssblobs[j]->subject].lon);
@@ -802,9 +799,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
                     }
                 }
 
-
                 // Here all the possible glb pairs have been processed for the two current ssb
-
                 if ( overmax > 0.10 &&
                         !((ssblobs[j]->tmin > ssblobs[i]->tmax) || (ssblobs[i]->tmin > ssblobs[j]->tmax)) ) {
                     // If the two scale-space blobs have at least one pair of grey-level
@@ -812,18 +807,14 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
                     // is created between these two ssb and the max-overlapping pair of glb
                     // is stored in "matchingblobs".
 
-
-
                     cliques.push_back(surf::Clique(ssblobs[i], ssblobs[j], -1.0, overmax));
                     matchingblobs[i].push_back(b1max);
                     matchingblobs[j].push_back(b2max);
                     //cout << "max (" << ssblobs[i]->index <<","<< ssblobs[j]->index << ") between:" << b1max->index << " "
                     //    << b2max->index << " overmax:" << overmax << endl;
                     //cout << "scales: " << b1max->scale << " " << b1max->scale << endl;
-
                 }
             }
-
             // The next pair of scale-space blobs will now be processed.
         }
     }
@@ -847,10 +838,8 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
         }
 
         if (matchingblobs[i].size()!=0)
-            cout << endl ;
-
+            std::cout << std::endl ;
     }
-
     return cliques;
 }
 
@@ -931,7 +920,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
             // The next pair of scale-space blobs will now be processed.
         }
     }
-    std::cout << endl;
+    std::cout << std::endl;
     std::cout << ssblobs.size() << "/" << ssblobs.size() << "(" << cliques.size() << ")" << std::endl;
     return cliques;
 }

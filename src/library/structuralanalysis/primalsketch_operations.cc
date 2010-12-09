@@ -108,11 +108,11 @@ void TextureToBlobs::PrimalSketchRegionMode (   std::vector<surf::GreyLevelBlob 
 
 }
 
-void TextureToBlobs::PrimalSketchGlobalMode (   vector<surf::GreyLevelBlob *> &blobs,
-                                    vector<surf::ScaleSpaceBlob *> &ssblobs,
+void TextureToBlobs::PrimalSketchGlobalMode (   std::vector<surf::GreyLevelBlob *> &blobs,
+                                    std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                     SubjectData &subject,
-                                    string scaleSpacePath,
-                                    string blobsPath,
+                                    std::string scaleSpacePath,
+                                    std::string blobsPath,
                                     bool recover,
                                     float scale_max ) {
 
@@ -127,7 +127,7 @@ void TextureToBlobs::PrimalSketchGlobalMode (   vector<surf::GreyLevelBlob *> &b
     if ( recover ) {
         TimeTexture<float> scale_space;
 
-        Reader< TimeTexture<float> > rdrScaleSpace ( scaleSpacePath ) ;
+        aims::Reader< TimeTexture<float> > rdrScaleSpace ( scaleSpacePath ) ;
         rdrScaleSpace.read ( scale_space );
 
         // Recovering Previously Computed Scale-Space
@@ -155,7 +155,7 @@ void TextureToBlobs::PrimalSketchGlobalMode (   vector<surf::GreyLevelBlob *> &b
         TimeTexture<float> scale_space;
         std::cout << "══ Writing scale-space..." << std::endl;
         scale_space = ss.getScaleSpaceTexture( );
-        Writer<TimeTexture<float> > wtrScaleSpace ( scaleSpacePath );
+        aims::Writer<TimeTexture<float> > wtrScaleSpace ( scaleSpacePath );
         wtrScaleSpace.write ( scale_space );
 
     }
@@ -164,7 +164,7 @@ void TextureToBlobs::PrimalSketchGlobalMode (   vector<surf::GreyLevelBlob *> &b
     TimeTexture<float> blobs_tex;
     TextureToBlobs::PrimalSketch ( subject, blobs, ssblobs, &ss, blobs_tex, scale_max );
     std::cout << "══ Writing blobs texture..." << std::endl;
-    Writer<TimeTexture<float> > wtrBlobs ( blobsPath );
+    aims::Writer<TimeTexture<float> > wtrBlobs ( blobsPath );
     wtrBlobs.write ( blobs_tex );
 
 }
@@ -175,8 +175,6 @@ void TextureToBlobs::PrimalSketch ( SubjectData &subject,
                     ScaleSpace<AimsSurface<3, Void>, Texture<float> > *ss,
                     TimeTexture<float> &blobs_texture,
                     float scale_max ) {
-
-
 
     // Constructing A Primal-Sketch
     aims::PrimalSketch<AimsSurface<3, Void>, Texture<float> > sketch ( subject.subject_id, SURFACE );
@@ -205,9 +203,7 @@ void TextureToBlobs::PrimalSketch ( SubjectData &subject,
     std::cerr << "      Blobs vectors construction..." << std::endl;
     getBlobsFromPrimalSketch ( subject, sketch, blobs, ssblobs );
 
-
     std::cout << blobs.size() << " grey-level blobs / " << ssblobs.size() << " scale-space blobs" << std::endl;
-
 }
 
 //##############################################################################
@@ -239,8 +235,8 @@ void TextureToBlobs::GreyLevelBlobsFromTexture ( SubjectData &subject,
 
 void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
                      aims::PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch,
-                     vector<surf::GreyLevelBlob *> &blobs,
-                     vector<surf::ScaleSpaceBlob *> &ssblobs,
+                     std::vector<surf::GreyLevelBlob *> &blobs,
+                     std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                      bool initNull ) {
 
     // Initialization of the results vectors "blobs" and "ssblobs"
@@ -273,7 +269,7 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
         ssblob->subject = sketch.Subject();
         ssblob->tmin = 999.0;
         ssblob->tmax = -999.0;
-        ssblob->scales = std::set<float>();
+        ssblob->scales = std::set<float>();        
 
         // We save a link between the pointer and the corresponding index in ssblobs
         std::pair< ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*, surf::ScaleSpaceBlob * > p;
@@ -301,7 +297,6 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
 
                 if ( subject.coordinates == LATLON_2D ) {
                     (blob->coordinates)[(*itPoints).second] = vector<float>(2);
-
                     (blob->coordinates)[(*itPoints).second][0] = subject.lat->item((*itPoints).second);
                     (blob->coordinates)[(*itPoints).second][1] = subject.lon->item((*itPoints).second);
                 }
@@ -313,17 +308,14 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
             }
 
             ssblob->blobs.insert(blob);
-
+            
             if ( blob->scale < ssblob->tmin )
                 ssblob->tmin = blob->scale;
             if ( blob->scale > ssblob->tmax )
                 ssblob->tmax = blob->scale;
         }
-
         ssblob->t = ssb->GetMeasurements().t;
-
     }
-
 
     // Now that every SSB has been created, we can create links (bifurcations)
     // between them
