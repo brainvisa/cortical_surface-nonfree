@@ -64,7 +64,7 @@ void TextureToBlobs::DestroyBlobs ( std::vector<surf::Blob *> &blobs ) {
         delete ( blobs[i] );
 }
 
-void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
+void TextureToBlobs::getGreyLevelBlobsFromGraph ( Graph *graph,
                             SubjectData &subject,
                             std::vector <surf::GreyLevelBlob *> &blobs,
                             bool initNull ){
@@ -93,7 +93,7 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
             (*iv)->getProperty( "nodes", nodes_list );
             (*iv)->getProperty( "x", latitudes );
             (*iv)->getProperty( "y", longitudes );
-
+            (*iv)->getProperty( "index", index );
 //            assert(nodes_list.size() == latitudes.size());
 
             for ( uint i = 0 ; i < nodes_list.size() ; i++ ) {
@@ -110,10 +110,10 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
                 }
             }
 
-            blob->index = iNbGLB++;
+            blob->index = index;
             blob->label = label;
-            index = blob->index;
-            (*iv)->setProperty( "index", (int) index );
+            //index = blob->index;
+            
 
             blob->subject = subject_id;
             blob->nodes = vector2set(nodes_list);
@@ -125,9 +125,9 @@ void TextureToBlobs::getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
 }
 
 
-void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
+void TextureToBlobs::getScaleSpaceBlobsFromGraph ( Graph *graph,
                             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                            std::map<int, std::set<int> > &listGLBindices,
+                            std::map< std::string, std::map<int, std::set<int> > > &listGLBindices,
                             bool initNull ){
     if ( initNull )
         ssblobs.clear();
@@ -137,8 +137,9 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
     Vertex::iterator jv;
     Edge::iterator kv;
     
-
-    listGLBindices = std::map<int, std::set<int> >();
+    //std::string graph_subject;
+    //graph->getProperty( "subject", graph_subject );
+    
     int iNbLinks = 0;
     int iNbSSB = ssblobs.size();
 
@@ -163,12 +164,11 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
             (*iv)->getProperty( "subject", subject_id);
             (*iv)->getProperty( "label", label);
             (*iv)->getProperty( "gravity_center", bc);
-
-            ssblob->index = iNbSSB++;
-            index = ssblob->index;
-            (*iv)->setProperty( "index", (int) index );
+            (*iv)->getProperty( "index", index );
+            
+            //index = ssblob->index;
             (*iv)->setProperty( "sites_index", (int)(ssblobs.size()-1) );
-
+            ssblob->index = index;
             ssblob->tmax = tmax;
             ssblob->tmin = tmin;
             ssblob->scales = vector2set(scales);
@@ -182,8 +182,11 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
             for ( uint i = 0 ; i < bc.size() ; i++ )
                 ssblob->raw_coordinates[node][i] = bc[i];
 
-            if ( listGLBindices.find( index ) == listGLBindices.end() )
-                listGLBindices[index] = std::set<int>();
+            if ( listGLBindices.find(subject_id) == listGLBindices.end() )
+                listGLBindices[subject_id] = std::map<int, std::set<int> >();
+
+            if ( listGLBindices[subject_id].find( index ) == listGLBindices[subject_id].end() )
+                listGLBindices[subject_id][index] = std::set<int>();
 
             for ( jv = (*iv)->begin() ; jv != (*iv)->end() ; jv++ ) {
                 e = *jv;
@@ -196,7 +199,7 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
                         else if ( (*kv)->getSyntax() == "glb" ) {
                             int iGLBindex;
                             (*kv)->getProperty( "index", iGLBindex );
-                            listGLBindices[index].insert( iGLBindex );
+                            listGLBindices[subject_id][index].insert( iGLBindex );
                             iNbLinks++;
                         }
                     }
@@ -206,8 +209,15 @@ void TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
     }
 }
 
+surf::GreyLevelBlob *TextureToBlobs::findBlob ( const std::vector<surf::GreyLevelBlob *> &blobs,
+                                std::string subject_id,
+                                int index ) {
+    for ( uint i = 0 ; i < blobs.size() ; i ++ )
+        if ( blobs[i]->subject == subject_id && blobs[i]->index == index )
+            return blobs[i];
+}
 
-void TextureToBlobs::RecoverBlobsFromIndividualGraph( Graph *graph,
+void TextureToBlobs::RecoverBlobsFromGraph( Graph *graph,
                             SubjectData &subject,
                             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                             bool initNull ){
@@ -219,21 +229,23 @@ void TextureToBlobs::RecoverBlobsFromIndividualGraph( Graph *graph,
             blobs.push_back( *it );
     }
 
-    std::map <int, std::set<int> > listGLBindices;
+    std::map < std::string, std::map< int, std::set<int> > > listGLBindices;
     int iNbGLB = blobs.size();
     int iNbSSB = ssblobs.size();
 
-    getGreyLevelBlobsFromIndividualGraph( graph, subject, blobs, initNull );
+    getGreyLevelBlobsFromGraph( graph, subject, blobs, initNull );
     iNbGLB = blobs.size() - iNbGLB;
 
-    getScaleSpaceBlobsFromIndividualGraph( graph, ssblobs, listGLBindices, initNull );
+    getScaleSpaceBlobsFromGraph( graph, ssblobs, listGLBindices, initNull );
     iNbSSB = ssblobs.size() - iNbSSB;
 
     for ( uint i = ssblobs.size() - iNbSSB ; i < ssblobs.size() ; i++ ) {
         int index = ssblobs[i]->index;
+        std::string subject = ssblobs[i]->subject;
         std::set<int>::iterator it;
-        for ( it = listGLBindices[index].begin() ; it != listGLBindices[index].end() ; it++ ) {
-            ssblobs[i]->blobs.insert( blobs[blobs.size() - iNbGLB + *it] );
+        for ( it = listGLBindices[subject][index].begin() ; it != listGLBindices[subject][index].end() ; it++ ) {
+            
+            ssblobs[i]->blobs.insert( findBlob ( blobs, subject, *it) );
             blobs[blobs.size() - iNbGLB + *it]->ssb_parent = ssblobs[i];
         }
     }
@@ -252,7 +264,7 @@ void TextureToBlobs::RecoverBlobsFromGLBOnly( Graph *graph,
                             bool initNull ){
 
     int iNbGLB = blobs.size();
-    getGreyLevelBlobsFromIndividualGraph ( graph, subject, blobs, initNull );
+    getGreyLevelBlobsFromGraph ( graph, subject, blobs, initNull );
 //    iNbGLB = blobs.size() - iNbGLB;
 
     int iNbSSB = ssblobs.size();
@@ -358,13 +370,15 @@ void defineGraphGlobalProperties ( Graph *graph,
 void addScaleSpaceBlobsToGraph ( Graph *graph,
                                  const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                  std::vector<Vertex *> &listVertSSB,
-                                 std::map<string, SubjectData *> &data,
+                                 std::map< std::string, SubjectData *> &data,
                                  bool storeMeshes = true,
                                  int representationMode = SPHERES ) {
 
     carto::rc_ptr<AimsSurfaceTriangle> ptr;
     aims::GraphManip manip;
     Vertex *vert;
+    uint node;
+    Point3df maxnode;
 
     if ( representationMode == SPHERES ) {
         std::cout << "════ Extracting meshes for the scale-space blobs..." << std::endl;
@@ -379,42 +393,42 @@ void addScaleSpaceBlobsToGraph ( Graph *graph,
             ssblobs[i]->getAimsMesh( *(data[ssblobs[i]->subject]->mesh) );
     }
 
-    std::cout << "════ Adding scale-space blobs..." << std::endl;
+    std::cout << "════ Adding scale-space blobs..." << std::endl;    
     listVertSSB = std::vector<Vertex *> ( ssblobs.size() );
     for ( int i = 0 ; i < (int) ssblobs.size() ; i++ ) {
 
         // For every scale-space blob, we create a vertex in the Aims graph : we define
         //   its properties and store a link between the created vertex and the blob index
 
-        cout << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << flush ;
+        std::cout << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << std::flush ;
         vert = graph->addVertex("ssb");
 
         vert->setProperty( "label", "0");
-        vert->setProperty( "nodes", set2vector(ssblobs[i]->nodes));
+        vert->setProperty( "index", ssblobs[i]->index);
         vert->setProperty( "t", ssblobs[i]->t);
         vert->setProperty( "subject", ssblobs[i]->subject);
         vert->setProperty( "tmin", ssblobs[i]->tmin);
         vert->setProperty( "tmax", ssblobs[i]->tmax);
         vert->setProperty( "scales", set2vector(ssblobs[i]->scales) );
         
-        uint node = ssblobs[i]->getMaximumNode(*(data[ssblobs[i]->subject]->tex));
-        
-        //std::cout << "NODE:" << node << "/" << data[ssblobs[i]->subject]->mesh->vertex().size() << std::endl;
-        Point3df maxnode = data[ssblobs[i]->subject]->mesh->vertex()[ node ];
-        //std::cout << maxnode << std::endl;
-        std::vector<float> bc(3);
-        for ( uint j = 0 ; j < bc.size() ; j++ )
-            bc[j] = maxnode[j];
-        vert->setProperty ( "gravity_center", bc );
+        if ( ssblobs[i]->nodes.size() > 0 ) {
+            vert->setProperty( "nodes", set2vector(ssblobs[i]->nodes));
+            node = ssblobs[i]->getMaximumNode(*(data[ssblobs[i]->subject]->tex));
+            maxnode = data[ssblobs[i]->subject]->mesh->vertex()[ node ];
+            std::vector<float> bc(3);
+            for ( uint j = 0 ; j < bc.size() ; j++ )
+                bc[j] = maxnode[j];
+            vert->setProperty ( "gravity_center", bc );
+        }
         
         listVertSSB[  i  ] = vert;
-
         if ( storeMeshes ) {
             ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
             (*ptr)[0] = ssblobs[i]->mesh;
             manip.storeAims(*graph, vert, "ssb", ptr);
         }
     }
+
     std::cout << "\b\b\b\b\b\b\b\b\b\b\b  " << graph->order() << " blobs added... done" << std::endl;
 
 }
@@ -829,9 +843,9 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
         defineGraphGlobalProperties ( graph, subject );
 
     // Initializing Blobs Indices
-        for (int i = 0 ; i < (int) ssblobs.size() ; i++)
+        for ( int i = 0 ; i < (int) ssblobs.size() ; i++ )
             ssblobs[i]->index = i;
-        for (int i = 0 ; i < (int) blobs.size() ; i++)
+        for ( int i = 0 ; i < (int) blobs.size() ; i++ )
             blobs[i]->index = i;
 
     //=========================================
@@ -841,6 +855,7 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
         std::pair<std::string, SubjectData *> p;
         p.first = subject.subject_id;
         p.second = &subject;
+        data.insert(p);
         if ( buildScaleSpaceBlobs ) {
             addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, data, storeScaleSpaceBlobsMeshes, scaleSpaceBlobsMeshesRepresentationMode );
         }
@@ -1027,7 +1042,6 @@ void TextureToBlobs::AimsGroupGraph ( Graph *graph,
 //         listVertSSB[ i ] = vert;
 //    }
 
-    SubjectData _;
     std::vector<Vertex *> listVertSSB;
     addScaleSpaceBlobsToGraph ( graph, ssblobs, listVertSSB, data, true, NONE );
     addInterSubjectRelations ( graph, ssblobs, cliques, listVertSSB, buildAndStoreRelationsMeshes );
@@ -1047,9 +1061,9 @@ void TextureToBlobs::ReadAimsGroupGraph (   Graph &graph,
     // Recovering The Scale-Space Blobs
 
     std::cout << " Recovering the scale-space blobs..." << std::endl;
-    std::map<int, std::set<int> > listGLBindices;
+    std::map<std::string, std::map<int, std::set<int> > > listGLBindices;
 
-    TextureToBlobs::getScaleSpaceBlobsFromIndividualGraph ( &graph, ssblobs, listGLBindices, false );
+    TextureToBlobs::getScaleSpaceBlobsFromGraph ( &graph, ssblobs, listGLBindices, false );
 
     std::cout << "ssblobs.size() :"<< ssblobs.size() << std::endl;
 

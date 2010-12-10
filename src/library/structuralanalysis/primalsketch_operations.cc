@@ -131,24 +131,20 @@ void TextureToBlobs::PrimalSketchGlobalMode (   std::vector<surf::GreyLevelBlob 
         rdrScaleSpace.read ( scale_space );
 
         // Recovering Previously Computed Scale-Space
-
-//        cout << "  Checking that the scale-space has more than just one texture..." << flush;
+        // cout << "  Checking that the scale-space has more than just one texture..." << flush;
         assert( scale_space.size() > 1 );
-//        cout << "OK (" << scale_space.size() << ") ( tex[0] is supposed to be the original texture (scale : 0) )" << std::endl;
-//        uint nb_scales = scale_space.size() - 1;
+        //cout << "OK (" << scale_space.size() << ") ( tex[0] is supposed to be the original texture (scale : 0) )" << std::endl;
+        //uint nb_scales = scale_space.size() - 1;
         TimeTexture<float> scaleSpaceTex;
-//        cout << "Filtering in the first " << nb_scales << " scales (to allow using bigger pre-computed scale-spaces)..." << flush;
+        //cout << "Filtering in the first " << nb_scales << " scales (to allow using bigger pre-computed scale-spaces)..." << flush;
         for ( uint i = 1 ; i < scale_space.size() ; i++ )
             scaleSpaceTex[i-1] = scale_space[i];
-//
-//        cout << "OK" << std::endl;
+
+        //cout << "OK" << std::endl;
         std::cerr << "      Recovering scale-space " << std::endl;
-
         ss.uploadPreviouslyComputedScaleSpace(scaleSpaceTex);
-
     }
     else {
-
         // Generating A Scale-Space And Writing It Onto Hard Disk
         std::cerr << "══ Computing scale-space " << std::endl;
         ss.GenerateDefaultScaleSpace( 128.0 );
@@ -157,7 +153,6 @@ void TextureToBlobs::PrimalSketchGlobalMode (   std::vector<surf::GreyLevelBlob 
         scale_space = ss.getScaleSpaceTexture( );
         aims::Writer<TimeTexture<float> > wtrScaleSpace ( scaleSpacePath );
         wtrScaleSpace.write ( scale_space );
-
     }
 
     std::cout << "══ Computing primal sketch..." << std::endl;
@@ -166,7 +161,6 @@ void TextureToBlobs::PrimalSketchGlobalMode (   std::vector<surf::GreyLevelBlob 
     std::cout << "══ Writing blobs texture..." << std::endl;
     aims::Writer<TimeTexture<float> > wtrBlobs ( blobsPath );
     wtrBlobs.write ( blobs_tex );
-
 }
 
 void TextureToBlobs::PrimalSketch ( SubjectData &subject,
@@ -193,11 +187,11 @@ void TextureToBlobs::PrimalSketch ( SubjectData &subject,
 
     std::cout << "  ══ Computing primal sketch..." << std::endl;
     // Launching The Computation Of The PS (tmin, tmax, statfile, intersection_criterium)
-    sketch.ComputePrimalSketch( 1.0, scale_max, "", 1 );
+    sketch.ComputePrimalSketch ( 1.0, scale_max, "", 1 );
 
     // Writing A Blob Texture
     std::cerr << "      Getting scale-space blob texture... " << std::endl;
-    blobs_texture = GetSSBlobTexture( & sketch );
+    blobs_texture = GetSSBlobTexture ( & sketch );
 
     // Getting The Blobs From The Primal Sketch Structure
     std::cerr << "      Blobs vectors construction..." << std::endl;

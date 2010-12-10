@@ -39,6 +39,7 @@ class Clique{
                         energy = 0.0;
                     energy *= ddweight;
                     energy *= CLIQUESNBSUJETS;
+                    energy = 0;
 
                 break;
                 case BESTLOWERSCALE:
@@ -56,6 +57,7 @@ class Clique{
                         energy = 0.0;
                     energy *= lsweight;
                     energy *= CLIQUESNBSUJETS;
+                    energy = 0;
                 break;
                 case INTRAPRIMALSKETCH:
                     energy = 0;
@@ -96,6 +98,7 @@ class Clique{
                         energy = 0.0;
                     }
                     energy *= simweight;
+                    energy = 0;
                 break;
                 case GLOBAL:
                     energy = 0.0;

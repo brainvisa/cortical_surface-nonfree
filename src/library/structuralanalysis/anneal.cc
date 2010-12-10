@@ -179,8 +179,8 @@ void Anneal::Run ( int verbose ){
         std::cout << " chg:" << mod << " " << std::flush;
 
         if (verbose == 1) ShortSummaryLabels();
-        //double everif = getTotalEnergy();
-        std::cout << " E=" << energy << std::endl; //" Everif=" << everif << endl;
+        double everif = getTotalEnergy();
+        std::cout << " E=" << energy << std::endl << " Everif=" << everif << endl;
 
         temp = temp * 0.99;
 

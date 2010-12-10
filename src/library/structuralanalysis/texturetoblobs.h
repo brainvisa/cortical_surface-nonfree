@@ -15,14 +15,14 @@ namespace TextureToBlobs {
 
     std::set<int> getFilteringNodes( SubjectData & subject );
 
-    void getGreyLevelBlobsFromIndividualGraph ( Graph *graph,
+    void getGreyLevelBlobsFromGraph ( Graph *graph,
                                 SubjectData &subject,
                                 std::vector<surf::GreyLevelBlob *> &blobs,
                                 bool initNull );
 
-    void getScaleSpaceBlobsFromIndividualGraph ( Graph *graph,
+    void getScaleSpaceBlobsFromGraph ( Graph *graph,
                                 std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                std::map<int, std::set<int> > &listGLBindices,
+                                std::map< std::string, std::map<int, std::set<int> > > &listGLBindices,
                                 bool initNull );
 
     void BlobsFromLabelTexture ( std::vector<surf::Blob *> &blobs,
@@ -35,7 +35,11 @@ namespace TextureToBlobs {
                                            surf::Region &region,
                                            SubjectData &regionData );
 
-    void RecoverBlobsFromIndividualGraph( Graph *graph,
+    surf::GreyLevelBlob * findBlob ( const std::vector<surf::GreyLevelBlob *> &blobs,
+                                    std::string subject_id,
+                                    int index ) ;
+    
+    void RecoverBlobsFromGraph( Graph *graph,
             SubjectData &subject,
             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
             bool initNull = true);

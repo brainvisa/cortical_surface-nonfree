@@ -286,7 +286,7 @@ double SurfaceBased_StructuralAnalysis::getTotalEnergy ( ) {
     }
 
     ASSERT( nbips >= nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false ));
-    energy += Clique::intrapsweight * nb2 * nbsujets;
+    //energy += Clique::intrapsweight * nb2 * nbsujets;
 
     return energy;
 }
@@ -524,16 +524,6 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph ( Graph &primal ) {
                 s << sites[i]->label ;
                 (*iv)->setProperty( "label", s.str());
                 (*iv)->setProperty( "name", s.str());
-//                node = sites[i]->node;
-//                (*iv)->setProperty( "node", node);
-//                label_occur_number = sites[i]->label_occur_number;
-//                (*iv)->setProperty( "label_occur_number", label_occur_number);
-//                value = sites[i]->significance;
-//                (*iv)->setProperty( "significance", value);
-//                value = sites[i]->t_rankperc;
-//                (*iv)->setProperty( "t_rankperc", value);
-//                value = sites[i]->sim_rankperc;
-//                (*iv)->setProperty( "sim_rankperc", value);
             }
         }
     }
@@ -553,6 +543,7 @@ void SurfaceBased_StructuralAnalysis::StoreSignificanceToGraph ( Graph &primal )
         for ( uint i = 0 ; i < sites.size() ; i++ ) {
 
             if ( sites[i]->index == (uint) index && sites[i]->subject == subject ) {
+                // node = sites[i]->node;
                 label_occur_number = sites[i]->label_occur_number;
                 (*iv)->setProperty( "label_occur_number", label_occur_number);
                 value = sites[i]->significance;
@@ -800,7 +791,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
                 }
 
                 // Here all the possible glb pairs have been processed for the two current ssb
-                if ( overmax > 0.10 &&
+                if ( overmax > 0.0 &&
                         !((ssblobs[j]->tmin > ssblobs[i]->tmax) || (ssblobs[i]->tmin > ssblobs[j]->tmax)) ) {
                     // If the two scale-space blobs have at least one pair of grey-level
                     //   overlapping (bounding-boxes) (+ scales overlapping), then a clique
