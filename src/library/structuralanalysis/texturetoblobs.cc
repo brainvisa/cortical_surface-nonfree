@@ -157,13 +157,13 @@ void TextureToBlobs::getScaleSpaceBlobsFromGraph ( Graph *graph,
             ssblobs.push_back( new surf::ScaleSpaceBlob() );
             surf::ScaleSpaceBlob *ssblob = ssblobs[ssblobs.size()-1];
 
-            (*iv)->getProperty( "tmax", tmax);
-            (*iv)->getProperty( "tmin", tmin);
-            (*iv)->getProperty( "scales", scales);
-            (*iv)->getProperty( "t", t);
-            (*iv)->getProperty( "subject", subject_id);
-            (*iv)->getProperty( "label", label);
-            (*iv)->getProperty( "gravity_center", bc);
+            (*iv)->getProperty( "tmax", tmax );
+            (*iv)->getProperty( "tmin", tmin );
+            (*iv)->getProperty( "scales", scales );
+            (*iv)->getProperty( "t", t );
+            (*iv)->getProperty( "subject", subject_id );
+            (*iv)->getProperty( "label", label );
+            (*iv)->getProperty( "gravity_center", bc );
             (*iv)->getProperty( "index", index );
 
             //index = ssblob->index;
