@@ -345,45 +345,46 @@ Point3df surf::Blob::getBlobBarycenterFromMesh( void ) {
 
 
 pair<Point2df, Point2df> surf::Blob::get2DBoundingBox ( void ){
-  Point2df bbmin, bbmax;
-  bbmin[0] = 181.0;
-  bbmin[1] = 361.0;
-  bbmax[0] = -1.0;
-  bbmax[1] = -1.0;
-  set<int>::iterator it;
-  pair<Point2df, Point2df> bb;
-  for (it = nodes.begin() ; it != nodes.end() ; it ++){
-    if (coordinates[*it][0] < bbmin[0])
-      bbmin[0] = coordinates[*it][0];
-    if (coordinates[*it][1] < bbmin[1])
-      bbmin[1] = coordinates[*it][1];
+    Point2df bbmin, bbmax;
+    bbmin[0] = 181.0;
+    bbmin[1] = 361.0;
+    bbmax[0] = -1.0;
+    bbmax[1] = -1.0;
+    std::set<int>::iterator it;
+    std::pair<Point2df, Point2df> bb;
 
-    if (coordinates[*it][0] > bbmax[0])
-      bbmax[0] = coordinates[*it][0];
-    if (coordinates[*it][1] > bbmax[1])
-      bbmax[1] = coordinates[*it][1];
-  }
+    for ( it = nodes.begin() ; it != nodes.end() ; it ++ ) {
+        if (coordinates[*it][0] < bbmin[0])
+            bbmin[0] = coordinates[*it][0];
+        if (coordinates[*it][1] < bbmin[1])
+            bbmin[1] = coordinates[*it][1];
 
-  if ( bbmax[1] > 300.0 && bbmin[1] < 60.0 ) {
-    for ( uint i = 0 ; i < nodes.size() ; i++ ) {
-      if ( coordinates[*it][1] >300.0 && coordinates[*it][1] < bbmax[1])
-        bbmax[1] = coordinates[*it][1];
-      if (coordinates[*it][1] < 60.0 && coordinates[*it][1] > bbmin[1])
-        bbmin[1] = coordinates[*it][1];
+        if (coordinates[*it][0] > bbmax[0])
+            bbmax[0] = coordinates[*it][0];
+        if (coordinates[*it][1] > bbmax[1])
+            bbmax[1] = coordinates[*it][1];
     }
-  }
 
-  bb.first = bbmin;
-  bb.second = bbmax;
-  return bb;
+    if ( bbmax[1] > 300.0 && bbmin[1] < 60.0 ) {
+        for ( it = nodes.begin() ; it != nodes.end() ; it ++ ) {
+            if ( coordinates[*it][1] > 300.0 && coordinates[*it][1] < bbmax[1] )
+                bbmax[1] = coordinates[*it][1];
+            if (coordinates[*it][1] < 60.0 && coordinates[*it][1] > bbmin[1] )
+                bbmin[1] = coordinates[*it][1];
+        }
+    }
+
+    bb.first = bbmin;
+    bb.second = bbmax;
+    return bb;
 }
 
 
-pair<Point2df, Point2df> surf::GreyLevelBlob::get2DBoundingBox ( void ) {
+std::pair<Point2df, Point2df> surf::GreyLevelBlob::get2DBoundingBox ( void ) {
     return surf::Blob::get2DBoundingBox ( );
 }
 
-pair<Point2df, Point2df> surf::ScaleSpaceBlob::get2DBoundingBox ( void ) {
+std::pair<Point2df, Point2df> surf::ScaleSpaceBlob::get2DBoundingBox ( void ) {
     return surf::Blob::get2DBoundingBox ( );
 }
 

@@ -106,13 +106,13 @@ void SurfaceBased_StructuralAnalysis::regionLabelsZones () {/* vector<pair<Point
         listeZones[j].insert(0);
         zonesListesBlobs[0].insert(j);
         for ( uint k = 0 ; k < labelsZones.size() ; k++ ) {
-            Point3df bbmin1 = sites[j]->boundingbox_min, 
+            Point3df bbmin1 = sites[j]->boundingbox_min,
                      bbmax1 = sites[j]->boundingbox_max;
             uint no_overlap = 0;
-            getOverlap ( bbmin1, 
-                         bbmax1, 
-                         Point3df ( labelsZones[k].first[0], labelsZones[k].first[1], 0.0 ), 
-                         Point3df ( labelsZones[k].second[0],labelsZones[k].second[1], 0.0 ), 
+            getOverlap ( bbmin1,
+                         bbmax1,
+                         Point3df ( labelsZones[k].first[0], labelsZones[k].first[1], 0.0 ),
+                         Point3df ( labelsZones[k].second[0],labelsZones[k].second[1], 0.0 ),
                          &no_overlap ) ;
             if ( no_overlap == 0 ) {
                 zonescount[k+1]++;
@@ -237,7 +237,7 @@ double SurfaceBased_StructuralAnalysis::getLabelEnergy(int label, int type){
     energy += Clique::intrapsweight * nb2 * nbsujets;
     energy += energydd + energyls;
     energy += energysim;
-    
+
     return energy;
 }
 
@@ -462,7 +462,7 @@ void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
         for ( uint i = 0 ; i < nbsujets ; i++ )
             if ( bysub[i] > 1 ) nb += bysub[i] - 1;
 
-        energy += Clique::intrapsweight * nb * nbsujets;        
+        energy += Clique::intrapsweight * nb * nbsujets;
         Eintra += Clique::intrapsweight * nb * nbsujets;
         Etotal += energy;
 
@@ -534,7 +534,7 @@ void SurfaceBased_StructuralAnalysis::StoreSignificanceToGraph ( Graph &primal )
     int index, label_occur_number;
     float value;
     std::string subject;
-    
+
     for ( iv = primal.vertices().begin() ; iv != primal.vertices().end() ; ++iv ) {
         std::string test;
         (*iv)->getProperty( "index", index );
@@ -557,7 +557,7 @@ void SurfaceBased_StructuralAnalysis::StoreSignificanceToGraph ( Graph &primal )
     }
 }
 
-void SurfaceBased_StructuralAnalysis::BuildSites ( Graph &primal, std::vector<Site *> sites ) {    
+void SurfaceBased_StructuralAnalysis::BuildSites ( Graph &primal, std::vector<Site *> sites ) {
 
     std::set<Vertex *>::iterator iv;
     std::vector<float> bc;
@@ -595,7 +595,7 @@ void SurfaceBased_StructuralAnalysis::BuildSites ( Graph &primal, std::vector<Si
         sites.push_back( new Site() );
         Site *s = sites[sites.size()-1];
 
-        s->label = atoi(test.data());    
+        s->label = atoi(test.data());
         (*iv)->setProperty("label", test);
         (*iv)->setProperty( "name", test);
         (*iv)->getProperty( "label", test);
@@ -603,7 +603,7 @@ void SurfaceBased_StructuralAnalysis::BuildSites ( Graph &primal, std::vector<Si
         s->index = newindex++;
         s->graph_index = index;
         s->subject = subject;
-    
+
         if ( bc.size() == 3 ) {
             s->gravitycenter = Point3df();
             s->gravitycenter[0] = bc[0];
@@ -649,7 +649,7 @@ void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites ( std::vector<surf::
         s->tmax = ssblobs[i]->tmax;
         s->t = ssblobs[i]->t;
         s->nodes_list = ssblobs[i]->nodes;
-        
+
         if ( ssblobs[i]->nodes.size() == 1 ) {
             // if the ssblobs are provided with one point in vector raw_coordinates,
             //  it means that the graph was provided with a gravity_center for every ssb node
@@ -658,7 +658,7 @@ void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites ( std::vector<surf::
                                           ssblobs[i]->raw_coordinates[node][1],
                                           ssblobs[i]->raw_coordinates[node][2] ) ;
         }
-        
+
         std::pair<Point2df, Point2df> bb = ssblobs[i]->get2DBoundingBox();
         s->boundingbox_min = Point3df(bb.first[0], bb.first[1], 0);
         s->boundingbox_max = Point3df(bb.second[0], bb.second[1], 0);
@@ -752,23 +752,20 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
 
                         // vector<int> listNodesB1(set2vector((*itB1)->nodes_list)),
                         //             listNodesB2(set2vector((*itB2)->nodes_list));
-
-                        std::pair<Point2df,Point2df> bbi = (*itB1)->get2DBoundingBox(),
+                        std::pair<Point2df, Point2df> bbi = (*itB1)->get2DBoundingBox(),
                             //getBoundingBox((*itB1)->nodes, data[ssblobs[i]->subject].lat, data[ssblobs[i]->subject].lon),
                                                 bbj = (*itB2)->get2DBoundingBox();
                             //(*itB2)->nodes, data[ssblobs[j]->subject].lat, data[ssblobs[j]->subject].lon);
-
                         Point2df bbmin1 (bbi.first[0], bbi.first[1]),
                                 bbmax1 (bbi.second[0], bbi.second[1]),
                                 bbmin2 (bbj.first[0], bbj.first[1]),
                                 bbmax2 (bbj.second[0], bbj.second[1]) ;
-
                         uint no_overlap = 2;
                         double overlap = TextureToBlobs::getOverlapMeasure( bbmin1, bbmax1, bbmin2, bbmax2, &no_overlap );
-                // cout << "bbi("<< (*itB1)->nodes.size() << "):" << bbi.first[0] << "-" << bbi.first[1] << " " <<
-                // bbi.second[0] << "-" << bbi.second[1] << " " <<
-                // "bbj("<< (*itB2)->nodes.size() << "):" << bbj.first[0] << " " << bbj.first[1] << " " <<
-                // bbj.second[0] << " " << bbj.second[1]  << endl;
+                        //cout << "bbi("<< (*itB1)->nodes.size() << "):" << bbi.first[0] << "-" << bbi.first[1] << " " <<
+                        //bbi.second[0] << "-" << bbi.second[1] << " " <<
+                        //"bbj("<< (*itB2)->nodes.size() << "):" << bbj.first[0] << " " << bbj.first[1] << " " <<
+                        //bbj.second[0] << " " << bbj.second[1]  << endl;
 
                         if ( no_overlap == 0 ){
 
@@ -802,7 +799,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
                     matchingblobs[i].push_back(b1max);
                     matchingblobs[j].push_back(b2max);
                     //cout << "max (" << ssblobs[i]->index <<","<< ssblobs[j]->index << ") between:" << b1max->index << " "
-                    //    << b2max->index << " overmax:" << overmax << endl;
+                    //<< b2max->index << " overmax:" << overmax << endl;
                     //cout << "scales: " << b1max->scale << " " << b1max->scale << endl;
                 }
             }
