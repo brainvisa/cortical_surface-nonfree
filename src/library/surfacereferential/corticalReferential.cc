@@ -1175,6 +1175,7 @@ TimeTexture<float> CorticalReferential::diffusionLatitudeRelax( TimeTexture<floa
 	TimeTexture<float>  result(1,size);
 	Texture<float>     smooth(size), lapl;
 	float			s;
+    int maxIter=90000
 
 	//float Beta=0.5;
 
@@ -1446,7 +1447,7 @@ TimeTexture<float> CorticalReferential::diffusionLatitudeRelax( TimeTexture<floa
 		}
 		iter++;
 	}
-	while(max > criterium);
+	while((max > criterium)&&(iter<maxIter));
 // 	while(iter<300000);
 	
 	std::cout  << std::endl;
@@ -1614,6 +1615,7 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 	Texture<float>     smooth(size), lapl;
 	float			s;
      float epsi=0.0001;
+     int maxIter=90000
 
 	//Remove weights from poles
 	unsigned  uneigh;
@@ -2046,7 +2048,7 @@ TimeTexture<float> CorticalReferential::diffusionLongitudeRelax( TimeTexture<flo
 //     }
           iter++;
     }
-     while(max > criterium);
+     while((max > criterium)&&(iter<maxIter));
 	//while(iter<300000);
 	
 	std::cout  << std::endl;
