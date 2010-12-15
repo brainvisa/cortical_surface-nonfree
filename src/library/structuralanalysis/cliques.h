@@ -34,12 +34,12 @@ class Clique{
                             energy = 1.0;
                         else
                             energy = (1.0 - ddh) / (ddx2 - ddx1) * ( measure - ddx2 ) + 1.0;
+                        energy = 1.0;
                     }
                     else 
                         energy = 0.0;
-                    energy *= ddweight;
+                    //energy *= ddweight;
                     energy *= CLIQUESNBSUJETS;
-                    energy = 0;
 
                 break;
                 case BESTLOWERSCALE:
@@ -60,14 +60,16 @@ class Clique{
                     energy = 0;
                 break;
                 case INTRAPRIMALSKETCH:
+                    //std::cout << intrapsweight << std::endl;
                     energy = 0;
                     for ( uint i = 1 ; i < labelscount.size() ; i++ ) {
                         if ( labelscount[i] <= 1 )
                             energy += 0;
                         else
-                            energy += intrapsweight * (labelscount[i]-1);
+                            energy += intrapsweight * ( labelscount[i] - 1 );
                     }
                     energy *= CLIQUESNBSUJETS;
+                    energy = 0;
                 break;
                 case SIMILARITY:
                     ASSERT( blobs.size() == 2 );
@@ -105,6 +107,7 @@ class Clique{
                 break;
             }
             if (save) energie = energy;
+
             return energy;
         }
 
@@ -161,6 +164,7 @@ class Clique{
                             energy += _intrapsweight;
                     }
                     energy *= CLIQUESNBSUJETS;
+                    energy = 0;
                     if ( save ) {
                         labelscount[blobs[i]->label]++;
                         labelscount[old]--;
@@ -195,8 +199,8 @@ class Clique{
                                     float _intrapsweight,
                                     float _simweight,
                                     float _lsweight,
-                                    float _ddx2,
                                     float _ddx1,
+                                    float _ddx2,
                                     float _simx1,
                                     float _simx2,
                                     float _lsx1,

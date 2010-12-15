@@ -411,19 +411,19 @@ void addScaleSpaceBlobsToGraph ( Graph *graph,
         vert->setProperty( "tmax", ssblobs[i]->tmax);
         vert->setProperty( "scales", set2vector(ssblobs[i]->scales) );
 
-        if ( ssblobs[i]->nodes.size() > 0 ) {
-            vert->setProperty( "nodes", set2vector(ssblobs[i]->nodes));
-            node = ssblobs[i]->getMaximumNode(*(data[ssblobs[i]->subject]->tex));
-            maxnode = data[ssblobs[i]->subject]->mesh->vertex()[ node ];
-            std::vector<float> bc(3);
-            for ( uint j = 0 ; j < bc.size() ; j++ )
-                bc[j] = maxnode[j];
-            vert->setProperty ( "gravity_center", bc );
-        }
+        //if ( ssblobs[i]->nodes.size() > 0 ) {
+        //    vert->setProperty( "nodes", set2vector(ssblobs[i]->nodes));
+        //    node = ssblobs[i]->getMaximumNode(*(data[ssblobs[i]->subject]->tex));
+        //    maxnode = data[ssblobs[i]->subject]->mesh->vertex()[ node ];
+        //    std::vector<float> bc(3);
+        //    for ( uint j = 0 ; j < bc.size() ; j++ )
+        //        bc[j] = maxnode[j];
+        //    vert->setProperty ( "gravity_center", bc );
+        //}
 
         listVertSSB[  i  ] = vert;
         if ( storeMeshes ) {
-            ptr = carto::rc_ptr<AimsSurfaceTriangle>(new AimsSurfaceTriangle);
+            ptr = carto::rc_ptr<AimsSurfaceTriangle> ( new AimsSurfaceTriangle );
             (*ptr)[0] = ssblobs[i]->mesh;
             manip.storeAims(*graph, vert, "ssb", ptr);
         }

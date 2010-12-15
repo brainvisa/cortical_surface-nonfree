@@ -106,17 +106,21 @@ void Anneal::Step ( std::vector<int> &random, double temp, uint &mod ) {
         if ( old != zoneLab[acc] ) {
 
             sites[random[i]]->label = zoneLab[acc];
+            uint cpt_dd = 0;
+
             for ( uint m = 0 ; m < cliquesDuSite[random[i]].size() ; m++ ) {
                 if ( cliques [cliquesDuSite[random[i]][m]].type == DATADRIVEN ||
                     cliques [cliquesDuSite[random[i]][m]].type == SIMILARITY ||
                     cliques [cliquesDuSite[random[i]][m]].type == BESTLOWERSCALE ||
                     cliques [cliquesDuSite[random[i]][m]].type == INTRAPRIMALSKETCH ) {
-                        
+                        if ( cliques [cliquesDuSite[random[i]][m]].type == DATADRIVEN )
+                            cpt_dd ++;
                         double update = cliques [cliquesDuSite[random[i]][m]].updateEnergy ( random[i], old, true, nbsujets );
                         sum_update += update;
-                        energy += update;
+                        //energy += update;
                 }
             }
+            std::cout << cpt_dd << std::endl;
             mod++;
         }
         else {
@@ -142,7 +146,7 @@ void Anneal::Run ( int verbose ){
         f1 = fopen ( labelsPath.data(), "w" );
     if ( energyPath != "" ) {
         f = fopen ( energyPath.data(), "a" );
-        fprintf(f, "== DEBUT NOUVEAU RECUIT ==\n");
+        fprintf(f, "== start new annealing ==\n");
     }
 
     for ( uint k = 0 ; k < cliques.size() ; k++ ){
@@ -170,16 +174,16 @@ void Anneal::Run ( int verbose ){
 
         for ( uint i = 0 ; i < sites.size() ; i++ ) {
             int index = (int)(UniformRandom() * indices.size());
-            random.push_back(indices[index]);
-            indices.erase(indices.begin()+index);
+            random.push_back ( indices[index] );
+            indices.erase ( indices.begin() + index );
         }
         ASSERT ( random.size() == sites.size() );
-        Step(random, temp, mod);
+        Step ( random, temp, mod );
 
         std::cout << " chg:" << mod << " " << std::flush;
 
         if (verbose == 1) ShortSummaryLabels();
-        double everif = getTotalEnergy();
+        double everif = getTotalEnergy ();
         std::cout << " E=" << energy << std::endl << " Everif=" << everif << endl;
 
         temp = temp * 0.99;
@@ -195,7 +199,7 @@ void Anneal::Run ( int verbose ){
     std::cout << "final energy : " << energy << std::endl;
     ShortSummaryLabels();
     if ( this->energyPath != "" ) {
-        fprintf(f, "%3lf\nFIN RECUIT\n", (float)energy);
+        fprintf(f, "%3lf\nend annealing\n", (float)energy);
         fclose(f);
     }
     if ( this->labelsPath != "" )

@@ -286,6 +286,7 @@ double SurfaceBased_StructuralAnalysis::getTotalEnergy ( ) {
     }
 
     ASSERT( nbips >= nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false ));
+    //std::cout << Clique::intrapsweight << " " << nb2 << " " << nbsujets << std::endl;
     //energy += Clique::intrapsweight * nb2 * nbsujets;
 
     return energy;
@@ -462,8 +463,8 @@ void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
         for ( uint i = 0 ; i < nbsujets ; i++ )
             if ( bysub[i] > 1 ) nb += bysub[i] - 1;
 
-        energy += Clique::intrapsweight * nb * nbsujets;
-        Eintra += Clique::intrapsweight * nb * nbsujets;
+        //energy += Clique::intrapsweight * nb * nbsujets;
+        //Eintra += Clique::intrapsweight * nb * nbsujets;
         Etotal += energy;
 
         ASSERT( pow ( Edd + Esim + Eintra  + Els - energy, 2 ) < DBL_EPSILON );
