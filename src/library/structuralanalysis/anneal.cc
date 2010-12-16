@@ -135,7 +135,7 @@ void Anneal::Step ( std::vector<int> &random, double temp, uint &mod ) {
             sites[random[i]]->label = old;
         }
     }
-    std::cout << "cpt_dd:" << cpt_dd << "SUM UPDATE:" << sum_update << std::endl;
+    std::cout << "SUM UPDATE:" << sum_update << std::endl;
 }
 
 void Anneal::Run ( int verbose ){
