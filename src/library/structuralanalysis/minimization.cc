@@ -479,7 +479,7 @@ void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
             std::cout << nblabel << " - ";
         }
         nblab.push_back ( nblabel );
-        ASSERT( nbips >= nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false));
+        ASSERT( nbips >= nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false ) );
 
     }
     std::cout << " ";
@@ -543,7 +543,7 @@ void SurfaceBased_StructuralAnalysis::StoreSignificanceToGraph ( Graph &primal )
 
         for ( uint i = 0 ; i < sites.size() ; i++ ) {
 
-            if ( sites[i]->index == (uint) index && sites[i]->subject == subject ) {
+            if ( sites[i]->graph_index == (uint) index && sites[i]->subject == subject ) {
                 // node = sites[i]->node;
                 label_occur_number = sites[i]->label_occur_number;
                 (*iv)->setProperty( "label_occur_number", label_occur_number);
@@ -558,83 +558,83 @@ void SurfaceBased_StructuralAnalysis::StoreSignificanceToGraph ( Graph &primal )
     }
 }
 
-void SurfaceBased_StructuralAnalysis::BuildSites ( Graph &primal, std::vector<Site *> sites ) {
-
-    std::set<Vertex *>::iterator iv;
-    std::vector<float> bc;
-    float tmin = -1.0,
-        tmax = -1.0,
-        trep = -1.0,
-        tvalue = -1.0,
-        t = -1.0;
-        //x = -1.0,
-        //y = -1.0;
-    int index = -1,
-        rank = -1;
-    std::string subject = "";
-    int newindex = 0;
-
-    std::vector< int > listepts;
-    std::vector< float > bbmax, bbmin;
-
-    for ( iv = primal.vertices().begin() ; iv != primal.vertices().end() ; ++iv ) {
-        std::string test;
-        (*iv)->getProperty( "index", index);
-        (*iv)->getProperty( "subject", subject);
-        (*iv)->getProperty( "label", test);
-        (*iv)->getProperty( "gravity_center", bc);
-        (*iv)->getProperty( "tmin", tmin);
-        (*iv)->getProperty( "tmax", tmax);
-        (*iv)->getProperty( "trep", trep);
-        (*iv)->getProperty( "t", t);
-        (*iv)->getProperty( "tValue", tvalue);
-        (*iv)->getProperty( "rank", rank);
-        (*iv)->getProperty( "nodes_list", listepts);
-        (*iv)->getProperty( "boundingbox_max", bbmax);
-        (*iv)->getProperty( "boundingbox_min", bbmin);
-
-        sites.push_back( new Site() );
-        Site *s = sites[sites.size()-1];
-
-        s->label = atoi(test.data());
-        (*iv)->setProperty("label", test);
-        (*iv)->setProperty( "name", test);
-        (*iv)->getProperty( "label", test);
-        (*iv)->getProperty( "name", test);
-        s->index = newindex++;
-        s->graph_index = index;
-        s->subject = subject;
-
-        if ( bc.size() == 3 ) {
-            s->gravitycenter = Point3df();
-            s->gravitycenter[0] = bc[0];
-            s->gravitycenter[1] = bc[1];
-            s->gravitycenter[2] = bc[2];
-        }
-        s->tmin = tmin;
-        s->tmax = tmax;
-        s->trep = trep;
-        s->rank = rank;
-        if ( bbmax.size() == 3 ) {
-            s->boundingbox_max[0] = bbmax[0];
-            s->boundingbox_max[1] = bbmax[1];
-            s->boundingbox_max[2] = bbmax[2];
-        }
-        if ( bbmin.size() == 3 ) {
-            s->boundingbox_min[0] = bbmin[0];
-            s->boundingbox_min[1] = bbmin[1];
-            s->boundingbox_min[2] = bbmin[2];
-        }
-
-        s->t = t;
-        s->tValue = tvalue;
-        for ( uint i = 0 ; i < listepts.size() ; i++ )
-            s->nodes_list.insert( listepts[i] );
-
-        (*iv)->setProperty( "sites_index", sites.size() - 1 );
-    }
-    //return sites;
-}
+//void SurfaceBased_StructuralAnalysis::BuildSites ( Graph &primal, std::vector<Site *> sites ) {
+//
+//    std::set<Vertex *>::iterator iv;
+//    std::vector<float> bc;
+//    float tmin = -1.0,
+//        tmax = -1.0,
+//        trep = -1.0,
+//        tvalue = -1.0,
+//        t = -1.0;
+//        //x = -1.0,
+//        //y = -1.0;
+//    int index = -1,
+//        rank = -1;
+//    std::string subject = "";
+//    int newindex = 0;
+//
+//    std::vector< int > listepts;
+//    std::vector< float > bbmax, bbmin;
+//
+//    for ( iv = primal.vertices().begin() ; iv != primal.vertices().end() ; ++iv ) {
+//        std::string test;
+//        (*iv)->getProperty( "index", index);
+//        (*iv)->getProperty( "subject", subject);
+//        (*iv)->getProperty( "label", test);
+//        (*iv)->getProperty( "gravity_center", bc);
+//        (*iv)->getProperty( "tmin", tmin);
+//        (*iv)->getProperty( "tmax", tmax);
+//        (*iv)->getProperty( "trep", trep);
+//        (*iv)->getProperty( "t", t);
+//        (*iv)->getProperty( "tValue", tvalue);
+//        (*iv)->getProperty( "rank", rank);
+//        (*iv)->getProperty( "nodes_list", listepts);
+//        (*iv)->getProperty( "boundingbox_max", bbmax);
+//        (*iv)->getProperty( "boundingbox_min", bbmin);
+//
+//        sites.push_back( new Site() );
+//        Site *s = sites[sites.size()-1];
+//
+//        s->label = atoi(test.data());
+//        (*iv)->setProperty("label", test);
+//        (*iv)->setProperty( "name", test);
+//        (*iv)->getProperty( "label", test);
+//        (*iv)->getProperty( "name", test);
+//        s->index = newindex++;
+//        s->graph_index = index;
+//        s->subject = subject;
+//
+//        if ( bc.size() == 3 ) {
+//            s->gravitycenter = Point3df();
+//            s->gravitycenter[0] = bc[0];
+//            s->gravitycenter[1] = bc[1];
+//            s->gravitycenter[2] = bc[2];
+//        }
+//        s->tmin = tmin;
+//        s->tmax = tmax;
+//        s->trep = trep;
+//        s->rank = rank;
+//        if ( bbmax.size() == 3 ) {
+//            s->boundingbox_max[0] = bbmax[0];
+//            s->boundingbox_max[1] = bbmax[1];
+//            s->boundingbox_max[2] = bbmax[2];
+//        }
+//        if ( bbmin.size() == 3 ) {
+//            s->boundingbox_min[0] = bbmin[0];
+//            s->boundingbox_min[1] = bbmin[1];
+//            s->boundingbox_min[2] = bbmin[2];
+//        }
+//
+//        s->t = t;
+//        s->tValue = tvalue;
+//        for ( uint i = 0 ; i < listepts.size() ; i++ )
+//            s->nodes_list.insert( listepts[i] );
+//
+//        (*iv)->setProperty( "sites_index", sites.size() - 1 );
+//    }
+//    //return sites;
+//}
 
 void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites ( std::vector<surf::ScaleSpaceBlob *> &ssblobs, std::vector<Site *> &sites ) {
 
@@ -642,7 +642,7 @@ void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites ( std::vector<surf::
 
         sites.push_back(new Site());
         Site *s = sites[sites.size() - 1];        
-        s->index = i;
+        s->index = sites.size() - 1;
         s->graph_index = ssblobs[i]->index;
         s->subject = ssblobs[i]->subject;
         s->label = ssblobs[i]->label;
@@ -687,22 +687,26 @@ void SurfaceBased_StructuralAnalysis::GetSimilarityCliquesFromSSBCliques ( std::
         int iSSB1, iSSB2;
         ssb1 = ssbcliques[i].ssb1;
         ssb2 = ssbcliques[i].ssb2;
-        iSSB1 = ssb1->index;
-        iSSB2 = ssb2->index;
-
+        
+        for ( iSSB1 = 0 ; iSSB1 < sites.size() && 
+            !(sites[iSSB1]->graph_index == ssb1->index && sites[iSSB1]->subject == ssb1->subject ) ;
+             iSSB1++ ) { }
+        for ( iSSB2 = 0 ; iSSB2 < sites.size() && 
+            !(sites[iSSB2]->graph_index == ssb2->index && sites[iSSB2]->subject == ssb2->subject ) ;
+             iSSB2++ ) { }
+        
+        //iSSB1 = ssb1->index;
+        //iSSB2 = ssb2->index;
         cliquesDuSite[ sites[iSSB1]->index ].push_back(i);
         cliquesDuSite[ sites[iSSB2]->index ].push_back(i);
 
         simc.blobs.push_back( sites[iSSB1] );
         simc.blobs.push_back( sites[iSSB2] );
         cliques.push_back(simc);
-
     }
 
     for ( uint i = 0 ; i < sites.size() ; i++ ) {
-
         for ( uint n = 0 ; n < cliquesDuSite[i].size() ; n++ ) {
-
             uint aux = cliquesDuSite[ i ][ n ];
             if ( cliques[aux].type == SIMILARITY ) {
                 if ( cliques[aux].blobs[0]->index == (uint) i ) { }
@@ -711,6 +715,7 @@ void SurfaceBased_StructuralAnalysis::GetSimilarityCliquesFromSSBCliques ( std::
                     std::cout << i << " " << aux << " " << cliques[aux].type << " " << cliques[aux].blobs.size() << " " << cliques[aux].blobs[0]->index << " " << cliques[aux].blobs[1]->index << std::endl;
                     ASSERT(false);
                 }
+                assert ( cliques[aux].blobs[0]->subject != cliques[aux].blobs[1]->subject );
             }
         }
     }

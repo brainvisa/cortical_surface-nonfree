@@ -28,14 +28,13 @@ class Clique{
                     ASSERT( blobs.size() == 1 );
 
                     if ( blobs[0]->label != 0 ) {
-                        //float measure = blobs[0]->t;
-                        //if ( measure > ddx1 )
-                        //    energy = ddh;
-                        //else if ( measure < ddx2 )
-                        //    energy = 1.0;
-                        //else
-                        //    energy = (1.0 - ddh) / (ddx2 - ddx1) * ( measure - ddx2 ) + 1.0;
-                        energy = 1.0;
+                        float measure = blobs[0]->t;
+                        if ( measure > ddx1 )
+                            energy = ddh;
+                        else if ( measure < ddx2 )
+                            energy = 1.0;
+                        else
+                            energy = (1.0 - ddh) / (ddx2 - ddx1) * ( measure - ddx2 ) + 1.0;
                     }
                     else 
                         energy = 0.0;

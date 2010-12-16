@@ -217,6 +217,14 @@ surf::GreyLevelBlob *TextureToBlobs::findBlob ( const std::vector<surf::GreyLeve
             return blobs[i];
 }
 
+surf::ScaleSpaceBlob *TextureToBlobs::findBlob ( const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                std::string subject_id,
+                                int index ) {
+    for ( uint i = 0 ; i < ssblobs.size() ; i ++ )
+        if ( ssblobs[i]->subject == subject_id && ssblobs[i]->index == index )
+            return ssblobs[i];
+}
+
 void TextureToBlobs::RecoverBlobsFromGraph( Graph *graph,
                             SubjectData &subject,
                             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
@@ -1052,19 +1060,14 @@ void TextureToBlobs::ReadAimsGroupGraph (   Graph &graph,
                                             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                             std::vector<surf::Clique> &cliques ) {
 
-    std::cout << "Recovering the data..." << std::endl;
-
     std::set<Vertex *>::iterator iv;
     std::string sujet;
     int index;
-
+    
     // Recovering The Scale-Space Blobs
-
     std::cout << " Recovering the scale-space blobs..." << std::endl;
     std::map<std::string, std::map<int, std::set<int> > > listGLBindices;
-
     TextureToBlobs::getScaleSpaceBlobsFromGraph ( &graph, ssblobs, listGLBindices, false );
-
     std::cout << "ssblobs.size() :"<< ssblobs.size() << std::endl;
 
     // Recovering The Clique Links...
@@ -1110,7 +1113,7 @@ void TextureToBlobs::ReadAimsGroupGraph (   Graph &graph,
                                 int blobs_index1, blobs_index2;
                                 (*iv)->getProperty( "sites_index", blobs_index1 );
                                 (*kv)->getProperty( "sites_index", blobs_index2 );
-
+                                assert( sujet != sujetB2 );
                                 assert ( (index==blobs_index1 && indexB2 == blobs_index2) ||
                                   (index == blobs_index2 && indexB2 == blobs_index1));
 
