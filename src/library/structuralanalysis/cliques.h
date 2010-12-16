@@ -26,21 +26,21 @@ class Clique{
             switch ( type ) {
                 case DATADRIVEN:
                     ASSERT( blobs.size() == 1 );
+
                     if ( blobs[0]->label != 0 ) {
-                        float measure = blobs[0]->t;
-                        if ( measure > ddx1 )
-                            energy = ddh;
-                        else if ( measure < ddx2 )
-                            energy = 1.0;
-                        else
-                            energy = (1.0 - ddh) / (ddx2 - ddx1) * ( measure - ddx2 ) + 1.0;
+                        //float measure = blobs[0]->t;
+                        //if ( measure > ddx1 )
+                        //    energy = ddh;
+                        //else if ( measure < ddx2 )
+                        //    energy = 1.0;
+                        //else
+                        //    energy = (1.0 - ddh) / (ddx2 - ddx1) * ( measure - ddx2 ) + 1.0;
                         energy = 1.0;
                     }
                     else 
                         energy = 0.0;
-                    //energy *= ddweight;
+                    energy *= ddweight;
                     energy *= CLIQUESNBSUJETS;
-
                 break;
                 case BESTLOWERSCALE:
                     ASSERT( blobs.size() == 1 );
@@ -57,7 +57,6 @@ class Clique{
                         energy = 0.0;
                     energy *= lsweight;
                     energy *= CLIQUESNBSUJETS;
-                    energy = 0;
                 break;
                 case INTRAPRIMALSKETCH:
                     //std::cout << intrapsweight << std::endl;
@@ -69,7 +68,6 @@ class Clique{
                             energy += intrapsweight * ( labelscount[i] - 1 );
                     }
                     energy *= CLIQUESNBSUJETS;
-                    energy = 0;
                 break;
                 case SIMILARITY:
                     ASSERT( blobs.size() == 2 );
@@ -100,7 +98,6 @@ class Clique{
                         energy = 0.0;
                     }
                     energy *= simweight;
-                    energy = 0;
                 break;
                 case GLOBAL:
                     energy = 0.0;
@@ -117,7 +114,6 @@ class Clique{
             float _intrapsweight;
 
             switch ( type ) {
-
                 case DATADRIVEN:
                     if ( old == 0 && blobs[0]->label != 0 )
                         energy = computeEnergy ( false, CLIQUESNBSUJETS );
@@ -164,7 +160,6 @@ class Clique{
                             energy += _intrapsweight;
                     }
                     energy *= CLIQUESNBSUJETS;
-                    energy = 0;
                     if ( save ) {
                         labelscount[blobs[i]->label]++;
                         labelscount[old]--;

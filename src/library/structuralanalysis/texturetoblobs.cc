@@ -1049,8 +1049,8 @@ void TextureToBlobs::AimsGroupGraph ( Graph *graph,
 }
 
 void TextureToBlobs::ReadAimsGroupGraph (   Graph &graph,
-                                            vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                            vector<surf::Clique> &cliques ) {
+                                            std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                            std::vector<surf::Clique> &cliques ) {
 
     std::cout << "Recovering the data..." << std::endl;
 

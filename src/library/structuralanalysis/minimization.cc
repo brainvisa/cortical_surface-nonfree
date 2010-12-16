@@ -287,7 +287,7 @@ double SurfaceBased_StructuralAnalysis::getTotalEnergy ( ) {
 
     ASSERT( nbips >= nclsim || (std::cout << nbips << ">=" << nclsim << std::endl && false ));
     //std::cout << Clique::intrapsweight << " " << nb2 << " " << nbsujets << std::endl;
-    //energy += Clique::intrapsweight * nb2 * nbsujets;
+    energy += Clique::intrapsweight * nb2 * nbsujets;
 
     return energy;
 }
@@ -463,8 +463,8 @@ void SurfaceBased_StructuralAnalysis::ShortSummaryLabels(){
         for ( uint i = 0 ; i < nbsujets ; i++ )
             if ( bysub[i] > 1 ) nb += bysub[i] - 1;
 
-        //energy += Clique::intrapsweight * nb * nbsujets;
-        //Eintra += Clique::intrapsweight * nb * nbsujets;
+        energy += Clique::intrapsweight * nb * nbsujets;
+        Eintra += Clique::intrapsweight * nb * nbsujets;
         Etotal += energy;
 
         ASSERT( pow ( Edd + Esim + Eintra  + Els - energy, 2 ) < DBL_EPSILON );
@@ -520,7 +520,7 @@ void SurfaceBased_StructuralAnalysis::StoreToGraph ( Graph &primal ) {
 
         for ( uint i = 0 ; i < sites.size() ; i++ ) {
 
-            if ( sites[i]->index == (uint) index && sites[i]->subject == subject ) {
+            if ( sites[i]->graph_index == (uint) index && sites[i]->subject == subject ) {
                 std::ostringstream s;
                 s << sites[i]->label ;
                 (*iv)->setProperty( "label", s.str());
@@ -641,8 +641,8 @@ void SurfaceBased_StructuralAnalysis::ConvertSSBlobsToSites ( std::vector<surf::
     for ( uint i = 0 ; i < ssblobs.size() ; i++ ) {
 
         sites.push_back(new Site());
-        Site *s = sites[sites.size() - 1];
-        s->index = ssblobs[i]->index;
+        Site *s = sites[sites.size() - 1];        
+        s->index = i;
         s->graph_index = ssblobs[i]->index;
         s->subject = ssblobs[i]->subject;
         s->label = ssblobs[i]->label;

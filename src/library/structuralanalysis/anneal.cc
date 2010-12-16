@@ -8,10 +8,11 @@ void Anneal::Step ( std::vector<int> &random, double temp, uint &mod ) {
 
     double somme = 0.0;
     int old;
-    std::cin >> old;
     mod = 0;
+    
+    uint cpt_dd = 0;
     std::set<uint>::iterator it;
-    double sum_update = 0.0;
+//    double sum_update = 0.0;
     
     // Iterating On The Vector Of Sites (In Randomized Order) (long loop)
     for ( uint i = 0 ; i < random.size() ; i++ ) {
@@ -105,37 +106,38 @@ void Anneal::Step ( std::vector<int> &random, double temp, uint &mod ) {
 				  acc++ )    { }  //cout << globalenergieslabels[acc] << " " ;
         }
         if ( old != zoneLab[acc] ) {
-            std::cout << " ENERGIE:" << energy << " " << std::flush;
 
             sites[random[i]]->label = zoneLab[acc];
-            uint cpt_dd = 0;
+
 
             for ( uint m = 0 ; m < cliquesDuSite[random[i]].size() ; m++ ) {
                 if ( cliques [cliquesDuSite[random[i]][m]].type == DATADRIVEN ||
                     cliques [cliquesDuSite[random[i]][m]].type == SIMILARITY ||
                     cliques [cliquesDuSite[random[i]][m]].type == BESTLOWERSCALE ||
                     cliques [cliquesDuSite[random[i]][m]].type == INTRAPRIMALSKETCH ) {
+                        //assert ( old == 0 );
+                        //assert (  )
                         double update = cliques [cliquesDuSite[random[i]][m]].updateEnergy ( random[i], old, true, nbsujets );
-                        if ( cliques [cliquesDuSite[random[i]][m]].type == DATADRIVEN ) {
-                            cpt_dd ++;
-                            assert ( update < 10.000000001 );                                 
-                            std::cout << " e:" << energy << " " << std::flush;
-                        }
-                        else 
-                            assert( fabs(update) < 0.000000001 );
-                        sum_update += update;
+//                        if ( cliques [cliquesDuSite[random[i]][m]].type == DATADRIVEN ) {
+//                            cpt_dd ++;
+//                            //assert ( update < 10.000000001 );    
+//                            //std::cout << "LAB:" << zoneLab[acc] << " u:" << update << " " << std::flush;
+//                            
+//                        }
+//                        else 
+//                            assert( fabs(update) < 0.000000001 );
+//                        sum_update += update;
                         energy += update;
                         
                 }
             }
-            assert( cpt_dd == 1 );
             mod++;
         }
         else {
             sites[random[i]]->label = old;
         }
     }
-    std::cout << "SUM UPDATE:" << sum_update << std::endl;
+    //std::cout << "cpt_dd:" << cpt_dd << "SUM UPDATE:" << sum_update << std::endl;
 }
 
 void Anneal::Run ( int verbose ){
@@ -192,8 +194,8 @@ void Anneal::Run ( int verbose ){
         std::cout << " chg:" << mod << " " << std::flush;
 
         if (verbose == 1) ShortSummaryLabels();
-        double everif = getTotalEnergy ();
-        std::cout << " E=" << energy << std::endl << " Everif=" << everif << endl;
+        //double everif = getTotalEnergy ();
+        std::cout << " E=" << energy << std::endl; //<< " Everif=" << everif << endl;
 
         temp = temp * 0.99;
 
