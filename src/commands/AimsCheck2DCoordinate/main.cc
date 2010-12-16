@@ -76,12 +76,15 @@ int main( int argc, const char** argv )
      vector<Point3df> norm=surface.normal();
      cout << "OK. Starting check" << endl;
 
-     TimeTexture<float> latNew, lonNew;
+     TimeTexture<float> latNew(1,nVert), lonNew(1,nVert);
      for (i=0; i<nVert; i++)
      {
         latNew[0].item(i)=texLat[0].item(i);
         lonNew[0].item(i)=texLon[0].item(i);
      }
+
+ //    cout << "Debug : initialization OK" << endl;
+ //    cout << "Debug : nVert=" << nVert << endl;
 
      for (i=0; i< nVert; i++)
      {
@@ -115,7 +118,7 @@ int main( int argc, const char** argv )
 /*          texOut[0].item(i)=sign;*/
      }
 
-     map<unsigned, set<pair<unsigned,float> > > poids = AimsMeshWeightFiniteElementLaplacian (surface[0], 0.98);    
+     //map<unsigned, set<pair<unsigned,float> > > poids = AimsMeshWeightFiniteElementLaplacian (surface[0], 0.98);
 
      cout << "Postprocessing check" << endl;
      for (i=0; i<nVert; i++)
@@ -138,194 +141,196 @@ int main( int argc, const char** argv )
           }
      }
      cout << "OK. Writing texture texOut.tex" << endl;
-     Writer<TimeTexture<short> > texOutW( "texOut.tex" );
+     Writer<TimeTexture<short> > texOutW( fileOut );
      texOutW << texOut ;
      
-     cout << "Closing result" << endl;
+//     /*
+//     cout << "Closing result" << endl;
+//
+//
+//
+//
+//
+//     TimeTexture<short> dil, closed;
+//     float sizeClosing=8.0;
+//
+//     dil[0] = MeshDilation<short>( surface[0], texOut[0], short(0), -1 , sizeClosing, true);
+//     cout << "OK. Writing texture dil.tex" << endl;
+//     Writer<TimeTexture<short> > dilW( "dil.tex" );
+//     dilW << dil ;
+//     closed[0] = MeshErosion<short>( surface[0], dil[0], short(0), -1 , sizeClosing, true);
+//     cout << "OK. Writing texture closed.tex" << endl;
+//     Writer<TimeTexture<short> > closedW( "closed.tex" );
+//     closedW << closed ;
+//
+//     cout << "Extracting connected components" << endl;
+//
+//     TimeTexture<short> compoOut;
+//     compoOut[0] = AimsMeshLabelConnectedComponent<short>( surface[0], closed[0], 0, 0);
+//
+//     cout << "OK. Writing texture composantes.tex" << endl;
+//     Writer<TimeTexture<short> > compoOutW( "composantes.tex" );
+//     compoOutW << compoOut ;
+//
+//     std::map<short, std::vector<uint> > compos;
+//     short val;
+//     for (i=0; i<nVert; i++)
+//     {
+//          val=compoOut[0].item(i);
+//          if (val>0)
+//          {
+//               if (compos.find(val) == compos.end())
+//               {
+//                    compos[val]=std::vector<uint>();
+//                    compos[val].push_back(i);
+//               }
+//               else
+//               {
+//                    compos[val].push_back(i);
+//               }
+//
+//          }
+//     }
+//
+//     cout << "Found " << compos.size() << " components";
+//     cout << "Processing them" << endl;
+//
+//     TimeTexture<short> texResult(1,nVert);
+//     TimeTexture<short> texBorder(1,nVert);
+//
+//     for (i=0; i<nVert; i++)
+//     {
+//        texResult[0].item(i)=0;
+//        texBorder[0].item(i)=0;
+//     }
+//
+//     uint j,k, l, sc;
+//     float lat, lon, latMax, latMin, lonMax, lonMin;
+//     for (i=1; i<=compos.size(); i++)
+//     {
+//          cout << "Composante " << i << endl;
+//          lonMax=latMax=0.0; lonMin=latMin=360.0;
+//          std::vector<uint> compo=compos[i];
+//          std::vector<uint> square;
+//          sc=compo.size();
+//          cout << "\t size " << sc << endl;
+//
+//          for (j=0; j<sc; j++)
+//          {
+//               k=compo[j];
+//               lat=texLat[0].item(k);
+//               lon=texLon[0].item(k);
+//               if (lat<latMin) latMin=lat;
+//               if (lat>latMax) latMax=lat;
+//               if (lon<lonMin) lonMin=lon;
+//               if (lon>lonMax) lonMax=lon;
+//          }
+//          cout << "bounding box : (" << latMin << ", " << lonMin << ") - (" << latMax << ", " << lonMax << ")" << endl;
+//          if ((lonMax-lonMin) <= (lonMin-lonMax+360.0)) // detection du sillon central ou tout est different
+//          {
+//            for (l=0; l<nVert; l++)
+//            {
+//                lat=texLat[0].item(l);
+//                lon=texLon[0].item(l);
+//                if ( (lat<=latMax) && (lat>=latMin) && (lon<=lonMax) && (lon>=lonMin))
+//                {
+//                      texResult[0].item(l)=i;
+//                      square.push_back(l);
+//                }
+//            }
+//            uint sq=square.size();
+//            cout << "Looking for borders and building reparameterization vectors" << endl;
+//            vector<uint> inside, top, bottom, left, right;
+//
+//            for (j=0; j<sq; j++)
+//            {
+//                k=square[j];
+//                int flagBorder=0;
+//                float lonOut=0.0, latOut=0.0;
+//                int nOut=0;
+//                set<uint> v=neigh[k];
+//                set<uint>::iterator vIt=v.begin();
+//                for ( ; vIt != v.end(); ++vIt)
+//                    if (texResult[0].item(*vIt)!=short(i))
+//                    {
+//                      //nOut++; //ici on essaye de comprendre de quel bord il s'agit
+//                      lonOut=texLon[0].item(*vIt); // +=
+//                      latOut=texLat[0].item(*vIt); // +=
+//                      flagBorder=1;
+//                    }
+//                if (flagBorder==0)
+//                {
+//                  inside.push_back(k);
+//                  texBorder[0].item(k)=5;
+//                }
+//                else
+//                {
+//                  //texResult[0].item(k)=-1;
+//                  //latOut/=float(nOut);
+//                  //lonOut/=float(nOut);
+//                  if (latOut<latMin) {bottom.push_back(k); texBorder[0].item(k)=1;}
+//                  else if (latOut>latMax) {top.push_back(k); texBorder[0].item(k)=2;}
+//                  else if (lonOut<lonMin) {left.push_back(k); texBorder[0].item(k)=3;}
+//                  else if (lonOut>lonMax) {right.push_back(k); texBorder[0].item(k)=4;}
+//                  else {texBorder[0].item(k)=5;}
+//                }
+//            }
+//            vector<uint> corr;
+//            AimsSurfaceTriangle gyrusMesh = getGyrusMesh(surface[0], inside, corr);
+//            map<unsigned, set<pair<unsigned,float> > > poidsGyrus = getGyrusWeight(poids,inside,corr);
+//
+//            std::vector < std::pair < std::vector <uint>, short > > constraintVert;
+//            std::vector < std::pair < std::vector <uint>, short > > constraintHor;
+//
+//              pair<vector<uint>, float>    con1(left, texLat[0].item(left[j]));
+//              constraintVert.push_back(con1);
+//
+//              pair<vector<uint>, float>    con2(right, texLat[0].item(right[j]));
+//              constraintVert.push_back(con2);
+//
+//              pair<vector<uint>, float>    con3(top, texLat[0].item(top[j]));
+//              constraintHor.push_back(con3);
+//
+//              pair<vector<uint>, float>    con4(bottom, texLat[0].item(bottom[j]));
+//              constraintHor.push_back(con4);
+//
+//
+//            float criter=0.001;
+//            float dt=0.05;
+//
+//            cout << "inside : size " << inside.size() << endl;
+//            cout << "top : size " << top.size() << endl;
+//            cout << "bottom : size " << bottom.size() << endl;
+//            cout << "left : size " << left.size() << endl;
+//            cout << "right : size " << right.size() << endl;
+//            cout << "Sum = " << inside.size() + top.size() + bottom.size() + left.size() + right.size() << endl;
+//            cout << "square : size " << square.size() << endl;
+//
+//            Texture<float> verticDiff,horizDiff;
+//            cout << "Starting diffusion" << endl;
+//            cout << "vertical" << endl;
+////            verticDiff = diffusion ( poidsGyrus, gyrusMesh[0], top, bottom, constraintVert, (latMin + latMax)/2.0, inside, corr, criter, dt );
+//            cout << "horizontal" << endl;
+////            horizDiff = diffusion ( poidsGyrus, gyrusMesh[0], left, right, constraintHor, (lonMin + lonMax)/2.0, inside, corr, criter, dt );
+//            cout << "Reinjecting result on coordinate field" << endl;
+//          /* FINIR CA ET S'OCCUPER DU SEG FAULT" */
+//       //    /* for (uint i2=0;i2<vertices[0].size();i2++)
+//       //     {
+//       //       tex.item(vertices[0][i2]) = (float) verticDiff.item(corr[vertices[0][i2]]);
+//       //              for (uint i2=0;i2<vertices[0].size();i2++)
+//       //                 final[2].item(vertices[0][i2]) = (float) horizDiff.item(corr[vertices[0][i2]]);
+//
+//       //     cout << "OK" << endl;
+//          }
+//     }
 
-     TimeTexture<short> dil, closed;
-     float sizeClosing=8.0;
-     
-     dil[0] = MeshDilation<short>( surface[0], texOut[0], short(0), -1 , sizeClosing, true);
-     cout << "OK. Writing texture dil.tex" << endl;
-     Writer<TimeTexture<short> > dilW( "dil.tex" );
-     dilW << dil ;
-     closed[0] = MeshErosion<short>( surface[0], dil[0], short(0), -1 , sizeClosing, true);
-     cout << "OK. Writing texture closed.tex" << endl;
-     Writer<TimeTexture<short> > closedW( "closed.tex" );
-     closedW << closed ;
-     
-     cout << "Extracting connected components" << endl;
-     
-     TimeTexture<short> compoOut;
-     compoOut[0] = AimsMeshLabelConnectedComponent<short>( surface[0], closed[0], 0, 0);
-
-     cout << "OK. Writing texture composantes.tex" << endl;
-     Writer<TimeTexture<short> > compoOutW( "composantes.tex" );
-     compoOutW << compoOut ;
-
-     std::map<short, std::vector<uint> > compos;
-     short val;
-     for (i=0; i<nVert; i++)
-     {
-          val=compoOut[0].item(i);
-          if (val>0)
-          {
-               if (compos.find(val) == compos.end())
-               {
-                    compos[val]=std::vector<uint>();
-                    compos[val].push_back(i);
-               }
-               else
-               {
-                    compos[val].push_back(i);
-               }
-
-          }
-     }
-
-     cout << "Found " << compos.size() << " components";
-     cout << "Processing them" << endl;
-
-     TimeTexture<short> texResult(1,nVert);
-     TimeTexture<short> texBorder(1,nVert);
-
-     for (i=0; i<nVert; i++) 
-     {
-        texResult[0].item(i)=0;
-        texBorder[0].item(i)=0;
-     }
-     
-     uint j,k, l, sc;
-     float lat, lon, latMax, latMin, lonMax, lonMin;
-     for (i=1; i<=compos.size(); i++)
-     {
-          cout << "Composante " << i << endl;
-          lonMax=latMax=0.0; lonMin=latMin=360.0;
-          std::vector<uint> compo=compos[i];
-          std::vector<uint> square;
-          sc=compo.size();
-          cout << "\t size " << sc << endl;
-          
-          for (j=0; j<sc; j++)
-          {
-               k=compo[j];
-               lat=texLat[0].item(k);
-               lon=texLon[0].item(k);
-               if (lat<latMin) latMin=lat;
-               if (lat>latMax) latMax=lat;
-               if (lon<lonMin) lonMin=lon;
-               if (lon>lonMax) lonMax=lon;
-          }
-          cout << "bounding box : (" << latMin << ", " << lonMin << ") - (" << latMax << ", " << lonMax << ")" << endl;
-          if ((lonMax-lonMin) <= (lonMin-lonMax+360.0)) // detection du sillon central ou tout est different
-          {
-            for (l=0; l<nVert; l++)
-            {    
-                lat=texLat[0].item(l);
-                lon=texLon[0].item(l);
-                if ( (lat<=latMax) && (lat>=latMin) && (lon<=lonMax) && (lon>=lonMin))
-                {
-                      texResult[0].item(l)=i;
-                      square.push_back(l);
-                }
-            }
-            uint sq=square.size();
- /**/           cout << "Looking for borders and building reparameterization vectors" << endl;
-            vector<uint> inside, top, bottom, left, right;
-
-            for (j=0; j<sq; j++)
-            {
-                k=square[j];
-                int flagBorder=0;
-                float lonOut=0.0, latOut=0.0;
-                int nOut=0;
-                set<uint> v=neigh[k];
-                set<uint>::iterator vIt=v.begin();
-                for ( ; vIt != v.end(); ++vIt)
-                    if (texResult[0].item(*vIt)!=short(i))
-                    {
-                      //nOut++; //ici on essaye de comprendre de quel bord il s'agit
-                      lonOut=texLon[0].item(*vIt); // +=
-                      latOut=texLat[0].item(*vIt); // +=
-                      flagBorder=1;
-                    }
-                if (flagBorder==0)
-                {
-                  inside.push_back(k);
-                  texBorder[0].item(k)=5;
-                }
-                else
-                {
-                  //texResult[0].item(k)=-1;
-                  //latOut/=float(nOut);
-                  //lonOut/=float(nOut);
-                  if (latOut<latMin) {bottom.push_back(k); texBorder[0].item(k)=1;}
-                  else if (latOut>latMax) {top.push_back(k); texBorder[0].item(k)=2;}
-                  else if (lonOut<lonMin) {left.push_back(k); texBorder[0].item(k)=3;}
-                  else if (lonOut>lonMax) {right.push_back(k); texBorder[0].item(k)=4;}
-                  else {texBorder[0].item(k)=5;}
-                }
-            }/**/
-            vector<uint> corr;
-            AimsSurfaceTriangle gyrusMesh = getGyrusMesh(surface[0], inside, corr);
-            map<unsigned, set<pair<unsigned,float> > > poidsGyrus = getGyrusWeight(poids,inside,corr);
-
-            std::vector < std::pair < std::vector <uint>, short > > constraintVert;
-            std::vector < std::pair < std::vector <uint>, short > > constraintHor; 
-
-              pair<vector<uint>, float>    con1(left, texLat[0].item(left[j]));
-              constraintVert.push_back(con1);
-
-              pair<vector<uint>, float>    con2(right, texLat[0].item(right[j]));
-              constraintVert.push_back(con2);
-
-              pair<vector<uint>, float>    con3(top, texLat[0].item(top[j]));
-              constraintHor.push_back(con3);
-
-              pair<vector<uint>, float>    con4(bottom, texLat[0].item(bottom[j]));
-              constraintHor.push_back(con4);
-
-
-            float criter=0.001;
-            float dt=0.05;
-
-            cout << "inside : size " << inside.size() << endl;
-            cout << "top : size " << top.size() << endl;
-            cout << "bottom : size " << bottom.size() << endl;
-            cout << "left : size " << left.size() << endl;
-            cout << "right : size " << right.size() << endl;
-            cout << "Sum = " << inside.size() + top.size() + bottom.size() + left.size() + right.size() << endl;
-            cout << "square : size " << square.size() << endl;     
-
-            Texture<float> verticDiff,horizDiff;
-            cout << "Starting diffusion" << endl;
-            cout << "vertical" << endl;
-//            verticDiff = diffusion ( poidsGyrus, gyrusMesh[0], top, bottom, constraintVert, (latMin + latMax)/2.0, inside, corr, criter, dt );
-            cout << "horizontal" << endl;
-//            horizDiff = diffusion ( poidsGyrus, gyrusMesh[0], left, right, constraintHor, (lonMin + lonMax)/2.0, inside, corr, criter, dt );
-            cout << "Reinjecting result on coordinate field" << endl;
-          /* FINIR CA ET S'OCCUPER DU SEG FAULT" */
-           /* for (uint i2=0;i2<vertices[0].size();i2++)
-            {
-              tex.item(vertices[0][i2]) = (float) verticDiff.item(corr[vertices[0][i2]]);
-                     for (uint i2=0;i2<vertices[0].size();i2++)
-                        final[2].item(vertices[0][i2]) = (float) horizDiff.item(corr[vertices[0][i2]]);
-
-            cout << "OK" << endl;   */
-
-
-
-          }
-     }
-
-     cout << "OK. Writing texture " << fileOut << endl;
-     Writer<TimeTexture<short> > texResultW( fileOut );
-     texResultW << texResult ;
-     cout << "OK. Writing texture borders.tex" << endl;
-     Writer<TimeTexture<short> > texBorderW( "borders.tex" );
-     texBorderW << texBorder ;
-     return EXIT_SUCCESS;
+//     cout << "OK. Writing texture " << fileOut << endl;
+//     Writer<TimeTexture<short> > texResultW( fileOut );
+//     texResultW << texResult ;
+//     cout << "OK. Writing texture borders.tex" << endl;
+//     Writer<TimeTexture<short> > texBorderW( "borders.tex" );
+//     texBorderW << texBorder ;
+//     return EXIT_SUCCESS;
   }
   catch( user_interruption & )
   {
