@@ -41,6 +41,12 @@ namespace TextureToBlobs {
     surf::ScaleSpaceBlob * findBlob ( const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                     std::string subject_id,
                                     int index ) ;
+    int findBlobIndex ( const std::vector<surf::GreyLevelBlob *> &blobs,
+                                    std::string subject_id,
+                                    int index ) ;
+    int findBlobIndex ( const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+                                    std::string subject_id,
+                                    int index ) ;    
     
     void RecoverBlobsFromGraph( Graph *graph,
             SubjectData &subject,
