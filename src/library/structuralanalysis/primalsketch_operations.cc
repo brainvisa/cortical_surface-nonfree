@@ -288,7 +288,7 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
                  ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints
                      = (*itGLB)->GetListePoints();
             for ( itPoints = listePoints.begin() ; itPoints != listePoints.end() ; itPoints++ ) {
-                (blob->nodes).insert( (*itPoints).second );
+                blob->nodes.insert( (*itPoints).second );
 
                 if ( subject.coordinates == LATLON_2D ) {
                     (blob->coordinates)[(*itPoints).second] = vector<float>(2);

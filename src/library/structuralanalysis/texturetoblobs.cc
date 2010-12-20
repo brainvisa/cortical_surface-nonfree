@@ -110,6 +110,7 @@ void TextureToBlobs::getGreyLevelBlobsFromGraph ( Graph *graph,
                 //blob->label = label;
                 blob->subject = subject_id;
                 blob->nodes = vector2set(nodes_list);
+                assert(blob->nodes.size() != 0);
                 blob->scale = scale;
                 blob->t = t;
                 blob->ssb_parent = NULL;
@@ -293,6 +294,7 @@ void TextureToBlobs::RecoverBlobsFromGLBOnly( Graph *graph,
         std::vector<surf::GreyLevelBlob *> proto_blobs;
         getGreyLevelBlobsFromGraph ( graph, subject, proto_blobs, initNull );
         for ( uint i = 0 ; i < proto_blobs.size() ; i++ ) {
+            assert( proto_blobs[i]->nodes.size() != 0 );
             if ( proto_blobs[i]->t > thresholdOnT ) {
                 blobs.push_back ( new surf::GreyLevelBlob(*(proto_blobs[i])) );
             }
@@ -504,9 +506,9 @@ void addGreyLevelBlobsToGraph ( Graph *graph,
         vert->setProperty( "t", blobs[i]->t);
         vert->setProperty( "scale", blobs[i]->scale );
         vert->setProperty( "subject", blobs[i]->ssb_parent->subject );
-        if ( listVertGLB.find(blobs[i]->ssb_parent->subject) == listVertGLB.end() )
+        if ( listVertGLB.find( blobs[i]->ssb_parent->subject ) == listVertGLB.end() )
             listVertGLB[blobs[i]->ssb_parent->subject] = std::map<int, Vertex *>();
-        vert->setProperty( "nodes", blobs[i]->nodes );
+        vert->setProperty( "nodes", set2vector(blobs[i]->nodes) );
         if ( subject.coordinates == LATLON_2D ) {
             std::vector<float> latitudes, longitudes;
             std::set<int>::iterator it;
