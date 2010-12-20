@@ -695,8 +695,6 @@ void SurfaceBased_StructuralAnalysis::GetSimilarityCliquesFromSSBCliques ( std::
             !(sites[iSSB2]->graph_index == ssb2->index && sites[iSSB2]->subject == ssb2->subject ) ;
              iSSB2++ ) { }
         
-        //iSSB1 = ssb1->index;
-        //iSSB2 = ssb2->index;
         cliquesDuSite[ sites[iSSB1]->index ].push_back(i);
         cliquesDuSite[ sites[iSSB2]->index ].push_back(i);
 
@@ -719,7 +717,7 @@ void SurfaceBased_StructuralAnalysis::GetSimilarityCliquesFromSSBCliques ( std::
             }
         }
     }
-    std::cout << cliques.size() << "cliques recovered from ssbcliques" << std::endl;
+    std::cout << cliques.size() << " cliques recovered from ssbcliques" << std::endl;
 
 }
 
@@ -801,7 +799,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
                     // is created between these two ssb and the max-overlapping pair of glb
                     // is stored in "matchingblobs".
 
-                    cliques.push_back(surf::Clique(ssblobs[i], ssblobs[j], -1.0, overmax));
+                    cliques.push_back( surf::Clique( ssblobs[i], ssblobs[j], -1.0, overmax ) );
                     matchingblobs[i].push_back(b1max);
                     matchingblobs[j].push_back(b2max);
                     //cout << "max (" << ssblobs[i]->index <<","<< ssblobs[j]->index << ") between:" << b1max->index << " "
@@ -831,7 +829,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
             std::cout << ssblobs[i]->nodes.size() << " " << std::flush;
         }
 
-        if (matchingblobs[i].size()!=0)
+        if ( matchingblobs[i].size() != 0 )
             std::cout << std::endl ;
     }
     return cliques;

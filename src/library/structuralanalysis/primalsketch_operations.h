@@ -88,11 +88,11 @@ namespace TextureToBlobs {
             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
             bool initNull = true ) ;
 
-    void BlobsFromPrimalSketch ( SubjectData & subject,
-                         aims::PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch,
-                         std::vector<surf::GreyLevelBlob *> &blobs,
-                         std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                         bool initNull );
+//    void BlobsFromPrimalSketch ( SubjectData & subject,
+//                         aims::PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch,
+//                         std::vector<surf::GreyLevelBlob *> &blobs,
+//                         std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+//                         bool initNull );
 }
 
 #endif /*SURF_PRIMALSKETCH_OPERATIONS_H_*/

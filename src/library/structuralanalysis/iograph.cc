@@ -12,11 +12,11 @@ std::vector<std::string> getVectorStringFromGraph ( Graph &graph, std::string gr
         while( oit->isValid() ) {
             carto::Object s = oit->currentValue(); // the list element, type Object
             std::string ss = s->getString(); // extract as std::string or convert to string
-            std::cout << ss << ", ";
+            //std::cout << ss << ", ";
             v.push_back(ss);
             oit->next();
         }
-        std::cout << std::endl;
+        //std::cout << std::endl;
     }
     return v;
 }

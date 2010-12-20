@@ -62,9 +62,7 @@ void surf::Blob::getAimsMesh ( AimsSurface<3, Void> &inMesh) {
 	}
 }
 
-
 //##############################################################################
-
 
 void surf::Blob::getAimsEllipsoid ( float abscissa, float height, float depth, float area ) {
     AimsSurfaceTriangle *ellipse;

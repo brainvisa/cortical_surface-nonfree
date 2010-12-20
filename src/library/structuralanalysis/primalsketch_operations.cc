@@ -280,6 +280,7 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
             blob->ssb_parent = ssblob;
             blob->t = (*itGLB)->measurements.t;
             blob->scale = (*itGLB)->GetScale();
+            blob->subject = ssblob->subject;
             ssblob->scales.insert( blob->scale );
             // The surf::GreyLevelBlob's nodeslist contains its corresponding nodes indices on the
             //    mesh it was extracted from.
@@ -334,114 +335,115 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
             " ssblobs.size : " << ssblobs.size() << std::endl;
 
 }
-
-void TextureToBlobs::BlobsFromPrimalSketch ( SubjectData & subject,
-                     aims::PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch,
-                     std::vector<surf::GreyLevelBlob *> &blobs,
-                     std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                     bool initNull ) {
-
-    // Initialization of the results vectors "blobs" and "ssblobs"
-    if (initNull){
-        blobs.clear();
-        ssblobs.clear();
-    }
-
-    list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> listBlobs
-         = sketch.BlobSet();
-
-    std::list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*>::iterator itSSB, itSSBaux, itSSBaux2;
-    std::list<GreyLevelBlob<SiteType<AimsSurface<3, Void> >::type > *>::iterator itGLB;
-
-    ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type > *ssb;
-    std::set< SiteType<AimsSurface<3, Void> >::type,
-        ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> >::iterator itPoints;
-
-    std::map< ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*, surf::ScaleSpaceBlob * > ssbMap;
-
-    for (itSSB = listBlobs.begin() ; itSSB != listBlobs.end() ; itSSB++){
-
-        // For each scale-space blob, we create a surf::ScaleSpaceBlob in "ssblobs" containing
-        //    various surf::GreyLevelBlob objects (being themselves contained in a general resulting
-        // "blobs" vector).
-        ssb = *itSSB;
-
-        ssblobs.push_back(new surf::ScaleSpaceBlob());
-        surf::ScaleSpaceBlob *ssblob = ssblobs[ssblobs.size() - 1];
-        ssblob->subject = sketch.Subject();
-        ssblob->tmin = 999.0;
-        ssblob->tmax = -999.0;
-
-        // We save a link between the pointer and the corresponding index in ssblobs
-        std::pair< ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*, surf::ScaleSpaceBlob * > p;
-        p.first = ssb;
-        p.second = ssblob;
-        ssbMap.insert(p);
-
-        for ( itGLB = ssb->glBlobs.begin() ; itGLB != ssb->glBlobs.end() ; itGLB++ ){
-
-            // For each grey-level blob, we create a Blob
-            blobs.push_back( new surf::GreyLevelBlob() );
-            surf::GreyLevelBlob *blob = blobs[blobs.size()-1];
-
-            blob->ssb_parent = ssblob;
-            blob->t = (*itGLB)->measurements.t;
-            blob->scale = (*itGLB)->GetScale();
-
-            // The surf::GreyLevelBlob's nodeslist contains its corresponding nodes indices on the
-            //    mesh it was extracted from.
-            std::set<SiteType<AimsSurface<3, Void> >::type,
-                 ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints
-                     = (*itGLB)->GetListePoints();
-            for ( itPoints = listePoints.begin() ; itPoints != listePoints.end() ; itPoints++ ) {
-                (blob->nodes).insert( (*itPoints).second );
-
-                if ( subject.coordinates == LATLON_2D ) {
-                    (blob->coordinates)[(*itPoints).second] = vector<float>(2);
-
-                    (blob->coordinates)[(*itPoints).second][0] = subject.lat->item((*itPoints).second);
-                    (blob->coordinates)[(*itPoints).second][1] = subject.lon->item((*itPoints).second);
-                }
-
-                (blob->raw_coordinates)[(*itPoints).second] = vector<float>(3);
-                (blob->raw_coordinates)[(*itPoints).second][0] = subject.mesh->vertex()[(*itPoints).second][0];
-                (blob->raw_coordinates)[(*itPoints).second][1] = subject.mesh->vertex()[(*itPoints).second][1];
-                (blob->raw_coordinates)[(*itPoints).second][2] = subject.mesh->vertex()[(*itPoints).second][2];
-            }
-
-            ssblob->blobs.insert(blob);
-
-            if ( blob->scale < ssblob->tmin )
-                ssblob->tmin = blob->scale;
-            if ( blob->scale > ssblob->tmax )
-                ssblob->tmax = blob->scale;
-        }
-
-        ssblob->t = ssb->GetMeasurements().t;
-
-    }
-
-
-    // Now that every SSB has been created, we can create links (bifurcations)
-    // between them
-
-    // BIFURCATIONS
-    std::list<Bifurcation<SiteType<AimsSurface<3, Void> >::type> *> bifurcations = sketch.BifurcationList();
-    std::list<Bifurcation<SiteType<AimsSurface<3, Void> >::type> *>::iterator bifurcIt;
-    for ( bifurcIt = bifurcations.begin() ; bifurcIt != bifurcations.end() ; bifurcIt ++ ) {
-        list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type > *> topBlobs, bottomBlobs, topBottomBlobs, bottomTopBlobs;
-        topBlobs = (*bifurcIt)->TopBlobs();
-        bottomBlobs = (*bifurcIt)->BottomBlobs();
-
-        for (itSSBaux = topBlobs.begin() ; itSSBaux != topBlobs.end() ; itSSBaux++) {
-            for (itSSBaux2 = bottomBlobs.begin() ; itSSBaux2 != bottomBlobs.end() ; itSSBaux2++){
-                ssbMap[*itSSBaux2]->topBlobs.insert( ssbMap[*itSSBaux] );
-                ssbMap[*itSSBaux]->bottomBlobs.insert( ssbMap[*itSSBaux2] );
-            }
-        }
-    }
-
-    std::cout << " blobs.size : " << blobs.size() <<
-            " ssblobs.size : " << ssblobs.size() << std::endl;
-
-}
+//
+//void TextureToBlobs::BlobsFromPrimalSketch ( SubjectData & subject,
+//                     aims::PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch,
+//                     std::vector<surf::GreyLevelBlob *> &blobs,
+//                     std::vector<surf::ScaleSpaceBlob *> &ssblobs,
+//                     bool initNull ) {
+//
+//    // Initialization of the results vectors "blobs" and "ssblobs"
+//    if (initNull){
+//        blobs.clear();
+//        ssblobs.clear();
+//    }
+//
+//    list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> listBlobs
+//         = sketch.BlobSet();
+//
+//    std::list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*>::iterator itSSB, itSSBaux, itSSBaux2;
+//    std::list<GreyLevelBlob<SiteType<AimsSurface<3, Void> >::type > *>::iterator itGLB;
+//
+//    ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type > *ssb;
+//    std::set< SiteType<AimsSurface<3, Void> >::type,
+//        ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> >::iterator itPoints;
+//
+//    std::map< ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*, surf::ScaleSpaceBlob * > ssbMap;
+//
+//    for (itSSB = listBlobs.begin() ; itSSB != listBlobs.end() ; itSSB++){
+//
+//        // For each scale-space blob, we create a surf::ScaleSpaceBlob in "ssblobs" containing
+//        //    various surf::GreyLevelBlob objects (being themselves contained in a general resulting
+//        // "blobs" vector).
+//        ssb = *itSSB;
+//
+//        ssblobs.push_back(new surf::ScaleSpaceBlob());
+//        surf::ScaleSpaceBlob *ssblob = ssblobs[ssblobs.size() - 1];
+//        ssblob->subject = sketch.Subject();
+//        ssblob->tmin = 999.0;
+//        ssblob->tmax = -999.0;
+//
+//        // We save a link between the pointer and the corresponding index in ssblobs
+//        std::pair< ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*, surf::ScaleSpaceBlob * > p;
+//        p.first = ssb;
+//        p.second = ssblob;
+//        ssbMap.insert(p);
+//
+//        for ( itGLB = ssb->glBlobs.begin() ; itGLB != ssb->glBlobs.end() ; itGLB++ ){
+//
+//            // For each grey-level blob, we create a Blob
+//            blobs.push_back( new surf::GreyLevelBlob() );
+//            surf::GreyLevelBlob *blob = blobs[blobs.size()-1];
+//
+//            blob->ssb_parent = ssblob;
+//            blob->t = (*itGLB)->measurements.t;
+//            blob->scale = (*itGLB)->GetScale();
+//            blob->subject = ssblob->subject;
+//
+//            // The surf::GreyLevelBlob's nodeslist contains its corresponding nodes indices on the
+//            //    mesh it was extracted from.
+//            std::set<SiteType<AimsSurface<3, Void> >::type,
+//                 ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints
+//                     = (*itGLB)->GetListePoints();
+//            for ( itPoints = listePoints.begin() ; itPoints != listePoints.end() ; itPoints++ ) {
+//                (blob->nodes).insert( (*itPoints).second );
+//
+//                if ( subject.coordinates == LATLON_2D ) {
+//                    (blob->coordinates)[(*itPoints).second] = vector<float>(2);
+//
+//                    (blob->coordinates)[(*itPoints).second][0] = subject.lat->item((*itPoints).second);
+//                    (blob->coordinates)[(*itPoints).second][1] = subject.lon->item((*itPoints).second);
+//                }
+//
+//                (blob->raw_coordinates)[(*itPoints).second] = vector<float>(3);
+//                (blob->raw_coordinates)[(*itPoints).second][0] = subject.mesh->vertex()[(*itPoints).second][0];
+//                (blob->raw_coordinates)[(*itPoints).second][1] = subject.mesh->vertex()[(*itPoints).second][1];
+//                (blob->raw_coordinates)[(*itPoints).second][2] = subject.mesh->vertex()[(*itPoints).second][2];
+//            }
+//
+//            ssblob->blobs.insert(blob);
+//
+//            if ( blob->scale < ssblob->tmin )
+//                ssblob->tmin = blob->scale;
+//            if ( blob->scale > ssblob->tmax )
+//                ssblob->tmax = blob->scale;
+//        }
+//
+//        ssblob->t = ssb->GetMeasurements().t;
+//
+//    }
+//
+//
+//    // Now that every SSB has been created, we can create links (bifurcations)
+//    // between them
+//
+//    // BIFURCATIONS
+//    std::list<Bifurcation<SiteType<AimsSurface<3, Void> >::type> *> bifurcations = sketch.BifurcationList();
+//    std::list<Bifurcation<SiteType<AimsSurface<3, Void> >::type> *>::iterator bifurcIt;
+//    for ( bifurcIt = bifurcations.begin() ; bifurcIt != bifurcations.end() ; bifurcIt ++ ) {
+//        list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type > *> topBlobs, bottomBlobs, topBottomBlobs, bottomTopBlobs;
+//        topBlobs = (*bifurcIt)->TopBlobs();
+//        bottomBlobs = (*bifurcIt)->BottomBlobs();
+//
+//        for (itSSBaux = topBlobs.begin() ; itSSBaux != topBlobs.end() ; itSSBaux++) {
+//            for (itSSBaux2 = bottomBlobs.begin() ; itSSBaux2 != bottomBlobs.end() ; itSSBaux2++){
+//                ssbMap[*itSSBaux2]->topBlobs.insert( ssbMap[*itSSBaux] );
+//                ssbMap[*itSSBaux]->bottomBlobs.insert( ssbMap[*itSSBaux2] );
+//            }
+//        }
+//    }
+//
+//    std::cout << " blobs.size : " << blobs.size() <<
+//            " ssblobs.size : " << ssblobs.size() << std::endl;
+//
+//}

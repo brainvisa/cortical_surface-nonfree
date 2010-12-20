@@ -55,9 +55,10 @@ namespace TextureToBlobs {
 
     void RecoverBlobsFromGLBOnly( Graph *graph,
                                 SubjectData &subject,
-                                std::vector<surf::GreyLevelBlob *> &blobs,
+                                //std::vector<surf::GreyLevelBlob *> &blobs,
                                 std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                                bool initNull = true);
+                                bool initNull = true,
+                                float thresholdOnT = -100.0 );
 
     void AimsGraph( Graph *graph,
 					SubjectData & subject,

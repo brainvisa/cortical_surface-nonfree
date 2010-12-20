@@ -47,7 +47,7 @@ namespace surf {
     class GreyLevelBlob: public Blob {
         public :
             float scale;
-            int label;
+            //int label;
             surf::ScaleSpaceBlob *ssb_parent;
 
             void getAimsEllipsoid ( void );
@@ -61,8 +61,10 @@ namespace surf {
             ~GreyLevelBlob(){}
             GreyLevelBlob( GreyLevelBlob *glb ) {
                 index = glb->index;
+                //label = glb->label;
                 nodes = std::set<int>(glb->nodes);
                 subject = glb->subject;
+                nodes = std::set<int>(glb->nodes);
                 coordinates = std::map<int, std::vector<float> >(glb->coordinates);
                 raw_coordinates = std::map<int, std::vector<float> >(glb->raw_coordinates);
                 ssb_parent = glb->ssb_parent;
