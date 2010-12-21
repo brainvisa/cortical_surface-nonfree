@@ -811,27 +811,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
         }
     }
     std::cout << ssblobs.size() << "/" << ssblobs.size() << "(" << cliques.size() << ")" << std::endl;
-    // Construction of a representation blob for each scale-space blob
-    for ( uint i = 0 ; i < ssblobs.size() ; i++ ) {
 
-        // For every scale-space blob, we create a representation blob
-        //   from the set of grey-level blobs found to be max-matching
-        //   with some others (from other scale-space blobs)
-        std::set<uint>::iterator it;
-
-        if ( matchingblobs[i].size() != 0 )
-            std::cout << i << ":";
-
-        // for (it = matchingblobs[i].begin() ; it != matchingblobs[i].end() ; it++){
-        for ( uint j = 0 ; j < matchingblobs[i].size() ; j++ ) {
-            std::set<int> blobNodes( matchingblobs[i][j]->nodes );
-            ssblobs[i]->nodes.insert( blobNodes.begin(), blobNodes.end() );
-            std::cout << ssblobs[i]->nodes.size() << " " << std::flush;
-        }
-
-        if ( matchingblobs[i].size() != 0 )
-            std::cout << std::endl ;
-    }
     return cliques;
 }
 
@@ -869,7 +849,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
             // We consider only pairs of scale-space blobs from different subjects.
             if ( ssblobs[i]->subject != ssblobs[j]->subject ) {
 
-                float distance=-1.0;
+                float distance = -1.0;
                 assert( ssblobs[i]->blobs.size() == 1 );
                 itB1 = ssblobs[i]->blobs.begin();
                 b1max = *itB1;

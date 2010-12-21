@@ -14,7 +14,9 @@ enum graphMode {
 namespace TextureToBlobs {
 
     std::set<int> getFilteringNodes( SubjectData & subject );
-
+    
+    std::vector<surf::GreyLevelBlob *> recoverGreyLevelBlobs ( const std::vector<surf::ScaleSpaceBlob *> &ssblobs ) ;
+    
     void getGreyLevelBlobsFromGraph ( Graph *graph,
                                 SubjectData &subject,
                                 std::vector<surf::GreyLevelBlob *> &blobs,

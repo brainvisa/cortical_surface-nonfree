@@ -51,27 +51,28 @@ void TextureToBlobs::DestroyBlobs ( std::vector<surf::ScaleSpaceBlob *> &ssblobs
         delete ( blobs[i] );
     for ( uint i = 0 ; i < ssblobs.size() ; i++ )
         delete ( ssblobs[i] );
+    ssblobs.clear();
 }
 
 void TextureToBlobs::DestroyBlobs ( std::vector<surf::Blob *> &blobs ) {
     for ( uint i = 0 ; i < blobs.size() ; i++ )
         delete ( blobs[i] );
+    blobs.clear();
 }
 
 void TextureToBlobs::getGreyLevelBlobsFromGraph ( Graph *graph,
                             SubjectData &subject,
                             std::vector <surf::GreyLevelBlob *> &blobs,
                             bool initNull ){
-    if ( initNull ){
+    if ( initNull )
         blobs.clear();
-    }
     std::set <Vertex *>::iterator iv;
     int iNbGLB = 0;
     int filtered_out;
     
     for ( iv = graph->vertices().begin() ; iv != graph->vertices().end() ; ++iv ) {
         if ( (*iv)->getSyntax() == "glb" ) {    
-            filtered_out == 0;
+            filtered_out = 0;
             if ( (*iv)->hasProperty("filtered_out") )
                 (*iv)->getProperty("filtered_out", filtered_out);
             if ( filtered_out == 0 ) {
@@ -83,16 +84,21 @@ void TextureToBlobs::getGreyLevelBlobsFromGraph ( Graph *graph,
     
                 blobs.push_back( new surf::GreyLevelBlob() );
                 surf::GreyLevelBlob *blob = blobs[blobs.size()-1];
+                (*iv)->getProperty( "index", index );
                 (*iv)->getProperty( "subject", subject_id );
                 (*iv)->getProperty( "scale", scale );
                 (*iv)->getProperty( "t", t );
-                //(*iv)->getProperty( "label", label );
                 (*iv)->getProperty( "nodes", nodes_list );
                 (*iv)->getProperty( "x", latitudes );
                 (*iv)->getProperty( "y", longitudes );
-                (*iv)->getProperty( "index", index );
-                // assert(nodes_list.size() == latitudes.size());
-    
+                blob->index = index;
+                blob->subject = subject_id;
+                blob->nodes = vector2set ( nodes_list );
+                assert(blob->nodes.size() != 0);
+                blob->scale = scale;
+                blob->t = t;
+                blob->ssb_parent = NULL;
+                
                 for ( uint i = 0 ; i < nodes_list.size() ; i++ ) {
                     (blob->raw_coordinates)[nodes_list[i]] = std::vector<float>(3);
                     (blob->raw_coordinates)[nodes_list[i]][0] = subject.mesh->vertex()[nodes_list[i]][0];
@@ -105,15 +111,6 @@ void TextureToBlobs::getGreyLevelBlobsFromGraph ( Graph *graph,
                         ( blob->coordinates)[nodes_list[i]][1] = longitudes[i];
                     }
                 }
-    
-                blob->index = index;
-                //blob->label = label;
-                blob->subject = subject_id;
-                blob->nodes = vector2set(nodes_list);
-                assert(blob->nodes.size() != 0);
-                blob->scale = scale;
-                blob->t = t;
-                blob->ssb_parent = NULL;
             }
         }
     }
@@ -130,9 +127,12 @@ void TextureToBlobs::getScaleSpaceBlobsFromGraph ( Graph *graph,
     Edge *e;
     Vertex::iterator jv;
     Edge::iterator kv;
-    int iNbLinks = 0;
     int iNbSSB = ssblobs.size();
-    int filtered_out;
+    int index, filtered_out;
+    float tmax, tmin, t;
+    std::vector<float> scales, bc;
+    std::vector<int> nodes;
+    std::string subject_id, label;
 
     for ( iv = graph->vertices().begin() ; iv != graph->vertices().end() ; ++iv ) {
         if ( (*iv)->getSyntax() == "ssb" ) {            
@@ -140,23 +140,18 @@ void TextureToBlobs::getScaleSpaceBlobsFromGraph ( Graph *graph,
             if ( (*iv)->hasProperty ( "filtered_out" ) ) 
                 (*iv)->getProperty ( "filtered_out", filtered_out );
             if ( filtered_out == 0 ) {
-                int index, node;
-                float tmax, tmin, t;
-                std::vector<float> scales;
-                std::string subject_id, label;
-                std::vector<float> bc;
-    
                 ssblobs.push_back( new surf::ScaleSpaceBlob() );
                 surf::ScaleSpaceBlob *ssblob = ssblobs[ssblobs.size()-1];
-    
+                
+                (*iv)->getProperty( "index", index );
                 (*iv)->getProperty( "tmax", tmax );
                 (*iv)->getProperty( "tmin", tmin );
                 (*iv)->getProperty( "scales", scales );
                 (*iv)->getProperty( "t", t );
                 (*iv)->getProperty( "subject", subject_id );
                 (*iv)->getProperty( "label", label );
+                (*iv)->getProperty( "nodes", nodes );
                 (*iv)->getProperty( "gravity_center", bc );
-                (*iv)->getProperty( "index", index );
                 (*iv)->setProperty( "sites_index", (int) ( ssblobs.size() - 1 ) );
                 ssblob->index = index;
                 ssblob->tmax = tmax;
@@ -165,12 +160,12 @@ void TextureToBlobs::getScaleSpaceBlobsFromGraph ( Graph *graph,
                 ssblob->t = t;
                 ssblob->subject = subject_id;
                 ssblob->label = atoi(label.data());
-                ssblob->nodes = std::set<int>();
-                ssblob->nodes.insert(node);
+                ssblob->nodes = vector2set ( nodes );
+                //ssblob->nodes.insert(node);
                 ssblob->raw_coordinates = std::map<int, std::vector<float> >();
-                ssblob->raw_coordinates[node] = std::vector<float> ( bc.size() );
-                for ( uint i = 0 ; i < bc.size() ; i++ )
-                    ssblob->raw_coordinates[node][i] = bc[i];
+                //ssblob->raw_coordinates[node] = std::vector<float> ( bc.size() );
+                //for ( uint i = 0 ; i < bc.size() ; i++ )
+                //    ssblob->raw_coordinates[node][i] = bc[i];
     
                 if ( listGLBindices.find(subject_id) == listGLBindices.end() )
                     listGLBindices[subject_id] = std::map<int, std::set<int> >();
@@ -184,13 +179,11 @@ void TextureToBlobs::getScaleSpaceBlobsFromGraph ( Graph *graph,
                     if ( e->getSyntax() == "s2g" ) {
                         for ( kv = e->begin() ; kv != e->end() ; kv++ ) {
                             if ( (*kv)->getSyntax() == "ssb" ) {
-    
                             }
                             else if ( (*kv)->getSyntax() == "glb" ) {
                                 int iGLBindex;
                                 (*kv)->getProperty( "index", iGLBindex );
                                 listGLBindices[subject_id][index].insert( iGLBindex );
-                                iNbLinks++;
                             }
                         }
                     }
@@ -257,23 +250,22 @@ void TextureToBlobs::RecoverBlobsFromGraph( Graph *graph,
 
     getGreyLevelBlobsFromGraph ( graph, subject, blobs, initNull ) ;
     iNbGLB = blobs.size() - iNbGLB;
+    std::cout << iNbGLB << " blobs added" << std::endl;
     
     getScaleSpaceBlobsFromGraph ( graph, ssblobs, listGLBindices, initNull ) ;
     iNbSSB = ssblobs.size() - iNbSSB;
 
     for ( uint i = ssblobs.size() - iNbSSB ; i < ssblobs.size() ; i++ ) {
         int index = ssblobs[i]->index;
-        std::string subject = ssblobs[i]->subject;
-        for ( it = listGLBindices[subject][index].begin() ; it != listGLBindices[subject][index].end() ; it++ ) {
-            surf::GreyLevelBlob *glb = findBlob ( blobs, subject, *it);
-            ssblobs[i]->blobs.insert( glb );
+        std::string subject_id = ssblobs[i]->subject;
+        for ( it = listGLBindices[subject_id][index].begin() ; it != listGLBindices[subject_id][index].end() ; it++ ) {
+            surf::GreyLevelBlob *glb = findBlob ( blobs, subject_id, *it);
+            assert ( glb != NULL);
+            ssblobs[i]->blobs.insert ( glb );
             glb->ssb_parent = ssblobs[i];
         }
     }
-
-    std::cout << iNbGLB << " blobs added" << std::endl
-        << iNbSSB << " ssblobs added " << std::endl;
-
+    std::cout << iNbSSB << " ssblobs added " << std::endl;
     for (uint i = blobs.size() - iNbGLB ; i < blobs.size() ; i++)
         assert(blobs[i]->ssb_parent != NULL);
 }
@@ -286,7 +278,6 @@ void TextureToBlobs::RecoverBlobsFromGLBOnly( Graph *graph,
                             float thresholdOnT ){
 
     std::vector<surf::GreyLevelBlob *> blobs;    
-    //int iNbGLB = blobs.size();
     if ( thresholdOnT < -99.0 ) {
         getGreyLevelBlobsFromGraph ( graph, subject, blobs, initNull );
     }
@@ -319,9 +310,6 @@ void TextureToBlobs::RecoverBlobsFromGLBOnly( Graph *graph,
         assert(ssblob->nodes.size() != 0 );
         blobs[i]->ssb_parent = ssblob;
     }
-
-
-    //assert( blobs.size() - iNbGLB == ssblobs.size() - iNbSSB );
 
     std::cout << blobs.size() << " blobs added" << std::endl;
     std::cout << ssblobs.size() - iNbSSB << " ssblobs added " << std::endl;
@@ -367,7 +355,7 @@ void TextureToBlobs::BlobsFromLabelTexture ( std::vector<surf::Blob *> &blobs,
 
 //##############################################################################
 
-std::vector<surf::GreyLevelBlob *> recoverGreyLevelBlobs ( const std::vector<surf::ScaleSpaceBlob *> &ssblobs ) {
+std::vector<surf::GreyLevelBlob *> TextureToBlobs::recoverGreyLevelBlobs ( const std::vector<surf::ScaleSpaceBlob *> &ssblobs ) {
     std::vector<surf::GreyLevelBlob *> blobs;
     std::set< surf::GreyLevelBlob *>::iterator it;
 
@@ -448,15 +436,15 @@ void addScaleSpaceBlobsToGraph ( Graph *graph,
         vert->setProperty( "tmax", ssblobs[i]->tmax);
         vert->setProperty( "scales", set2vector(ssblobs[i]->scales) );
 
-        //if ( ssblobs[i]->nodes.size() > 0 ) {
-        //    vert->setProperty( "nodes", set2vector(ssblobs[i]->nodes));
-        //    node = ssblobs[i]->getMaximumNode(*(data[ssblobs[i]->subject]->tex));
-        //    maxnode = data[ssblobs[i]->subject]->mesh->vertex()[ node ];
-        //    std::vector<float> bc(3);
-        //    for ( uint j = 0 ; j < bc.size() ; j++ )
-        //        bc[j] = maxnode[j];
-        //    vert->setProperty ( "gravity_center", bc );
-        //}
+        if ( ssblobs[i]->nodes.size() > 0 ) {
+            vert->setProperty( "nodes", set2vector(ssblobs[i]->nodes));
+            node = ssblobs[i]->getMaximumNode(*(data[ssblobs[i]->subject]->tex));
+            maxnode = data[ssblobs[i]->subject]->mesh->vertex()[ node ];
+            std::vector<float> bc(3);
+            for ( uint j = 0 ; j < bc.size() ; j++ )
+                bc[j] = maxnode[j];
+            vert->setProperty ( "gravity_center", bc );
+        }
 
         listVertSSB[ssblobs[i]->subject][ssblobs[i]->index] = vert;
         if ( storeMeshes ) {
@@ -871,8 +859,7 @@ void TextureToBlobs::AimsGraph ( Graph *graph,
 
 
     // First We Recover The Grey-Level Blobs From The Vector of Scale-Space Blobs
-        std::vector<surf::GreyLevelBlob *> blobs;
-        blobs = recoverGreyLevelBlobs ( ssblobs );
+        std::vector<surf::GreyLevelBlob *> blobs = TextureToBlobs::recoverGreyLevelBlobs ( ssblobs );
         std::cout << blobs.size() << " blobs recovered " << std::endl;
 
     // We Define The Graph Global Properties

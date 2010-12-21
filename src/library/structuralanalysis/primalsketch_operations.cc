@@ -2,6 +2,16 @@
 
 #include <cortical_surface/structuralanalysis/primalsketch_operations.h>
 
+//std::vector<surf::GreyLevelBlob *> TextureToBlobs::recoverGreyLevelBlobs ( const std::vector<surf::ScaleSpaceBlob *> &ssblobs ) {
+//    std::vector<surf::GreyLevelBlob *> blobs;
+//    std::set< surf::GreyLevelBlob *>::iterator it;
+//
+//    for ( uint i = 0 ; i < ssblobs.size() ; i++ )
+//        for ( it = ssblobs[i]->blobs.begin() ; it != ssblobs[i]->blobs.end() ; it ++ )
+//            blobs.push_back( *it );
+//
+//    return blobs;
+//}
 
 void storeCoordinatesInScaleSpace ( SubjectData &regionData, ScaleSpace<AimsSurface<3, Void>, Texture<float> >  &ss ) {
     std::vector<Point3df> *coordinates;
@@ -24,7 +34,7 @@ void storeCoordinatesInScaleSpace ( SubjectData &regionData, ScaleSpace<AimsSurf
     ss.PutCoordinates(coordinates);
 }
 
-void TextureToBlobs::PrimalSketchRegionMode (   std::vector<surf::GreyLevelBlob *> &blobs,
+void TextureToBlobs::PrimalSketchRegionMode (   //std::vector<surf::GreyLevelBlob *> &blobs,
                                                 std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                                 surf::Region &region,
                                                 SubjectData &regionData,
@@ -77,8 +87,8 @@ void TextureToBlobs::PrimalSketchRegionMode (   std::vector<surf::GreyLevelBlob 
 
     TimeTexture<float> regionBlobsTex;
 
-    TextureToBlobs::PrimalSketch ( regionData, blobs, ssblobs, &ss, regionBlobsTex, scale_max );
-
+    TextureToBlobs::PrimalSketch ( regionData, ssblobs, &ss, regionBlobsTex, scale_max );
+    std::vector<surf::GreyLevelBlob *> blobs = TextureToBlobs::recoverGreyLevelBlobs ( ssblobs );
     // Update Coordinates With Conversion Gyrus/Global Indices
     for ( uint i = 0 ; i < blobs.size() ; i ++ ) {
         std::set<int>::iterator it;
@@ -108,7 +118,7 @@ void TextureToBlobs::PrimalSketchRegionMode (   std::vector<surf::GreyLevelBlob 
 
 }
 
-void TextureToBlobs::PrimalSketchGlobalMode (   std::vector<surf::GreyLevelBlob *> &blobs,
+void TextureToBlobs::PrimalSketchGlobalMode (   //std::vector<surf::GreyLevelBlob *> &blobs,
                                     std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                     SubjectData &subject,
                                     std::string scaleSpacePath,
@@ -157,14 +167,14 @@ void TextureToBlobs::PrimalSketchGlobalMode (   std::vector<surf::GreyLevelBlob 
 
     std::cout << "══ Computing primal sketch..." << std::endl;
     TimeTexture<float> blobs_tex;
-    TextureToBlobs::PrimalSketch ( subject, blobs, ssblobs, &ss, blobs_tex, scale_max );
+    TextureToBlobs::PrimalSketch ( subject, ssblobs, &ss, blobs_tex, scale_max );
     std::cout << "══ Writing blobs texture..." << std::endl;
     aims::Writer<TimeTexture<float> > wtrBlobs ( blobsPath );
     wtrBlobs.write ( blobs_tex );
 }
 
 void TextureToBlobs::PrimalSketch ( SubjectData &subject,
-                    std::vector<surf::GreyLevelBlob *> &blobs,
+                    //std::vector<surf::GreyLevelBlob *> &blobs,
                     std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                     ScaleSpace<AimsSurface<3, Void>, Texture<float> > *ss,
                     TimeTexture<float> &blobs_texture,
@@ -195,15 +205,15 @@ void TextureToBlobs::PrimalSketch ( SubjectData &subject,
 
     // Getting The Blobs From The Primal Sketch Structure
     std::cerr << "      Blobs vectors construction..." << std::endl;
-    getBlobsFromPrimalSketch ( subject, sketch, blobs, ssblobs );
+    getBlobsFromPrimalSketch ( subject, sketch, ssblobs );
 
-    std::cout << blobs.size() << " grey-level blobs / " << ssblobs.size() << " scale-space blobs" << std::endl;
+    //std::cout << blobs.size() << " grey-level blobs / " << ssblobs.size() << " scale-space blobs" << std::endl;
 }
 
 //##############################################################################
 
 void TextureToBlobs::GreyLevelBlobsFromTexture ( SubjectData &subject,
-                    vector<surf::GreyLevelBlob *> &blobs,
+                    //vector<surf::GreyLevelBlob *> &blobs,
                     vector<surf::ScaleSpaceBlob *> &ssblobs,
                     string blobsPath ) {
 
@@ -216,7 +226,7 @@ void TextureToBlobs::GreyLevelBlobsFromTexture ( SubjectData &subject,
 
     std::cout << "   Computing primal sketch..." << std::endl;
     TimeTexture<float> blobs_tex;
-    TextureToBlobs::PrimalSketch( subject, blobs, ssblobs, &ss, blobs_tex, 1.0 );
+    TextureToBlobs::PrimalSketch( subject, ssblobs, &ss, blobs_tex, 1.0 );
 
     Writer<TimeTexture<float> > wtrBlobs ( blobsPath );
     wtrBlobs.write ( blobs_tex );
@@ -229,16 +239,17 @@ void TextureToBlobs::GreyLevelBlobsFromTexture ( SubjectData &subject,
 
 void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
                      aims::PrimalSketch<AimsSurface<3, Void>, Texture<float> > &sketch,
-                     std::vector<surf::GreyLevelBlob *> &blobs,
-                     std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                     bool initNull ) {
+                     //std::vector<surf::GreyLevelBlob *> &blobs,
+                     std::vector<surf::ScaleSpaceBlob *> &ssblobs ) 
+{
+                    // bool initNull ) {
 
     // Initialization of the results vectors "blobs" and "ssblobs"
-    if (initNull){
-        blobs.clear();
-        ssblobs.clear();
-    }
-
+//    if (initNull){
+//        blobs.clear();
+//        ssblobs.clear();
+//    }
+    std::vector<surf::GreyLevelBlob *> blobs;
     list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> listBlobs
          = sketch.BlobSet();
 
@@ -251,8 +262,8 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
 
     std::map< ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*, surf::ScaleSpaceBlob * > ssbMap;
 
-    for (itSSB = listBlobs.begin() ; itSSB != listBlobs.end() ; itSSB++){
-
+    for ( itSSB = listBlobs.begin() ; itSSB != listBlobs.end() ; itSSB++ )
+    {
         // For each scale-space blob, we create a surf::ScaleSpaceBlob in "ssblobs" containing
         //    various surf::GreyLevelBlob objects (being themselves contained in a general resulting
         // "blobs" vector).
@@ -271,8 +282,8 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
         p.second = ssblob;
         ssbMap.insert(p);
 
-        for ( itGLB = ssb->glBlobs.begin() ; itGLB != ssb->glBlobs.end() ; itGLB++ ){
-
+        for ( itGLB = ssb->glBlobs.begin() ; itGLB != ssb->glBlobs.end() ; itGLB++ ) 
+        {
             // For each grey-level blob, we create a Blob
             blobs.push_back( new surf::GreyLevelBlob() );
             surf::GreyLevelBlob *blob = blobs[blobs.size()-1];
