@@ -2,30 +2,21 @@
 
 #include <cortical_surface/structuralanalysis/primalsketch_operations.h>
 
-//std::vector<surf::GreyLevelBlob *> TextureToBlobs::recoverGreyLevelBlobs ( const std::vector<surf::ScaleSpaceBlob *> &ssblobs ) {
-//    std::vector<surf::GreyLevelBlob *> blobs;
-//    std::set< surf::GreyLevelBlob *>::iterator it;
-//
-//    for ( uint i = 0 ; i < ssblobs.size() ; i++ )
-//        for ( it = ssblobs[i]->blobs.begin() ; it != ssblobs[i]->blobs.end() ; it ++ )
-//            blobs.push_back( *it );
-//
-//    return blobs;
-//}
 
-void storeCoordinatesInScaleSpace ( SubjectData &regionData, ScaleSpace<AimsSurface<3, Void>, Texture<float> >  &ss ) {
+void storeCoordinatesInScaleSpace ( SubjectData &regionData, ScaleSpace<AimsSurface<3, Void>, Texture<float> >  &ss ) 
+{
     std::vector<Point3df> *coordinates;
     coordinates = new vector<Point3df>();
 
-    if ( regionData.coordinates == LATLON_2D ) {
-
+    if ( regionData.coordinates == LATLON_2D ) 
+    {
         for ( uint i = 0 ; i < regionData.lat->nItem() ; i++ )
             (*coordinates).push_back(
                 Point3df( regionData.lat->item(i), regionData.lon->item(i), i ) );
 
     }
-    else {
-
+    else 
+    {
         for ( uint i = 0 ; i < regionData.lat->nItem() ; i++ )
             (*coordinates).push_back(
                 Point3df( regionData.lat->item(i), -1.0, i ) );
@@ -40,19 +31,22 @@ void TextureToBlobs::PrimalSketchRegionMode (   //std::vector<surf::GreyLevelBlo
                                                 SubjectData &regionData,
                                                 std::string scaleSpacePath, string blobsPath,
                                                 bool recover,
-                                                float scale_max ) {
+                                                float scale_max ) 
+{
 
     // Creating the smoother...
     std::cout << std::endl << "  ══ Smoother creation... " << std::endl;
     FiniteElementSmoother<3, float> smooth ( 0.01, regionData.mesh, regionData.weightLapl );
     ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss ( regionData.mesh, regionData.tex, &smooth );
 
-    if ( regionData.coordinates == LATLON_2D || regionData.coordinates == LAT_1D ) {
+    if ( regionData.coordinates == LATLON_2D || regionData.coordinates == LAT_1D ) 
+    {
         storeCoordinatesInScaleSpace( regionData, ss );
     }
 
 
-    if ( recover ) {
+    if ( recover ) 
+    {
         TimeTexture<float> scale_space;
         // Extracting The Gyrus-Specific Data From The Scale-Space Texture
         Reader< TimeTexture<float> > rdrScaleSpace ( scaleSpacePath ) ;
@@ -67,7 +61,8 @@ void TextureToBlobs::PrimalSketchRegionMode (   //std::vector<surf::GreyLevelBlo
         ss.uploadPreviouslyComputedScaleSpace(regionScaleSpace);
 
     }
-    else {
+    else 
+    {
 
         // Generating A Scale-Space And Writing It Onto Hard Disk
         std::cerr << "   Computing scale-space " << std::endl;
@@ -124,17 +119,19 @@ void TextureToBlobs::PrimalSketchGlobalMode (   //std::vector<surf::GreyLevelBlo
                                     std::string scaleSpacePath,
                                     std::string blobsPath,
                                     bool recover,
-                                    float scale_max ) {
-
+                                    float scale_max ) 
+{
     FiniteElementSmoother<3, float> smooth ( 0.01, subject.mesh, subject.weightLapl );
     ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss ( subject.mesh, subject.tex, &smooth );
 
-    if ( subject.coordinates == LATLON_2D || subject.coordinates == LAT_1D ) {
+    if ( subject.coordinates == LATLON_2D || subject.coordinates == LAT_1D ) 
+    {
         storeCoordinatesInScaleSpace( subject, ss );
     }
     std::cout << subject.mesh->vertex().size() << " " << subject.tex->nItem() << std::endl;
 
-    if ( recover ) {
+    if ( recover ) 
+    {
         TimeTexture<float> scale_space;
 
         aims::Reader< TimeTexture<float> > rdrScaleSpace ( scaleSpacePath ) ;
@@ -154,7 +151,8 @@ void TextureToBlobs::PrimalSketchGlobalMode (   //std::vector<surf::GreyLevelBlo
         std::cerr << "      Recovering scale-space " << std::endl;
         ss.uploadPreviouslyComputedScaleSpace(scaleSpaceTex);
     }
-    else {
+    else 
+    {
         // Generating A Scale-Space And Writing It Onto Hard Disk
         std::cerr << "══ Computing scale-space " << std::endl;
         ss.GenerateDefaultScaleSpace( 128.0 );
@@ -178,15 +176,16 @@ void TextureToBlobs::PrimalSketch ( SubjectData &subject,
                     std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                     ScaleSpace<AimsSurface<3, Void>, Texture<float> > *ss,
                     TimeTexture<float> &blobs_texture,
-                    float scale_max ) {
-
+                    float scale_max ) 
+{
     // Constructing A Primal-Sketch
     aims::PrimalSketch<AimsSurface<3, Void>, Texture<float> > sketch ( subject.subject_id, SURFACE );
     std::cout << "  ══ Setting scale-space..." << std::endl;
     sketch.SetScaleSpace(ss);
 
     // Scale_max == -1.0 Enforces Scale_max To Be Autodetermined (Max Scale From Ss)
-    if ( scale_max == -1.0 ) {
+    if ( scale_max == -1.0 ) 
+    {
         set<float>::iterator it;
         set<float> scales = ss->GetScaleList();
         scale_max = 0.0;
@@ -215,8 +214,8 @@ void TextureToBlobs::PrimalSketch ( SubjectData &subject,
 void TextureToBlobs::GreyLevelBlobsFromTexture ( SubjectData &subject,
                     //vector<surf::GreyLevelBlob *> &blobs,
                     vector<surf::ScaleSpaceBlob *> &ssblobs,
-                    string blobsPath ) {
-
+                    string blobsPath ) 
+{
     FiniteElementSmoother<3, float> smooth ( 0.01, subject.mesh, subject.weightLapl );
     ScaleSpace<AimsSurface<3, Void>, Texture<float> > ss ( subject.mesh, subject.tex, &smooth );
     ss.AddScale(1.0, *(subject.tex));
@@ -242,13 +241,6 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
                      //std::vector<surf::GreyLevelBlob *> &blobs,
                      std::vector<surf::ScaleSpaceBlob *> &ssblobs ) 
 {
-                    // bool initNull ) {
-
-    // Initialization of the results vectors "blobs" and "ssblobs"
-//    if (initNull){
-//        blobs.clear();
-//        ssblobs.clear();
-//    }
     std::vector<surf::GreyLevelBlob *> blobs;
     list<ScaleSpaceBlob<SiteType<AimsSurface<3, Void> >::type >*> listBlobs
          = sketch.BlobSet();
@@ -298,10 +290,12 @@ void TextureToBlobs::getBlobsFromPrimalSketch ( SubjectData & subject,
             std::set<SiteType<AimsSurface<3, Void> >::type,
                  ltstr_p3d<SiteType<AimsSurface<3, Void> >::type> > listePoints
                      = (*itGLB)->GetListePoints();
-            for ( itPoints = listePoints.begin() ; itPoints != listePoints.end() ; itPoints++ ) {
+            for ( itPoints = listePoints.begin() ; itPoints != listePoints.end() ; itPoints++ ) 
+            {
                 blob->nodes.insert( (*itPoints).second );
 
-                if ( subject.coordinates == LATLON_2D ) {
+                if ( subject.coordinates == LATLON_2D ) 
+                {
                     (blob->coordinates)[(*itPoints).second] = vector<float>(2);
                     (blob->coordinates)[(*itPoints).second][0] = subject.lat->item((*itPoints).second);
                     (blob->coordinates)[(*itPoints).second][1] = subject.lon->item((*itPoints).second);

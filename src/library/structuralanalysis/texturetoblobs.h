@@ -97,17 +97,16 @@ namespace TextureToBlobs {
                                               std::vector<surf::ScaleSpaceBlob *> &clusteredSsblobs,
                                               float clustering_distance_threshold = -1.0,
                                               std::string outputTextFile = "/tmp/blobsCountTable.py",
-                                              bool uniqueGLB = false,
-                                              int representation_mode = SPHERES ) ;
+                                              bool uniqueGLB = false ) ;
 
     double getOverlapMeasure( Point2df bbmin1, Point2df bbmax1, Point2df bbmin2, Point2df bbmax2, uint *no_overlap );
 
     bool isInside2DBox( Point2df p1, Point2df bbmin, Point2df bbmax);
 
-    void filteringBlobs (  std::vector<surf::ScaleSpaceBlob *> & ssblobs,
-            std::vector<surf::GreyLevelBlob *> &filteredBlobs,
-            std::vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
-            std::set< int > &nodes );
+    //void filteringBlobs (  std::vector<surf::ScaleSpaceBlob *> & ssblobs,
+    //        std::vector<surf::GreyLevelBlob *> &filteredBlobs,
+    //        std::vector<surf::ScaleSpaceBlob *> & filteredSsblobs,
+    //        std::set< int > &nodes );
 }
 
 #endif /*TEXTURETOBLOBS_H_*/

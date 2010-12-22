@@ -798,7 +798,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
                     //   overlapping (bounding-boxes) (+ scales overlapping), then a clique
                     // is created between these two ssb and the max-overlapping pair of glb
                     // is stored in "matchingblobs".
-
+                    assert ( b1max->nodes.size() != 0 && b2max->nodes.size() != 0 );
                     cliques.push_back( surf::Clique( ssblobs[i], ssblobs[j], -1.0, overmax ) );
                     matchingblobs[i].push_back(b1max);
                     matchingblobs[j].push_back(b2max);
@@ -850,7 +850,7 @@ std::vector<surf::Clique> SurfaceBased_StructuralAnalysis::BuildSimilarityClique
             if ( ssblobs[i]->subject != ssblobs[j]->subject ) {
 
                 float distance = -1.0;
-                assert( ssblobs[i]->blobs.size() == 1 );
+                assert( ssblobs[i]->blobs.size() == 1 || ( std::cout << "this distance mode requires blobs that have no more than one sub-blob" << std::endl && false));
                 itB1 = ssblobs[i]->blobs.begin();
                 b1max = *itB1;
                 itB2 = ssblobs[j]->blobs.begin();
