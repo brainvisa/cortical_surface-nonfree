@@ -195,7 +195,8 @@ void TextureToBlobs::getScaleSpaceBlobsFromGraph ( Graph *graph,
 
 surf::GreyLevelBlob *TextureToBlobs::findBlob ( const std::vector<surf::GreyLevelBlob *> &blobs,
                                 std::string subject_id,
-                                int index ) {
+                                int index ) 
+{
     for ( uint i = 0 ; i < blobs.size() ; i ++ )
         if ( blobs[i]->subject == subject_id && blobs[i]->index == index )
             return blobs[i];
@@ -204,7 +205,8 @@ surf::GreyLevelBlob *TextureToBlobs::findBlob ( const std::vector<surf::GreyLeve
 
 surf::ScaleSpaceBlob *TextureToBlobs::findBlob ( const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                 std::string subject_id,
-                                int index ) {
+                                int index ) 
+{
     for ( uint i = 0 ; i < ssblobs.size() ; i ++ )
         if ( ssblobs[i]->subject == subject_id && ssblobs[i]->index == index )
             return ssblobs[i];
@@ -223,7 +225,8 @@ int TextureToBlobs::findBlobIndex ( const std::vector<surf::GreyLevelBlob *> &bl
 
 int TextureToBlobs::findBlobIndex ( const std::vector<surf::ScaleSpaceBlob *> &ssblobs,
                                 std::string subject_id,
-                                int index ) {
+                                int index ) 
+{
     for ( uint i = 0 ; i < ssblobs.size() ; i ++ )
         if ( ssblobs[i]->subject == subject_id && ssblobs[i]->index == index )
             return i;
