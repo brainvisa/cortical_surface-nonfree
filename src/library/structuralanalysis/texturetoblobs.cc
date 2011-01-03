@@ -805,6 +805,15 @@ void getGraphModeOptions ( const int graph_mode,
 
     switch ( graph_mode ) 
     {
+        case NO_RELATIONS_MESHES:
+            buildScaleSpaceBlobs = true;
+            buildGreyLevelBlobs = true;
+            greyLevelBlobsMeshesRepresentationMode = representation_mode;
+            storeGreyLevelBlobsMeshes = true;
+            buildSSBToGLBRelations = true;
+            buildGLBRelations = true;
+            buildBifurcations = true;
+        break;
         case NO_SCALESPACEBLOBS_MESHES:
             buildScaleSpaceBlobs = true;
             buildGreyLevelBlobs = true;
@@ -814,7 +823,7 @@ void getGraphModeOptions ( const int graph_mode,
             buildGLBRelations = true;
             buildAndStoreGLBRelationsMeshes = true;
             buildBifurcations = true;
-            buildAndStoreGLBRelationsMeshes = true;
+            buildAndStoreBifurcationsMeshes = true;
         break;
         case NO_SCALESPACEBLOBS_MESHES_AND_NO_RELATIONS_MESHES:
             buildScaleSpaceBlobs = true;
