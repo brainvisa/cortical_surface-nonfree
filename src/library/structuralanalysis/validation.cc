@@ -410,7 +410,6 @@ std::vector<std::vector<uint> > StructuralAnalysis_Validation::ValidAround ( uin
     for ( it = activblobs.begin() ; it != activblobs.end() ; it++ )
          activblobsglobal.insert( *it );      
 
-
     std::cout << "ABG=" << activblobsglobal.size() << std::endl;
     
     std::set< uint > forbidden, autorized ( activblobs );
@@ -430,7 +429,6 @@ std::vector<std::vector<uint> > StructuralAnalysis_Validation::ValidAround ( uin
         if ( cc [ccc[k]].size() >= activblobs.size() )
             tirage[k] = ccc[k];
     }
-    
  
     for ( it = activblobs.begin() ; it != activblobs.end() ; it++) {
         uint test = *it;
@@ -443,7 +441,6 @@ std::vector<std::vector<uint> > StructuralAnalysis_Validation::ValidAround ( uin
         }
     }
     std::cout << "restent :"<< ssb.sites.size() - forbidden.size() << std::endl;
-    //            std::vector< std::vector<double> > samplesCarac;
     for ( uint j = 0 ; j < number_of_samples ; j++ )
         composantes.push_back( getComponent ( ssb, activblobs, forbidden, tirage ) );
     
