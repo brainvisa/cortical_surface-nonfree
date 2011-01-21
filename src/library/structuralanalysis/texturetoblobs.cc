@@ -336,7 +336,7 @@ void TextureToBlobs::BlobsFromLabelTexture ( std::vector<surf::Blob *> &blobs,
             surf::Blob *blob = new surf::Blob();
             blobs.push_back(blob);
 
-            blob->t = *it;
+            blob->t = *it;            
             blob->subject = subject.subject_id;
             blob->raw_coordinates = std::map<int, std::vector<float> > ();
             for ( uint i = 0 ; i < subject.tex->nItem() ; i++ )
@@ -568,6 +568,10 @@ void addBlobsToGraph ( Graph *graph,
         vert = graph->addVertex("glb");
         vert->setProperty( "subject", blobs[i]->subject.data() );
         vert->setProperty( "t", blobs[i]->t );
+        std::stringstream out;
+        out << blobs[i]->t;
+        vert->setProperty( "name", out.str() );
+        vert->setProperty( "label", out.str() );
         vert->setProperty( "nodes", blobs[i]->nodes );
         if ( subject.coordinates == LATLON_2D ) 
         {
