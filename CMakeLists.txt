@@ -15,6 +15,7 @@ IF ( DOXYGEN_FOUND )
   set( DOXYFILE_TAGFILES "${CMAKE_BINARY_DIR}/share/doc/aimsalgo-${aims_version}/doxygen/aimsalgo.tag=../../aimsalgo-${aims_version}/doxygen ${CMAKE_BINARY_DIR}/share/doc/aimsdata-${aims_version}/doxygen/aimsdata.tag=../../aimsdata-${aims_version}/doxygen ${CMAKE_BINARY_DIR}/share/doc/graph-${aims_version}/doxygen/graph.tag=../../graph-${aims_version}/doxygen ${CMAKE_BINARY_DIR}/share/doc/cartobase-${aims_version}/doxygen/cartobase.tag=../../cartobase-${aims_version}/doxygen ${CMAKE_BINARY_DIR}/share/doc/cartodata-${aims_version}/doxygen/cartodata.tag=../../cartodata-${aims_version}/doxygen")
   BRAINVISA_GENERATE_DOXYGEN_DOC( _doxygenInput
                                   COMPONENT "cortical_surface" )
+  add_dependencies(cortical_surface-doxygen aimsalgo-doxygen graph-doxygen cartobase-doxygen cartodata-doxygen )
 ENDIF ( DOXYGEN_FOUND )
 
 BRAINVISA_CREATE_CMAKE_CONFIG_FILES()
