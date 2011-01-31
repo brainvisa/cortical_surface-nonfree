@@ -10,15 +10,11 @@
 #include <cortical_surface/surfacereferential/sulcusCorticalSnake.h>
 #include <cortical_surface/surfacereferential/sulcusCorticalSnake_energy.h>
 
-
-#include <aims/geodesicpath/geodesic_algorithm_dijkstra.h>
-#include <aims/geodesicpath/geodesic_algorithm_subdivision.h>
-#include <aims/geodesicpath/geodesic_algorithm_exact.h>
-
 using namespace aims;
 using namespace aims::meshdistance;
 using namespace std;
 using namespace carto;
+
 
 void SulcusCorticalSnake::computeGraphDijkstra (AimsSurfaceTriangle surface, int constraintType,int strain)
 {
@@ -157,19 +153,19 @@ void SulcusCorticalSnake::createDistanceTexture()
 //Compute the total snake
 TimeTexture<float> SulcusCorticalSnake::compute_snake()
 {
-  std::cout<<"SulcusCorticalSnake : ComputeSnake"<<std::endl;
-  TimeTexture<float> cartea(1,size);
-  for(uint i=0; i<size; i++)
-    if(i==n1)
-      cartea[0].item(i)=10;
-  else
-    cartea[0].item(i)=0;
-
-  compute_curv();
-  createDistanceTexture();
-
-  for(uint j=0; j<size; j++)
-    result_total[0].item(j)=0;
+//  std::cout<<"SulcusCorticalSnake : ComputeSnake"<<std::endl;
+//  TimeTexture<float> cartea(1,size);
+//  for(uint i=0; i<size; i++)
+//    if(i==n1)
+//      cartea[0].item(i)=10;
+//  else
+//    cartea[0].item(i)=0;
+//
+//  compute_curv();
+//  createDistanceTexture();
+//
+//  for(uint j=0; j<size; j++)
+//    result_total[0].item(j)=0;
 
 //  std::cout << "Curv and Dist computed, looking for extremities" << endl;
   int test=1;
@@ -479,58 +475,37 @@ int SulcusCorticalSnake::define_extremities()
   TimeTexture<float> tex_temp(1,size);
   init_texture_single(tex_temp);
 
-  //std::set<uint>::const_iterator itvois;
-
   std::vector<uint> pts;
-
-    //On enleve les points non susceptibles d'etre des extremites
-//  std::cout << "bookmark1" << std::endl;
-//   std::cout << "size=" << size << endl;
-
-  //std::cout << "SulcusCorticalSnake::define_extremities -> about to enter main loop" << std::endl;
 
   for(uint j=0; j<size;j++)
   {
 
- //          std::cout << "j=" << j << "/" << size << std::endl;
     int cpt=0;
     if(constraint[0].item(j)==value)
     {
-//               std::cout << "j=" << j << " item=value" << std::endl;
       int mem_vois=0;
       std::set<uint>::const_iterator itvoisin;
-//               std::cout << "about to go into 1st loop" << std::endl;
       itvoisin=neigh[j].begin();
-//               std::cout << "going into 1st loop" << std::endl;
       for(; itvoisin!=neigh[j].end(); itvoisin++)
       {
-//                     std::cout << "itVois=" << (*itvoisin) << std::endl;
-//                     std::cout << "constraint[0].item(*itvoisin)=" << constraint[0].item(*itvoisin) << std::endl;
         if(constraint[0].item(*itvoisin)==value)
         {
-//                         std::cout << "\t doing what i have to do then" << std::endl;
           cpt++;
           mem_vois=(*itvoisin);
-//                         std::cout << "\t done ! mem_vois=" << mem_vois << " and cpt=" << cpt << std::endl;
         }
       }
-//               std::cout << "out" << std::endl;
+
       if( cpt==1 || cpt==3 || cpt==4 )
       {
-//                     std::cout << "attributing value " << std::endl;
         tex_ext[0].item(j)=value;
-//                     std::cout << "OK " << std::endl;
       }
       else
                {
-//                     std::cout << "else case : attributing value " << std::endl;
         tex_ext[0].item(j)=0;
-//                     std::cout << "else case : OK " << std::endl;
                 }
     }
   }
 
-  //    std::cout << "SulcusCorticalSnake::define_extremities -> out of main loop" << std::endl;
 
   int cpt=0;
   for(uint j=0; j<size;j++)

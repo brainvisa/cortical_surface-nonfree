@@ -8,15 +8,13 @@
 #include <aims/mesh/surfaceOperation.h>
 #include <cortical_surface/surfacereferential/sulcusCorticalSnake_energy.h>
 
-//ARN
 #include <aims/geodesicpath/geodesic_mesh.h>
+#include <aims/geodesicpath/geodesic_algorithm_dijkstra.h>
 
 namespace aims
 {
-
   class SulcusCorticalSnake
   {
-
     public:
 
       //Global variables
