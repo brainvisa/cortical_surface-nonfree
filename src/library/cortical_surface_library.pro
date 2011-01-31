@@ -17,6 +17,7 @@ HEADERS = \
   surfacereferential/sulcusCorticalSnake.h \
   surfacereferential/sulcusCorticalSnake_energy.h \
   surfacereferential/conformalMapping.h \
+  surfacereferential/sulcalLinesGeodesic.h \
   surfacereferential/gyri/basictex_operations.h \
   surfacereferential/gyri/compconn_operations.h \
   surfacereferential/gyri/constraints_operations.h \
@@ -43,8 +44,7 @@ HEADERS = \
   structuralanalysis/region.h \
   structuralanalysis/texturetoblobs.h \ 
   structuralanalysis/meshdistance.h \
-  structuralanalysis/primalsketch_operations.h
-
+  structuralanalysis/primalsketch_operations.h 
 
 
 SOURCES = \
@@ -58,6 +58,7 @@ SOURCES = \
   surfacereferential/sulcusCorticalSnake.cc \
   surfacereferential/sulcusCorticalSnake_energy.cc \
   surfacereferential/conformalMapping.cc \
+  surfacereferential/sulcalLinesGeodesic.cc \
   surfacereferential/gyri/basictex_operations.cc \
   surfacereferential/gyri/compconn_operations.cc \
   surfacereferential/gyri/constraints_operations.cc \
@@ -83,5 +84,5 @@ SOURCES = \
   structuralanalysis/region.cc \
   structuralanalysis/texturetoblobs.cc \
   structuralanalysis/meshdistance.cc \
-  structuralanalysis/primalsketch_operations.cc \
+  structuralanalysis/primalsketch_operations.cc 
   
