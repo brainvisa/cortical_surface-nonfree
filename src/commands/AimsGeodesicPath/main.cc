@@ -200,7 +200,8 @@ int main( int argc, const char** argv )
       exact_algorithm->propagate(sources);    //cover the whole mesh
       exact_algorithm->print_statistics();
       exact_algorithm->trace_back(targets[0], SPath);
-      geodesic::print_info_about_path(SPath);
+
+      //geodesic::print_info_about_path(SPath);
 
       AimsSurfaceTriangle meshOut, *tmpMeshOut;
 
