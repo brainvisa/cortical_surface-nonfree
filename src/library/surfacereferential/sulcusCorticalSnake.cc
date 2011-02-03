@@ -6,6 +6,7 @@
 #include <aims/distancemap/meshdistance.h>
 #include <graph/graph/graph.h>
 #include <float.h>
+#include <time.h>
 
 #include <cortical_surface/surfacereferential/sulcusCorticalSnake.h>
 #include <cortical_surface/surfacereferential/sulcusCorticalSnake_energy.h>
