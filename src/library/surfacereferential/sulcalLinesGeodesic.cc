@@ -375,7 +375,7 @@ void SulcalLinesGeodesic::bassinsDetect()
 
         int source,target;
 
-        if (_vectorIndexTempConstraint.size()>2)
+        if (_vectorIndexTempConstraint.size()>=2)
         {
           vector<int> listIndexVertexPathSP;
 
@@ -435,12 +435,12 @@ void SulcalLinesGeodesic::bassinsDetect()
 
         for (i=0; i<_vectorIndexTemp.size(); i++)
         {
-          cout << _vectorIndexTemp[i] << "#" << _rootsLon.item(_vectorIndexTemp[i]) << " ";
+          //cout << _vectorIndexTemp[i] << "#" << _rootsLon.item(_vectorIndexTemp[i]) << " ";
           v2 = _rootsLon.item(_vectorIndexTemp[i]);
           if (v1 == v2)
           {
             _vectorIndexTempConstraint.push_back (_vectorIndexTemp[i]);
-            cout << _vectorIndexTemp[i] << " ";
+            //cout << _vectorIndexTemp[i] << " ";
             _vectorIndexTemp.erase (_vectorIndexTemp.begin()+i);
             i--;
           }
@@ -450,7 +450,7 @@ void SulcalLinesGeodesic::bassinsDetect()
 
         vector<int> listIndexVertexPathSP;
 
-        if (_vectorIndexTempConstraint.size()>2)
+        if (_vectorIndexTempConstraint.size()>=2)
         {
           listIndexVertexPathSP = maxGeodesicDistance (_vectorIndexTempConstraint,v1,&source,&target);
 
