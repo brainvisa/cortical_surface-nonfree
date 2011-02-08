@@ -172,7 +172,7 @@ void Anneal::Run ( int verbose ){
         else
             nb_under_threshold++;
 
-        std::cout << " T=" << temp << " it="<< ite++ << " " << std::flush ;
+        std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bT=" << temp << " it="<< ite++ << " " << std::flush ;
 
         if ( this->labelsPath != "" ) {
             for ( uint i0 = 0 ; i0 < sites.size() ; i0++ ) {
@@ -191,11 +191,11 @@ void Anneal::Run ( int verbose ){
         ASSERT ( random.size() == sites.size() );
         Step ( random, temp, mod );
 
-        std::cout << " chg:" << mod << " " << std::flush;
+        //std::cout << " chg:" << mod << " " << std::flush;
 
-        if (verbose == 1) ShortSummaryLabels();
+        //if (verbose == 1) ShortSummaryLabels();
         //double everif = getTotalEnergy ();
-        std::cout << " E=" << energy << std::endl; //<< " Everif=" << everif << endl;
+        //std::cout << " E=" << energy << std::endl; //<< " Everif=" << everif << endl;
 
         temp = temp * 0.99;
 
