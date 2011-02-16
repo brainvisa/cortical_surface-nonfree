@@ -21,7 +21,6 @@ void Anneal::Step ( std::vector<int> &random, double temp, uint &mod ) {
         old = sites[random[i]]->label;
 
         std::vector<int> zoneLab;
-//         cout << "[" << i << "] " << flush;
 
         // Selecting The Few Labels That The Current Site Can Take (short loop)
         for ( it = listeZones[ random[i] ].begin() ; it != listeZones[ random[i] ].end() ; it++)
@@ -115,18 +114,7 @@ void Anneal::Step ( std::vector<int> &random, double temp, uint &mod ) {
                     cliques [cliquesDuSite[random[i]][m]].type == SIMILARITY ||
                     cliques [cliquesDuSite[random[i]][m]].type == BESTLOWERSCALE ||
                     cliques [cliquesDuSite[random[i]][m]].type == INTRAPRIMALSKETCH ) {
-                        //assert ( old == 0 );
-                        //assert (  )
                         double update = cliques [cliquesDuSite[random[i]][m]].updateEnergy ( random[i], old, true, nbsujets );
-//                        if ( cliques [cliquesDuSite[random[i]][m]].type == DATADRIVEN ) {
-//                            cpt_dd ++;
-//                            //assert ( update < 10.000000001 );    
-//                            //std::cout << "LAB:" << zoneLab[acc] << " u:" << update << " " << std::flush;
-//                            
-//                        }
-//                        else 
-//                            assert( fabs(update) < 0.000000001 );
-//                        sum_update += update;
                         energy += update;
                         
                 }
@@ -137,7 +125,6 @@ void Anneal::Step ( std::vector<int> &random, double temp, uint &mod ) {
             sites[random[i]]->label = old;
         }
     }
-    //std::cout << "cpt_dd:" << cpt_dd << "SUM UPDATE:" << sum_update << std::endl;
 }
 
 void Anneal::Run ( int verbose ){
@@ -191,14 +178,7 @@ void Anneal::Run ( int verbose ){
         ASSERT ( random.size() == sites.size() );
         Step ( random, temp, mod );
 
-        //std::cout << " chg:" << mod << " " << std::flush;
-
-        //if (verbose == 1) ShortSummaryLabels();
-        //double everif = getTotalEnergy ();
-        //std::cout << " E=" << energy << std::endl; //<< " Everif=" << everif << endl;
-
         temp = temp * 0.99;
-
     }
 
     for ( uint k = 0 ; k < cliques.size() ; k++ ) {

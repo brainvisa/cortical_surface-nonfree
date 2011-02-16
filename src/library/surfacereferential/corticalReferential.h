@@ -69,7 +69,7 @@ namespace aims
 		//Type d'attache aux données
 			int typeBeta;
 		
-                //Adresse des outputs
+        //Adresse des outputs
 			std::string adr_lat;
 			std::string adr_lon;
 	
@@ -99,57 +99,81 @@ namespace aims
 	
 	
 		//Constructor
-			CorticalReferential(std::string & adr_param, std::string & adr_parallele, std::string & adr_meridien, std::string & adr_calleux, std::string & _adr_poles, float criter, float dt, int c, int choice, float Beta, int tBeta, std::string & adrlat, std::string & adrlon) : adr(adr_param), adr_par(adr_parallele), adr_mer(adr_meridien), adr_call(adr_calleux), adr_poles(_adr_poles), criterium(criter), _dt(dt), context(c), choice_process(choice), _Beta(Beta), typeBeta(tBeta), adr_lat(adrlat), adr_lon(adrlon)
+			CorticalReferential ( ) {}
+			CorticalReferential ( std::string & adr_param, 
+			                      std::string & adr_parallele, 
+			                      std::string & adr_meridien, 
+			                      std::string & adr_calleux, 
+			                      std::string & _adr_poles, 
+			                      float criter, 
+			                      float dt, 
+			                      int c, 
+			                      int choice, 
+			                      float Beta, 
+			                      int tBeta, 
+			                      std::string & adrlat, 
+			                      std::string & adrlon ) : 
+			                          adr(adr_param), 
+			                          adr_par(adr_parallele), 
+			                          adr_mer(adr_meridien), 
+			                          adr_call(adr_calleux), 
+			                          adr_poles(_adr_poles), 
+			                          criterium(criter), 
+			                          _dt(dt), 
+			                          context(c), 
+			                          choice_process(choice), 
+			                          _Beta(Beta), 
+			                          typeBeta(tBeta), 
+			                          adr_lat(adrlat), 
+			                          adr_lon(adrlon)
 			{
 	
-				std::cout<<"constructeur"<<std::endl;
-				std::cout<<"mesh adress : "<<adr<<std::endl;
-				std::cout<<"adr_par : "<<adr_par<<std::endl;
-				std::cout<<"adr_mer : "<<adr_mer<<std::endl;
-				std::cout<<"adr_call : "<<adr_call<<std::endl;
-				std::cout<<"adr_poles : "<<adr_poles<<std::endl;
-				std::cout<<"_dt : "<< _dt <<std::endl;
-				std::cout<<"criterium : "<< criterium <<std::endl;
-				std::cout<<"context : "<< context <<std::endl;
-				std::cout<<"choice : "<< choice_process <<std::endl;
-				std::cout<<"Beta : "<< _Beta <<std::endl;
+				std::cout << "constructeur" << std::endl;
+				std::cout << "mesh adress : " << adr << std::endl;
+				std::cout << "adr_par : " << adr_par << std::endl;
+				std::cout << "adr_mer : " << adr_mer << std::endl;
+				std::cout << "adr_call : " << adr_call << std::endl;
+				std::cout << "adr_poles : " << adr_poles << std::endl;
+				std::cout << "_dt : "<< _dt  << std::endl;
+				std::cout << "criterium : " << criterium  << std::endl;
+				std::cout << "context : " << context  << std::endl;
+				std::cout << "choice : " << choice_process  << std::endl;
+				std::cout << "Beta : " << _Beta  << std::endl;
 	
 			//Opening brain mesh
 				Reader < AimsSurfaceTriangle > r(adr);
 				r.read( mesh );
-	
-				std::cout<<"reader mesh ok"<<std::endl;
+				std::cout << "reader mesh ok" << std::endl;
+			
 			//Mesh version AimsSurface
-				mesh_base=mesh[0];
-	
-				std::cout<<"mesh_base ok"<<std::endl;
+				mesh_base = mesh[0];
+				std::cout << "mesh_base ok" << std::endl;
 			//Surface vector
 				vert = mesh_base.vertex();
-				std::cout<<"vert ok!"<<std::endl;
+				std::cout << "vert ok!" << std::endl;
 	
 			//Computing neighbourhood
-                                neigh = SurfaceManip::surfaceNeighbours( mesh );
+                neigh = SurfaceManip::surfaceNeighbours ( mesh );
 	
-				std::cout<<"neigh ok"<<std::endl;
-				weightLapl = AimsMeshWeightFiniteElementLaplacian(mesh_base,0.98);
+				std::cout << "neigh ok" << std::endl;
+				weightLapl = AimsMeshWeightFiniteElementLaplacian ( mesh_base, 0.98 );
 	
-				std::cout<<"weightlaplacian ok"<<std::endl;
-				size=vert.size();
-				std::cout<<"size ok"<< size<<std::endl;
-			//std::cout<<"SIZE DEBUT="<<size<<std::endl;
+				std::cout << "weightlaplacian ok" << std::endl;
+				size = vert.size();
+				std::cout << "size :" << size << std::endl;
 	
 			//LECTURE DES POLES (A INTEGRER PAR LA SUITE AUX CONTRAINTES)
 	
-				Reader < TimeTexture<float> > lp1(adr_call);
+				Reader < TimeTexture<float> > lp1 ( adr_call );
 				lp1.read( pole_call );
 	
-				Reader < TimeTexture<float> > lp2(adr_poles);
+				Reader < TimeTexture<float> > lp2 ( adr_poles );
 				lp2.read( poles );
 	
-				poles_found=false;
-				std::cout<<"Constructeur fini!!"<<std::endl;
-	
+				poles_found = false;
+				std::cout << "Constructeur fini!!" << std::endl;
 			}
+			
 	
 		//Main methods
 			void process();
@@ -160,11 +184,11 @@ namespace aims
 		
 		//Diffusion methods
 			void cingularPoint();
-			TimeTexture<float> diffusionLatitudeRelax( TimeTexture<float> & tex );
-			TimeTexture<float> diffusionLatitude( TimeTexture<float> &);
-			TimeTexture<float> diffusionLongitudeRelax( TimeTexture<float> & tex, TimeTexture<float> & side);
-			TimeTexture<float> diffusionLongitude( TimeTexture<float> & tex, TimeTexture<float> & side, TimeTexture<float> & poleSave, int ind);
-			Texture<float> AimsMeshLaplacian_meridian( const Texture<float> &smooth, TimeTexture<float> &source, const std::map<unsigned, std::set< std::pair<unsigned,float> > > &lapl, TimeTexture<float> & side);
+			TimeTexture<float> diffusionLatitudeRelax ( TimeTexture<float> & tex );
+			TimeTexture<float> diffusionLatitude ( TimeTexture<float> &);
+			TimeTexture<float> diffusionLongitudeRelax ( TimeTexture<float> & tex, TimeTexture<float> & side);
+			TimeTexture<float> diffusionLongitude ( TimeTexture<float> & tex, TimeTexture<float> & side, TimeTexture<float> & poleSave, int ind);
+			Texture<float> AimsMeshLaplacian_meridian ( const Texture<float> &smooth, TimeTexture<float> &source, const std::map<unsigned, std::set< std::pair<unsigned,float> > > &lapl, TimeTexture<float> & side);
 		
 	};
 
