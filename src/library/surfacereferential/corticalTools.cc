@@ -103,10 +103,10 @@ std::pair<int,int> aims::find_poles ( TimeTexture<float> & tex, AimsSurfaceTrian
 	//std::cout<<"distance map for pole1 (insula)"<<std::endl;	
 	distance_sud[0] = meshdistance::MeshDistance( mesh[0], pole2[0],true);
 
- 	Writer<Texture1d> w("/home/go224932/test_pole_sud.tex");
- 	w.write(distance_sud);
- 	Writer<Texture1d> w1("/home/go224932/test_pole_nord.tex");
- 	w1.write(distance_nord);
+// 	Writer<Texture1d> w("/home/go224932/test_pole_sud.tex");
+// 	w.write(distance_sud);
+// 	Writer<Texture1d> w1("/home/go224932/test_pole_nord.tex");
+// 	w1.write(distance_nord);
 	
 	//CALCUL POLES NORD ET SUD DANS LE POLE CALLEUX ET LE POLE INSULAIRE
 

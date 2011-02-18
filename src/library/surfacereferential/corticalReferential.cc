@@ -478,685 +478,685 @@ namespace aims {
     	//Diffusion pole insula longitude****************************************
     	//***********************************************************************
     	
-//    	std::cout << "Poles parameterization..." << std::endl;
-//    	//****declarations et init textures
-//    	
-//    	TimeTexture<float>  poleNew(1,size);    //nouveaux poles
-//    	TimeTexture<float>  bord(1,size);    //bord du pole sud insula
-//    	TimeTexture<float>  bordValues(1,size);     //bords avec les valeurs obtenues lors de la diff
-//    	TimeTexture<float>  new_contraint(1,size);    //resultat diffusion sans les poles
-//    	TimeTexture<float>  bordExtreme(1,size);    //bords avec les extremites du meridien origine
-//    	TimeTexture<float>  bordSides(1,size);    //bords avec les valeurs sides
-//    	
-//    	TimeTexture<float>  new_contraint_insula(1,size);    //resultat diffusion sans les poles
-//    	
-//    	TimeTexture<float>  bordCing(1,size);    //bord du pole sud insula
-//    	TimeTexture<float>  bordValuesCing(1,size);     //bords avec les valeurs obtenues lors de la diff
-//    	TimeTexture<float>  bordExtremeCing(1,size);    //bords avec les extremites du meridien origine
-//    	TimeTexture<float>  bordSidesCing(1,size);    //bords avec les valeurs sides
-//    	
-//    	TimeTexture<float>  poleSave(1,size);    //sauvegarde des regions polaires
-//    	TimeTexture<float>  newOriginMeridian(1,size);    //new meridien d'origine
-//    	TimeTexture<float>  new_contraint_long_side(1,size);   //sides du nouveau meridien
-//    	TimeTexture<float>  new_long_insula(1,size);   //sides du nouveau meridien
-//    	
-//    	TimeTexture<float>  newOriginMeridianCing(1,size);    //new meridien d'origine
-//    	TimeTexture<float>  new_contraint_long_sideCing(1,size);   //sides du nouveau meridien
-//    	TimeTexture<float>  new_long_cing(1,size);   //sides du nouveau meridien
-//    	TimeTexture<float>  new_contraintCing(1,size);    //resultat diffusion sans les poles
-//    	
-//    	init_texture_single(bord);
-//    	init_texture_single(bordValues);
-//    	init_texture_single(bordExtreme);
-//    	init_texture_single(bordSides);
-//    	init_texture_single(poleNew);
-//    	init_texture_single(poleSave);
-//    	init_texture_single(newOriginMeridian);
-//    	init_texture_single(new_contraint_long_side);
-//    	init_texture_single(new_contraint);
-//    	init_texture_single(new_long_insula);
-//    	init_texture_single(bordCing);
-//    	init_texture_single(bordValuesCing);
-//    	init_texture_single(bordExtremeCing);
-//    	init_texture_single(bordSidesCing);
-//    	init_texture_single(newOriginMeridianCing);
-//    	init_texture_single(new_contraint_long_sideCing);
-//    	init_texture_single(new_long_cing);
-//    	init_texture_single(new_contraintCing);
-//    	
-//    	//OK!!
-//    	
-//    // 	Reader<Texture1d> wT1r("lon_old.tex");
-//    	Reader<Texture1d> wT1r(adr_lon);
-//    	wT1r.read(diff_long_result);
-//    	
-//    	//****mise a jour du nouveau point pole
-//    	cingularPoint();
-//    	int sud_temp=0;
-//    	sud_temp=sud;
-//    	sud=ind_min;
-//    	
-//    	TimeTexture<float> ttt(1,size);
-//    	init_texture_single(ttt);
-//    	int cpt=0,cpt1=0,cpt2=0,cpt3=0;
-//    	std::set<uint>::iterator it;
-//    	
-//    	
-//    	
-//    	//Sauvegarde des calottes polaires
-//    	for(int i=0; i<size; i++)
-//    		poleSave[0].item(i) = poles[0].item(i);
-//    	
-//    /*	Writer<Texture1d> wT3lpst("poles_origin.tex");
-//    	wT3lpst.write(poleSave);*/
-//    	
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if(poles[0].item(i)==0)
-//    		{
-//    			cpt++;
-//    			ttt[0].item(i)=0;
-//    			if(diff_long_result[0].item(i)==360)
-//    			{
-//    				//ttt[0].item(i)=100;
-//    				it=neigh[i].begin();
-//    				for(; it!=neigh[i].end(); it++)
-//    				{
-//    					if( diff_long_result[0].item(*it)!=360 )
-//    					{
-//    						diff_long_result[0].item(i)=diff_long_result[0].item(*it);
-//    					}
-//    				}
-//    			}
-//    		}
-//    		else
-//    		{
-//    			if(poles[0].item(i)==180)
-//    			{
-//    				cpt1++;
-//    				ttt[0].item(i)=30;
-//    			}
-//    			else
-//    			{
-//    				if(poles[0].item(i)==1)
-//    				{
-//    					cpt2++;
-//    					ttt[0].item(i)=10;
-//    				}
-//    				else
-//    				{
-//    					cpt3++;
-//    					ttt[0].item(i)=20;
-//    				}
-//    			}
-//    		}
-//    	}
-//    	//Second tour pour éliminer les trucs bizarres
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if(poles[0].item(i)==0)
-//    		{
-//    			cpt++;
-//    			ttt[0].item(i)=0;
-//    			if(diff_long_result[0].item(i)==360)
-//    			{
-//    				//ttt[0].item(i)=100;
-//    				it=neigh[i].begin();
-//    				for(; it!=neigh[i].end(); it++)
-//    				{
-//    					if( diff_long_result[0].item(*it)!=360 )
-//    					{
-//    						diff_long_result[0].item(i)=diff_long_result[0].item(*it);
-//    					}
-//    				}
-//    			}
-//    		}
-//    	}
-//    	
-//    	TimeTexture<float> ty(1,size);
-//    	init_texture_single(ty);
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		//Pour l'insula
-//    		if( poles[0].item(i)==180 )
-//    		{
-//    			it=neigh[i].begin();
-//    			for(; it!=neigh[i].end(); it++)
-//    			{
-//    				if( poles[0].item(*it)!=180 )
-//    				{
-//    					bord[0].item(*it) = 1;
-//    					//bordValues[0].item(i) = new_contraint[0].item(i);
-//    					bordValues[0].item(*it) = diff_long_result[0].item(*it);
-//    				}
-//    			}
-//    		}
-//    		
-//    		//pour le cingulaire
-//    		
-//    		//if( poles[0].item(i)>0 && poles[0].item(i)<1.5 )
-//    		if( poles[0].item(i)==1 )
-//    		{
-//    			it=neigh[i].begin();
-//    			for(; it!=neigh[i].end(); it++)
-//    			{
-//    				//if(poles[0].item(*it)!=1 && poles[0].item(*it)<359)
-//    				if(poles[0].item(*it)==0)
-//    				{
-//    					bordCing[0].item(*it) = 1;
-//    					//bordValuesCing[0].item(i) = new_contraint[0].item(i);
-//    					bordValuesCing[0].item(*it) = diff_long_result[0].item(*it);
-//    					//ttt[0].item(*it)=180;
-//    				}
-//    			}
-//    		}
-//    		
-//    		if( bordValuesCing[0].item(i) != 0 || poleSave[0].item(i)==1 )
-//    		{
-//    			new_contraint_long_sideCing[0].item(i) = constraint_long_side_long[0].item(i);
-//    		}
-//    		else
-//    		{
-//    			new_contraintCing[0].item(i) = diff_long_result[0].item(i);
-//    			ty[0].item(i)=10;
-//    		}
-//    		
-//    		//if(  bordCing[0].item(i) == 1  )
-//    		if(  bordValuesCing[0].item(i) != 0  )
-//    			new_contraintCing[0].item(i) = bordValuesCing[0].item(i);
-//    	}
-//    	
-//    /*	Writer<Texture1d> wT1rbbvf("bordMer.tex");
-//    	wT1rbbvf.write(ty);*/
-//    	
-//    // 	std::cout << "cpt0="<<cpt<<" - cpt1="<<cpt2<<" - cpt180="<<cpt1<<"cpt autres="<<cpt3<<" - total="<<cpt+cpt1+cpt2+cpt3 << std::endl;
-//    	
-//    /*	Writer<Texture1d> wT1rbtbv("ttt.tex");
-//    	wT1rbtbv.write(ttt);*/
-//    	
-//    	
-//    	//meridien origine pour le cingulaire
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if( bordValuesCing[0].item(i) != 0 || poleSave[0].item(i)==1 )
-//    		{
-//    			int indTemp1=0,indTemp2=0;
-//    			it=neigh[i].begin();
-//    			for(; it!=neigh[i].end(); it++)
-//    			{
-//    				if(constraint_long_side_long[0].item(*it)==2)
-//    					indTemp1++;
-//    				if(constraint_long_side_long[0].item(*it)==4)
-//    					indTemp2++;
-//    			}
-//    			if(indTemp1!=0 && indTemp2!=0 && save_mer_origin[0].item(i)!=0)
-//    			{
-//    				new_contraintCing[0].item(i)=360;
-//    				temp[0].item(i)=360;
-//    			}
-//    		}
-//    	}
-//    	new_contraintCing[0].item(nord)=360;
-//    	
-//    	
-//    /*	Writer<Texture1d> w_bord("tmp_avant_avant.tex");
-//    	w_bord.write(temp);*/
-//    			
-//    	//Writer<Texture1d> wT1rbb("bord.tex");
-//    	//wT1rbb.write(bord);
-//    	
-//    /*	Writer<Texture1d> wT1rbbv("bordValuesCing.tex");
-//    	wT1rbbv.write(bordValuesCing);
-//    	
-//    	Writer<Texture1d> w_bord("bord.tex");
-//    	w_bord.write(bord);*/
-//    	
-//    	int ind_bord_insula=0;
-//    	int cpttt=0;
-//    	
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if(bord[0].item(i)!=0)
-//    		{
-//    			if(constraint_long_side[0].item(i)!=0 )
-//    			{
-//    				bordSides[0].item(i)=constraint_long_side[0].item(i);
-//    				cpttt++;
-//    			}
-//    		}
-//    	}
-//    	
-//    // 	std::cout << "cpttt="<<cpttt << std::endl;
-//    	
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if(bord[0].item(i)!=0)
-//    		{
-//    			int indTemp1=0,indTemp2=0;
-//    			it=neigh[i].begin();
-//    			for(; it!=neigh[i].end(); it++)
-//    			{
-//    // 				if(constraint_long_side[0].item(*it)==2)
-//    				if( (bord[0].item(*it)!=0) && (constraint_long_side[0].item(*it)==2) )
-//    					indTemp1++;
-//    // 				if(constraint_long_side[0].item(*it)==4)
-//    				if( (bord[0].item(*it)!=0) && (constraint_long_side[0].item(*it)==4) )
-//    					indTemp2++;
-//    			}
-//    			if(indTemp1!=0 && indTemp2!=0)
-//    			{
-//    				if( (indTemp1+indTemp2)>=cpttt)
-//    				{
-//    					bordExtreme[0].item(i)=180;
-//    					ind_bord_insula=i;
-//    				}
-//    			}
-//    		}
-//    	}
-//    	
-//    	std::cout << "ind="<<ind_bord_insula<<" - Save_Point_Insula="<<Save_Point_Insula << std::endl;
-//    /*	if(ind_bord_insula==0)
-//    		std::cout << "PROBLEM!!!!" << std::endl;*/
-//    	
-//    	//Test
-//    	if(Save_Point_Insula==-1)
-//    	{}
-//    	else
-//    	{
-//    		ind_bord_insula=Save_Point_Insula;
-//    	}
-//    	
-//    	std::cout << "ind new="<<ind_bord_insula << std::endl;
-//    	
-//    // 	Writer<Texture1d> w_constraint_long_side("constraint_long_side.tex");
-//    // 	w_constraint_long_side.write(constraint_long_side);
-//    // 	Writer<Texture1d> w_bord_values("bord_values.tex");
-//    // 	w_bord_values.write(bordValues);
-//    // 	Writer<Texture1d> w_bord("bord.tex");
-//    // 	w_bord.write(bord);
-//    // 	Writer<Texture1d> w_bord_side("bord_side.tex");
-//    // 	w_bord_side.write(bordSides);
-//    // 	Writer<Texture1d> w_bord_constraint_long_side("bord_constraint_long_side.tex");
-//    // 	w_bord_constraint_long_side.write(constraint_long_side);
-//    	
-//    	newOriginMeridian[0].item(sud)=360;
-//    	newOriginMeridian[0].item(ind_bord_insula)=360;
-//    	
-//    /*	Writer<Texture1d> w_bord_insula_point("bord_insula_point.tex");
-//    	w_bord_insula_point.write(newOriginMeridian);*/
-//    	
-//    	findNearNeigh(ind_bord_insula, sud, newOriginMeridian, 360, mesh, neigh );
-//    	
-//    // 	Writer<Texture1d> w_bord_insula_point_after("meridien_origine_insula.tex");
-//    // 	w_bord_insula_point_after.write(newOriginMeridian);
-//    	
-//    	new_contraint_long_side=originNeighbourgs(newOriginMeridian, ind_bord_insula, sud, mesh, neigh, poles);
-//    	
-//    	
-//    	new_contraint_long_side[0].item(sud)=0;
-//    	new_contraint_long_side[0].item(ind_bord_insula)=0;
-//    	
-//    // 	Writer<Texture1d> wT1ff("new_contraint_lon_side_AVANT.tex");
-//    // 	wT1ff.write(new_contraint_long_side);
-//    	
-//    	TimeTexture<float> bordtmp(1,size);
-//    	init_texture_single(bordtmp);
-//    	
-//    	//Rajoute des voisins au point du pole, pour décider des côtés
-//    	
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if( new_contraint_long_side[0].item(i)==0 && i!=ind_bord_insula )
-//    		{
-//    			float va=0;
-//    			
-//    			std::set<uint>::iterator its;
-//    			its=neigh[i].begin();
-//    			int ind1=0, ind2=0;
-//    			for(; its!=neigh[i].end(); its++)
-//    			{
-//    				if( new_contraint_long_side[0].item(*its)!=0 )
-//    				{
-//    					va=new_contraint_long_side[0].item(*its);
-//    					ind1++;
-//    				}
-//    				if( (*its)==(uint)ind_bord_insula )
-//    					ind2++;
-//    			}
-//    			if( ind1!=0 && ind2!=0 )
-//    				bordtmp[0].item(i)=va;
-//    		}
-//    	}
-//    	
-//    	
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if( bordtmp[0].item(i)!=0 )
-//    			new_contraint_long_side[0].item(i)=bordtmp[0].item(i);
-//    	}
-//    	
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if( new_contraint_long_side[0].item(i)==0 && i!=ind_bord_insula )
-//    		{
-//    			float va=0;
-//    			
-//    			std::set<uint>::iterator its;
-//    			its=neigh[i].begin();
-//    			int ind1=0, ind2=0;
-//    			for(; its!=neigh[i].end(); its++)
-//    			{
-//    				if( new_contraint_long_side[0].item(*its)!=0 )
-//    				{
-//    					va=new_contraint_long_side[0].item(*its);
-//    					ind1++;
-//    				}
-//    				if( (*its)==(uint)ind_bord_insula )
-//    					ind2++;
-//    			}
-//    			if( ind1!=0 && ind2!=0 )
-//    				bordtmp[0].item(i)=va;
-//    		}
-//    	}
-//    	
-//    /*	Writer<Texture1d> wT1btmp("bordtmp.tex");
-//    	wT1btmp.write(bordtmp);*/
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if( bordtmp[0].item(i)!=0 )
-//    			new_contraint_long_side[0].item(i)=bordtmp[0].item(i);
-//    	}
-//    	
-//    	
-//    	TimeTexture<float> bordtmp1(1,size);
-//    	init_texture_single(bordtmp1);
-//    	
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if( constraint_long_side[0].item(i)==0 && i!=ind_bord_insula )
-//    		{
-//    			float va=0;
-//    			
-//    			std::set<uint>::iterator its;
-//    			its=neigh[i].begin();
-//    			int ind1=0, ind2=0;
-//    			for(; its!=neigh[i].end(); its++)
-//    			{
-//    				if( constraint_long_side[0].item(*its)!=0 )
-//    				{
-//    					va=constraint_long_side[0].item(*its);
-//    					ind1++;
-//    				}
-//    				if( (*its)==(uint)ind_bord_insula )
-//    					ind2++;
-//    			}
-//    			if( ind1!=0 && ind2!=0 )
-//    				bordtmp1[0].item(i)=va;
-//    		}
-//    	}
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if( bordtmp1[0].item(i)!=0 )
-//    			constraint_long_side[0].item(i)=bordtmp1[0].item(i);
-//    	}
-//    	
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if( constraint_long_side[0].item(i)==0 && i!=ind_bord_insula )
-//    		{
-//    			float va=0;
-//    			
-//    			std::set<uint>::iterator its;
-//    			its=neigh[i].begin();
-//    			int ind1=0, ind2=0;
-//    			for(; its!=neigh[i].end(); its++)
-//    			{
-//    				if( constraint_long_side[0].item(*its)!=0 )
-//    				{
-//    					va=constraint_long_side[0].item(*its);
-//    					ind1++;
-//    				}
-//    				if( (*its)==(uint)ind_bord_insula )
-//    					ind2++;
-//    			}
-//    			if( ind1!=0 && ind2!=0 )
-//    				bordtmp1[0].item(i)=va;
-//    		}
-//    	}
-//    /*	Writer<Texture1d> wT1btmp1("bordtmp1.tex");
-//    	wT1btmp1.write(bordtmp1);*/
-//    	
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if( bordtmp1[0].item(i)!=0 )
-//    			constraint_long_side[0].item(i)=bordtmp1[0].item(i);
-//    	}
-//    	
-//    /*	Writer<Texture1d> wT1resinsntaa("contraint_long_side_AFTER.tex");
-//    	wT1resinsntaa.write(constraint_long_side);*/
-//    	
-//    	
-//    	int ind_change=0;
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		if( bordSides[0].item(i)!=0 && new_contraint_long_side[0].item(i)!=0)
-//    		{
-//    			//std::cout << "IN 1" << std::endl;
-//    			if( (constraint_long_side[0].item(i)!= new_contraint_long_side[0].item(i)) && (new_contraint_long_side[0].item(i)!=0) )
-//    			{
-//    				ind_change++;
-//    				//std::cout << "CHANGE!!" << std::endl;
-//    			}
-//    		}
-//    	}
-//    	
-//    	TimeTexture<float> sides_temp(1,size);
-//    	
-//    	//Mise a jour de sides selon comment c'est dans la diff totale
-//    	if( ind_change != 0 )
-//    	{
-//    		for(int i=0; i<size; i++)
-//    		{
-//    			if( new_contraint_long_side[0].item(i)==2 )
-//    				new_contraint_long_side[0].item(i)=4;
-//    			else
-//    				if( new_contraint_long_side[0].item(i)== 4)
-//    					new_contraint_long_side[0].item(i)=2;
-//    				else{}
-//    		}
-//    	}
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		sides_temp[0].item(i)=new_contraint_long_side[0].item(i);
-//    	}
-//    	
-//    /*	Writer<Texture1d> wSides("sides_avant.tex");
-//    	wSides.write(sides_temp);
-//    	
-//    	Writer<Texture1d> wSidesNew("bordValues.tex");
-//    	wSidesNew.write(bordValues);*/
-//    	
-//    	new_contraint_long_side = defineSidesPoles( sides_temp, bordValues, mesh, neigh );
-//    	
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		new_contraint[0].item(i)=bordValues[0].item(i);
-//    		if( poleSave[0].item(i)==180)
-//    		{
-//    			poles[0].item(i)=0;
-//    			if( bord[0].item(i)==0)
-//    				new_contraint[0].item(i)=0;
-//    		}
-//    		if( poleSave[0].item(i)!=180)
-//    		{
-//    			if( bord[0].item(i)==0)
-//    			{
-//    				poles[0].item(i)=1;
-//    				new_contraint[0].item(i)=360;
-//    			}
-//    			if( bord[0].item(i)!=0)
-//    			{
-//    				poles[0].item(i)=0;
-//    			}
-//    			
-//    		}
-//    		if( newOriginMeridian[0].item(i)!=0 )
-//    		{
-//    			new_contraint[0].item(i)=360;
-//    			temp[0].item(i)=360;
-//    		}
-//    		//if(bordSides[0].item(i)!=0)
-//    		//	new_contraint_long_side[0].item(i)=bordSides[0].item(i);
-//    	}
-//    	
-//    	
-//    /*	Writer<Texture1d> wT1kdakc("tmp_avant.tex");
-//    	wT1kdakc.write(temp);*/
-//    	
-//    	new_contraint[0].item(sud)=360;
-//    	poles[0].item(sud)=180;
-//    	temp[0].item(sud)=360;
-//    	temp[0].item(nord)=360;
-//    	
-//    	
-//    /*	Writer<Texture1d> wT1kdkc("tmp.tex");
-//    	wT1kdkc.write(temp);*/
-//    	
-//    	
-//    /*	Writer<Texture1d> wT1resinsnt("new_contraint_lon_side.tex");
-//    	wT1resinsnt.write(new_contraint_long_side);*/
-//    /*	Writer<Texture1d> wT1resinsnn("new_contraint_lon.tex");
-//    	wT1resinsnn.write(new_contraint);*/
-//    /*	Writer<Texture1d> wT1resinsfr("new_contraintlongitude.tex");
-//    	wT1resinsfr.write(new_contraint);*/
-//    	//diff pole insula*************************************************
-//    	// A REMETTRE!!!!!!!!!!!!!!!!!!!!!!!!!
-//    	new_long_insula=diffusionLongitude(new_contraint, new_contraint_long_side, poleSave, 0);
-//    	
-//    /*	Writer<Texture1d> wT1resins("new_long_insula.tex");
-//    	wT1resins.write(new_long_insula);*/
-//    	
-//    	//*********************************************************************
-//    	
-//    	//poles pour le cingulaire
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		poles[0].item(i)=0;
-//    		if( bordCing[0].item(i) == 1 || poleSave[0].item(i)==1  )
-//    		{}
-//    		else
-//    		{
-//    			poles[0].item(i)=180;
-//    		}
-//    	}
-//    	poles[0].item(nord)=1;
-//    // 	Writer<Texture1d> wT1eepeo("poles_cingulaire.tex");
-//    // 	wT1eepeo.write(poles);
-//    // 	
-//    // 	TimeTexture<float> t(1,size);
-//    	ind_change=0;
-//    	for(int i=0; i<size; i++)
-//    	{
-//    //		t[0].item(i)=0;
-//    		if( constraint_long_side_long[0].item(i)!=0 && poleSave[0].item(i)==0 )
-//    		{
-//    			if( constraint_long_side_long[0].item(i)!= constraint_long_side[0].item(i) )
-//    			{
-//    				ind_change++;
-//    // 				std::cout << constraint_long_side_long[0].item(i)<<" - "<<constraint_long_side[0].item(i) << std::endl;
-//    // 				t[0].item(i)=constraint_long_side_long[0].item(i);
-//    			}
-//    		}
-//    	}
-//    
-//    /*	Writer<Texture1d> wTt("t.tex");
-//    	wTt.write(t);*/
-//    	
-//    // 	std::cout << "nombre de differences: "<<ind_change << std::endl;
-//    	//Mise a jour de sides selon comment c'est dans la diff totale
-//    // 	if( ind_change != 0 )
-//    // 	{
-//    // 		//std::cout << "changement sides" << std::endl;
-//    // 		for(int i=0; i<size; i++)
-//    // 		{
-//    // 			if( new_contraint_long_sideCing[0].item(i)==2 )
-//    // 				new_contraint_long_sideCing[0].item(i)=4;
-//    // 			else
-//    // 				if( new_contraint_long_sideCing[0].item(i)== 4)
-//    // 					new_contraint_long_sideCing[0].item(i)=2;
-//    // 		}
-//    // 	}
-//    	//Mise a jour de sides selon comment c'est dans la diff totale
-//    	if( ind_change != 0 )
-//    	{
-//    		//std::cout << "changement sides" << std::endl;
-//    		for(int i=0; i<size; i++)
-//    		{
-//    			if( constraint_long_side_long[0].item(i)==2 )
-//    				constraint_long_side_long[0].item(i)=4;
-//    			else
-//    				if( constraint_long_side_long[0].item(i)== 4)
-//    					constraint_long_side_long[0].item(i)=2;
-//    		}
-//    	}
-//    
-//    /*	Writer<Texture1d> wT1rescingor("constraint_long_side.tex");
-//    	wT1rescingor.write(constraint_long_side);*/
-//    // 	Writer<Texture1d> wT1rescingc("new_contraintCing.tex");
-//    // 	wT1rescingc.write(new_contraintCing);
-//    /*	Writer<Texture1d> wT1rescingff("new_contraint_long_side_long.tex");
-//    	wT1rescingff.write(constraint_long_side_long);*/
-//    // 	Writer<Texture1d> wT1rescingfq("poles_diff_cing.tex");
-//    // 	wT1rescingfq.write(poles);
-//    	//Diff pole cing*************************************************************
-//    //	new_long_cing=diffusionLongitude(new_contraintCing, new_contraint_long_sideCing, poleSave, 1);
-//    	new_long_cing=diffusionLongitude(new_contraintCing, constraint_long_side_long, poleSave, 1);
-//    
-//    /*	Writer<Texture1d> wT1rescing("new_long_cing.tex");
-//    	wT1rescing.write(new_long_cing);*/
-//    	
-//    	//******************************************************************************
-//    
-//    /*	it=neigh[sud].begin();
-//    	for(; it!=neigh[sud].end(); it++)
-//    	{
-//    	poles_save[0].item(*it)=180;
-//    }
-//    */
-//    
-//    	for(int i=0; i<size; i++)
-//    	{
-//    		poles[0].item(i) = poleSave[0].item(i);
-//    	}
-//    	
-//    	
-//    	TimeTexture<float> diff_total(1,size);
-//    	init_texture_single(diff_total);
-//    	
-//    	for(int i=0;i<size; i++)
-//    	{
-//    		if( poles[0].item(i) == 180 )
-//    			diff_total[0].item(i) = new_long_insula[0].item(i);
-//    		else
-//    			if( poles[0].item(i) == 1 )
-//    				diff_total[0].item(i) = new_long_cing[0].item(i);
-//    		else
-//    		{
-//    			diff_total[0].item(i) = diff_long_result[0].item(i);
-//    				//std::cout << "YEAH";
-//    		}
-//    		if(temp[0].item(i)>359)
-//    			diff_total[0].item(i) = 360;
-//    	}
-//    	diff_total[0].item(nord)=360;
-//    	diff_total[0].item(sud)=360;
-//    	
-//    	Writer<Texture1d> wcipfp(adr_lon);
-//    	wcipfp.write(diff_total);
-//    	
-//    	sud=sud_temp;
-//    	
-//    	std::cout << "done" << std::endl;
+    	std::cout << "Poles parameterization..." << std::endl;
+    	//****declarations et init textures
+    	
+    	TimeTexture<float>  poleNew(1,size);    //nouveaux poles
+    	TimeTexture<float>  bord(1,size);    //bord du pole sud insula
+    	TimeTexture<float>  bordValues(1,size);     //bords avec les valeurs obtenues lors de la diff
+    	TimeTexture<float>  new_contraint(1,size);    //resultat diffusion sans les poles
+    	TimeTexture<float>  bordExtreme(1,size);    //bords avec les extremites du meridien origine
+    	TimeTexture<float>  bordSides(1,size);    //bords avec les valeurs sides
+    	
+    	TimeTexture<float>  new_contraint_insula(1,size);    //resultat diffusion sans les poles
+    	
+    	TimeTexture<float>  bordCing(1,size);    //bord du pole sud insula
+    	TimeTexture<float>  bordValuesCing(1,size);     //bords avec les valeurs obtenues lors de la diff
+    	TimeTexture<float>  bordExtremeCing(1,size);    //bords avec les extremites du meridien origine
+    	TimeTexture<float>  bordSidesCing(1,size);    //bords avec les valeurs sides
+    	
+    	TimeTexture<float>  poleSave(1,size);    //sauvegarde des regions polaires
+    	TimeTexture<float>  newOriginMeridian(1,size);    //new meridien d'origine
+    	TimeTexture<float>  new_contraint_long_side(1,size);   //sides du nouveau meridien
+    	TimeTexture<float>  new_long_insula(1,size);   //sides du nouveau meridien
+    	
+    	TimeTexture<float>  newOriginMeridianCing(1,size);    //new meridien d'origine
+    	TimeTexture<float>  new_contraint_long_sideCing(1,size);   //sides du nouveau meridien
+    	TimeTexture<float>  new_long_cing(1,size);   //sides du nouveau meridien
+    	TimeTexture<float>  new_contraintCing(1,size);    //resultat diffusion sans les poles
+    	
+    	init_texture_single(bord);
+    	init_texture_single(bordValues);
+    	init_texture_single(bordExtreme);
+    	init_texture_single(bordSides);
+    	init_texture_single(poleNew);
+    	init_texture_single(poleSave);
+    	init_texture_single(newOriginMeridian);
+    	init_texture_single(new_contraint_long_side);
+    	init_texture_single(new_contraint);
+    	init_texture_single(new_long_insula);
+    	init_texture_single(bordCing);
+    	init_texture_single(bordValuesCing);
+    	init_texture_single(bordExtremeCing);
+    	init_texture_single(bordSidesCing);
+    	init_texture_single(newOriginMeridianCing);
+    	init_texture_single(new_contraint_long_sideCing);
+    	init_texture_single(new_long_cing);
+    	init_texture_single(new_contraintCing);
+    	
+    	//OK!!
+    	
+    // 	Reader<Texture1d> wT1r("lon_old.tex");
+    	Reader<Texture1d> wT1r(adr_lon);
+    	wT1r.read(diff_long_result);
+    	
+    	//****mise a jour du nouveau point pole
+    	cingularPoint();
+    	int sud_temp=0;
+    	sud_temp=sud;
+    	sud=ind_min;
+    	
+    	TimeTexture<float> ttt(1,size);
+    	init_texture_single(ttt);
+    	int cpt=0,cpt1=0,cpt2=0,cpt3=0;
+    	std::set<uint>::iterator it;
+    	
+    	
+    	
+    	//Sauvegarde des calottes polaires
+    	for(int i=0; i<size; i++)
+    		poleSave[0].item(i) = poles[0].item(i);
+    	
+    /*	Writer<Texture1d> wT3lpst("poles_origin.tex");
+    	wT3lpst.write(poleSave);*/
+    	
+    	for(int i=0; i<size; i++)
+    	{
+    		if(poles[0].item(i)==0)
+    		{
+    			cpt++;
+    			ttt[0].item(i)=0;
+    			if(diff_long_result[0].item(i)==360)
+    			{
+    				//ttt[0].item(i)=100;
+    				it=neigh[i].begin();
+    				for(; it!=neigh[i].end(); it++)
+    				{
+    					if( diff_long_result[0].item(*it)!=360 )
+    					{
+    						diff_long_result[0].item(i)=diff_long_result[0].item(*it);
+    					}
+    				}
+    			}
+    		}
+    		else
+    		{
+    			if(poles[0].item(i)==180)
+    			{
+    				cpt1++;
+    				ttt[0].item(i)=30;
+    			}
+    			else
+    			{
+    				if(poles[0].item(i)==1)
+    				{
+    					cpt2++;
+    					ttt[0].item(i)=10;
+    				}
+    				else
+    				{
+    					cpt3++;
+    					ttt[0].item(i)=20;
+    				}
+    			}
+    		}
+    	}
+    	//Second tour pour éliminer les trucs bizarres
+    	for(int i=0; i<size; i++)
+    	{
+    		if(poles[0].item(i)==0)
+    		{
+    			cpt++;
+    			ttt[0].item(i)=0;
+    			if(diff_long_result[0].item(i)==360)
+    			{
+    				//ttt[0].item(i)=100;
+    				it=neigh[i].begin();
+    				for(; it!=neigh[i].end(); it++)
+    				{
+    					if( diff_long_result[0].item(*it)!=360 )
+    					{
+    						diff_long_result[0].item(i)=diff_long_result[0].item(*it);
+    					}
+    				}
+    			}
+    		}
+    	}
+    	
+    	TimeTexture<float> ty(1,size);
+    	init_texture_single(ty);
+    	for(int i=0; i<size; i++)
+    	{
+    		//Pour l'insula
+    		if( poles[0].item(i)==180 )
+    		{
+    			it=neigh[i].begin();
+    			for(; it!=neigh[i].end(); it++)
+    			{
+    				if( poles[0].item(*it)!=180 )
+    				{
+    					bord[0].item(*it) = 1;
+    					//bordValues[0].item(i) = new_contraint[0].item(i);
+    					bordValues[0].item(*it) = diff_long_result[0].item(*it);
+    				}
+    			}
+    		}
+    		
+    		//pour le cingulaire
+    		
+    		//if( poles[0].item(i)>0 && poles[0].item(i)<1.5 )
+    		if( poles[0].item(i)==1 )
+    		{
+    			it=neigh[i].begin();
+    			for(; it!=neigh[i].end(); it++)
+    			{
+    				//if(poles[0].item(*it)!=1 && poles[0].item(*it)<359)
+    				if(poles[0].item(*it)==0)
+    				{
+    					bordCing[0].item(*it) = 1;
+    					//bordValuesCing[0].item(i) = new_contraint[0].item(i);
+    					bordValuesCing[0].item(*it) = diff_long_result[0].item(*it);
+    					//ttt[0].item(*it)=180;
+    				}
+    			}
+    		}
+    		
+    		if( bordValuesCing[0].item(i) != 0 || poleSave[0].item(i)==1 )
+    		{
+    			new_contraint_long_sideCing[0].item(i) = constraint_long_side_long[0].item(i);
+    		}
+    		else
+    		{
+    			new_contraintCing[0].item(i) = diff_long_result[0].item(i);
+    			ty[0].item(i)=10;
+    		}
+    		
+    		//if(  bordCing[0].item(i) == 1  )
+    		if(  bordValuesCing[0].item(i) != 0  )
+    			new_contraintCing[0].item(i) = bordValuesCing[0].item(i);
+    	}
+    	
+    /*	Writer<Texture1d> wT1rbbvf("bordMer.tex");
+    	wT1rbbvf.write(ty);*/
+    	
+    // 	std::cout << "cpt0="<<cpt<<" - cpt1="<<cpt2<<" - cpt180="<<cpt1<<"cpt autres="<<cpt3<<" - total="<<cpt+cpt1+cpt2+cpt3 << std::endl;
+    	
+    /*	Writer<Texture1d> wT1rbtbv("ttt.tex");
+    	wT1rbtbv.write(ttt);*/
+    	
+    	
+    	//meridien origine pour le cingulaire
+    	for(int i=0; i<size; i++)
+    	{
+    		if( bordValuesCing[0].item(i) != 0 || poleSave[0].item(i)==1 )
+    		{
+    			int indTemp1=0,indTemp2=0;
+    			it=neigh[i].begin();
+    			for(; it!=neigh[i].end(); it++)
+    			{
+    				if(constraint_long_side_long[0].item(*it)==2)
+    					indTemp1++;
+    				if(constraint_long_side_long[0].item(*it)==4)
+    					indTemp2++;
+    			}
+    			if(indTemp1!=0 && indTemp2!=0 && save_mer_origin[0].item(i)!=0)
+    			{
+    				new_contraintCing[0].item(i)=360;
+    				temp[0].item(i)=360;
+    			}
+    		}
+    	}
+    	new_contraintCing[0].item(nord)=360;
+    	
+    	
+    /*	Writer<Texture1d> w_bord("tmp_avant_avant.tex");
+    	w_bord.write(temp);*/
+    			
+    	//Writer<Texture1d> wT1rbb("bord.tex");
+    	//wT1rbb.write(bord);
+    	
+    /*	Writer<Texture1d> wT1rbbv("bordValuesCing.tex");
+    	wT1rbbv.write(bordValuesCing);
+    	
+    	Writer<Texture1d> w_bord("bord.tex");
+    	w_bord.write(bord);*/
+    	
+    	int ind_bord_insula=0;
+    	int cpttt=0;
+    	
+    	for(int i=0; i<size; i++)
+    	{
+    		if(bord[0].item(i)!=0)
+    		{
+    			if(constraint_long_side[0].item(i)!=0 )
+    			{
+    				bordSides[0].item(i)=constraint_long_side[0].item(i);
+    				cpttt++;
+    			}
+    		}
+    	}
+    	
+    // 	std::cout << "cpttt="<<cpttt << std::endl;
+    	
+    	for(int i=0; i<size; i++)
+    	{
+    		if(bord[0].item(i)!=0)
+    		{
+    			int indTemp1=0,indTemp2=0;
+    			it=neigh[i].begin();
+    			for(; it!=neigh[i].end(); it++)
+    			{
+    // 				if(constraint_long_side[0].item(*it)==2)
+    				if( (bord[0].item(*it)!=0) && (constraint_long_side[0].item(*it)==2) )
+    					indTemp1++;
+    // 				if(constraint_long_side[0].item(*it)==4)
+    				if( (bord[0].item(*it)!=0) && (constraint_long_side[0].item(*it)==4) )
+    					indTemp2++;
+    			}
+    			if(indTemp1!=0 && indTemp2!=0)
+    			{
+    				if( (indTemp1+indTemp2)>=cpttt)
+    				{
+    					bordExtreme[0].item(i)=180;
+    					ind_bord_insula=i;
+    				}
+    			}
+    		}
+    	}
+    	
+    	std::cout << "ind="<<ind_bord_insula<<" - Save_Point_Insula="<<Save_Point_Insula << std::endl;
+    /*	if(ind_bord_insula==0)
+    		std::cout << "PROBLEM!!!!" << std::endl;*/
+    	
+    	//Test
+    	if(Save_Point_Insula==-1)
+    	{}
+    	else
+    	{
+    		ind_bord_insula=Save_Point_Insula;
+    	}
+    	
+    	std::cout << "ind new="<<ind_bord_insula << std::endl;
+    	
+    // 	Writer<Texture1d> w_constraint_long_side("constraint_long_side.tex");
+    // 	w_constraint_long_side.write(constraint_long_side);
+    // 	Writer<Texture1d> w_bord_values("bord_values.tex");
+    // 	w_bord_values.write(bordValues);
+    // 	Writer<Texture1d> w_bord("bord.tex");
+    // 	w_bord.write(bord);
+    // 	Writer<Texture1d> w_bord_side("bord_side.tex");
+    // 	w_bord_side.write(bordSides);
+    // 	Writer<Texture1d> w_bord_constraint_long_side("bord_constraint_long_side.tex");
+    // 	w_bord_constraint_long_side.write(constraint_long_side);
+    	
+    	newOriginMeridian[0].item(sud)=360;
+    	newOriginMeridian[0].item(ind_bord_insula)=360;
+    	
+    /*	Writer<Texture1d> w_bord_insula_point("bord_insula_point.tex");
+    	w_bord_insula_point.write(newOriginMeridian);*/
+    	
+    	findNearNeigh(ind_bord_insula, sud, newOriginMeridian, 360, mesh, neigh );
+    	
+    // 	Writer<Texture1d> w_bord_insula_point_after("meridien_origine_insula.tex");
+    // 	w_bord_insula_point_after.write(newOriginMeridian);
+    	
+    	new_contraint_long_side=originNeighbourgs(newOriginMeridian, ind_bord_insula, sud, mesh, neigh, poles);
+    	
+    	
+    	new_contraint_long_side[0].item(sud)=0;
+    	new_contraint_long_side[0].item(ind_bord_insula)=0;
+    	
+    // 	Writer<Texture1d> wT1ff("new_contraint_lon_side_AVANT.tex");
+    // 	wT1ff.write(new_contraint_long_side);
+    	
+    	TimeTexture<float> bordtmp(1,size);
+    	init_texture_single(bordtmp);
+    	
+    	//Rajoute des voisins au point du pole, pour décider des côtés
+    	
+    	for(int i=0; i<size; i++)
+    	{
+    		if( new_contraint_long_side[0].item(i)==0 && i!=ind_bord_insula )
+    		{
+    			float va=0;
+    			
+    			std::set<uint>::iterator its;
+    			its=neigh[i].begin();
+    			int ind1=0, ind2=0;
+    			for(; its!=neigh[i].end(); its++)
+    			{
+    				if( new_contraint_long_side[0].item(*its)!=0 )
+    				{
+    					va=new_contraint_long_side[0].item(*its);
+    					ind1++;
+    				}
+    				if( (*its)==(uint)ind_bord_insula )
+    					ind2++;
+    			}
+    			if( ind1!=0 && ind2!=0 )
+    				bordtmp[0].item(i)=va;
+    		}
+    	}
+    	
+    	
+    	for(int i=0; i<size; i++)
+    	{
+    		if( bordtmp[0].item(i)!=0 )
+    			new_contraint_long_side[0].item(i)=bordtmp[0].item(i);
+    	}
+    	
+    	for(int i=0; i<size; i++)
+    	{
+    		if( new_contraint_long_side[0].item(i)==0 && i!=ind_bord_insula )
+    		{
+    			float va=0;
+    			
+    			std::set<uint>::iterator its;
+    			its=neigh[i].begin();
+    			int ind1=0, ind2=0;
+    			for(; its!=neigh[i].end(); its++)
+    			{
+    				if( new_contraint_long_side[0].item(*its)!=0 )
+    				{
+    					va=new_contraint_long_side[0].item(*its);
+    					ind1++;
+    				}
+    				if( (*its)==(uint)ind_bord_insula )
+    					ind2++;
+    			}
+    			if( ind1!=0 && ind2!=0 )
+    				bordtmp[0].item(i)=va;
+    		}
+    	}
+    	
+    /*	Writer<Texture1d> wT1btmp("bordtmp.tex");
+    	wT1btmp.write(bordtmp);*/
+    	for(int i=0; i<size; i++)
+    	{
+    		if( bordtmp[0].item(i)!=0 )
+    			new_contraint_long_side[0].item(i)=bordtmp[0].item(i);
+    	}
+    	
+    	
+    	TimeTexture<float> bordtmp1(1,size);
+    	init_texture_single(bordtmp1);
+    	
+    	for(int i=0; i<size; i++)
+    	{
+    		if( constraint_long_side[0].item(i)==0 && i!=ind_bord_insula )
+    		{
+    			float va=0;
+    			
+    			std::set<uint>::iterator its;
+    			its=neigh[i].begin();
+    			int ind1=0, ind2=0;
+    			for(; its!=neigh[i].end(); its++)
+    			{
+    				if( constraint_long_side[0].item(*its)!=0 )
+    				{
+    					va=constraint_long_side[0].item(*its);
+    					ind1++;
+    				}
+    				if( (*its)==(uint)ind_bord_insula )
+    					ind2++;
+    			}
+    			if( ind1!=0 && ind2!=0 )
+    				bordtmp1[0].item(i)=va;
+    		}
+    	}
+    	for(int i=0; i<size; i++)
+    	{
+    		if( bordtmp1[0].item(i)!=0 )
+    			constraint_long_side[0].item(i)=bordtmp1[0].item(i);
+    	}
+    	
+    	for(int i=0; i<size; i++)
+    	{
+    		if( constraint_long_side[0].item(i)==0 && i!=ind_bord_insula )
+    		{
+    			float va=0;
+    			
+    			std::set<uint>::iterator its;
+    			its=neigh[i].begin();
+    			int ind1=0, ind2=0;
+    			for(; its!=neigh[i].end(); its++)
+    			{
+    				if( constraint_long_side[0].item(*its)!=0 )
+    				{
+    					va=constraint_long_side[0].item(*its);
+    					ind1++;
+    				}
+    				if( (*its)==(uint)ind_bord_insula )
+    					ind2++;
+    			}
+    			if( ind1!=0 && ind2!=0 )
+    				bordtmp1[0].item(i)=va;
+    		}
+    	}
+    /*	Writer<Texture1d> wT1btmp1("bordtmp1.tex");
+    	wT1btmp1.write(bordtmp1);*/
+    	
+    	for(int i=0; i<size; i++)
+    	{
+    		if( bordtmp1[0].item(i)!=0 )
+    			constraint_long_side[0].item(i)=bordtmp1[0].item(i);
+    	}
+    	
+    /*	Writer<Texture1d> wT1resinsntaa("contraint_long_side_AFTER.tex");
+    	wT1resinsntaa.write(constraint_long_side);*/
+    	
+    	
+    	int ind_change=0;
+    	for(int i=0; i<size; i++)
+    	{
+    		if( bordSides[0].item(i)!=0 && new_contraint_long_side[0].item(i)!=0)
+    		{
+    			//std::cout << "IN 1" << std::endl;
+    			if( (constraint_long_side[0].item(i)!= new_contraint_long_side[0].item(i)) && (new_contraint_long_side[0].item(i)!=0) )
+    			{
+    				ind_change++;
+    				//std::cout << "CHANGE!!" << std::endl;
+    			}
+    		}
+    	}
+    	
+    	TimeTexture<float> sides_temp(1,size);
+    	
+    	//Mise a jour de sides selon comment c'est dans la diff totale
+    	if( ind_change != 0 )
+    	{
+    		for(int i=0; i<size; i++)
+    		{
+    			if( new_contraint_long_side[0].item(i)==2 )
+    				new_contraint_long_side[0].item(i)=4;
+    			else
+    				if( new_contraint_long_side[0].item(i)== 4)
+    					new_contraint_long_side[0].item(i)=2;
+    				else{}
+    		}
+    	}
+    	for(int i=0; i<size; i++)
+    	{
+    		sides_temp[0].item(i)=new_contraint_long_side[0].item(i);
+    	}
+    	
+    /*	Writer<Texture1d> wSides("sides_avant.tex");
+    	wSides.write(sides_temp);
+    	
+    	Writer<Texture1d> wSidesNew("bordValues.tex");
+    	wSidesNew.write(bordValues);*/
+    	
+    	new_contraint_long_side = defineSidesPoles( sides_temp, bordValues, mesh, neigh );
+    	
+    	for(int i=0; i<size; i++)
+    	{
+    		new_contraint[0].item(i)=bordValues[0].item(i);
+    		if( poleSave[0].item(i)==180)
+    		{
+    			poles[0].item(i)=0;
+    			if( bord[0].item(i)==0)
+    				new_contraint[0].item(i)=0;
+    		}
+    		if( poleSave[0].item(i)!=180)
+    		{
+    			if( bord[0].item(i)==0)
+    			{
+    				poles[0].item(i)=1;
+    				new_contraint[0].item(i)=360;
+    			}
+    			if( bord[0].item(i)!=0)
+    			{
+    				poles[0].item(i)=0;
+    			}
+    			
+    		}
+    		if( newOriginMeridian[0].item(i)!=0 )
+    		{
+    			new_contraint[0].item(i)=360;
+    			temp[0].item(i)=360;
+    		}
+    		//if(bordSides[0].item(i)!=0)
+    		//	new_contraint_long_side[0].item(i)=bordSides[0].item(i);
+    	}
+    	
+    	
+    /*	Writer<Texture1d> wT1kdakc("tmp_avant.tex");
+    	wT1kdakc.write(temp);*/
+    	
+    	new_contraint[0].item(sud)=360;
+    	poles[0].item(sud)=180;
+    	temp[0].item(sud)=360;
+    	temp[0].item(nord)=360;
+    	
+    	
+    /*	Writer<Texture1d> wT1kdkc("tmp.tex");
+    	wT1kdkc.write(temp);*/
+    	
+    	
+    /*	Writer<Texture1d> wT1resinsnt("new_contraint_lon_side.tex");
+    	wT1resinsnt.write(new_contraint_long_side);*/
+    /*	Writer<Texture1d> wT1resinsnn("new_contraint_lon.tex");
+    	wT1resinsnn.write(new_contraint);*/
+    /*	Writer<Texture1d> wT1resinsfr("new_contraintlongitude.tex");
+    	wT1resinsfr.write(new_contraint);*/
+    	//diff pole insula*************************************************
+    	// A REMETTRE!!!!!!!!!!!!!!!!!!!!!!!!!
+    	new_long_insula=diffusionLongitude(new_contraint, new_contraint_long_side, poleSave, 0);
+    	
+    /*	Writer<Texture1d> wT1resins("new_long_insula.tex");
+    	wT1resins.write(new_long_insula);*/
+    	
+    	//*********************************************************************
+    	
+    	//poles pour le cingulaire
+    	for(int i=0; i<size; i++)
+    	{
+    		poles[0].item(i)=0;
+    		if( bordCing[0].item(i) == 1 || poleSave[0].item(i)==1  )
+    		{}
+    		else
+    		{
+    			poles[0].item(i)=180;
+    		}
+    	}
+    	poles[0].item(nord)=1;
+    // 	Writer<Texture1d> wT1eepeo("poles_cingulaire.tex");
+    // 	wT1eepeo.write(poles);
+    // 	
+    // 	TimeTexture<float> t(1,size);
+    	ind_change=0;
+    	for(int i=0; i<size; i++)
+    	{
+    //		t[0].item(i)=0;
+    		if( constraint_long_side_long[0].item(i)!=0 && poleSave[0].item(i)==0 )
+    		{
+    			if( constraint_long_side_long[0].item(i)!= constraint_long_side[0].item(i) )
+    			{
+    				ind_change++;
+    // 				std::cout << constraint_long_side_long[0].item(i)<<" - "<<constraint_long_side[0].item(i) << std::endl;
+    // 				t[0].item(i)=constraint_long_side_long[0].item(i);
+    			}
+    		}
+    	}
+    
+    /*	Writer<Texture1d> wTt("t.tex");
+    	wTt.write(t);*/
+    	
+    // 	std::cout << "nombre de differences: "<<ind_change << std::endl;
+    	//Mise a jour de sides selon comment c'est dans la diff totale
+    // 	if( ind_change != 0 )
+    // 	{
+    // 		//std::cout << "changement sides" << std::endl;
+    // 		for(int i=0; i<size; i++)
+    // 		{
+    // 			if( new_contraint_long_sideCing[0].item(i)==2 )
+    // 				new_contraint_long_sideCing[0].item(i)=4;
+    // 			else
+    // 				if( new_contraint_long_sideCing[0].item(i)== 4)
+    // 					new_contraint_long_sideCing[0].item(i)=2;
+    // 		}
+    // 	}
+    	//Mise a jour de sides selon comment c'est dans la diff totale
+    	if( ind_change != 0 )
+    	{
+    		//std::cout << "changement sides" << std::endl;
+    		for(int i=0; i<size; i++)
+    		{
+    			if( constraint_long_side_long[0].item(i)==2 )
+    				constraint_long_side_long[0].item(i)=4;
+    			else
+    				if( constraint_long_side_long[0].item(i)== 4)
+    					constraint_long_side_long[0].item(i)=2;
+    		}
+    	}
+    
+    /*	Writer<Texture1d> wT1rescingor("constraint_long_side.tex");
+    	wT1rescingor.write(constraint_long_side);*/
+    // 	Writer<Texture1d> wT1rescingc("new_contraintCing.tex");
+    // 	wT1rescingc.write(new_contraintCing);
+    /*	Writer<Texture1d> wT1rescingff("new_contraint_long_side_long.tex");
+    	wT1rescingff.write(constraint_long_side_long);*/
+    // 	Writer<Texture1d> wT1rescingfq("poles_diff_cing.tex");
+    // 	wT1rescingfq.write(poles);
+    	//Diff pole cing*************************************************************
+    //	new_long_cing=diffusionLongitude(new_contraintCing, new_contraint_long_sideCing, poleSave, 1);
+    	new_long_cing=diffusionLongitude(new_contraintCing, constraint_long_side_long, poleSave, 1);
+    
+    /*	Writer<Texture1d> wT1rescing("new_long_cing.tex");
+    	wT1rescing.write(new_long_cing);*/
+    	
+    	//******************************************************************************
+    
+    /*	it=neigh[sud].begin();
+    	for(; it!=neigh[sud].end(); it++)
+    	{
+    	poles_save[0].item(*it)=180;
+    }
+    */
+    
+    	for(int i=0; i<size; i++)
+    	{
+    		poles[0].item(i) = poleSave[0].item(i);
+    	}
+    	
+    	
+    	TimeTexture<float> diff_total(1,size);
+    	init_texture_single(diff_total);
+    	
+    	for(int i=0;i<size; i++)
+    	{
+    		if( poles[0].item(i) == 180 )
+    			diff_total[0].item(i) = new_long_insula[0].item(i);
+    		else
+    			if( poles[0].item(i) == 1 )
+    				diff_total[0].item(i) = new_long_cing[0].item(i);
+    		else
+    		{
+    			diff_total[0].item(i) = diff_long_result[0].item(i);
+    				//std::cout << "YEAH";
+    		}
+    		if(temp[0].item(i)>359)
+    			diff_total[0].item(i) = 360;
+    	}
+    	diff_total[0].item(nord)=360;
+    	diff_total[0].item(sud)=360;
+    	
+    	Writer<Texture1d> wcipfp(adr_lon);
+    	wcipfp.write(diff_total);
+    	
+    	sud=sud_temp;
+    	
+    	std::cout << "done" << std::endl;
     	
     }
     
