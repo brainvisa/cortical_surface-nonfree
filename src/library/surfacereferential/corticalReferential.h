@@ -61,7 +61,7 @@ namespace aims
 			int context;
 		
 		//Ce que l'on effectue
-			int choice_process;
+			int choice_process;			
 	
 		//Reglage du terme d'attache aux donn�s
 			float _Beta;
@@ -89,14 +89,16 @@ namespace aims
 		
 			std::vector<unsigned> forb_list;
 	
-		//indique si on a deja trouve les poles
+		// indique si on a deja trouve les poles
 			bool poles_found;
+			
+		// indique si on doit parametriser l'insula ou non
+			bool doInsulaParameterization;
 	
 		//A voir pour le reste
 			TimeTexture<float> diff_meridian_origine;
 			TimeTexture<float> distance_poles;
 			float diametre;
-	
 	
 		//Constructor
 			CorticalReferential ( ) {}
@@ -112,7 +114,8 @@ namespace aims
 			                      float Beta, 
 			                      int tBeta, 
 			                      std::string & adrlat, 
-			                      std::string & adrlon ) : 
+			                      std::string & adrlon,
+			                      bool _doInsulaParam = true ) : 
 			                          adr(adr_param), 
 			                          adr_par(adr_parallele), 
 			                          adr_mer(adr_meridien), 
@@ -125,9 +128,10 @@ namespace aims
 			                          _Beta(Beta), 
 			                          typeBeta(tBeta), 
 			                          adr_lat(adrlat), 
-			                          adr_lon(adrlon)
+			                          adr_lon(adrlon),
+			                          doInsulaParameterization(_doInsulaParam)
 			{
-	
+			    
 				std::cout << "constructeur" << std::endl;
 				std::cout << "mesh adress : " << adr << std::endl;
 				std::cout << "adr_par : " << adr_par << std::endl;

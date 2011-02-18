@@ -31,35 +31,39 @@ int main(int argc, const char **argv)
     	int c;
     	int tBeta;
     	int choice;
+    	bool doInsulaParameterization = true;
+    	
     	AimsSurfaceTriangle mesh;
-    	aims::AimsApplication     app( argc, argv, "Diffusion de coordonnees sur une surface contrainte");
-    	app.addOption( adress_mesh, "-i", "inputMesh");
-    	app.alias( "--inMesh", "-i" );
-    	app.addOption( adress_texPar, "-p", "input Texture Parallel Constraints");
-    	app.alias( "--inTexPar", "-p" );
-    	app.addOption( adress_texMer, "-m", "input Texture Meridian Constraints");
-    	app.alias( "--inTexMer", "-m" );
-    	app.addOption( adress_texCall, "-l", "input Texture Corpus Callosum Pole", "pole_calleux_plein.tex");
-    	app.alias( "--inTexCall", "-l" );
-    	app.addOption( adress_texPoles, "-r", "input Texture Poles");
-    	app.alias( "--inTexPoles", "-r" );
-    	app.addOption( criter, "-c", "Limit for the diffusion process ( default = 1e-6 )");
-    	app.alias( "--criter", "-c" );
-    	app.addOption( dt, "-d", "Iterative step ( default = 0.2 )");
-    	app.alias( "--dt", "-d" );
-    	app.addOption( c, "-b", "context");
-     	app.alias( "--bool", "-b" );
-    	app.addOption( choice, "-f", "choice");
-     	app.alias( "--choice", "-f" );
-    	app.addOption( t, "-t", "attache");
-    	app.alias( "--attache", "-t" );
-    	app.addOption( tBeta, "-a", "Beta Map (1=Yes, 0=No)");
-    	app.alias( "--tBeta", "-a" );
-    	app.addOption( x, "-x", "latitude texture output");
-     	app.alias( "--latitude", "-x" );
-    	app.addOption( y, "-y", "longitude texture output");
-     	app.alias( "--longitude", "-y" );
+    	aims::AimsApplication app ( argc, argv, "Diffusion of mesh-based coordinates with constraints" );
+    	app.addOption ( adress_mesh, "-i", "input Surface Mesh");
+    	app.addOption ( adress_texPar, "-p", "input Texture Parallel Constraints" );
+    	app.addOption ( adress_texMer, "-m", "input Texture Meridian Constraints" );
+    	app.addOption ( adress_texCall, "-l", "input Texture Corpus Callosum Pole" );
+    	app.addOption ( adress_texPoles, "-r", "input Texture Poles" );
+    	app.addOption ( criter, "-c", "Max difference stop criterium for the diffusion process ( default = 1e-6 )" );
+    	app.addOption ( dt, "-d", "Iterative step ( default = 0.2 )");
+    	app.addOption ( c, "-b", "Context (in order to swap 0/360 around central sulcus if necessary)" );
+    	app.addOption ( choice, "-f", "process choice : 1 latitude only 2 longitude only 3 none 0 latitude and longitude" );
+    	app.addOption ( t, "-t", "data-driven weight" );
+    	app.addOption ( tBeta, "-a", "Beta Map (1=Yes, 0=No)" );
+    	app.addOption ( x, "-x", "output Latitude Texture" );
+    	app.addOption ( y, "-y", "output Longitude Texture" );
+    	app.addOption ( doInsulaParameterization, "--insula", "do parameterize insula", true );
     	app.initialize();
+
+        app.alias ( "--inMesh", "-i" );
+        app.alias ( "--inTexPar", "-p" );
+        app.alias ( "--inTexMer", "-m" );
+        app.alias ( "--inTexCall", "-l" );
+        app.alias ( "--inTexPoles", "-r" );
+        app.alias ( "--criter", "-c" );
+        app.alias ( "--dt", "-d" );
+        app.alias ( "--bool", "-b" );
+        app.alias ( "--choice", "-f" );
+        app.alias ( "--attache", "-t" );
+        app.alias ( "--tBeta", "-a" );
+        app.alias ( "--latitude", "-x" );
+        app.alias ( "--longitude", "-y" );
 
     	aims::CorticalReferential cr ( adress_mesh, 
     	                               adress_texPar, 
@@ -73,7 +77,9 @@ int main(int argc, const char **argv)
     	                               t,
     	                               tBeta,
     	                               x,
-    	                               y );
+    	                               y,
+    	                               doInsulaParameterization );
+   
     	cr.process();
     	return 0;
 
