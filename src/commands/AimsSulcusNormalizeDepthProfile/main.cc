@@ -193,8 +193,8 @@ int main( int argc, const char** argv )
         		  break;
         	  }
           }
-          cout << "Elbow (min dist point):                 " << imin << endl;
-          cout << "Wrist (1st local max dist point after elbow): " << imax << endl;
+          cout << "Landmark L1: " << imin << endl;
+          cout << "Landmark L2: " << imax << endl;
           return EXIT_SUCCESS;
      }
      catch( user_interruption & )
