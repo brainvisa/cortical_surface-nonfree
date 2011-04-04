@@ -51,6 +51,7 @@ class GeodesicPath
 
   public :
     vector<int> shortestPathIndiceVextex(unsigned source, unsigned target);
+    vector<int> shortestPathIndice3Vextex(unsigned source, unsigned middle, unsigned target);
     vector<Point3df> shortestPathCoordVextex(unsigned source, unsigned target);
     void shortestPath2Texture(unsigned source, unsigned target, float texturevalue, TimeTexture<float> &tex);
     float shortestPathLength(unsigned source, unsigned target);

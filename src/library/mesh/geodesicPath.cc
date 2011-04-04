@@ -184,6 +184,18 @@ vector<int> GeodesicPath::shortestPathIndiceVextex(unsigned source, unsigned tar
   return listIndexVertexPathSP;
 }
 
+vector<int> GeodesicPath::shortestPathIndice3Vextex(unsigned source, unsigned middle, unsigned target)
+{
+	vector<int> first;
+	vector<int> second;
+	first=shortestPathIndiceVextex(source, middle);
+	first.erase(remove(first.begin(), first.end(), middle), first.end());
+	second=shortestPathIndiceVextex(middle, target);
+	first.insert( first.end(), second.begin(), second.end() );
+	return first;
+
+}
+
 void GeodesicPath::shortestPath2Texture(unsigned source, unsigned target, float texturevalue, TimeTexture<float> &tex)
 {
   vector<int> listIndexVertexPathSP;
