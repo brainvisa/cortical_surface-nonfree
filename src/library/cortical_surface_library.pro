@@ -9,7 +9,6 @@ HEADERS = \
   mesh/pointDistance.h \
   mesh/linkPath.h \
   mesh/meshToMeshResample.h \
-  mesh/geodesicPath.h \
   surfacereferential/corticalConstraints.h \
   surfacereferential/corticalReferential.h \
   surfacereferential/corticalTools.h \
@@ -52,7 +51,6 @@ SOURCES = \
   mesh/isoLine.cc \
   mesh/median.cc \
   mesh/pointDistance.cc \ 
-  mesh/geodesicPath.cc \
   surfacereferential/corticalConstraints.cc \
   surfacereferential/corticalReferential.cc \
   surfacereferential/corticalTools.cc \
