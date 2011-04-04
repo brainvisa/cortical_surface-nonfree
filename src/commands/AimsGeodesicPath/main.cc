@@ -16,41 +16,14 @@
 #include <aims/io/reader.h>
 #include <aims/io/process.h>
 #include <string.h>
-
-//#include <aims/io/aimsGraphW.h>
-//#include <aims/def/path.h>
-//#include <cartobase/stream/fileutil.h>
-
-//#include <aims/geodesicpath/geodesic_mesh.h>
-//#include <aims/geodesicpath/geodesic_algorithm_dijkstra.h>
-//#include <aims/geodesicpath/geodesic_algorithm_subdivision.h>
-//#include <aims/geodesicpath/geodesic_algorithm_exact.h>
-//#include <cortical_surface/geodesicpath/geodesic_algorithm_graph_base.h>
-
-
 #include <fstream>
-
 #include <aims/mesh/curv.h>
-//#include <aims/data/data.h>
-//#include <aims/mesh/surfaceOperation.h>
-//#include <aims/mesh/geometric.h>
-//#include <aims/data/data_g.h>
-//#include <aims/io/io_g.h>
-//#include <aims/math/math_g.h>
-//#include <aims/vector/vector.h>
-//#include <aims/mesh/texture.h>
-//#include <aims/distancemap/meshdistance_d.h>
-//#include <aims/distancemap/distancemap_g.h>
-//#include <aims/morphology/morphology_g.h>
-//#include <aims/mesh/surfaceOperation.h>
-//#include <aims/mesh/surfacegen.h>
 
 using namespace aims;
 using namespace carto;
 using namespace std;
 
-#include <cortical_surface/mesh/geodesicPath.h>
-
+#include <aims/geodesicpath/geodesicPath.h>
 
 int main( int argc, const char** argv )
 {
