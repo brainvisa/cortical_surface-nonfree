@@ -179,6 +179,8 @@ vector<int> GeodesicPath::shortestPathIndiceVextex(unsigned source, unsigned tar
   reverse(listIndexVertexPathSP.begin(),listIndexVertexPathSP.end());
   listIndexVertexPathSP.push_back((int)target);
 
+  delete(dijkstra_algorithm);
+
   return listIndexVertexPathSP;
 }
 
