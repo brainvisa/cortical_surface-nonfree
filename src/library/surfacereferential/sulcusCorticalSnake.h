@@ -8,7 +8,8 @@
 #include <aims/mesh/surfaceOperation.h>
 #include <cortical_surface/surfacereferential/sulcusCorticalSnake_energy.h>
 
-#include <cortical_surface/mesh/geodesicPath.h>
+//#include <cortical_surface/mesh/geodesicPath.h>
+#include <aims/geodesicpath/geodesicPath.h>
 
 namespace aims
 {
