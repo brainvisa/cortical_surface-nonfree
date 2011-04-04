@@ -124,7 +124,7 @@ vector<Point3df> GeodesicPath::shortestPathCoordVextex(unsigned source, unsigned
 
 float GeodesicPath::shortestPathLength(unsigned source, unsigned target)
 {
-  float length;
+  float length=0.0;
 
   vector<Point3df> listIndexVertexPathSP;
 
