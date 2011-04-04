@@ -8,8 +8,7 @@
 #include <aims/mesh/surfaceOperation.h>
 #include <cortical_surface/surfacereferential/sulcusCorticalSnake_energy.h>
 
-#include <aims/geodesicpath/geodesic_mesh.h>
-#include <aims/geodesicpath/geodesic_algorithm_dijkstra.h>
+#include <cortical_surface/mesh/geodesicPath.h>
 
 namespace aims
 {
@@ -66,16 +65,9 @@ namespace aims
       std::vector< AimsVector<uint,3> > poly;
 
       int cpt_resolution;
+      GeodesicPath *sp;
 
-//      TimeTexture<float> res;
-
-
-      //ARN
-
-      geodesic::Mesh meshSP;
-      std::vector<double> pointsSP;
-      std::vector<unsigned> facesSP;
-      std::vector<int> listIndexVertexPathSP;
+//    TimeTexture<float> res;
 
       //Constructor
 
@@ -85,7 +77,8 @@ namespace aims
         std::cout<<"Constructor!"<<std::endl;
         std::cout<<"Constructeur SulcusCorticalSnake"<<std::endl;
 
-        computeGraphDijkstra(mesh, 1 , 3);
+        sp = new GeodesicPath(mesh,1,3);
+        //computeGraphDijkstra(mesh, 1 , 3);
 
         neigh = SurfaceManip::surfaceNeighbours( mesh );
         mesh_base=mesh[0];
@@ -133,6 +126,8 @@ namespace aims
         constraint.erase();
         result_total.erase();
         tex_distance.erase();
+
+        delete (sp);
       }
 
       //Functions

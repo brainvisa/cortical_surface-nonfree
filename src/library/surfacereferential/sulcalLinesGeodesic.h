@@ -28,6 +28,10 @@
 
 #include <aims/geodesicpath/geodesic_algorithm_dijkstra.h>
 #include <aims/geodesicpath/geodesic_mesh.h>
+#include <aims/geodesicpath/geodesic_mesh_elements.h>
+
+#include <iostream>
+#include <fstream>
 
 #include <queue>
 #include <map>
@@ -45,6 +49,8 @@ using namespace std;
       //Parametres pour l'execution
 			string _adrMesh;
 			string _adrGeodesicDepth;
+			string _adrBassinsDepthNorm;
+			string _adrCurv;
 
 			string _adrRootsLat;
 			string _adrRootsLon;
@@ -62,7 +68,9 @@ using namespace std;
 			TimeTexture<float> _geoDepth;
 
 			std::vector<std::set<uint> > _neigh;
-	
+
+			TimeTexture<short> _texProbaPath;
+
 			TimeTexture<short> _rootsLon;
 			TimeTexture<short> _rootsLat;
 
@@ -70,6 +78,10 @@ using namespace std;
 			TimeTexture<float> _texCurvSeuil;
 
 			TimeTexture<short> _texBassins;
+			TimeTexture<float> _texBassinsDepthNorm;
+
+			TimeTexture<short> _texBassinsLat;
+			TimeTexture<short> _texBassinsLon;
 
 			geodesic::Mesh _meshSPc;
 			geodesic::Mesh _meshSP;
@@ -88,9 +100,11 @@ using namespace std;
       map<int, set<int> > _mapConstraintLat;
       map<int, set<int> > _mapConstraintLon;
 
+      ofstream myHistoLat;
+
 			//Constructor
-			SulcalLinesGeodesic( string & adrMesh, string & adrRootsLon,
-			    string & adrRootsLat, string & adrGeodesicDepth,std::string & _adrLines, string & _adrBassins, string & adrLonGeodesicOut, string & adrLatGeodesicOut,
+			SulcalLinesGeodesic( string & adrMesh,string & adrCurv, string & adrGeodesicDepth, string & adrBassinsDepthNorm, string & adrRootsLon,
+          string & adrRootsLat, std::string & _adrLines, string & _adrBassins, string & adrLonGeodesicOut, string & adrLatGeodesicOut,
 			    int strain );
 			
 			~SulcalLinesGeodesic();
@@ -102,9 +116,17 @@ using namespace std;
 			//private methods
 			void computeGraphDijkstra (AimsSurfaceTriangle surface, int constraintType,int strain);
 			double computeShortestPathSulci(unsigned source, unsigned target, vector<geodesic::SurfacePoint> & SPath, vector<int> &listIndexVertexPathSP );
-			void floodFillIter(int indexVertex, float newTextureValue, float oldTextureValue);
+			double computeDepthShortestPathSulci(unsigned source, unsigned target, vector<geodesic::SurfacePoint> & SPath, vector<int> &listIndexVertexPathSP );
+
+			double saveHistoTemp(unsigned source, unsigned target);
+
+	    void floodFillIter(int indexVertex, float newTextureValue, float oldTextureValue);
 			void bassinsDetect();
+			void bassinsDetect2();
+			void bassinsDetect3();
 			vector<int> maxGeodesicDistance(vector<int> points, int constraint, int* s , int* d );
+			vector<int> maxGeodesicDistanceDepthStable(vector<int> points, int constraint, int* s, int *d);
+
 	};
 
 

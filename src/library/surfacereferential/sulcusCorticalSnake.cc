@@ -16,110 +16,6 @@ using namespace aims::meshdistance;
 using namespace std;
 using namespace carto;
 
-
-void SulcusCorticalSnake::computeGraphDijkstra (AimsSurfaceTriangle surface, int constraintType,int strain)
-{
-// read triangulation
-//  cout << "reading triangulation   : " << flush;
-//  AimsSurfaceTriangle surface;
-//  Reader<AimsSurfaceTriangle> triR( meshFileIn );
-//  triR >> surface;
-//  cout << "done" << endl;
-
-  // compute and copy curvature
-  TimeTexture<float> texCurv;
-  cout << "compute texture curvature : ";
-  texCurv = TimeTexture<float>(1, surface.vertex().size());
-  texCurv = AimsMeshCurvature(surface[0]);
-  cout << "done" << endl;
-
-  float *f = (float*) malloc (texCurv[0].nItem() * sizeof(float));
-  for( uint i = 0; i < texCurv[0].nItem(); i++)
-  {
-  f[i] = (float)(texCurv[0].item(i));
-  }
-
-  // copy vertex and faces vector
-
-  vector<Point3df> & vert = surface.vertex();
-  vector<AimsVector<uint, 3> > & tri = surface.polygon();
-  pointsSP.resize(3*vert.size());
-  facesSP.resize(3*tri.size());
-
-  for (uint j = 0; j < (int) vert.size(); j++)
-  {
-    pointsSP[3*j] = vert[j][0];
-    pointsSP[3*j+1] = vert[j][1];
-    pointsSP[3*j+2] = vert[j][2];
-  }
-  for (uint j = 0; j < (int) tri.size(); j++)
-  {
-    facesSP[3*j] = tri[j][0];
-    facesSP[3*j+1] = tri[j][1];
-    facesSP[3*j+2] = tri[j][2];
-  }
-
-  // compute adjacence graph
-
-  cout << "compute adjacence graph : ";
-  if (constraintType != 3)
-    meshSP.initialize_mesh_data(pointsSP,facesSP, f,constraintType,strain);
-  else
-    meshSP.initialize_mesh_data(pointsSP,facesSP, NULL ,constraintType,0);
-
-  cout << "done" << endl;
-}
-
-void SulcusCorticalSnake::computeShortestPath(int method, unsigned source, unsigned target)
-{
-  // compute shortest path
-  cout << "compute shortest path : ";
-
-  std::vector<geodesic::SurfacePoint> sources;
-  sources.push_back(geodesic::SurfacePoint(&meshSP.vertices()[source]));
-
-  std::vector<geodesic::SurfacePoint> targets;
-  targets.push_back(geodesic::SurfacePoint(&meshSP.vertices()[target]));
-
-  printf("indice source = %d target = %d \n",source, target);
-
-  // clear path
-  std::vector<geodesic::SurfacePoint> SPath;
-  SPath.clear();
-
-  //writing path in the output texture
-  TimeTexture<float> texOut(1, mesh_base.vertex().size() );
-
-  // dijkstra method
-  geodesic::GeodesicAlgorithmDijkstra *dijkstra_algorithm;
-  dijkstra_algorithm = new geodesic::GeodesicAlgorithmDijkstra(&meshSP);
-
-  listIndexVertexPathSP.clear();
-
-  geodesic::SurfacePoint short_sources(&meshSP.vertices()[source]);
-  geodesic::SurfacePoint short_targets(&meshSP.vertices()[target]);
-
-  dijkstra_algorithm->geodesic(short_sources,short_targets, SPath, listIndexVertexPathSP);
-
-  //std::vector<int>::iterator ite;
-  reverse(listIndexVertexPathSP.begin(),listIndexVertexPathSP.end());
-  listIndexVertexPathSP.push_back((int)target);
-
-  cout << "shortest path (index vertex) = ";
-  for (unsigned i = 0; i < listIndexVertexPathSP.size(); i++)
-    cout << listIndexVertexPathSP[i] << " " ;
-
-  cout << endl;
-
-//  for (unsigned i = 0; i < listIndexVertexPathSP.size(); i++)
-//    texOut[0].item(listIndexVertexPathSP[i]) = 1;
-//
-//  FileOut = FileOut + ".tex";
-//  Writer<TimeTexture<float> > texW(FileOut);
-//  texW << texOut;
-
-}
-
 void SulcusCorticalSnake::createDistanceTexture()
 {
 
@@ -154,41 +50,47 @@ void SulcusCorticalSnake::createDistanceTexture()
 //Compute the total snake
 TimeTexture<float> SulcusCorticalSnake::compute_snake()
 {
-//  std::cout<<"SulcusCorticalSnake : ComputeSnake"<<std::endl;
-//  TimeTexture<float> cartea(1,size);
-//  for(uint i=0; i<size; i++)
-//    if(i==n1)
-//      cartea[0].item(i)=10;
-//  else
-//    cartea[0].item(i)=0;
-//
-//  compute_curv();
-//  createDistanceTexture();
-//
-//  for(uint j=0; j<size; j++)
-//    result_total[0].item(j)=0;
+  std::cout<<"SulcusCorticalSnake : ComputeSnake"<<std::endl;
+  TimeTexture<float> cartea(1,size);
+  for(uint i=0; i<size; i++)
+    if(i==n1)
+      cartea[0].item(i)=10;
+  else
+    cartea[0].item(i)=0;
+
+  compute_curv();
+  createDistanceTexture();
+
+  for(uint j=0; j<size; j++)
+    result_total[0].item(j)=0;
 
 //  std::cout << "Curv and Dist computed, looking for extremities" << endl;
+
   int test=1;
   test=define_extremities();
 
-  std::cout<<"SulcusCorticalSnake : ComputeGeodesicPath constraint by curvature "<<std::endl;
-  //sulci constraint
-  computeShortestPath(1, n1, n2);
+  //ARN Begin
+  std::cout<<"ComputeGeodesicPath constraint by curvature (replace snake)"<<std::endl;
+  vector<int> pathIndex;
+  pathIndex = sp->shortestPathIndiceVextex(n1,n2);
 
-  for (unsigned i = 0; i < listIndexVertexPathSP.size(); i++)
-    result_total[0].item(listIndexVertexPathSP[i])=value;
+  for (unsigned i = 0; i < pathIndex.size(); i++)
+    result_total[0].item(pathIndex[i])=value;
 
   std::cout << n1 << " " << n2 << std::endl;
+  //ARN end
 
-//
-//  if(test==0)
-//      {
-//    //          std::cout << "testDefineExt=0" << std::endl;
-//    return( result_total );
-//  }
-//  //  std::cout << "n1=" << n1 << ", and n2=" << n2 << ", Moving on to finding middle point" << std::endl;
-//
+
+
+  if(test==0)
+      {
+    //          std::cout << "testDefineExt=0" << std::endl;
+    return( result_total );
+  }
+  //  std::cout << "n1=" << n1 << ", and n2=" << n2 << ", Moving on to finding middle point" << std::endl;
+
+  //CED snake begin
+
 //
 //  uint n=0;
 //
@@ -222,7 +124,7 @@ TimeTexture<float> SulcusCorticalSnake::compute_snake()
 //      result[i].item(j)=0;
 //
 //
-//  //  std::cout << "OK. Entering big loop" << std::endl;
+//    std::cout << "OK. Entering big loop" << std::endl;
 //
 //
 //  while(stop_total()==0)
@@ -315,12 +217,14 @@ TimeTexture<float> SulcusCorticalSnake::compute_snake()
 //
 //  result_total[0].item(n1)=value;
 //  result_total[0].item(n2)=value;
+//
+//
+////  Writer<Texture1d> wer1("test111T.tex");
+////  wer1.write(result);
+//
+//  return result_total;
 
-
-//  Writer<Texture1d> wer1("test111T.tex");
-//  wer1.write(result);
-
-  return result_total;
+  //CED snake end
 }
 
 
@@ -329,17 +233,17 @@ TimeTexture<float> SulcusCorticalSnake::compute_snake()
 void SulcusCorticalSnake::compute_snake_at_1_resolution()
 {
   std::map< int, std::map< int, int > > count;
-//  for(uint i=0; i<list_points.size(); i++)
-//  {
-//      std::map< int, int > loc;
-//      loc[ list_points[i] ]=0;
-//    count[i][ list_points[i] ]=0;
-//  }
+  for(uint i=0; i<list_points.size(); i++)
+  {
+      std::map< int, int > loc;
+      loc[ list_points[i] ]=0;
+    count[i][ list_points[i] ]=0;
+  }
   //  std::cout<<"compute_snake_at_1_resolution"<<endl;
   while( stop_condition_1_resolution()==0 )
   {
 
-//    std::cout<<"SulcusCorticalSnake : compute_snake_at_1_resolution : while stop_condition_1==0"<<std::endl;
+    std::cout<<"SulcusCorticalSnake : compute_snake_at_1_resolution : while stop_condition_1==0"<<std::endl;
     //updates the vertices vector
 //    cout<<"update vector!"<<endl;
     new_vector_res=list_points;
@@ -1013,7 +917,7 @@ void SulcusCorticalSnake::process_list( std::map< int, std::map< int, int > > & 
     cpt++;
 
     //run point "ind" update
-//    cout<<"Point traite="<< list_points[ind] <<endl;
+    cout<<"Point traite="<< list_points[ind] <<endl;
 //    if( cpt_points[ind] < 3 )
 //    std::cout<<"SulcusCorticalSnake : process_list : treat_list_point("<<ind<<")"<<std::endl;
 //    std::cout<<"Traitement de count["<<ind<<"]["<<list_points[ind]<<"]]="<<count[ind][ list_points[ind] ]<<std::endl;
