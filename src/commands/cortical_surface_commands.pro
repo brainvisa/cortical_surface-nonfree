@@ -31,8 +31,7 @@ PSUBDIRS = AimsConstraintCleaner \
   AimsGyriRegularization \
   AimsGroupGyri \
   AimsGeodesicPath \
-  AimsInterpolateVolumeToSurface \
-  AimsSulcalLines
+  AimsInterpolateVolumeToSurface
   
   
 
