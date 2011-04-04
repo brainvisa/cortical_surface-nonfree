@@ -22,6 +22,9 @@ int main(int argc, const char **argv)
     std::string adrMesh;
 
     std::string adrGeodesicDepth;
+    std::string adrBassinsDepthNorm;
+
+    std::string adrCurv;
 
     std::string adrRootsLon;
     std::string adrRootsLat;
@@ -43,20 +46,26 @@ int main(int argc, const char **argv)
     app.addOption( adrGeodesicDepth, "-d", "input Texture Geodesic Depth",true);
     app.alias( "--inTexGeoDepth", "-d" );
 
+    app.addOption( adrBassinsDepthNorm, "-bn", "input Texture Bassins Depth Normalized",true);
+    app.alias( "--inTexBassinsDepthNorm", "-bn" );
+
+    app.addOption( adrCurv, "-c", "input Texture Curvature",true);
+    app.alias( "--inTexCurv", "-c" );
+
     app.addOption( adrRootsLon, "-im", "input Texture Meridian Constraints");
     app.alias( "--inTexMer", "-im" );
     app.addOption( adrRootsLat, "-ip", "input Texture Parallel Constraints");
     app.alias( "--inTexPar", "-ip" );
 
-    app.addOption( adrLinesOut, "-o", "outut Texture all sulcal lines");
+    app.addOption( adrLinesOut, "-o", "outut Texture all sulcal lines",true);
     app.alias( "--outTexLines", "-o" );
 
-    app.addOption( adrBassinsOut, "-b", "outut Texture all bassins regions");
+    app.addOption( adrBassinsOut, "-b", "outut Texture all bassins regions",true);
     app.alias( "--outTexBassins", "-b" );
 
-    app.addOption( adrLonGeodesicOut, "-om", "outut Texture sulcal lines meridian constraints (longitude)");
+    app.addOption( adrLonGeodesicOut, "-om", "outut Texture sulcal lines meridian constraints (longitude)",true);
     app.alias( "--outTexMer", "-om" );
-    app.addOption( adrLatGeodesicOut, "-op", "output Texture sulcal lines parallel constraints (latitude)");
+    app.addOption( adrLatGeodesicOut, "-op", "output Texture sulcal lines parallel constraints (latitude)",true);
     app.alias( "--outTexPar", "-op" );
 
     app.addOption( strain, "-st", "strain parameter (3 by default)",true );
@@ -64,7 +73,7 @@ int main(int argc, const char **argv)
 
     app.initialize();
 
-    SulcalLinesGeodesic slg( adrMesh, adrGeodesicDepth, adrRootsLon, adrRootsLat, adrLinesOut, adrBassinsOut, adrLonGeodesicOut, adrLatGeodesicOut, strain );
+    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrBassinsDepthNorm, adrRootsLon, adrRootsLat, adrLinesOut, adrBassinsOut, adrLonGeodesicOut, adrLatGeodesicOut, strain );
     slg.run();
 
     return 0;
