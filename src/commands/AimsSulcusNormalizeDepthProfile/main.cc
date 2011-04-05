@@ -142,7 +142,7 @@ int main( int argc, const char** argv )
           uint imin=0, imax;
           for (i=0; i<=100; i++)
           {
-              fout << i << "\t" << depth[i] << "\t" << curvM[i] << "\t" << curvM2[i] << std::endl;
+              fout << i << "\t" << depth[i] << "\t" << (curvM[i]+curvM2[i])/2.0 << std::endl;
           }
           fout.close();
 
