@@ -72,7 +72,7 @@ TimeTexture<float> SulcusCorticalSnake::compute_snake()
   //ARN Begin
   std::cout<<"ComputeGeodesicPath constraint by curvature (replace snake)"<<std::endl;
   vector<int> pathIndex;
-  pathIndex = sp->shortestPathIndiceVextex(n1,n2);
+  pathIndex = sp->shortestPath_1_1_ind(n1,n2);
 
   for (unsigned i = 0; i < pathIndex.size(); i++)
     result_total[0].item(pathIndex[i])=value;

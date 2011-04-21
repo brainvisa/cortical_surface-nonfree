@@ -2,10 +2,10 @@
  *  Copyright (C) 2000-2004 CEA
  *
  *  This software and supporting documentation were developed by
- *  	CEA/DSV/SHFJ
- *  	4 place du General Leclerc
- *  	91401 Orsay cedex
- *  	France
+ *    CEA/DSV/SHFJ
+ *    4 place du General Leclerc
+ *    91401 Orsay cedex
+ *    France
  */
 
 
@@ -26,9 +26,10 @@
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
 
-#include <aims/geodesicpath/geodesic_algorithm_dijkstra.h>
-#include <aims/geodesicpath/geodesic_mesh.h>
-#include <aims/geodesicpath/geodesic_mesh_elements.h>
+//#include <aims/geodesicpath/geodesic_algorithm_dijkstra.h>
+//#include <aims/geodesicpath/geodesic_mesh.h>
+//#include <aims/geodesicpath/geodesic_mesh_elements.h>
+#include <aims/geodesicpath/geodesicPath.h>
 
 #include <iostream>
 #include <fstream>
@@ -42,51 +43,51 @@ using namespace std;
 
 //namespace aims
 //{
-	class SulcalLinesGeodesic
-	{
-		public:
-	
+  class SulcalLinesGeodesic
+  {
+    public:
+
       //Parametres pour l'execution
-			string _adrMesh;
-			string _adrGeodesicDepth;
-			string _adrBassinsDepthNorm;
-			string _adrCurv;
+      string _adrMesh;
+      string _adrGeodesicDepth;
+      string _adrBassinsDepthNorm;
+      string _adrCurv;
 
-			string _adrRootsLat;
-			string _adrRootsLon;
+      string _adrRootsLat;
+      string _adrRootsLon;
 
-			string _adrBassins;
-			string _adrLines;
+      string _adrBassins;
+      string _adrLines;
 
-			string _adrLatGeodesicOut;
-			string _adrLonGeodesicOut;
-					
-			int _strain;
-			
-			AimsSurfaceTriangle _mesh;
+      string _adrLatGeodesicOut;
+      string _adrLonGeodesicOut;
 
-			TimeTexture<float> _geoDepth;
+      int _strain;
 
-			std::vector<std::set<uint> > _neigh;
+      AimsSurfaceTriangle _mesh;
 
-			TimeTexture<short> _texProbaPath;
+      TimeTexture<float> _geoDepth;
 
-			TimeTexture<short> _rootsLon;
-			TimeTexture<short> _rootsLat;
+      std::vector<std::set<uint> > _neigh;
 
-			TimeTexture<float> _texCurv;
-			TimeTexture<float> _texCurvSeuil;
+      TimeTexture<short> _texProbaPath;
 
-			TimeTexture<short> _texBassins;
-			TimeTexture<float> _texBassinsDepthNorm;
+      TimeTexture<short> _rootsLon;
+      TimeTexture<short> _rootsLat;
 
-			TimeTexture<short> _texBassinsLat;
-			TimeTexture<short> _texBassinsLon;
+      TimeTexture<float> _texCurv;
+      TimeTexture<float> _texCurvSeuil;
 
-			geodesic::Mesh _meshSPc;
-			geodesic::Mesh _meshSP;
+      TimeTexture<short> _texBassins;
+      TimeTexture<float> _texBassinsDepthNorm;
 
-			geodesic::GeodesicAlgorithmDijkstra *dijkstra_algorithm;
+      TimeTexture<short> _texBassinsLat;
+      TimeTexture<short> _texBassinsLon;
+
+      geodesic::Mesh _meshSPc;
+      geodesic::Mesh _meshSP;
+
+      geodesic::GeodesicAlgorithmDijkstra *dijkstra_algorithm;
 
       vector<double> _pointsSP;
       vector<unsigned> _facesSP;
@@ -102,32 +103,32 @@ using namespace std;
 
       ofstream myHistoLat;
 
-			//Constructor
-			SulcalLinesGeodesic( string & adrMesh,string & adrCurv, string & adrGeodesicDepth, string & adrBassinsDepthNorm, string & adrRootsLon,
+      //Constructor
+      SulcalLinesGeodesic( string & adrMesh,string & adrCurv, string & adrGeodesicDepth, string & adrBassinsDepthNorm, string & adrRootsLon,
           string & adrRootsLat, std::string & _adrLines, string & _adrBassins, string & adrLonGeodesicOut, string & adrLatGeodesicOut,
-			    int strain );
-			
-			~SulcalLinesGeodesic();
+          int strain );
 
-			//public methods
-			void run();
+      ~SulcalLinesGeodesic();
 
-		private :
-			//private methods
-			void computeGraphDijkstra (AimsSurfaceTriangle surface, int constraintType,int strain);
-			double computeShortestPathSulci(unsigned source, unsigned target, vector<geodesic::SurfacePoint> & SPath, vector<int> &listIndexVertexPathSP );
-			double computeDepthShortestPathSulci(unsigned source, unsigned target, vector<geodesic::SurfacePoint> & SPath, vector<int> &listIndexVertexPathSP );
+      //public methods
+      void run();
 
-			double saveHistoTemp(unsigned source, unsigned target);
+    private :
+      //private methods
+      void computeGraphDijkstra (AimsSurfaceTriangle surface, int constraintType,int strain);
+      double computeShortestPathSulci(unsigned source, unsigned target, vector<geodesic::SurfacePoint> & SPath, vector<int> &listIndexVertexPathSP );
+      double computeDepthShortestPathSulci(unsigned source, unsigned target, vector<geodesic::SurfacePoint> & SPath, vector<int> &listIndexVertexPathSP );
 
-	    void floodFillIter(int indexVertex, float newTextureValue, float oldTextureValue);
-			void bassinsDetect();
-			void bassinsDetect2();
-			void bassinsDetect3();
-			vector<int> maxGeodesicDistance(vector<int> points, int constraint, int* s , int* d );
-			vector<int> maxGeodesicDistanceDepthStable(vector<int> points, int constraint, int* s, int *d);
+      double saveHistoTemp(unsigned source, unsigned target);
 
-	};
+      void floodFillIter(int indexVertex, float newTextureValue, float oldTextureValue);
+      void bassinsDetect();
+      void bassinsDetect2();
+      void bassinsDetect3();
+      vector<int> maxGeodesicDistance(vector<int> points, int constraint, int* s , int* d );
+      vector<int> maxGeodesicDistanceDepthStable(vector<int> points, int constraint, int* s, int *d);
+
+  };
 
 
 #endif
