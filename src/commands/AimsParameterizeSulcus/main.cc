@@ -579,7 +579,7 @@ int main( int argc, const char** argv )
       	  {
       		  i=*ve1;
       		  j=*ve2;
-      		  l=spGeo.shortestPathLength(i,j);
+      		  l=spGeo.shortestPath_1_1_len(i,j);
       		  if (l>lmax)
       		  {
       			  lmax=l;
@@ -625,8 +625,8 @@ int main( int argc, const char** argv )
       cerr << "OK (index " << i1 << " and " << i2 << ")" << endl;
       cout << "Computing shortest gyri path" << endl;
 
-      listIndexVertexPathSP = spGyri.shortestPathIndiceVextex(i1,i2);
-      l=spGyri.shortestPathLength(i1,i2);
+      listIndexVertexPathSP = spGyri.shortestPath_1_1_ind(i1,i2);
+      l=spGyri.shortestPath_1_1_len(i1,i2);
       for (i = 0; i < listIndexVertexPathSP.size(); i++)
     	  extremities[0].item(listIndexVertexPathSP[i]) = 300;
 
@@ -643,8 +643,8 @@ int main( int argc, const char** argv )
       botLine[0]=MeshSkeletization<short> ( surface[0], botClosing[0], short(RIDGE_BOT), short(0), neighbourso );
 
       // pour choisir le ridge on va faire un plus court chemin contraint par un point des squeletes.
-      // pour Žviter de se taper une branche on va tirer des points au hasard, prendre les plus courts chemins,
-      // et choper le plus court. Ca Ž"vite de passer par une branche meis ca permet de passer en haut ou en bas
+      // pour ï¿½viter de se taper une branche on va tirer des points au hasard, prendre les plus courts chemins,
+      // et choper le plus court. Ca ï¿½"vite de passer par une branche meis ca permet de passer en haut ou en bas
       // au besoin.
       // pour robustifier on va essayer de s'assurer que les points
       // qu'on tire sont plutot dans la section centrale du squelette
@@ -658,7 +658,7 @@ int main( int argc, const char** argv )
     	  {
     		  if ((i!=pS)&&(i!=pN))
     		  {
-    			  float ratio=spGyri.shortestPathLength(i,pS)/spGyri.shortestPathLength(i,pN);
+    			  float ratio=spGyri.shortestPath_1_1_len(i,pS)/spGyri.shortestPath_1_1_len(i,pN);
     			  if ((ratio<2)&&(ratio>0.5))
     					  topSkel.push_back(i);
     		  }
@@ -667,7 +667,7 @@ int main( int argc, const char** argv )
       	  {
     		  if ((i!=pS)&&(i!=pN))
     		  {
-    			  float ratio=spGyri.shortestPathLength(i,pS)/spGyri.shortestPathLength(i,pN);
+    			  float ratio=spGyri.shortestPath_1_1_len(i,pS)/spGyri.shortestPath_1_1_len(i,pN);
     			  if ((ratio<2)&&(ratio>0.5))
     				  botSkel.push_back(i);
     		  }
@@ -681,7 +681,7 @@ int main( int argc, const char** argv )
       for (skelIt=topSkel.begin(); skelIt != topSkel.end(); ++skelIt)
       {
     	  i=*skelIt;
-    	  l=spGyri.shortestPathLength(pS,i) + spGyri.shortestPathLength(i,pN);
+    	  l=spGyri.shortestPath_1_1_len(pS,i) + spGyri.shortestPath_1_1_len(i,pN);
     	  if (l<lmin)
     	  {
     		  lmin=l;
@@ -692,7 +692,7 @@ int main( int argc, const char** argv )
       for (skelIt=botSkel.begin(); skelIt != botSkel.end(); ++skelIt)
        {
      	  i=*skelIt;
-     	  l=spGyri.shortestPathLength(pS,i) + spGyri.shortestPathLength(i,pN);
+     	  l=spGyri.shortestPath_1_1_len(pS,i) + spGyri.shortestPath_1_1_len(i,pN);
      	  if (l<lmin)
      	  {
      		  lmin=l;
@@ -703,14 +703,14 @@ int main( int argc, const char** argv )
 
       TimeTexture<short> topRidge(1,ns), botRidge(1,ns);
 
-      listIndexVertexPathSP = spGyri.shortestPathIndice3Vextex(pS,candT, pN);
+      listIndexVertexPathSP = spGyri.shortestPath_1_1_1_ind(pS,candT, pN);
       for (i = 0; i < listIndexVertexPathSP.size(); i++)
       {
     	  topRidge[0].item(listIndexVertexPathSP[i]) = RIDGE_TOP;
     	  extremities[0].item(listIndexVertexPathSP[i]) = 500;
       }
 
-      listIndexVertexPathSP = spGyri.shortestPathIndice3Vextex(pS,candB, pN);
+      listIndexVertexPathSP = spGyri.shortestPath_1_1_1_ind(pS,candB, pN);
       for (i = 0; i < listIndexVertexPathSP.size(); i++)
       {
     	  botRidge[0].item(listIndexVertexPathSP[i]) = RIDGE_BOT;
