@@ -46,7 +46,7 @@ class SulcalLinesGeodesic
 
     string _adrCurv;
     string _adrGeodesicDepth;
-    string _adrBassinsDepthNorm;
+    //string _adrBassinsDepthNorm;
 
     int _strain;
     int _extremeties_method;
@@ -70,6 +70,8 @@ class SulcalLinesGeodesic
     TimeTexture<float> _texCurv;
     TimeTexture<float> _geoDepth;
     TimeTexture<float> _geoDepthNorm;
+
+
 
 //    TimeTexture<float> _texCurvSeuil;
 //
@@ -106,8 +108,7 @@ class SulcalLinesGeodesic
     void run();
 
   private :
-
-    void segmentationSulcalBasins (TimeTexture<float> &texIn,TimeTexture<short> &texBasins,map<int,set<int> > &mapBasins,float threshold, int ESsize);
+    void segmentationSulcalBasins (TimeTexture<float> &texIn,TimeTexture<short> &texBasins,map<int,set<int> > &mapBasins,float threshold, int close, int open);
 
     void writeShortTexture (string name,TimeTexture<short> &out);
     void writeFloatTexture (string name,TimeTexture<float> &out);
@@ -123,10 +124,8 @@ class SulcalLinesGeodesic
 
     void normalizeDepthMap (TimeTexture<float> &depth, TimeTexture<float> &depthNorm, map<int,set<int> > &mapBasins);
 
-    void sulcalLinesExtract_projection();
-
-
-    void sulcalLinesExtract_probability();
+    void sulcalLinesExtract_projection(map<int,set<int> > &mapBasins, TimeTexture<short> &texBasins);
+    void sulcalLinesExtract_probability(map<int,set<int> > &mapBasins, TimeTexture<short> &texBasins);
 
 };
 

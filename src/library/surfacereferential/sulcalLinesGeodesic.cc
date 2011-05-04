@@ -65,34 +65,44 @@ SulcalLinesGeodesic::SulcalLinesGeodesic(  string & adrMesh,string & adrCurv, st
 
 SulcalLinesGeodesic::~SulcalLinesGeodesic()
 {
+
 }
 
 void SulcalLinesGeodesic::run()
 {
   std::cout << "START : ";
 
-  std::cout << "Normalize Geodesic Depth Texture with sulcal basins " << endl;
+  std::cout << "Sulcal basins segmentation " << endl;
 
   TimeTexture<short> texBasins(1, _mesh.vertex().size());
+
   map<int,set<int> > mapBasins;
 
-  segmentationSulcalBasins (_texCurv, texBasins, mapBasins,0.0,1);
+  segmentationSulcalBasins (_texCurv, texBasins, mapBasins,0.0,1,2);
 
-  _geoDepthNorm = TimeTexture<float>(1, _mesh.vertex().size());
-  normalizeDepthMap (_geoDepth, _geoDepthNorm, mapBasins);
+  std::cout << "Save connected components texture : ";
+  writeShortTexture("basins.tex",texBasins);
 
-  std::cout << "Save Normalize Geodesic Depth texture : ";
-  writeFloatTexture("depth_norm.tex",_geoDepthNorm);
+  if (_adrGeodesicDepth!="")
+  {
+    std::cout << "Normalize Geodesic Depth Texture with sulcal basins " << endl;
+
+    _geoDepthNorm = TimeTexture<float>(1, _mesh.vertex().size());
+    normalizeDepthMap (_geoDepth, _geoDepthNorm, mapBasins);
+
+    std::cout << "Save Normalize Geodesic Depth texture : ";
+    writeFloatTexture("depth_norm.tex",_geoDepthNorm);
+  }
 
   switch (_extremeties_method)
   {
   case 1 :
     cout << "extraction of extremities method : projection crop by basins" << endl;
-    sulcalLinesExtract_projection();
+    sulcalLinesExtract_projection(mapBasins,texBasins);
     break;
   case 2 :
     cout << "extraction of extremities method : map of probability" << endl ;
-    sulcalLinesExtract_probability();
+    sulcalLinesExtract_probability(mapBasins,texBasins);
     break;
   }
 
@@ -171,7 +181,7 @@ void SulcalLinesGeodesic::texBinarizeF2S(TimeTexture<float> &texIn, TimeTexture<
 {
   for (uint i = 0; i < texIn[0].nItem(); i++)
   {
-    if (texIn[0].item(i) < threshold)
+    if (texIn[0].item(i) <= threshold)
       texOut[0].item(i) = inf;
     else
       texOut[0].item(i) = sup;
@@ -182,7 +192,7 @@ void SulcalLinesGeodesic::texBinarizeS2S(TimeTexture<short> &texIn, TimeTexture<
 {
   for (uint i = 0; i < texIn[0].nItem(); i++)
   {
-    if (texIn[0].item(i) < threshold)
+    if (texIn[0].item(i) <= threshold)
       texOut[0].item(i) = inf;
     else
       texOut[0].item(i) = sup;
@@ -318,17 +328,22 @@ void SulcalLinesGeodesic::computeLongestPathBasins (TimeTexture<short> &roots, T
     for (; it!=(mit->second).end(); it++)
       indexTemp.push_back (*it);
 
-    //on récupère la valeur de la contrainte
-    if (!indexTemp.empty())
+    //si il y a plus d'un point dans le bassin
+    if (indexTemp.size()>1)
     {
+      //on récupère la valeur de la contrainte
       constraintValue = roots.item( *(indexTemp.begin()) );
 
+      cout << "value " << constraintValue << endl;
       //on calcule le plus long chemin
+      pathTemp.clear();
       pathTemp = sp.longestPath_ind(indexTemp, &source, &target);
 
       for (int i = 0; i < pathTemp.size(); i++)
         out[0].item(pathTemp[i]) = constraintValue;
     }
+    else
+      cout << "not enough points ! " << endl;
 
   }
 
@@ -387,18 +402,23 @@ void SulcalLinesGeodesic::normalizeDepthMap (TimeTexture<float> &depth, TimeText
 
  }
 
-void SulcalLinesGeodesic::segmentationSulcalBasins (TimeTexture<float> &texIn,TimeTexture<short> &texBasins,map<int,set<int> > &mapBasins,float threshold, int ESsize)
+void SulcalLinesGeodesic::segmentationSulcalBasins (TimeTexture<float> &texIn,TimeTexture<short> &texBasins,map<int,set<int> > &mapBasins,float threshold, int close, int open)
 {
 //binarisation texture de courbure < 0.0
-texBinarizeF2S(texIn, texBasins, threshold , -1, 0);
+texBinarizeF2S(texIn, texBasins, threshold , 1, 0);
+
+TimeTexture<short> texBasinsDil(1, _mesh.vertex().size() );
+TimeTexture<short> texBasinsErode(1, _mesh.vertex().size() );
 
 //fermeture des bassins
-TimeTexture<short> texBasinsDil(1, _mesh.vertex().size() );
-texBasinsDil[0]=MeshDilation<short>( _mesh[0], texBasins[0], short(0), -1, ESsize, true);
-TimeTexture<short> texBasinsErode(1, _mesh.vertex().size() );
-texBasinsErode[0]=MeshErosion<short>( _mesh[0], texBasinsDil[0], short(0), -1, ESsize , true);
+texBasinsDil[0]=MeshDilation<short>( _mesh[0], texBasins[0], short(0), -1, close, true);
+texBasinsErode[0]=MeshErosion<short>( _mesh[0], texBasinsDil[0], short(0), -1, close , true);
 
-texBinarizeS2S(texBasinsErode, texBasins, 0 ,-1 ,0);
+//ouverture des bassins
+texBasinsDil[0]=MeshErosion<short>( _mesh[0], texBasinsErode[0], short(0), -1, open , true);
+texBasinsErode[0]=MeshDilation<short>( _mesh[0], texBasinsDil[0], short(0), -1, open, true);
+
+texBinarizeS2S(texBasinsErode, texBasins, 0 ,0 ,-1);
 
 // étiquetage des composantes connexes
 texConnectedComponent(texBasins, mapBasins);
@@ -406,16 +426,8 @@ cout << mapBasins.size() << " Basins found" << endl;
 }
 
 
-void SulcalLinesGeodesic::sulcalLinesExtract_projection()
+void SulcalLinesGeodesic::sulcalLinesExtract_projection(map<int,set<int> > &mapBasins, TimeTexture<short> &texBasins)
 {
-  TimeTexture<short> texBasins(1, _mesh.vertex().size());
-  map<int,set<int> > mapBasins;
-
-  segmentationSulcalBasins (_texCurv, texBasins, mapBasins,0.0,1);
-
-  std::cout << "Save connected components texture : ";
-  writeShortTexture("basins.tex",texBasins);
-
   //liste les projections roots et conservent seulement celles inclues dans les bassins
   set<int> listIndexLon,listIndexLat;
   listRootsProjections(texBasins,listIndexLat,listIndexLon);
@@ -445,23 +457,9 @@ void SulcalLinesGeodesic::sulcalLinesExtract_projection()
   writeShortTexture("lon_sulcal_lines.tex",texSulcalinesLon);
 }
 
-void SulcalLinesGeodesic::sulcalLinesExtract_probability()
+void SulcalLinesGeodesic::sulcalLinesExtract_probability(map<int,set<int> > &mapBasins, TimeTexture<short> &texBasins)
 {
-  TimeTexture<short> texBasins(1, _mesh.vertex().size());
-  map<int,set<int> > mapBasins;
 
-  segmentationSulcalBasins (_texCurv, texBasins, mapBasins,0.0,1);
-
-  std::cout << "Save connected components texture : ";
-  size_t found;
-  found = _adrRootsLon.find_last_of(".");
-  string adrBasins = _adrRootsLon.substr(0,found-9) + "basins.tex";
-  Writer<TimeTexture<short> > texWB(adrBasins);
-  texWB << texBasins;
-  cout << adrBasins << " done" << endl;
-
-  //
-  //
   //  //on dilate les roots
   //
   //   TimeTexture<short> texProjectionLatDil(1, _mesh.vertex().size() );
