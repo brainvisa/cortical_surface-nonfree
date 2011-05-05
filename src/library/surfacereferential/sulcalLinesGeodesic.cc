@@ -337,7 +337,7 @@ void SulcalLinesGeodesic::computeLongestPathBasins (TimeTexture<short> &roots, T
       cout << "value " << constraintValue << endl;
       //on calcule le plus long chemin
       pathTemp.clear();
-      pathTemp = sp.longestPath_ind(indexTemp, &source, &target);
+      pathTemp = sp.longestPath_N_N_ind(indexTemp, &source, &target);
 
       for (int i = 0; i < pathTemp.size(); i++)
         out[0].item(pathTemp[i]) = constraintValue;
@@ -457,51 +457,138 @@ void SulcalLinesGeodesic::sulcalLinesExtract_projection(map<int,set<int> > &mapB
   writeShortTexture("lon_sulcal_lines.tex",texSulcalinesLon);
 }
 
+void SulcalLinesGeodesic::dilationRoots(TimeTexture<short> &texLatDil,TimeTexture<short> &texLonDil,int size)
+{
+  texLatDil[0]=MeshDilation<short>( _mesh[0], _rootsLat[0], short(0), -1, size, false);
+  texLonDil[0]=MeshDilation<short>( _mesh[0], _rootsLon[0], short(0), -1, size, false);
+}
+
+void SulcalLinesGeodesic::interRootsDilBasins(TimeTexture<short> &texBasins,TimeTexture<short> &texDil,TimeTexture<short> &texInter)
+{
+  for (uint i = 0; i < _mesh.vertex().size(); i++)
+    if (texBasins[0].item(i)!=0 && texDil[0].item(i) > 0)
+      texInter[0].item(i) = texDil[0].item(i);
+}
+
+void SulcalLinesGeodesic::cleanBasins(map<int,set<int> > &mapBasins,TimeTexture<short> &texBasins,int nbPoint)
+{
+  map<int,set<int> >::iterator it;
+  set<int>::iterator its;
+
+  for ( it=mapBasins.begin() ; it != mapBasins.end(); it++ )
+  {
+  its = ((*it).second).begin();
+
+  if ( ((*it).second).size() < nbPoint)
+    {
+    //on efface tous les vertex de la texture texBasins groupés dans des bassins qui contiennent moins de nbPoint
+    for ( ; its != ((*it).second).end(); its++ )
+      texBasins[0].item(*its) = 0;
+
+    // on l'enlève ensuite de la map des bassins
+    mapBasins.erase ((*it).first);
+    }
+  }
+}
+
+void SulcalLinesGeodesic::contourBasins(map<int,set<int> > &mapBasins,TimeTexture<short> &texBasins,map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins)
+{
+  map<int,set<int> >::iterator it;
+  set<int>::iterator its;
+  set<int> listIndexTemp;
+  int value;
+
+  mapContourBasins.clear();
+
+  //pour tous les bassins
+  for ( it=mapBasins.begin() ; it != mapBasins.end(); it++ )
+  {
+    listIndexTemp.clear();
+
+    //pour tous les points its du bassin it
+    for (its = ((*it).second).begin() ; its != ((*it).second).end(); its++ )
+    {
+      //on récupère l'étiquette du bassin
+      value = texBasins[0].item(*its);
+
+      set<uint> voisins = _neigh[*its];
+      set<uint>::iterator voisIt = voisins.begin();
+
+      //on parcourt tous les voisins du sommet, si un voisin a une valeur differente alors le point est un contour
+      for (; voisIt != voisins.end(); voisIt++)
+      {
+        if (texBasins[0].item(*voisIt) != value)
+        {
+          texContourBasins[0].item(*its) = value;
+          listIndexTemp.insert(*its);
+          continue;
+        }
+      }
+    }
+
+    mapContourBasins.insert (pair<int,set<int> >(value, listIndexTemp));
+  }
+}
+
 void SulcalLinesGeodesic::sulcalLinesExtract_probability(map<int,set<int> > &mapBasins, TimeTexture<short> &texBasins)
 {
+  TimeTexture<short> texTemp(1, _mesh.vertex().size() );
 
-  //  //on dilate les roots
-  //
-  //   TimeTexture<short> texProjectionLatDil(1, _mesh.vertex().size() );
-  //   texProjectionLatDil[0]=MeshDilation<short>( _mesh[0], _rootsLat[0], short(0), -1, 6, false);
-  //   TimeTexture<short> texProjectionLonDil(1, _mesh.vertex().size() );
-  //   texProjectionLonDil[0]=MeshDilation<short>( _mesh[0], _rootsLon[0], short(0), -1, 6, false);
-  //
-  //   string lats = "texLatRootsDilate.tex";
-  //   Writer<TimeTexture<short> > texWLats(lats);
-  //   texWLats << texProjectionLatDil;
-  //
-  //   string lons = "texLonRootsDilate.tex";
-  //   Writer<TimeTexture<short> > texWLons(lons);
-  //   texWLons << texProjectionLonDil;
-  //
-  //
-  //   // on fait les intersections avec les basins
-  //
-  //
-  //    TimeTexture<short> texExtremiteLat(1, _mesh.vertex().size() );
-  //    TimeTexture<short> texExtremiteLon(1, _mesh.vertex().size() );
-  //
-  //    vector< list<unsigned> > neighbourso( _mesh.vertex().size());
-  //    neighbourso = AimsMeshOrderNode(_mesh[0]);
-  //
-  //    for (uint i = 0; i < _mesh.vertex().size(); i++)
-  //    {
-  //      if (_texbasins[0].item(i)!=0)
-  //      {
-  //        //si il y a une intersection avec la texture lat dilatée alors on attribue le label de la région
-  //        if (texProjectionLatDil[0].item(i) > 0)
-  //        {
-  //        texExtremiteLat[0].item(i) = texProjectionLatDil[0].item(i);
-  //        //_listIndexLat.insert(i);
-  //        }
-  //        if (texProjectionLonDil[0].item(i) > 0)
-  //        {
-  //        texExtremiteLon[0].item(i) = texProjectionLonDil[0].item(i);
-  //        //_listIndexLon.insert(i);
-  //        }
-  //      }
-  //    }
+  //on dilate les roots
+  TimeTexture<short> texProjectionLatDil(1, _mesh.vertex().size() );
+  TimeTexture<short> texProjectionLonDil(1, _mesh.vertex().size() );
+
+  dilationRoots(texProjectionLatDil,texProjectionLonDil,5);
+
+  writeShortTexture("lat_roots_dil.tex",texProjectionLatDil);
+  writeShortTexture("lon_roots_dil.tex",texProjectionLonDil);
+
+  // on calcule les intersections avec les basins
+  TimeTexture<short> texInterRootsBasinsLat(1, _mesh.vertex().size() );
+  TimeTexture<short> texInterRootsBasinsLon(1, _mesh.vertex().size() );
+
+  interRootsDilBasins(texBasins,texProjectionLatDil,texInterRootsBasinsLat);
+  interRootsDilBasins(texBasins,texProjectionLonDil,texInterRootsBasinsLon);
+
+  // étiquetage des composantes connexes
+  map<int,set<int> > mapBasinsLat;
+  map<int,set<int> > mapBasinsLon;
+
+  texBinarizeS2S(texInterRootsBasinsLat, texTemp, 0 ,0 ,-1);
+  texConnectedComponent(texTemp, mapBasinsLat);
+  texBinarizeS2S(texInterRootsBasinsLon, texTemp, 0 ,0 ,-1);
+  texConnectedComponent(texTemp, mapBasinsLon);
+
+  cout << mapBasinsLat.size() << " Basins Lat found" << endl;
+  cout << mapBasinsLon.size() << " Basins Lon found" << endl;
+
+  cleanBasins(mapBasinsLat,texInterRootsBasinsLat,15);
+  cleanBasins(mapBasinsLon,texInterRootsBasinsLon,15);
+
+  cout << "after cleaning" << endl;
+
+  cout << mapBasinsLat.size() << " Basins Lat found" << endl;
+  cout << mapBasinsLon.size() << " Basins Lon found" << endl;
+
+  writeShortTexture("lat_inter_roots_dil.tex",texInterRootsBasinsLat);
+  writeShortTexture("lon_inter_roots_dil.tex",texInterRootsBasinsLon);
+
+  TimeTexture<short> texContourBasinsLat(1, _mesh.vertex().size() );
+  TimeTexture<short> texContourBasinsLon(1, _mesh.vertex().size() );
+
+  map<int,set<int> > mapContourBasinsLat;
+  map<int,set<int> > mapContourBasinsLon;
+
+  contourBasins(mapBasinsLat,texInterRootsBasinsLat,mapContourBasinsLat, texContourBasinsLat);
+  contourBasins(mapBasinsLon,texInterRootsBasinsLon,mapContourBasinsLon, texContourBasinsLon);
+
+  writeShortTexture("lat_contour_basins.tex",texContourBasinsLat);
+  writeShortTexture("lon_contour_basins.tex",texContourBasinsLon);
+
+//pour la squeletisation
+//  vector< list<unsigned> > neighbourso( _mesh.vertex().size());
+//  neighbourso = AimsMeshOrderNode(_mesh[0]);
+
   //
   //
   //

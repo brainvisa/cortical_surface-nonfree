@@ -125,6 +125,12 @@ class SulcalLinesGeodesic
     void normalizeDepthMap (TimeTexture<float> &depth, TimeTexture<float> &depthNorm, map<int,set<int> > &mapBasins);
 
     void sulcalLinesExtract_projection(map<int,set<int> > &mapBasins, TimeTexture<short> &texBasins);
+
+    void dilationRoots(TimeTexture<short> &texLatDil,TimeTexture<short> &texLonDil,int size);
+    void interRootsDilBasins(TimeTexture<short> &texBasins,TimeTexture<short> &texDil,TimeTexture<short> &texInter);
+    void cleanBasins(map<int,set<int> > &mapBasins,TimeTexture<short> &texBasins,int nbPoint);
+    void contourBasins(map<int,set<int> > &mapBasins,TimeTexture<short> &texBasins,map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins);
+
     void sulcalLinesExtract_probability(map<int,set<int> > &mapBasins, TimeTexture<short> &texBasins);
 
 };
