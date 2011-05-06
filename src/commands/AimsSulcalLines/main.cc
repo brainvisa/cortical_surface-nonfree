@@ -25,17 +25,10 @@ int main(int argc, const char **argv)
     string adrRootsLat;
 
     int extremeties_method = 1;
-    int segmentation_method = 1;
+    int constraint_type = 1;
 
     string adrCurv = "";
     string adrGeodesicDepth = "";
-
-//    std::string adrLinesOut;
-//    std::string adrLinesLonOut;
-//    std::string adrLinesLatOut;
-//
-//    std::string adrProbaLatOut;
-//    std::string adrProbaLonOut;
 
 	  int strain = 3;
 
@@ -59,8 +52,8 @@ int main(int argc, const char **argv)
     app.addOption( adrGeodesicDepth, "-d", "input Texture Geodesic Depth",true);
     app.alias( "--inTexGeoDepth", "-d" );
 
-    app.addOption( segmentation_method, "-s", "segmentation method :\n1 : on curvature map (by default)\n2 : on depth map\n",true);
-    app.alias( "--inSegmentation", "-s" );
+    app.addOption( constraint_type, "-s", "constraint type (shortest path) :\n1 : on curvature map (by default)\n2 : on depth map\n",true);
+    app.alias( "--inConstraint", "-s" );
 
     app.addOption( strain, "-st", "strain parameter (3 by default)",true );
     app.alias( "--strain", "-st" );
@@ -84,7 +77,7 @@ int main(int argc, const char **argv)
 
     app.initialize();
 
-    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, segmentation_method, strain );
+    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, constraint_type, strain );
     slg.run();
 
     return 0;
