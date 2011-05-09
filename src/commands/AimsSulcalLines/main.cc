@@ -19,61 +19,73 @@ int main(int argc, const char **argv)
 {
   try
   {
-    std::string adrMesh;
+    string adrMesh;
 
-    std::string adrGeodesicDepth;
-    std::string adrBassinsDepthNorm;
+    string adrRootsLon;
+    string adrRootsLat;
 
-    std::string adrCurv;
+    int extremeties_method = 1;
+    int constraint_type = 1;
 
-    std::string adrRootsLon;
-    std::string adrRootsLat;
-
-    std::string adrLinesOut;
-    std::string adrBassinsOut;
-
-    std::string adrLonGeodesicOut;
-    std::string adrLatGeodesicOut;
+    string adrCurv = "";
+    string adrGeodesicDepth = "";
 
 	  int strain = 3;
+	  float proba = 0.4;
+
+	  bool save = false;
 
     AimsSurfaceTriangle mesh;
     AimsApplication     app( argc, argv, "Cortical Sulcal Lines (for cortical surface coordinate system)");
 
-    app.addOption( adrMesh, "-m", "input Mesh");
-    app.alias( "--inMesh", "-m" );
+    app.addOption( adrMesh, "-i", "input Mesh");
+    app.alias( "--inMesh", "-i" );
+
+    app.addOption( adrRootsLon, "-lon", "input Texture Longitude Constraints");
+    app.alias( "--inTexLon", "-lon" );
+    app.addOption( adrRootsLat, "-lat", "input Texture Latitude Constraints");
+    app.alias( "--inTexLat", "-lat" );
+
+    app.addOption( extremeties_method, "-m", "extraction of extremities method :\n1 : projection crop by basins (by default)\n2 : map of probability\n",true);
+    app.alias( "--inMethod", "-m" );
+
+    app.addOption( adrCurv, "-c", "input Texture Curvature (barycenter curvature by default)",true);
+    app.alias( "--inTexCurv", "-c" );
 
     app.addOption( adrGeodesicDepth, "-d", "input Texture Geodesic Depth",true);
     app.alias( "--inTexGeoDepth", "-d" );
 
-    app.addOption( adrBassinsDepthNorm, "-bn", "input Texture Bassins Depth Normalized",true);
-    app.alias( "--inTexBassinsDepthNorm", "-bn" );
-
-    app.addOption( adrCurv, "-c", "input Texture Curvature",true);
-    app.alias( "--inTexCurv", "-c" );
-
-    app.addOption( adrRootsLon, "-im", "input Texture Meridian Constraints");
-    app.alias( "--inTexMer", "-im" );
-    app.addOption( adrRootsLat, "-ip", "input Texture Parallel Constraints");
-    app.alias( "--inTexPar", "-ip" );
-
-    app.addOption( adrLinesOut, "-o", "outut Texture all sulcal lines",true);
-    app.alias( "--outTexLines", "-o" );
-
-    app.addOption( adrBassinsOut, "-b", "outut Texture all bassins regions",true);
-    app.alias( "--outTexBassins", "-b" );
-
-    app.addOption( adrLonGeodesicOut, "-om", "outut Texture sulcal lines meridian constraints (longitude)",true);
-    app.alias( "--outTexMer", "-om" );
-    app.addOption( adrLatGeodesicOut, "-op", "output Texture sulcal lines parallel constraints (latitude)",true);
-    app.alias( "--outTexPar", "-op" );
+    app.addOption( constraint_type, "-t", "constraint type (shortest path) :\n1 : on curvature map (by default)\n2 : on depth map\n",true);
+    app.alias( "--inConstraint", "-t" );
 
     app.addOption( strain, "-st", "strain parameter (3 by default)",true );
     app.alias( "--strain", "-st" );
 
+    app.addOption( proba, "-p", "threshold of probability (0.4 by default)",true );
+    app.alias( "--proba", "-p" );
+
+    app.addOption( save, "-s", "save all textures", true );
+    app.alias( "--save", "-s" );
+
+//    app.addOption( adrBassinsDepthNorm, "-bn", "input Texture Bassins Depth Normalized",true);
+//    app.alias( "--inTexBassinsDepthNorm", "-bn" );
+
+//    app.addOption( adrLinesOut, "-o", "outut Texture all sulcal lines",true);
+//    app.alias( "--outTexLines", "-o" );
+//
+//    app.addOption( adrBassinsOut, "-b", "outut Texture all bassins regions",true);
+//    app.alias( "--outTexBassins", "-b" );
+//
+//    app.addOption( adrLonGeodesicOut, "-om", "outut Texture sulcal lines meridian constraints (longitude)",true);
+//    app.alias( "--outTexMer", "-om" );
+//    app.addOption( adrLatGeodesicOut, "-op", "output Texture sulcal lines parallel constraints (latitude)",true);
+//    app.alias( "--outTexPar", "-op" );
+//
+
+
     app.initialize();
 
-    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrBassinsDepthNorm, adrRootsLon, adrRootsLat, adrLinesOut, adrBassinsOut, adrLonGeodesicOut, adrLatGeodesicOut, strain );
+    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, constraint_type, strain, proba, save );
     slg.run();
 
     return 0;
