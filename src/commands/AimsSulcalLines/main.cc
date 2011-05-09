@@ -31,6 +31,9 @@ int main(int argc, const char **argv)
     string adrGeodesicDepth = "";
 
 	  int strain = 3;
+	  float proba = 0.4;
+
+	  bool save = false;
 
     AimsSurfaceTriangle mesh;
     AimsApplication     app( argc, argv, "Cortical Sulcal Lines (for cortical surface coordinate system)");
@@ -52,12 +55,17 @@ int main(int argc, const char **argv)
     app.addOption( adrGeodesicDepth, "-d", "input Texture Geodesic Depth",true);
     app.alias( "--inTexGeoDepth", "-d" );
 
-    app.addOption( constraint_type, "-s", "constraint type (shortest path) :\n1 : on curvature map (by default)\n2 : on depth map\n",true);
-    app.alias( "--inConstraint", "-s" );
+    app.addOption( constraint_type, "-t", "constraint type (shortest path) :\n1 : on curvature map (by default)\n2 : on depth map\n",true);
+    app.alias( "--inConstraint", "-t" );
 
     app.addOption( strain, "-st", "strain parameter (3 by default)",true );
     app.alias( "--strain", "-st" );
 
+    app.addOption( proba, "-p", "threshold of probability (0.4 by default)",true );
+    app.alias( "--proba", "-p" );
+
+    app.addOption( save, "-s", "save all textures", true );
+    app.alias( "--save", "-s" );
 
 //    app.addOption( adrBassinsDepthNorm, "-bn", "input Texture Bassins Depth Normalized",true);
 //    app.alias( "--inTexBassinsDepthNorm", "-bn" );
@@ -77,7 +85,7 @@ int main(int argc, const char **argv)
 
     app.initialize();
 
-    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, constraint_type, strain );
+    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, constraint_type, strain, proba, save );
     slg.run();
 
     return 0;
