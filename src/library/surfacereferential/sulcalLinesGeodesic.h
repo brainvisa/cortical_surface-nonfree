@@ -69,16 +69,15 @@ class SulcalLinesGeodesic
     //public methods
     void run();
 
-  private :
-    void segmentationSulcalBasins (TimeTexture<float> &texIn,TimeTexture<short> &texBasins,map<int,set<int> > &mapBasins,float threshold, int close, int open);
-
     void writeShortTexture (string name,TimeTexture<short> &out);
     void writeFloatTexture (string name,TimeTexture<float> &out);
-
     void floodFillIter(int indexVertex, float newTextureValue,float oldTextureValue,TimeTexture<short> &texBasinsTemp, map<int,set<int> > &mapBasins);
     void texConnectedComponent(TimeTexture<short> &texBasins, map<int,set<int> > &mapBasins);
     void texBinarizeF2S(TimeTexture<float> &texIn, TimeTexture<short> &texOut, float threshold,int inf,int sup);
     void texBinarizeS2S(TimeTexture<short> &texIn, TimeTexture<short> &texOut, int threshold,int inf,int sup);
+
+  private :
+    void segmentationSulcalBasins (TimeTexture<float> &texIn,TimeTexture<short> &texBasins,map<int,set<int> > &mapBasins,float threshold, int close, int open);
 
     void listRootsProjections(TimeTexture<short> &texBasins,set<int> &listIndexLat,set<int> &listIndexLon);
     void computeListLabelProjectionsBasins (TimeTexture<short> &roots, map<int,set<int> > &mapBasins,set<int> &listIndex, map<int,set<int> > &mapConstraint);

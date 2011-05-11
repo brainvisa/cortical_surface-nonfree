@@ -27,12 +27,19 @@ SulcalLinesGeodesic::SulcalLinesGeodesic(  string & adrMesh,string & adrCurv, st
   r.read( _mesh );
   std::cout << "done" << std::endl;
 
+  if (adrRootsLon!="")
+  {
   std::cout << "Read roots texture : ";
   Reader < TimeTexture<short> > rtLon(adrRootsLon);
   rtLon.read( _rootsLon );
+  }
+
+  if (adrRootsLat!="")
+  {
   Reader < TimeTexture<short> > rtLat(adrRootsLat);
   rtLat.read( _rootsLat );
   std::cout << "done" << std::endl;
+  }
 
   if (adrCurv=="")
   {
