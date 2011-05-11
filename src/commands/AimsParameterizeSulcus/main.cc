@@ -536,7 +536,7 @@ int main( int argc, const char** argv )
 
       int nb=0; //extrV.size() * extrV.size();
       int cnt=0;
-      float l, lmax=0.0;
+      double l, lmax=0.0;
       uint j, i1, i2;
       nb=extrV.size();
 
@@ -575,18 +575,27 @@ int main( int argc, const char** argv )
   		  //cnt++;
     	  //if ((cnt%100)==0)
     		  //cerr << cnt << "/" << extrV1.size() << endl;
-    	  for (ve2=extrV2.begin(); ve2!=extrV2.end(); ++ve2)
-      	  {
-      		  i=*ve1;
-      		  j=*ve2;
-      		  l=spGeo.shortestPath_1_1_len(i,j);
-      		  if (l>lmax)
-      		  {
-      			  lmax=l;
-      		      i1=i;
-      		      i2=j;
-      		  }
-      	  }
+    	  i=*ve1;
+    	  spGeo.longestPath_1_N_ind(i, extrV2, &j, &l, 0);
+    	  if (l>=lmax)
+    	  {
+    		  lmax=l;
+    	      i1=i;
+    	      i2=j;
+    	  }
+
+//    	  for (ve2=extrV2.begin(); ve2!=extrV2.end(); ++ve2)
+//      	  {
+//      		  i=*ve1;
+//      		  j=*ve2;
+//      		  l=spGeo.shortestPath_1_1_len(i,j);
+//      		  if (l>lmax)
+//      		  {
+//      			  lmax=l;
+//      		      i1=i;
+//      		      i2=j;
+//      		  }
+//      	  }
       }
 
       extremities[0].item(i1)=200;
