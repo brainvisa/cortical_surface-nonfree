@@ -29,6 +29,189 @@ using namespace aims;
 using namespace carto;
 using namespace std;
 
+void compareCurves (map<int,vector<int> > &mapCurv1,map<int,vector<int> > &mapCurv2, AimsSurfaceTriangle &surface)
+{
+  vector<int>::iterator it1;
+  vector<int>::iterator it2;
+
+  map<int, vector<int> >::iterator mit1(mapCurv1.begin()),mend1(mapCurv1.end());
+  map<int, vector<int> >::iterator mit2(mapCurv2.begin()),mend2(mapCurv2.end());
+
+  GeodesicPath gp(surface,0,0);
+
+  unsigned source_vertex_index;
+  unsigned target_vertex_index;
+  //
+  //double distance_temp;
+  //std::vector<double> min_distance_source_target(listIndexVertexSource.size(), 0.0);
+  //double max_distance_s_t = 0;
+  //double moy_distance_s_t = 0;
+  //double ecart_type_distance = 0;
+  //
+  //cout << "\nsource -> target : " << endl;
+  //
+  //for (unsigned i = 0; i < listIndexVertexSource.size(); i++)
+  //{
+  //  source_vertex_index = listIndexVertexSource[i];
+  //  gp.shortestPath_1_N_ind(source_vertex_index,listIndexVertexTarget,&target_vertex_index,&distance_temp);
+
+  double length;
+
+  for (mit1 = mapCurv1.begin(); mit1 != mend1; mit1++)
+  {
+
+    vector <int> &c1 = mit1->second;
+    //cout << "c1 = " << c1.size() << endl;
+
+    for (mit2 = mapCurv2.begin(); mit2 != mend2; mit2++)
+    {
+      vector <int> &c2 = mit2->second;
+      //cout << "c2 = " << c2.size() << endl;
+      vector<unsigned> listtemp(c2.begin(), c2.end());
+
+      for (it1=c1.begin(); it1!=c1.end(); it1++)
+      {
+        source_vertex_index = (*it1);
+        //target
+        //gp.longestPath_1_N_ind(source, c2, unsigned *target, double *length, int type_distance);
+        gp.shortestPath_1_N_ind(source_vertex_index, listtemp, &target_vertex_index, &length);
+        cout << source_vertex_index << " " << target_vertex_index << " " <<  length << endl;
+
+       }
+    }
+      //it1 = (mit1->second).begin();
+    //it2 = (mit2->second).begin();
+
+
+//    listIndexTemp.clear();
+//    cout << "\nnb points cloud = " << (mit->second).size() << endl;
+//
+//    //pour chaque point du nuage, on cherche une extremité
+//    for (it=(mit->second).begin(); it!=(mit->second).end(); it++)
+//    {
+//      //cout << *it << " --> ";
+//
+//      set<uint> nei = _neigh[*it];
+//      set<uint>::iterator neiIt = nei.begin();
+//      nbNeigh = 0;
+//      //on parcourt tous les voisins du sommet et on cherche les extremités
+//      for (; neiIt != nei.end(); neiIt++)
+//      {
+//        itf=(mit->second).find(*neiIt);
+//        if (itf != (mit->second).end())
+//          nbNeigh++;
+//      }
+//
+//      if (nbNeigh < 2)
+//      {
+//      listIndexTemp.push_back(*it);
+//      listIndexTempSelect.insert(*it);
+//      cout << *it << " ";
+//      break; // on s'arrête
+//      }
+//    }
+//
+//    int nbpoints = 0;
+//    while (nbpoints < (mit->second).size()-1)
+//    {
+//      set<uint> nei = _neigh[listIndexTemp[nbpoints]];
+//      set<uint>::iterator neiIt = nei.begin();
+//      for (; neiIt != nei.end(); ++neiIt)
+//      {
+//        itf=(mit->second).find(*neiIt);
+//        itf2=listIndexTempSelect.find(*neiIt);
+//
+//        if ( itf != (mit->second).end() && itf2 == listIndexTempSelect.end() )
+//        {
+//          listIndexTemp.push_back(*neiIt);
+//          listIndexTempSelect.insert(*neiIt);
+//          nbpoints++;
+//          cout << *neiIt << " ";
+//          //break;
+//        }
+//      }
+//    }
+//
+//    cout << "\nnb points curv = " << listIndexTemp.size() << endl;
+//    mapCurv.insert (pair<int, vector<int> >(nbCurv++, listIndexTemp));
+  }
+}
+
+void cloud2curv (map<int,set<int> > &mapCloud,map<int,vector<int> > &mapCurv, AimsSurfaceTriangle &surface)
+{
+  int nbNeigh,value,nbCurv = 0;
+  set<int>::iterator it;
+  set<int>::iterator itf,itf2;
+  vector<int> listIndexTemp;
+  set<int> listIndexTempSelect;
+  map<int, set<int> >::iterator mit(mapCloud.begin()),mend(mapCloud.end());
+  std::vector<std::set<uint> > _neigh;
+
+  _neigh = SurfaceManip::surfaceNeighbours( surface );
+
+  //On parcourt les tous nuages de points
+  for (; mit != mend; mit++)
+  {
+    listIndexTempSelect.clear();
+    listIndexTemp.clear();
+
+    //pour chaque point du nuage, on cherche une extremité
+    for (it=(mit->second).begin(); it!=(mit->second).end(); it++)
+    {
+      set<uint> nei = _neigh[*it];
+      set<uint>::iterator neiIt = nei.begin();
+      nbNeigh = 0;
+      //on parcourt tous les voisins du sommet et on cherche les extremités
+      for (; neiIt != nei.end(); neiIt++)
+      {
+        itf=(mit->second).find(*neiIt);
+        if (itf != (mit->second).end())
+          nbNeigh++;
+      }
+
+      if (nbNeigh < 2)
+      {
+      listIndexTemp.push_back(*it);
+      listIndexTempSelect.insert(*it);
+      //cout << *it << " " << endl;
+      break; // on s'arrête lorsque trouve une extremité
+      }
+    }
+
+    int nb_voisin,nbpoints = 0;
+    while (nbpoints < (mit->second).size()-1)
+    {
+      set<uint> nei = _neigh[listIndexTemp[nbpoints]];
+      set<uint>::iterator neiIt;
+      nb_voisin = 0;
+
+      for (neiIt = nei.begin(); neiIt != nei.end(); neiIt++)
+      {
+        //cout << *neiIt << "-";
+        itf=(mit->second).find(*neiIt);
+        itf2=listIndexTempSelect.find(*neiIt);
+
+        if ( (itf != (mit->second).end()) && (itf2 == listIndexTempSelect.end()) )
+        {
+          listIndexTemp.push_back(*neiIt);
+          listIndexTempSelect.insert(*neiIt);
+          nbpoints++;
+          nb_voisin++;
+        }
+      }
+
+      if (nb_voisin > 1)
+      {
+      cout << "erreur : la courbe a plusieurs voisins au sommet " << listIndexTemp[nbpoints] << endl;
+      return;
+      }
+    }
+
+    mapCurv.insert (pair<int, vector<int> >(nbCurv++, listIndexTemp));
+  }
+}
+
+
 int main( int argc, const char** argv )
 {
 try{
@@ -71,112 +254,98 @@ TimeTexture<float> texTarget;
 Reader < TimeTexture<float> > ritt(adrTexTarget);
 ritt.read( texTarget );
 
-std::vector<unsigned> listIndexVertexSource;
-
 TimeTexture<short> texSourceShort(1,texSource[0].nItem());
-TimeTexture<short> texTargetShort(1,texTarget[0].nItem());
-
-cout << "source points" << endl;
 for( uint i = 0; i < texSource[0].nItem(); i++)
 {
   if (texSource[0].item(i)>= value - 0.01 && texSource[0].item(i)<= value + 0.01)
-    {
     texSourceShort[0].item(i) = -1;
-    //cout << i << " " << texSource[0].item(i) << endl;
-    listIndexVertexSource.push_back(i);
-    }
   else
     texSourceShort[0].item(i) = 0;
 }
 
-std::vector<unsigned> listIndexVertexTarget;
-cout << "target points" << endl;
-
+TimeTexture<short> texTargetShort(1,texTarget[0].nItem());
 for( uint i = 0; i < texTarget[0].nItem(); i++)
 {
-if (texTarget[0].item(i)>= value - 0.01 && texTarget[0].item(i)<= value + 0.01)
-  {
-      listIndexVertexTarget.push_back(i);
-      texTargetShort[0].item(i) = -1;
-      //cout << i << " " << texTarget[0].item(i) << endl;
-  }
+  if (texTarget[0].item(i)>= value - 0.01 && texTarget[0].item(i)<= value + 0.01)
+    texTargetShort[0].item(i) = -1;
   else
     texTargetShort[0].item(i) = 0;
 }
 
-//cout << "done" << endl;
 string adr="";
-SulcalLinesGeodesic slg(meshFileIn,adr,adr,adr,adr, 1, 0, 3, 0.0, 0 );
+vector<float> p;
+SulcalLinesGeodesic slg(meshFileIn,adr,adr,adr,adr, 1, 0, 3, p, 0 );
 
-map<int,set<int> > mapCurvSource;
-map<int,set<int> > mapCurvTarget;
+map<int,set<int> > mapPointSource;
+map<int,vector<int> > mapCurvSource;
+slg.texConnectedComponent(texSourceShort, mapPointSource,0);
+cout << "component number of source = " << mapPointSource.size() << endl;
+cloud2curv (mapPointSource,mapCurvSource,surface);
 
-slg.texConnectedComponent(texSourceShort, mapCurvSource);
-cout << "nb curv source = " << mapCurvSource.size() << endl;
+map<int,vector<int> > mapCurvTarget;
+map<int,set<int> > mapPointTarget;
+slg.texConnectedComponent(texTargetShort, mapPointTarget,0);
+cout << "component number of target = " << mapPointTarget.size() << endl;
+cloud2curv (mapPointTarget,mapCurvTarget,surface);
 
-slg.texConnectedComponent(texTargetShort, mapCurvTarget);
-cout << "nb curv target = " << mapCurvTarget.size() << endl;
+compareCurves (mapCurvSource,mapCurvTarget,surface);
 
-
-GeodesicPath gp(surface,0,0);
-
-
-
-unsigned source_vertex_index;
-unsigned target_vertex_index;
-
-double distance_temp;
-std::vector<double> min_distance_source_target(listIndexVertexSource.size(), 0.0);
-double max_distance_s_t = 0;
-double moy_distance_s_t = 0;
-double ecart_type_distance = 0;
-
-cout << "\nsource -> target : " << endl;
-
-for (unsigned i = 0; i < listIndexVertexSource.size(); i++)
-{
-  source_vertex_index = listIndexVertexSource[i];
-  gp.shortestPath_1_N_ind(source_vertex_index,listIndexVertexTarget,&target_vertex_index,&distance_temp);
-
-  cout << source_vertex_index << " " << target_vertex_index << " " << distance_temp << endl ;
-  min_distance_source_target[i] = distance_temp;
-  max_distance_s_t = std::max(max_distance_s_t,distance_temp);
-  moy_distance_s_t += distance_temp;
-}
-
-cout << "\ntarget -> source : " << endl;
-double max_distance_t_s = 0;
-double moy_distance_t_s = 0;
-ecart_type_distance = 0;
-std::vector<double> min_distance_target_source(listIndexVertexTarget.size(), 0.0);
-
-for (unsigned i = 0; i < listIndexVertexTarget.size(); i++)
-{
-  source_vertex_index = listIndexVertexTarget[i];
-  gp.shortestPath_1_N_ind(source_vertex_index,listIndexVertexSource,&target_vertex_index,&distance_temp);
-
-  cout << source_vertex_index << " " << target_vertex_index << " " << distance_temp << endl ;
-
-  min_distance_target_source[i] = distance_temp;
-  max_distance_t_s = std::max(max_distance_t_s,distance_temp);
-  moy_distance_t_s += distance_temp;
-}
-
-moy_distance_s_t = (float)(moy_distance_s_t)/listIndexVertexSource.size();
-
-for (unsigned i = 0; i < listIndexVertexSource.size(); i++)
-  ecart_type_distance += pow(min_distance_source_target[i]-moy_distance_s_t,2);
-
-ecart_type_distance =  sqrt((float)(ecart_type_distance)/listIndexVertexSource.size());
-
-moy_distance_t_s = (float)(moy_distance_t_s)/listIndexVertexTarget.size();
-for (unsigned i = 0; i < listIndexVertexTarget.size(); i++)
-  ecart_type_distance += pow(min_distance_target_source[i]-moy_distance_t_s,2);
-
-ecart_type_distance =  sqrt((float)(ecart_type_distance)/listIndexVertexTarget.size());
-
-//cout << "distance hausdorff " << endl;
-cout << max(max_distance_s_t,max_distance_t_s) << endl;
+//
+//unsigned source_vertex_index;
+//unsigned target_vertex_index;
+//
+//double distance_temp;
+//std::vector<double> min_distance_source_target(listIndexVertexSource.size(), 0.0);
+//double max_distance_s_t = 0;
+//double moy_distance_s_t = 0;
+//double ecart_type_distance = 0;
+//
+//cout << "\nsource -> target : " << endl;
+//
+//for (unsigned i = 0; i < listIndexVertexSource.size(); i++)
+//{
+//  source_vertex_index = listIndexVertexSource[i];
+//  gp.shortestPath_1_N_ind(source_vertex_index,listIndexVertexTarget,&target_vertex_index,&distance_temp);
+//
+//  cout << source_vertex_index << " " << target_vertex_index << " " << distance_temp << endl ;
+//  min_distance_source_target[i] = distance_temp;
+//  max_distance_s_t = std::max(max_distance_s_t,distance_temp);
+//  moy_distance_s_t += distance_temp;
+//}
+//
+//cout << "\ntarget -> source : " << endl;
+//double max_distance_t_s = 0;
+//double moy_distance_t_s = 0;
+//ecart_type_distance = 0;
+//std::vector<double> min_distance_target_source(listIndexVertexTarget.size(), 0.0);
+//
+//for (unsigned i = 0; i < listIndexVertexTarget.size(); i++)
+//{
+//  source_vertex_index = listIndexVertexTarget[i];
+//  gp.shortestPath_1_N_ind(source_vertex_index,listIndexVertexSource,&target_vertex_index,&distance_temp);
+//
+//  cout << source_vertex_index << " " << target_vertex_index << " " << distance_temp << endl ;
+//
+//  min_distance_target_source[i] = distance_temp;
+//  max_distance_t_s = std::max(max_distance_t_s,distance_temp);
+//  moy_distance_t_s += distance_temp;
+//}
+//
+//moy_distance_s_t = (float)(moy_distance_s_t)/listIndexVertexSource.size();
+//
+//for (unsigned i = 0; i < listIndexVertexSource.size(); i++)
+//  ecart_type_distance += pow(min_distance_source_target[i]-moy_distance_s_t,2);
+//
+//ecart_type_distance =  sqrt((float)(ecart_type_distance)/listIndexVertexSource.size());
+//
+//moy_distance_t_s = (float)(moy_distance_t_s)/listIndexVertexTarget.size();
+//for (unsigned i = 0; i < listIndexVertexTarget.size(); i++)
+//  ecart_type_distance += pow(min_distance_target_source[i]-moy_distance_t_s,2);
+//
+//ecart_type_distance =  sqrt((float)(ecart_type_distance)/listIndexVertexTarget.size());
+//
+////cout << "distance hausdorff " << endl;
+//cout << max(max_distance_s_t,max_distance_t_s) << endl;
 
 //cout << " done\n";
 

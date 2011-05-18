@@ -32,6 +32,7 @@ int main(int argc, const char **argv)
 
 	  int strain = 3;
 	  float proba = 0.4;
+	  vector<float> proba_list(0.4);
 
 	  bool save = false;
 
@@ -61,31 +62,17 @@ int main(int argc, const char **argv)
     app.addOption( strain, "-st", "strain parameter (3 by default)",true );
     app.alias( "--strain", "-st" );
 
-    app.addOption( proba, "-p", "threshold of probability (0.4 by default)",true );
-    app.alias( "--proba", "-p" );
+    //app.addOption( proba, "-p", "threshold of probability (0.4 by default)",true );
+    //app.alias( "--proba", "-p" );
+    app.addOptionSeries( proba_list, "-p", "threshold of probability (0.4 by default)", false) ;
+    //app.alias( "--proba", "-p" );
 
     app.addOption( save, "-s", "save all textures", true );
     app.alias( "--save", "-s" );
 
-//    app.addOption( adrBassinsDepthNorm, "-bn", "input Texture Bassins Depth Normalized",true);
-//    app.alias( "--inTexBassinsDepthNorm", "-bn" );
-
-//    app.addOption( adrLinesOut, "-o", "outut Texture all sulcal lines",true);
-//    app.alias( "--outTexLines", "-o" );
-//
-//    app.addOption( adrBassinsOut, "-b", "outut Texture all bassins regions",true);
-//    app.alias( "--outTexBassins", "-b" );
-//
-//    app.addOption( adrLonGeodesicOut, "-om", "outut Texture sulcal lines meridian constraints (longitude)",true);
-//    app.alias( "--outTexMer", "-om" );
-//    app.addOption( adrLatGeodesicOut, "-op", "output Texture sulcal lines parallel constraints (latitude)",true);
-//    app.alias( "--outTexPar", "-op" );
-//
-
-
     app.initialize();
 
-    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, constraint_type, strain, proba, save );
+    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, constraint_type, strain, proba_list, save );
     slg.run();
 
     return 0;
