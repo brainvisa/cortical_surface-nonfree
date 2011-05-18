@@ -48,7 +48,7 @@ class SulcalLinesGeodesic
     int _strain;
     int _extremeties_method;
     int _constraint_type;
-    float _proba;
+    vector<float> _proba;
     bool _save;
 
     AimsSurfaceTriangle _mesh;
@@ -62,7 +62,7 @@ class SulcalLinesGeodesic
 
     //Constructor
     SulcalLinesGeodesic( string & adrMesh,string & adrCurv, string & adrGeodesicDepth,
-        string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, float proba, bool save );
+        string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, vector<float> proba, bool save );
 
     ~SulcalLinesGeodesic();
 
@@ -72,15 +72,16 @@ class SulcalLinesGeodesic
     void writeShortTexture (string name,TimeTexture<short> &out);
     void writeFloatTexture (string name,TimeTexture<float> &out);
     void floodFillIter(int indexVertex, float newTextureValue,float oldTextureValue,TimeTexture<short> &texBasinsTemp, map<int,set<int> > &mapBasins);
-    void texConnectedComponent(TimeTexture<short> &texBasins, map<int,set<int> > &mapBasins);
+    TimeTexture<short> texConnectedComponent(TimeTexture<short> &texBasins, map<int,set<int> > &mapBasins, int offset);
+
     void texBinarizeF2S(TimeTexture<float> &texIn, TimeTexture<short> &texOut, float threshold,int inf,int sup);
     void texBinarizeS2S(TimeTexture<short> &texIn, TimeTexture<short> &texOut, int threshold,int inf,int sup);
+    void computeListLabelProjectionsBasins (TimeTexture<short> &roots, map<int,set<int> > &mapBasins,set<int> &listIndex, map<int,set<int> > &mapConstraint);
 
   private :
     void segmentationSulcalBasins (TimeTexture<float> &texIn,TimeTexture<short> &texBasins,map<int,set<int> > &mapBasins,float threshold, int close, int open);
 
     void listRootsProjections(TimeTexture<short> &texBasins,set<int> &listIndexLat,set<int> &listIndexLon);
-    void computeListLabelProjectionsBasins (TimeTexture<short> &roots, map<int,set<int> > &mapBasins,set<int> &listIndex, map<int,set<int> > &mapConstraint);
     void computeLongestPathBasins (TimeTexture<short> &roots, TimeTexture<short> &out, map<int,set<int> > &mapConstraint);
 
     void normalizeDepthMap (TimeTexture<float> &depth, TimeTexture<float> &depthNorm, map<int,set<int> > &mapBasins);

@@ -17,7 +17,7 @@
 using namespace std;
 
 SulcalLinesGeodesic::SulcalLinesGeodesic(  string & adrMesh,string & adrCurv, string & adrGeodesicDepth,
-    string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, float proba, bool save ) :
+    string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, vector<float> proba, bool save ) :
     _adrMesh(adrMesh),_adrCurv(adrCurv),_adrGeodesicDepth(adrGeodesicDepth),
     _adrRootsLon(adrRootsLon),_adrRootsLat(adrRootsLat),_constraint_type(constraint_type),_extremeties_method(extremeties_method), _strain(strain),
     _proba(proba), _save(save)
@@ -74,7 +74,6 @@ SulcalLinesGeodesic::SulcalLinesGeodesic(  string & adrMesh,string & adrCurv, st
   std::cout << "compute neighbours : ";
   _neigh = SurfaceManip::surfaceNeighbours( _mesh );
   std::cout << "done " << std::endl;
-
 }
 
 SulcalLinesGeodesic::~SulcalLinesGeodesic()
@@ -218,17 +217,24 @@ void SulcalLinesGeodesic::texBinarizeS2S(TimeTexture<short> &texIn, TimeTexture<
   }
 }
 
-
-void SulcalLinesGeodesic::texConnectedComponent(TimeTexture<short> &texBasins, map<int,set<int> > &mapBasins)
+TimeTexture<short> SulcalLinesGeodesic::texConnectedComponent(TimeTexture<short> &texBasins, map<int,set<int> > &mapBasins, int offset)
 {
   int j = 1;
+  int val;
   mapBasins.clear();
+
+  TimeTexture<short> texTemp(1,texBasins[0].nItem());
+
+  for (uint i = 0; i < texBasins[0].nItem(); i++)
+    texTemp[0].item(i) = texBasins[0].item(i) + offset;
 
   for (uint i = 0; i < texBasins[0].nItem(); i++)
   {
-    if (texBasins[0].item(i) == -1)
-      floodFillIter(i,j++,-1,texBasins,mapBasins);
+    if (texTemp[0].item(i) > offset  )
+      floodFillIter(i,j++,texTemp[0].item(i),texTemp,mapBasins);
   }
+
+  return texTemp;
 }
 
 void SulcalLinesGeodesic::listRootsProjections(TimeTexture<short> &texBasins,set<int> &listIndexLat,set<int> &listIndexLon)
@@ -273,7 +279,7 @@ void SulcalLinesGeodesic::computeListLabelProjectionsBasins (TimeTexture<short> 
   for (; mit != mend; ++mit)
   {
     listIndexTemp.clear();
-    //cout << "\nbasin " << mit->first << endl;
+    cout << "\nbasin " << mit->first << endl;
 
     //recherche des étiquettes présentes dans le bassin
     listLabelBasins.clear();
@@ -287,7 +293,7 @@ void SulcalLinesGeodesic::computeListLabelProjectionsBasins (TimeTexture<short> 
     //pour chaque etiquette du bassin
     for (itLabel=listLabelBasins.begin(); itLabel!=listLabelBasins.end(); itLabel++)
     {
-      //cout << *itLabel << " --> ";
+      cout << *itLabel << " --> ";
       for (itl=listIndex.begin(); itl!=listIndex.end(); itl++)
       {
         it=(mit->second).find(*itl);
@@ -436,10 +442,10 @@ texBasinsErode[0]=MeshErosion<short>( _mesh[0], texBasinsDil[0], short(0), -1, c
 texBasinsDil[0]=MeshErosion<short>( _mesh[0], texBasinsErode[0], short(0), -1, open , true);
 texBasinsErode[0]=MeshDilation<short>( _mesh[0], texBasinsDil[0], short(0), -1, open, true);
 
-texBinarizeS2S(texBasinsErode, texBasins, 0 ,0 ,-1);
+texBinarizeS2S(texBasinsErode, texBasins, 0 ,0 ,1);
 
 // étiquetage des composantes connexes
-texConnectedComponent(texBasins, mapBasins);
+texConnectedComponent(texBasins, mapBasins,1000);
 cout << mapBasins.size() << " Basins found" << endl;
 }
 
@@ -529,7 +535,6 @@ void SulcalLinesGeodesic::contourBasins(map<int,set<int> > &mapBasins,TimeTextur
     {
       //on récupère l'étiquette du bassin
       value = texBasins[0].item(*its);
-
       set<uint> voisins = _neigh[*its];
       set<uint>::iterator voisIt = voisins.begin();
 
@@ -625,7 +630,7 @@ void SulcalLinesGeodesic::normalizeProbabiltyMap(map<int,set<int> > &mapBasins, 
 {
   map<int,set<int> >::iterator itc;
   map<int,set<int> >::iterator itb;
-  set<int>::iterator its;;
+  set<int>::iterator its;
 
   int value;
   float accu,accu_max;
@@ -689,16 +694,16 @@ void SulcalLinesGeodesic::sulcalLinesExtract_probability(map<int,set<int> > &map
   // on calcule les intersections avec les basins
   TimeTexture<short> texInterRootsBasinsLat(1, _mesh.vertex().size() );
   TimeTexture<short> texInterRootsBasinsLon(1, _mesh.vertex().size() );
+
+  map<int,set<int> > mapBasinsLat;
+  map<int,set<int> > mapBasinsLon;
+
   interRootsDilBasins(texBasins,texProjectionLatDil,texInterRootsBasinsLat);
   interRootsDilBasins(texBasins,texProjectionLonDil,texInterRootsBasinsLon);
 
-  // étiquetage des composantes connexes
-  map<int,set<int> > mapBasinsLat;
-  map<int,set<int> > mapBasinsLon;
-  texBinarizeS2S(texInterRootsBasinsLat, texTemp, 0 ,0 ,-1);
-  texConnectedComponent(texTemp, mapBasinsLat);
-  texBinarizeS2S(texInterRootsBasinsLon, texTemp, 0 ,0 ,-1);
-  texConnectedComponent(texTemp, mapBasinsLon);
+  texConnectedComponent(texInterRootsBasinsLat, mapBasinsLat,1000);
+  texConnectedComponent(texInterRootsBasinsLon, mapBasinsLon,1000);
+
   cout << mapBasinsLat.size() << " Basins Lat found" << endl;
   cout << mapBasinsLon.size() << " Basins Lon found" << endl;
   cleanBasins(mapBasinsLat,texInterRootsBasinsLat,15);
@@ -749,34 +754,63 @@ void SulcalLinesGeodesic::sulcalLinesExtract_probability(map<int,set<int> > &map
   }
   cout << "done " << endl;
 
-  cout << "threshold probability map" << endl;
-  TimeTexture<short> texProbaThreshLat(1, _mesh.vertex().size() );
-  texBinarizeF2S(texProbaNormLat, texProbaThreshLat, _proba ,0 ,1);
-  TimeTexture<short> texProbaThreshLon(1, _mesh.vertex().size() );
-  texBinarizeF2S(texProbaNormLon, texProbaThreshLon, _proba ,0 ,1);
-  cout << "done " << endl;
-  if (_save)
+  vector<float>::iterator itp;
+  for ( itp=_proba.begin(); itp != _proba.end(); itp++)
   {
-    writeShortTexture("lat_proba_thresh.tex",texProbaThreshLat);
-    writeShortTexture("lon_proba_thresh.tex",texProbaThreshLon);
+    cout << "proba value = " << *itp << endl;
+
+    cout << "threshold probability map" << endl;
+    TimeTexture<short> texProbaThreshLat(1, _mesh.vertex().size() );
+    texBinarizeF2S(texProbaNormLat, texProbaThreshLat, *itp ,0 ,1);
+    TimeTexture<short> texProbaThreshLon(1, _mesh.vertex().size() );
+    texBinarizeF2S(texProbaNormLon, texProbaThreshLon, *itp ,0 ,1);
+    cout << "done " << endl;
+
+    std::ostringstream buff;
+    buff<<(*itp);
+    size_t found;
+    string convert = buff.str();
+    found=convert.find(".");
+    convert.replace(found,1,",");
+    string texname;
+
+    if (_save)
+    {
+      texname = "lat_proba_thresh_" + convert + ".tex";
+      writeShortTexture(texname.c_str(),texProbaThreshLat);
+
+      texname = "lon_proba_thresh_" + convert + ".tex";
+      writeShortTexture(texname.c_str(),texProbaThreshLon);
+    }
+
+    cout << "compute the longest path in threshold probability map" << endl;
+    cout << "latitude :" << endl;
+    TimeTexture<short> texProbaSulcalinesLat(1, _mesh.vertex().size() );
+    textureBin2Label(texInterRootsBasinsLat,texProbaThreshLat,texTemp);
+    if (_save)
+      {
+      texname = "lat_proba_thresh_" + convert + ".tex";
+      writeShortTexture(texname.c_str(),texTemp);
+      }
+
+    computeLongestPathBasins (texTemp, texProbaSulcalinesLat, mapBasinsLat);
+
+    cout << "done " << endl;
+    cout << "longitude :" << endl;
+    TimeTexture<short> texProbaSulcalinesLon(1, _mesh.vertex().size() );
+    textureBin2Label(texInterRootsBasinsLon,texProbaThreshLon,texTemp);
+    if (_save)
+      {
+      texname = "lon_proba_thresh_" + convert + ".tex";
+      writeShortTexture(texname.c_str(),texTemp);
+      }
+
+    computeLongestPathBasins (texTemp, texProbaSulcalinesLon, mapBasinsLon);
+    cout << "done " << endl;
+
+    texname = "lat_proba_lines_" + convert + ".tex";
+    writeShortTexture(texname.c_str(),texProbaSulcalinesLat);
+    texname = "lon_proba_lines_" + convert + ".tex";
+    writeShortTexture(texname.c_str(),texProbaSulcalinesLon);
   }
-
-  cout << "compute the longest path in threshold probability map" << endl;
-  cout << "latitude :" << endl;
-  TimeTexture<short> texProbaSulcalinesLat(1, _mesh.vertex().size() );
-  textureBin2Label(texInterRootsBasinsLat,texProbaThreshLat,texTemp);
-  computeLongestPathBasins (texTemp, texProbaSulcalinesLat, mapBasinsLat);
-  if (_save)
-    writeShortTexture("lat_proba_roots.tex",texTemp);
-  cout << "done " << endl;
-  cout << "longitude :" << endl;
-  TimeTexture<short> texProbaSulcalinesLon(1, _mesh.vertex().size() );
-  textureBin2Label(texInterRootsBasinsLon,texProbaThreshLon,texTemp);
-  if (_save)
-    writeShortTexture("lon_proba_roots.tex",texTemp);
-  computeLongestPathBasins (texTemp, texProbaSulcalinesLon, mapBasinsLon);
-  cout << "done " << endl;
-
-  writeShortTexture("lat_proba_lines.tex",texProbaSulcalinesLat);
-  writeShortTexture("lon_proba_lines.tex",texProbaSulcalinesLon);
 }
