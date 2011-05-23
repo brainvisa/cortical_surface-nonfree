@@ -36,7 +36,9 @@ int main(int argc, const char **argv)
 
 	  bool save = false;
 
-    AimsSurfaceTriangle mesh;
+	  float curv_threshold = 0.0;
+
+	  AimsSurfaceTriangle mesh;
     AimsApplication     app( argc, argv, "Cortical Sulcal Lines (for cortical surface coordinate system)");
 
     app.addOption( adrMesh, "-i", "input Mesh");
@@ -62,6 +64,9 @@ int main(int argc, const char **argv)
     app.addOption( strain, "-st", "strain parameter (3 by default)",true );
     app.alias( "--strain", "-st" );
 
+    app.addOption( curv_threshold, "-ct", "curvature threshold for basins segmentation (0.0 by default)",true );
+    app.alias( "--curvthresh", "-ct" );
+
     //app.addOption( proba, "-p", "threshold of probability (0.4 by default)",true );
     //app.alias( "--proba", "-p" );
     app.addOptionSeries( proba_list, "-p", "threshold of probability (0.4 by default)", false) ;
@@ -72,7 +77,7 @@ int main(int argc, const char **argv)
 
     app.initialize();
 
-    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, constraint_type, strain, proba_list, save );
+    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, constraint_type, strain, proba_list, save, curv_threshold);
     slg.run();
 
     return 0;
