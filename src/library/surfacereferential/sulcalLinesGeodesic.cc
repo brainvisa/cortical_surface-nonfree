@@ -17,10 +17,10 @@
 using namespace std;
 
 SulcalLinesGeodesic::SulcalLinesGeodesic(  string & adrMesh,string & adrCurv, string & adrGeodesicDepth,
-    string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, vector<float> proba, bool save ) :
+    string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, vector<float> proba, bool save, float curv_thresh) :
     _adrMesh(adrMesh),_adrCurv(adrCurv),_adrGeodesicDepth(adrGeodesicDepth),
     _adrRootsLon(adrRootsLon),_adrRootsLat(adrRootsLat),_constraint_type(constraint_type),_extremeties_method(extremeties_method), _strain(strain),
-    _proba(proba), _save(save)
+    _proba(proba), _save(save), _curv_thresh(curv_thresh)
 {
   std::cout << "Read mesh : ";
   Reader < AimsSurfaceTriangle > r(adrMesh);
@@ -91,7 +91,7 @@ void SulcalLinesGeodesic::run()
 
   map<int,set<int> > mapBasins;
 
-  segmentationSulcalBasins (_texCurv, texBasins, mapBasins,0.0,1,2);
+  segmentationSulcalBasins (_texCurv, texBasins, mapBasins,_curv_thresh,1,2);
 
   if (_save)
   {
@@ -279,7 +279,7 @@ void SulcalLinesGeodesic::computeListLabelProjectionsBasins (TimeTexture<short> 
   for (; mit != mend; ++mit)
   {
     listIndexTemp.clear();
-    cout << "\nbasin " << mit->first << endl;
+    //cout << "\nbasin " << mit->first << endl;
 
     //recherche des étiquettes présentes dans le bassin
     listLabelBasins.clear();
@@ -293,7 +293,7 @@ void SulcalLinesGeodesic::computeListLabelProjectionsBasins (TimeTexture<short> 
     //pour chaque etiquette du bassin
     for (itLabel=listLabelBasins.begin(); itLabel!=listLabelBasins.end(); itLabel++)
     {
-      cout << *itLabel << " --> ";
+      //cout << *itLabel << " --> ";
       for (itl=listIndex.begin(); itl!=listIndex.end(); itl++)
       {
         it=(mit->second).find(*itl);

@@ -50,6 +50,7 @@ class SulcalLinesGeodesic
     int _constraint_type;
     vector<float> _proba;
     bool _save;
+    float _curv_thresh;
 
     AimsSurfaceTriangle _mesh;
     std::vector<std::set<uint> > _neigh;
@@ -62,7 +63,7 @@ class SulcalLinesGeodesic
 
     //Constructor
     SulcalLinesGeodesic( string & adrMesh,string & adrCurv, string & adrGeodesicDepth,
-        string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, vector<float> proba, bool save );
+        string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, vector<float> proba, bool save, float curv_thresh);
 
     ~SulcalLinesGeodesic();
 
