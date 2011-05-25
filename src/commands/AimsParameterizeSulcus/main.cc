@@ -141,8 +141,8 @@ int main( int argc, const char** argv )
                          poleDilation(1, ns),
                          topLine(1,ns), botLine(1,ns);
 
-      GeodesicPath spGeo(surface,3,15);
-      GeodesicPath spGyri(surface,2,15);
+      GeodesicPath spGeo(surface,3,30);
+      GeodesicPath spGyri(surface,2,30);
       uint pS, pN;
 
 //-------------------------------------------------------------------
@@ -267,13 +267,15 @@ int main( int argc, const char** argv )
       */
 //--------------------------------------------------------------------
 
-//      bottomDil=AimsMorphoChamferDilation(bottom, 2.0);
+      //bottomDil=AimsMorphoDilation(bottom, 2.0);
       for (int z=0; z<sz; z++)
      	  for (int y=0; y<sy; y++)
      		  for (int x=0; x<sx; x++)
      		  {
 					  bottomDil(x,y,z)=0;
+//					  bottomDil(x,y,z)=bottom(x,y,z);
 					  hullDil(x,y,z)=0;
+//					  hullDil(x,y,z)=hull(x,y,z);
      		  }
       for (int z=1; z<sz-1; z++)
     	  for (int y=1; y<sy-1; y++)
@@ -349,7 +351,7 @@ int main( int argc, const char** argv )
 
 //      std::cerr << "Ridges 1" << std::endl;
 
-     cout << "Detecting top and bottom ridges (new style)" << endl;
+     cerr << "Detecting top and bottom ridges (new style)" << endl;
       
       for (i=0; i<ns; i++)
       {
@@ -427,10 +429,10 @@ int main( int argc, const char** argv )
      cout << "Done... moving on to postprocessing of ridges" << endl;
      cout << "Done " << count << " texBot points" << endl;
 
-//     cout << "writing texture texBot : " << flush;
+//     cerr << "writing texture texBot : " << flush;
 //     Writer<TimeTexture<short> >  texBotW( "/Users/olivier/Desktop/texBot.tex" );
 //     texBotW.write( texBot );
-//     cout << "done " << endl;
+//     cerr << "done " << endl;
 //     cout << "writing texture texHull : " << flush;
 //     Writer<TimeTexture<short> >  texHullW( "/Users/olivier/Desktop/texHull.tex" );
 //     texHullW.write( texHull );
@@ -441,7 +443,8 @@ int main( int argc, const char** argv )
      //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //      std::cerr << "Ridges 2" << std::endl;
 
-      topDilation[0]=MeshDilation<short>( surface[0], texHull[0], short(0), -1, 6.0, true); 
+
+      topDilation[0]=MeshDilation<short>( surface[0], texHull[0], short(0), -1, 6.0, true);
       botDilation[0]=MeshDilation<short>( surface[0], texBot[0], short(0), -1, 6.0, true);
 
 //      cout << "writing texture botDilation : " << flush;
@@ -457,14 +460,14 @@ int main( int argc, const char** argv )
       botClosing[0]=MeshErosion<short>( surface[0], botDilation[0], short(0), -1, 6.0-offset, true);
 
 
-//      cout << "writing texture botClosing : " << flush;
+//      cerr << "writing texture botClosing : " << flush;
 //      Writer<TimeTexture<short> >  botClosingW( "/Users/olivier/Desktop/botClosing.tex" );
 //      botClosingW.write( botClosing );
-//      cout << "done " << endl;
-//      cout << "writing texture topClosing : " << flush;
+//      cerr << "done " << endl;
+//      cerr << "writing texture topClosing : " << flush;
 //      Writer<TimeTexture<short> >  topClosingW( "/Users/olivier/Desktop/topClosing.tex" );
 //      topClosingW.write( topClosing );
-//      cout << "done " << endl;
+//      cerr << "done " << endl;
 
       // New Stuff: direct pole computation:
 
@@ -484,7 +487,7 @@ int main( int argc, const char** argv )
 
       std::vector<uint>::iterator ve1, ve2;
 
-      cout << "Size subset before clean: " << extr_temp.size() << endl;
+      cerr << "Size subset before clean: " << extr_temp.size() << endl;
       float div=5.0;
       float min=1000.0, max=-1000.0;
       if (orientation==TOP2BOTTOM)
@@ -496,9 +499,9 @@ int main( int argc, const char** argv )
      		  if (z<min) min=z;
      		  if (z>max) max=z;
      	  }
-     	  cout << "Found min=" << min << ", and max=" << max << endl;
+     	  cerr << "Found min=" << min << ", and max=" << max << endl;
      	  float t=(max-min)/div;
-     	  cout << "Setting t at " << t << endl;
+     	  cerr << "Setting t at " << t << endl;
 
      	  for (ve1=extr_temp.begin(); ve1!=extr_temp.end(); ++ve1)
      	  {
@@ -519,7 +522,7 @@ int main( int argc, const char** argv )
         		  if (y<min) min=y;
         		  if (y>max) max=y;
         	  }
-        	  cout << "Found min=" << min << ", and max=" << max << endl;
+        	  cerr << "Found min=" << min << ", and max=" << max << endl;
         	  float t=(max-min)/div;
         	  for (ve1=extr_temp.begin(); ve1!=extr_temp.end(); ++ve1)
          	  {
@@ -532,7 +535,7 @@ int main( int argc, const char** argv )
          	  }
        }
 
-      cout << "Size subset after clean: " << extrV.size() << endl;
+      cerr << "Size subset after clean: " << extrV.size() << endl;
 
       int nb=0; //extrV.size() * extrV.size();
       int cnt=0;
@@ -541,7 +544,7 @@ int main( int argc, const char** argv )
       nb=extrV.size();
 
       float Tsplit=(max-min)/3.0;
-      cout << "Splitting in two (split=" << Tsplit << ")" << endl;
+      cerr << "Splitting in two (split=" << Tsplit << ")" << endl;
       std::vector<uint> extrV1, extrV2;
       ve1=(extrV.begin());
       i1=*ve1;
@@ -568,7 +571,7 @@ int main( int argc, const char** argv )
         	  extrV2.push_back(*ve1);
       }
 
-      cout << "Split in " << extrV1.size() << " and " << extrV2.size() << endl;
+      cerr << "Split in " << extrV1.size() << " and " << extrV2.size() << endl;
 
       for (ve1=extrV1.begin(); ve1!=extrV1.end(); ++ve1)
       {
@@ -629,17 +632,17 @@ int main( int argc, const char** argv )
       }
       vector<int> listIndexVertexPathSP;
 
-      cout << "found index i1=" << i1 << ", i2=" << i2 << ", and lmax=" << lmax << endl;
+      cerr << "found index i1=" << i1 << ", i2=" << i2 << ", and lmax=" << lmax << endl;
 
       cerr << "OK (index " << i1 << " and " << i2 << ")" << endl;
-      cout << "Computing shortest gyri path" << endl;
+      cerr << "Computing shortest gyri path" << endl;
 
       listIndexVertexPathSP = spGyri.shortestPath_1_1_ind(i1,i2);
       l=spGyri.shortestPath_1_1_len(i1,i2);
       for (i = 0; i < listIndexVertexPathSP.size(); i++)
     	  extremities[0].item(listIndexVertexPathSP[i]) = 300;
 
-      cout << "Length=" << listIndexVertexPathSP.size() << endl;
+      cerr << "Length=" << listIndexVertexPathSP.size() << endl;
 
 
 
@@ -683,6 +686,26 @@ int main( int argc, const char** argv )
       	  }
       }
 
+
+//       cerr << "writing texture botLine : " << flush;
+//       Writer<TimeTexture<short> >  botLineW( "/Users/olivier/Desktop/botLine.tex" );
+//       botLineW.write( botLine );
+//       cerr << "done " << endl;
+//       cerr << "writing texture topLine : " << flush;
+//       Writer<TimeTexture<short> >  topLineW( "/Users/olivier/Desktop/topLine.tex" );
+//       topLineW.write( topLine );
+//       cerr << "done " << endl;
+
+
+
+
+
+
+
+
+
+      cerr << "Skeletons OK" << endl;
+
       int nbt=topSkel.size(), nbb=botSkel.size();
       std::vector< uint >::iterator skelIt;
       float lmin=1000.0;
@@ -698,6 +721,8 @@ int main( int argc, const char** argv )
     	  }
       }
 
+      cerr << " Top one done" << endl;
+      lmin=1000.0;
       for (skelIt=botSkel.begin(); skelIt != botSkel.end(); ++skelIt)
        {
      	  i=*skelIt;
@@ -708,18 +733,39 @@ int main( int argc, const char** argv )
      		  candB=i;
      	  }
        }
+      cerr << " Bottom one done" << endl;
+      cerr << " pS=" << pS << ", pN=" << pN << ", candT=" << candT << ", candB=" << candB << endl;
+      cerr << "ns=" << ns << endl;
+
+//      TimeTexture<short>  debug(1,ns);
+//      for (i=0; i<ns; i++)
+//    	  debug[0].item(i)=0;
+//      debug[0].item(pS)=100;
+//      debug[0].item(pN)=100;
+//      debug[0].item(candT)=300;
+//      debug[0].item(candB)=500;
+//      Writer<TimeTexture<short> >  dedeW( "/Users/olivier/Desktop/debug.tex" );
+//      dedeW.write( debug );
 
 
       TimeTexture<short> topRidge(1,ns), botRidge(1,ns);
 
       listIndexVertexPathSP = spGyri.shortestPath_1_1_1_ind(pS,candT, pN);
+
+      cerr << "first SP done" << endl;
+
       for (i = 0; i < listIndexVertexPathSP.size(); i++)
       {
     	  topRidge[0].item(listIndexVertexPathSP[i]) = RIDGE_TOP;
     	  extremities[0].item(listIndexVertexPathSP[i]) = 500;
       }
 
+      cerr << "first loop done" << endl;
+
       listIndexVertexPathSP = spGyri.shortestPath_1_1_1_ind(pS,candB, pN);
+
+      cerr << "second SP done" << endl;
+
       for (i = 0; i < listIndexVertexPathSP.size(); i++)
       {
     	  botRidge[0].item(listIndexVertexPathSP[i]) = RIDGE_BOT;
@@ -1472,6 +1518,10 @@ int main( int argc, const char** argv )
      for ( ; it2!=set2.end(); ++it2)
                split[0].item(*it2)=l2;
 
+
+//     Writer<TimeTexture<short> >  verifsplit("/Users/olivier/Desktop/split.tex");
+//     verifsplit.write( split);
+
      while (flagOut<1)
      {
           lMax=-10000.0;
@@ -1539,7 +1589,19 @@ int main( int argc, const char** argv )
                 LmeanP=Lmean;
            }
      }
-/*     fclose(laplF);*/
+
+//     Texture1d tempBug(1,ns);
+//     for (i=0; i<ns; i++)
+//    	 tempBug[0].item(i)=0;
+//     std::set<unsigned>::iterator trIt=topR.begin(), brIt=botR.begin();
+//     for ( ; trIt!=topR.end() ; ++trIt)
+//    	 tempBug[0].item(*trIt)=100;
+//     for ( ; brIt!=botR.end() ; ++brIt)
+//         tempBug[0].item(*brIt)=200;
+//     Writer<Texture1d>  tbW( "/Users/olivier/Desktop/tempBug.tex" );
+//     tbW.write( tempBug );
+
+     /*     fclose(laplF);*/
       cout << "\nDiffusion of x coordinate stopped after " << iteration << " iterations" << endl;
 
       cerr << "writing texture " << texFile_x << " : " << flush;
