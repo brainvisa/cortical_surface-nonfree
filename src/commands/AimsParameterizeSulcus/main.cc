@@ -68,6 +68,7 @@ int main( int argc, const char** argv )
       float deltaT=0.05;
       float stop=0.000003;
       float offset=0.0;
+      short dil=1;
 
 /*      float tCurv=0.95;*/
       int orientation;
@@ -91,6 +92,8 @@ int main( int argc, const char** argv )
       app.alias( "--deltaT", "-d" );
       app.addOption( stop, "-s", "laplacian variation stopping criterion (default=0.000003)", 0.000003 );
       app.alias( "--stop", "-s" );
+      app.addOption( dil, "-di", "dilation of the ridges (1=yes (default), 0=no)", 1);
+      app.alias("--dilation", "-di");
       app.addOption( offset, "-mo", "Morphological offset between dilation and erosion of ridges for extrem cases (default=0, otherwise should be 1.0)", 0.0);
       app.initialize();
 
@@ -277,6 +280,7 @@ int main( int argc, const char** argv )
 					  hullDil(x,y,z)=0;
 //					  hullDil(x,y,z)=hull(x,y,z);
      		  }
+
       for (int z=1; z<sz-1; z++)
     	  for (int y=1; y<sy-1; y++)
     		  for (int x=1; x<sx-1; x++)
@@ -284,32 +288,35 @@ int main( int argc, const char** argv )
     			  if (bottom(x,y,z)!=0)
     			  {
     				  bottomDil(x,y,z)=1;
-    				  bottomDil(x,y,z+1)=1;
-    				  bottomDil(x,y,z-1)=1;
-    				  bottomDil(x,y-1,z)=1;
-    				  bottomDil(x,y-1,z-1)=1;
-    				  bottomDil(x,y-1,z+1)=1;
-    				  bottomDil(x,y+1,z)=1;
-    				  bottomDil(x,y+1,z-1)=1;
-    				  bottomDil(x,y+1,z+1)=1;
-    				  bottomDil(x-1,y,z)=1;
-    				  bottomDil(x-1,y,z-1)=1;
-    				  bottomDil(x-1,y,z+1)=1;
-    				  bottomDil(x-1,y-1,z)=1;
-    				  bottomDil(x-1,y-1,z-1)=1;
-    				  bottomDil(x-1,y-1,z+1)=1;
-    				  bottomDil(x-1,y+1,z)=1;
-    				  bottomDil(x-1,y+1,z-1)=1;
-    				  bottomDil(x-1,y+1,z+1)=1;
-    				  bottomDil(x+1,y,z)=1;
-    				  bottomDil(x+1,y,z-1)=1;
-    				  bottomDil(x+1,y,z+1)=1;
-    				  bottomDil(x+1,y-1,z)=1;
-    				  bottomDil(x+1,y-1,z-1)=1;
-    				  bottomDil(x+1,y-1,z+1)=1;
-    				  bottomDil(x+1,y+1,z)=1;
-    				  bottomDil(x+1,y+1,z-1)=1;
-    				  bottomDil(x+1,y+1,z+1)=1;
+    				  if (dil==1)
+    				  {
+    					  bottomDil(x,y,z+1)=1;
+    					  bottomDil(x,y,z-1)=1;
+    					  bottomDil(x,y-1,z)=1;
+    					  bottomDil(x,y-1,z-1)=1;
+    					  bottomDil(x,y-1,z+1)=1;
+    					  bottomDil(x,y+1,z)=1;
+    					  bottomDil(x,y+1,z-1)=1;
+    					  bottomDil(x,y+1,z+1)=1;
+    					  bottomDil(x-1,y,z)=1;
+    					  bottomDil(x-1,y,z-1)=1;
+    					  bottomDil(x-1,y,z+1)=1;
+    					  bottomDil(x-1,y-1,z)=1;
+    					  bottomDil(x-1,y-1,z-1)=1;
+    					  bottomDil(x-1,y-1,z+1)=1;
+    					  bottomDil(x-1,y+1,z)=1;
+    					  bottomDil(x-1,y+1,z-1)=1;
+    					  bottomDil(x-1,y+1,z+1)=1;
+    					  bottomDil(x+1,y,z)=1;
+    					  bottomDil(x+1,y,z-1)=1;
+    					  bottomDil(x+1,y,z+1)=1;
+    					  bottomDil(x+1,y-1,z)=1;
+    					  bottomDil(x+1,y-1,z-1)=1;
+    					  bottomDil(x+1,y-1,z+1)=1;
+    					  bottomDil(x+1,y+1,z)=1;
+    					  bottomDil(x+1,y+1,z-1)=1;
+    					  bottomDil(x+1,y+1,z+1)=1;
+    				  }
     			  }
        			  if (hull(x,y,z)!=0)
        			  {
@@ -654,6 +661,11 @@ int main( int argc, const char** argv )
       topLine[0]=MeshSkeletization<short> ( surface[0], topClosing[0], short(RIDGE_TOP), short(0), neighbourso );
       botLine[0]=MeshSkeletization<short> ( surface[0], botClosing[0], short(RIDGE_BOT), short(0), neighbourso );
 
+
+      // -------------------- COMMENTAIRE 1/6/2011 -----------------------------
+/*
+
+
       // pour choisir le ridge on va faire un plus court chemin contraint par un point des squeletes.
       // pour �viter de se taper une branche on va tirer des points au hasard, prendre les plus courts chemins,
       // et choper le plus court. Ca �"vite de passer par une branche meis ca permet de passer en haut ou en bas
@@ -695,14 +707,6 @@ int main( int argc, const char** argv )
 //       Writer<TimeTexture<short> >  topLineW( "/Users/olivier/Desktop/topLine.tex" );
 //       topLineW.write( topLine );
 //       cerr << "done " << endl;
-
-
-
-
-
-
-
-
 
       cerr << "Skeletons OK" << endl;
 
@@ -747,11 +751,15 @@ int main( int argc, const char** argv )
 //      Writer<TimeTexture<short> >  dedeW( "/Users/olivier/Desktop/debug.tex" );
 //      dedeW.write( debug );
 
-
+      */
+      // -------------------- FIN Du COMMENTAIRE 1/6/2011 -----------------------------
       TimeTexture<short> topRidge(1,ns), botRidge(1,ns);
 
-      listIndexVertexPathSP = spGyri.shortestPath_1_1_1_ind(pS,candT, pN);
+      //listIndexVertexPathSP = spGyri.shortestPath_1_1_1_ind(pS,candT, pN);
 
+
+
+      listIndexVertexPathSP = spGyri.shortestPath_1_1_ind(pS, pN, topClosing);
       cerr << "first SP done" << endl;
 
       for (i = 0; i < listIndexVertexPathSP.size(); i++)
@@ -762,7 +770,8 @@ int main( int argc, const char** argv )
 
       cerr << "first loop done" << endl;
 
-      listIndexVertexPathSP = spGyri.shortestPath_1_1_1_ind(pS,candB, pN);
+      //listIndexVertexPathSP = spGyri.shortestPath_1_1_1_ind(pS,candB, pN);
+      listIndexVertexPathSP = spGyri.shortestPath_1_1_ind(pS, pN, botClosing);
 
       cerr << "second SP done" << endl;
 
