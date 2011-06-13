@@ -466,7 +466,7 @@ int main( int argc, const char** argv )
       std::vector<uint>::iterator ve1, ve2;
 
       cerr << "Size subset before clean: " << extr_temp.size() << endl;
-      float div=5.0;
+      float div=3.0;
       float min=1000.0, max=-1000.0;
       if (orientation==TOP2BOTTOM)
       {
