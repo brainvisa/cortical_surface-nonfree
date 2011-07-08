@@ -180,11 +180,13 @@ void SulcalLinesGeodesic::floodFillIter(int indexVertex, float newTextureValue,f
       if (itef != listIndexVertexFill.end())
         continue;
 
-      if ( texBasinsTemp[0].item(indexCurr) == oldTextureValue)
+      if ( texBasinsTemp[0].item(indexCurr) <= (oldTextureValue + 0.001) &&
+          texBasinsTemp[0].item(indexCurr) >= (oldTextureValue - 0.001) )
+      //if ( texBasinsTemp[0].item(indexCurr) == oldTextureValue)
       {
         listIndexVertexFill.insert(indexCurr);
         stack.push(indexCurr);
-        //cout << indexCurr << endl;
+        //cout << indexCurr << " " <<  newTextureValue << endl;
         texBasinsTemp[0].item(indexCurr) = newTextureValue;
       }
 
@@ -332,7 +334,7 @@ void SulcalLinesGeodesic::computeLongestPathBasins (TimeTexture<short> &roots, T
   map<int, set<int> >::const_iterator mit(mapConstraint.begin()),mend(mapConstraint.end());
 
   set<int>::iterator it;
-  vector<int> pathTemp,indexTemp;
+  vector<unsigned> pathTemp,indexTemp;
 
   for (uint i = 0; i < _mesh.vertex().size(); i++)
     out[0].item(i) = 0.0;
@@ -559,9 +561,9 @@ void SulcalLinesGeodesic::computeProbabiltyMap(map<int,set<int> > &mapContourBas
   set<int>::iterator its;
   int value,nb_c,nb_v;
   vector<unsigned> listIndexTarget;
-  vector<vector<int> >indices;
-  vector<vector<int> >::iterator it_vv;
-  vector<int>::iterator it_v;
+  vector<vector<unsigned> >indices;
+  vector<vector<unsigned> >::iterator it_vv;
+  vector<unsigned>::iterator it_v;
 
   for (uint i = 0; i < texProba[0].nItem(); i++)
     texProba[0].item(i) = 1.0;
