@@ -56,29 +56,45 @@ void compareCurves (map<int,vector<int> > &mapCurv1,map<int,vector<int> > &mapCu
   //  gp.shortestPath_1_N_ind(source_vertex_index,listIndexVertexTarget,&target_vertex_index,&distance_temp);
 
   double length;
+  double min_distance = 100000;
+  int min_target;
 
   for (mit1 = mapCurv1.begin(); mit1 != mend1; mit1++)
   {
 
     vector <int> &c1 = mit1->second;
-    //cout << "c1 = " << c1.size() << endl;
+    cout << "c1 = " << c1.size() << endl;
 
-    for (mit2 = mapCurv2.begin(); mit2 != mend2; mit2++)
+    for (it1=c1.begin(); it1!=c1.end(); it1++)
     {
-      vector <int> &c2 = mit2->second;
-      //cout << "c2 = " << c2.size() << endl;
-      vector<unsigned> listtemp(c2.begin(), c2.end());
+      min_distance = 100000;
 
-      for (it1=c1.begin(); it1!=c1.end(); it1++)
+      source_vertex_index = (*it1);
+
+      for (mit2 = mapCurv2.begin(); mit2 != mend2; ++mit2)
       {
-        source_vertex_index = (*it1);
-        //target
-        //gp.longestPath_1_N_ind(source, c2, unsigned *target, double *length, int type_distance);
+        vector <int> &c2 = mit2->second;
+
+        vector<unsigned> listtemp(c2.begin(), c2.end());
+//        for (it2=c2.begin(); it2!=c2.end(); it2++)
+//          cout << "\n\n ******** " << *it2 << " ";
+
         gp.shortestPath_1_N_ind(source_vertex_index, listtemp, &target_vertex_index, &length);
-        cout << source_vertex_index << " " << target_vertex_index << " " <<  length << endl;
+
+        if (length < min_distance)
+        {
+          min_distance = length;
+          min_target = target_vertex_index;
+        }
 
        }
+
+      cout << source_vertex_index << " " << min_target << " " <<  min_distance << endl;
+
     }
+
+
+
       //it1 = (mit1->second).begin();
     //it2 = (mit2->second).begin();
 
@@ -257,8 +273,8 @@ ritt.read( texTarget );
 TimeTexture<short> texSourceShort(1,texSource[0].nItem());
 for( uint i = 0; i < texSource[0].nItem(); i++)
 {
-  if (texSource[0].item(i)>= value - 0.01 && texSource[0].item(i)<= value + 0.01)
-    texSourceShort[0].item(i) = -1;
+  if (texSource[0].item(i)>= (float)value - 0.01 && texSource[0].item(i)<= (float)value + 0.01)
+    texSourceShort[0].item(i) = 1000;
   else
     texSourceShort[0].item(i) = 0;
 }
@@ -266,8 +282,8 @@ for( uint i = 0; i < texSource[0].nItem(); i++)
 TimeTexture<short> texTargetShort(1,texTarget[0].nItem());
 for( uint i = 0; i < texTarget[0].nItem(); i++)
 {
-  if (texTarget[0].item(i)>= value - 0.01 && texTarget[0].item(i)<= value + 0.01)
-    texTargetShort[0].item(i) = -1;
+  if (texTarget[0].item(i)>= (float)value - 0.01 && texTarget[0].item(i)<= (float)value + 0.01)
+    texTargetShort[0].item(i) = 1;
   else
     texTargetShort[0].item(i) = 0;
 }
@@ -278,13 +294,13 @@ SulcalLinesGeodesic slg(meshFileIn,adr,adr,adr,adr, 1, 0, 3, p, 0, 0.0 );
 
 map<int,set<int> > mapPointSource;
 map<int,vector<int> > mapCurvSource;
-slg.texConnectedComponent(texSourceShort, mapPointSource,0);
+slg.texConnectedComponent(texSourceShort, mapPointSource,1000);
 cout << "component number of source = " << mapPointSource.size() << endl;
 cloud2curv (mapPointSource,mapCurvSource,surface);
 
 map<int,vector<int> > mapCurvTarget;
 map<int,set<int> > mapPointTarget;
-slg.texConnectedComponent(texTargetShort, mapPointTarget,0);
+slg.texConnectedComponent(texTargetShort, mapPointTarget,1000);
 cout << "component number of target = " << mapPointTarget.size() << endl;
 cloud2curv (mapPointTarget,mapCurvTarget,surface);
 

@@ -67,7 +67,7 @@ int main( int argc, const char** argv )
 
   GeodesicPath sp(surface,method,strain);
 
-  vector<int> pathIndex;
+  vector<unsigned> pathIndex;
 
   cout << "set of index vertex" << endl;
   pathIndex = sp.shortestPath_1_1_ind(source,target);

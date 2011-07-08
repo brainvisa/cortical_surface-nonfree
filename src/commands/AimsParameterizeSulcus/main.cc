@@ -596,7 +596,7 @@ int main( int argc, const char** argv )
                 pS=i2;
            }
       }
-      vector<int> listIndexVertexPathSP;
+      vector<unsigned> listIndexVertexPathSP;
 
       cerr << "found index i1=" << i1 << ", i2=" << i2 << ", and lmax=" << lmax << endl;
 
