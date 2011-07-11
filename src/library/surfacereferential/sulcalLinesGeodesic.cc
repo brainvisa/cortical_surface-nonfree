@@ -17,15 +17,20 @@
 using namespace std;
 
 SulcalLinesGeodesic::SulcalLinesGeodesic(  string & adrMesh,string & adrCurv, string & adrGeodesicDepth,
-    string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, vector<float> proba, bool save, float curv_thresh) :
+    string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, vector<float> proba, string saveFolder, float curv_thresh) :
     _adrMesh(adrMesh),_adrCurv(adrCurv),_adrGeodesicDepth(adrGeodesicDepth),
     _adrRootsLon(adrRootsLon),_adrRootsLat(adrRootsLat),_constraint_type(constraint_type),_extremeties_method(extremeties_method), _strain(strain),
-    _proba(proba), _save(save), _curv_thresh(curv_thresh)
+    _proba(proba), _adrSaveFolder(saveFolder), _curv_thresh(curv_thresh)
 {
   std::cout << "Read mesh : ";
   Reader < AimsSurfaceTriangle > r(adrMesh);
   r.read( _mesh );
   std::cout << "done" << std::endl;
+
+  if (_adrSaveFolder!="")
+    _save = true;
+  else
+    _save = false;
 
   if (adrRootsLon!="")
   {
@@ -125,12 +130,79 @@ void SulcalLinesGeodesic::run()
   }
 
 }
+void SulcalLinesGeodesic::probaMap()
+{
+  std::cout << "START : ";
+
+  std::cout << "reading sulcal basins in roots lat/lon texture " << endl;
+
+  map<int,set<int> > mapBasins;
+
+  TimeTexture<float> texBasinsF;
+
+  if (_adrCurv!="")
+  {
+  std::cout << "Read basins texture : ";
+  Reader < TimeTexture<float> > rtLon(_adrCurv);
+  rtLon.read( texBasinsF );
+  }
+
+  TimeTexture<short> texBasins(1, _mesh.vertex().size());
+
+  texBinarizeF2S(texBasinsF, texBasins, 0 ,0 ,1);
+  texConnectedComponent(texBasins, mapBasins,1000);
+
+  if (_adrGeodesicDepth!="")
+  {
+    cout << "Normalize Geodesic Depth Texture with sulcal basins " << endl;
+    _geoDepthNorm = TimeTexture<float>(1, _mesh.vertex().size());
+    normalizeDepthMap (_geoDepth, _geoDepthNorm, mapBasins);
+
+    if (_save)
+    {
+      cout << "Save Normalize Geodesic Depth texture : ";
+      writeFloatTexture("depth_norm_new.tex",_geoDepthNorm);
+    }
+  }
+
+  cout << mapBasins.size() << " Basins Lat found" << endl;
+
+  TimeTexture<short> texContourBasins(1, _mesh.vertex().size() );
+  map<int,set<int> > mapContourBasins;
+
+  contourBasins(mapBasins,texBasins,mapContourBasins, texContourBasins);
+
+  if (_save)
+  {
+    writeShortTexture("contour_basins_new.tex",texContourBasins);
+  }
+
+  cout << "compute probability map" << endl;
+  TimeTexture<float> texProba(1, _mesh.vertex().size() );
+  TimeTexture<float> texProbaNorm(1, _mesh.vertex().size() );
+  computeProbabiltyMap(mapContourBasins,texContourBasins,texProba);
+  normalizeProbabiltyMap(mapBasins,mapContourBasins,texContourBasins,texProba,texProbaNorm);
+  if (_save)
+  {
+    writeFloatTexture("proba_new.tex",texProba);
+    writeFloatTexture("proba_norm_new.tex",texProbaNorm);
+  }
+
+  cout << "done " << endl;
+
+}
 
 void SulcalLinesGeodesic::writeShortTexture (string name,TimeTexture<short> &out)
 {
-  size_t found;
-  found = _adrRootsLon.find_last_of(".");
-  string adrBasins = _adrRootsLon.substr(0,found-9) + name;
+//  size_t found;
+//  found = _adrRootsLon.find_last_of(".");
+//  string adrBasins = _adrRootsLon.substr(0,found-9) + name;
+//  Writer<TimeTexture<short> > texW(adrBasins);
+//  texW << out;
+//  cout << "write " << adrBasins << " done" << endl;
+//
+
+  string adrBasins = _adrSaveFolder + name;
   Writer<TimeTexture<short> > texW(adrBasins);
   texW << out;
   cout << "write " << adrBasins << " done" << endl;
@@ -138,9 +210,14 @@ void SulcalLinesGeodesic::writeShortTexture (string name,TimeTexture<short> &out
 
 void SulcalLinesGeodesic::writeFloatTexture (string name,TimeTexture<float> &out)
 {
-  size_t found;
-  found = _adrRootsLon.find_last_of(".");
-  string adrBasins = _adrRootsLon.substr(0,found-9) + name;
+//  size_t found;
+//  found = _adrRootsLon.find_last_of(".");
+//  string adrBasins = _adrRootsLon.substr(0,found-9) + name;
+//  Writer<TimeTexture<float> > texW(adrBasins);
+//  texW << out;
+//  cout << "write " << adrBasins << " done" << endl;
+//
+  string adrBasins = _adrSaveFolder + name;
   Writer<TimeTexture<float> > texW(adrBasins);
   texW << out;
   cout << "write " << adrBasins << " done" << endl;

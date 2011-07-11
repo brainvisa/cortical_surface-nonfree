@@ -21,8 +21,10 @@ int main(int argc, const char **argv)
   {
     string adrMesh;
 
-    string adrRootsLon;
-    string adrRootsLat;
+    string adrRootsLon = "";
+    string adrRootsLat = "";
+
+    string adrSaveFolder = "";
 
     int extremeties_method = 1;
     int constraint_type = 1;
@@ -30,26 +32,27 @@ int main(int argc, const char **argv)
     string adrCurv = "";
     string adrGeodesicDepth = "";
 
-	  int strain = 3;
-	  float proba = 0.4;
-	  vector<float> proba_list(0.4);
+    int strain = 3;
+    float proba = 0.4;
+    vector<float> proba_list(0.4);
 
-	  bool save = false;
+    bool save = false;
 
-	  float curv_threshold = 0.0;
+    float curv_threshold = 0.0;
 
-	  AimsSurfaceTriangle mesh;
+    AimsSurfaceTriangle mesh;
+
     AimsApplication     app( argc, argv, "Cortical Sulcal Lines (for cortical surface coordinate system)");
 
     app.addOption( adrMesh, "-i", "input Mesh");
     app.alias( "--inMesh", "-i" );
 
-    app.addOption( adrRootsLon, "-lon", "input Texture Longitude Constraints");
+    app.addOption( adrRootsLon, "-lon", "input Texture Longitude Constraints",true);
     app.alias( "--inTexLon", "-lon" );
-    app.addOption( adrRootsLat, "-lat", "input Texture Latitude Constraints");
+    app.addOption( adrRootsLat, "-lat", "input Texture Latitude Constraints",true);
     app.alias( "--inTexLat", "-lat" );
 
-    app.addOption( extremeties_method, "-m", "extraction of extremities method :\n1 : projection crop by basins (by default)\n2 : map of probability\n",true);
+    app.addOption( extremeties_method, "-m", "extraction of extremities method :\n1 : projection crop by basins (by default)\n2 : map of probability (embc11 method)\n 3 : map of probability (basin user defined) : ",true);
     app.alias( "--inMethod", "-m" );
 
     app.addOption( adrCurv, "-c", "input Texture Curvature (barycenter curvature by default)",true);
@@ -72,13 +75,18 @@ int main(int argc, const char **argv)
     app.addOptionSeries( proba_list, "-p", "threshold of probability (0.4 by default)", false) ;
     //app.alias( "--proba", "-p" );
 
-    app.addOption( save, "-s", "save all textures", true );
+    app.addOption( adrSaveFolder, "-s", "folder path for save texture", true );
     app.alias( "--save", "-s" );
 
     app.initialize();
 
-    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, constraint_type, strain, proba_list, save, curv_threshold);
-    slg.run();
+    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, constraint_type, strain, proba_list, adrSaveFolder, curv_threshold);
+
+    if (extremeties_method < 3)
+      slg.run();
+
+    if (extremeties_method == 3)
+      slg.probaMap();
 
     return 0;
 

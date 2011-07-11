@@ -44,6 +44,7 @@ class SulcalLinesGeodesic
     string _adrRootsLon;
     string _adrCurv;
     string _adrGeodesicDepth;
+    string _adrSaveFolder;
 
     int _strain;
     int _extremeties_method;
@@ -63,12 +64,13 @@ class SulcalLinesGeodesic
 
     //Constructor
     SulcalLinesGeodesic( string & adrMesh,string & adrCurv, string & adrGeodesicDepth,
-        string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, vector<float> proba, bool save, float curv_thresh);
+        string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, vector<float> proba, string saveFolder, float curv_thresh);
 
     ~SulcalLinesGeodesic();
 
     //public methods
     void run();
+    void probaMap();
 
     void writeShortTexture (string name,TimeTexture<short> &out);
     void writeFloatTexture (string name,TimeTexture<float> &out);
