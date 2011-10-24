@@ -109,16 +109,12 @@ int main( int argc, const char** argv )
   else
   {
     TimeTexture<float> texOut(1, surface.vertex().size() );
-
     sp.shortestPath_1_1_tex(source,target,180,texOut);
-
     FileOut = FileOut + ".tex";
     Writer<TimeTexture<float> > texW(FileOut);
     texW << texOut;
-
     double len = sp.shortestPath_1_1_len (source,target);
     cout << "path length = " << len << endl;
-
     vector<unsigned> targetList;
     targetList.push_back(40);
     targetList.push_back(400);
@@ -126,7 +122,6 @@ int main( int argc, const char** argv )
     targetList.push_back(403);
     sp.shortestPath_1_N_ind(source,targetList,&target,&len);
     cout << "best target = " << target << " length = " << len << endl;
-
   }
 
   return( 0 );
