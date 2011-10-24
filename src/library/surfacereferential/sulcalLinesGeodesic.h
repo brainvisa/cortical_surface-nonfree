@@ -45,6 +45,8 @@ class SulcalLinesGeodesic
     string _adrCurv;
     string _adrGeodesicDepth;
     string _adrSaveFolder;
+    string _adrRootsBottom;
+    string _adrModelParam;
 
     int _strain;
     int _extremeties_method;
@@ -64,7 +66,7 @@ class SulcalLinesGeodesic
 
     //Constructor
     SulcalLinesGeodesic( string & adrMesh,string & adrCurv, string & adrGeodesicDepth,
-        string & adrRootsLon, string & adrRootsLat, int extremeties_method, int constraint_type, int strain, vector<float> proba, string saveFolder, float curv_thresh);
+        string & adrRootsLon, string & adrRootsLat, string & adrRootsBottom, string & adrModelParam, int extremeties_method, int constraint_type, int strain, vector<float> proba, string saveFolder, float curv_thresh);
 
     ~SulcalLinesGeodesic();
 
@@ -84,6 +86,9 @@ class SulcalLinesGeodesic
   private :
     void segmentationSulcalBasins (TimeTexture<float> &texIn,TimeTexture<short> &texBasins,map<int,set<int> > &mapBasins,float threshold, int close, int open);
 
+    void computeRootsBottomMap(TimeTexture<short> &texBasins,TimeTexture<short> &texRootsBottom, float dist_max);
+    void constraintListOpen(set<int> & constraintListValues);
+
     void listRootsProjections(TimeTexture<short> &texBasins,set<int> &listIndexLat,set<int> &listIndexLon);
     void computeLongestPathBasins (TimeTexture<short> &roots, TimeTexture<short> &out, map<int,set<int> > &mapConstraint);
 
@@ -99,11 +104,12 @@ class SulcalLinesGeodesic
     void normalizeProbabiltyMap(map<int,set<int> > &mapBasins, map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins,TimeTexture<float> &texProba,TimeTexture<float> &texProbaNorm);
     void textureBin2Label(TimeTexture<short> &texLabel, TimeTexture<short> &texIn, TimeTexture<short> &texOut);
 
+    //embc11
     void sulcalLinesExtract_probability(map<int,set<int> > &mapBasins, TimeTexture<short> &texBasins);
-
+    //neuroimage11
+    void sulcalLinesExtract_density(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins);
+    void automaticThresholdDensityMap(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProbaNorm,TimeTexture<short> &texAutoThreshold,int nb_bin);
 };
 
 
 #endif
-
-
