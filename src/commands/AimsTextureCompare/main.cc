@@ -45,7 +45,10 @@ void compareCurves (map<int,vector<int> > &mapCurv1,map<int,vector<int> > &mapCu
   //double distance_temp;
   //std::vector<double> min_distance_source_target(listIndexVertexSource.size(), 0.0);
   //double max_distance_s_t = 0;
-  //double moy_distance_s_t = 0;
+
+  double somme_min_distance = 0.0;
+  double nb_points = 0.0;
+
   //double ecart_type_distance = 0;
   //
   //cout << "\nsource -> target : " << endl;
@@ -58,12 +61,15 @@ void compareCurves (map<int,vector<int> > &mapCurv1,map<int,vector<int> > &mapCu
   double length;
   double min_distance = 100000;
   int min_target;
+  double max_source_target = 0.0;
 
   for (mit1 = mapCurv1.begin(); mit1 != mend1; mit1++)
   {
 
     vector <int> &c1 = mit1->second;
-    cout << "c1 = " << c1.size() << endl;
+    //cout << "c1 = " << c1.size() << endl;
+
+    nb_points+=c1.size();
 
     for (it1=c1.begin(); it1!=c1.end(); it1++)
     {
@@ -89,10 +95,12 @@ void compareCurves (map<int,vector<int> > &mapCurv1,map<int,vector<int> > &mapCu
 
        }
 
-      cout << source_vertex_index << " " << min_target << " " <<  min_distance << endl;
+      //cout << source_vertex_index << "\t" << min_target << "\t" <<  min_distance << endl;
+      somme_min_distance += min_distance;
 
+      if (min_distance > max_source_target)
+        max_source_target = min_distance;
     }
-
 
 
       //it1 = (mit1->second).begin();
@@ -151,6 +159,8 @@ void compareCurves (map<int,vector<int> > &mapCurv1,map<int,vector<int> > &mapCu
 //    cout << "\nnb points curv = " << listIndexTemp.size() << endl;
 //    mapCurv.insert (pair<int, vector<int> >(nbCurv++, listIndexTemp));
   }
+
+  cout << "Hav " << (float)somme_min_distance/nb_points  << " Hwor " << max_source_target << " ";
 }
 
 void cloud2curv (map<int,set<int> > &mapCloud,map<int,vector<int> > &mapCurv, AimsSurfaceTriangle &surface)
@@ -290,23 +300,30 @@ for( uint i = 0; i < texTarget[0].nItem(); i++)
 
 string adr="";
 vector<float> p;
-SulcalLinesGeodesic slg(meshFileIn,adr,adr,adr,adr, 1, 0, 3, p, 0, 0.0 );
+SulcalLinesGeodesic slg(meshFileIn,adr,adr,adr,adr,adr,adr,1, 0, 3, p, adr, 0.0 );
 
 map<int,set<int> > mapPointSource;
 map<int,vector<int> > mapCurvSource;
 slg.texConnectedComponent(texSourceShort, mapPointSource,1000);
-cout << "component number of source = " << mapPointSource.size() << endl;
+//cout << "component number of source = " << mapPointSource.size() << endl;
 cloud2curv (mapPointSource,mapCurvSource,surface);
 
 map<int,vector<int> > mapCurvTarget;
 map<int,set<int> > mapPointTarget;
 slg.texConnectedComponent(texTargetShort, mapPointTarget,1000);
-cout << "component number of target = " << mapPointTarget.size() << endl;
+//cout << "component number of target = " << mapPointTarget.size() << endl;
 cloud2curv (mapPointTarget,mapCurvTarget,surface);
 
+//cout << "source --> target\n";
+cout << value << " ";
 compareCurves (mapCurvSource,mapCurvTarget,surface);
 
-//
+//cout << "target --> source\n";
+compareCurves (mapCurvTarget,mapCurvSource,surface);
+
+cout << endl;
+
+
 //unsigned source_vertex_index;
 //unsigned target_vertex_index;
 //
@@ -377,4 +394,3 @@ cerr << e.what() << endl;
 }
 return 1;
 }
-
