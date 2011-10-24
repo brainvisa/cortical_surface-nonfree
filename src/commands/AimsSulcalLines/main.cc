@@ -20,9 +20,11 @@ int main(int argc, const char **argv)
   try
   {
     string adrMesh;
-
+    string adrRootsBottom;
     string adrRootsLon = "";
     string adrRootsLat = "";
+
+    string adrModelParam= "";
 
     string adrSaveFolder = "";
 
@@ -52,7 +54,13 @@ int main(int argc, const char **argv)
     app.addOption( adrRootsLat, "-lat", "input Texture Latitude Constraints",true);
     app.alias( "--inTexLat", "-lat" );
 
-    app.addOption( extremeties_method, "-m", "extraction of extremities method :\n1 : projection crop by basins (by default)\n2 : map of probability (embc11 method)\n 3 : map of probability (basin user defined) : ",true);
+    app.addOption( adrRootsBottom, "-b", "sulcus bottom point volume",true );
+    app.alias( "--bottom", "-b" );
+
+    app.addOption( adrModelParam, "-mp", "input model of parameterization (.txt)",true );
+    app.alias( "--inModelParam", "-mp" );
+
+    app.addOption( extremeties_method, "-m", "extraction of extremities method :\n1 : projection crop by basins (by default)\n2 : map of probability (embc11 method)\n3 : map of density (NeuroImage method)\n 4 : map of probability (basin user defined) : ",true);
     app.alias( "--inMethod", "-m" );
 
     app.addOption( adrCurv, "-c", "input Texture Curvature (barycenter curvature by default)",true);
@@ -80,13 +88,14 @@ int main(int argc, const char **argv)
 
     app.initialize();
 
-    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, extremeties_method, constraint_type, strain, proba_list, adrSaveFolder, curv_threshold);
+    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, adrRootsBottom, adrModelParam, extremeties_method, constraint_type, strain, proba_list, adrSaveFolder, curv_threshold);
 
-    if (extremeties_method < 3)
+    if (extremeties_method < 4)
       slg.run();
 
-    if (extremeties_method == 3)
+    if (extremeties_method == 4)
       slg.probaMap();
+
 
     return 0;
 
