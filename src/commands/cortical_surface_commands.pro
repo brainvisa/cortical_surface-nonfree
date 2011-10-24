@@ -32,7 +32,8 @@ PSUBDIRS = AimsConstraintCleaner \
   AimsGroupGyri \
   AimsGeodesicPath \
   AimsInterpolateVolumeToSurface \
-  AimsSulcalLines
+  AimsSulcalLines \
+  AimsTextureCompare
   
   
 
