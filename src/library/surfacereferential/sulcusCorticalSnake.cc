@@ -75,18 +75,20 @@ TimeTexture<float> SulcusCorticalSnake::compute_snake()
   pathIndex = sp->shortestPath_1_1_ind(n1,n2);
 
   for (unsigned i = 0; i < pathIndex.size(); i++)
+  {
+    cout << pathIndex[i] << " ";
     result_total[0].item(pathIndex[i])=value;
+
+  }
 
   std::cout << n1 << " " << n2 << std::endl;
   //ARN end
 
+  cout << "done" << endl;
 
+  //if(test==0)
+  return( result_total );
 
-  if(test==0)
-      {
-    //          std::cout << "testDefineExt=0" << std::endl;
-    return( result_total );
-  }
   //  std::cout << "n1=" << n1 << ", and n2=" << n2 << ", Moving on to finding middle point" << std::endl;
 
   //CED snake begin
