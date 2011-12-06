@@ -148,127 +148,7 @@ int main( int argc, const char** argv )
       GeodesicPath spGyri(surface,2,30);
       uint pS, pN;
 
-//-------------------------------------------------------------------
-      // TEST : LOOKING FOR EXTREMITIES IN A NEW WAY.
 
- /*     float min=1000.0, max=-1000.0;
-      std::vector<uint> ext1, ext2;
-      if (orientation==TOP2BOTTOM)
-      {
-    	  float z;
-    	  for (i=0; i<ns; i++)
-    	  {
-    		  z=surface.vertex()[i][2];
-    		  if (z<min) min=z;
-    		  if (z>max) max=z;
-    	  }
-    	  cerr << "Found min=" << min << ", and max=" << max << endl;
-    	  float t=(max-min)/5.0;
-    	  for (i=0; i<ns; i++)
-    	  {
-    		  z=surface.vertex()[i][2];
-    	      if (z<(min+t)) ext1.push_back(i);
-    	      if (z>(max-t)) ext2.push_back(i);
-    	  }
-      }
-      else if (orientation == BACK2FRONT)
-      {
-       	  float y;
-       	  for (i=0; i<ns; i++)
-       	  {
-       		  y=surface.vertex()[i][1];
-       		  if (y<min) min=y;
-       		  if (y>max) max=y;
-       	  }
-       	  cerr << "Found min=" << min << ", and max=" << max << endl;
-       	  float t=(max-min)/5.0;
-       	  for (i=0; i<ns; i++)
-       	  {
-       		  y=surface.vertex()[i][1];
-        	  if (y<(min+t)) ext1.push_back(i);
-        	  if (y>(max-t)) ext2.push_back(i);
-       	  }
-      }
-      TimeTexture<short> testExt(1,ns);
-      for (i=0; i< ns; i++)
-    	  testExt[0].item(i)=0;
-
-      uint j, i1, i2;
-      GeodesicPath sp(surface,2,5);
-      float l, lmax=0.0;
-
-      std::vector<uint>::iterator extIt1=ext1.begin(), extIt2=ext2.begin();
-      cerr << "sizes: " << ext1.size() << " and " << ext2.size() << endl;
-      int nb=ext1.size() * ext2.size();
-      int cnt=0;
-
-      for (; extIt1!=ext1.end(); ++extIt1)
-    	  for (extIt2=ext2.begin() ; extIt2!=ext2.end(); ++extIt2)
-    	  {
-    		  cnt++;
-    		  cerr << cnt << "/" << nb << endl;
-    		  i=*extIt1;
-    		  j=*extIt2;
-    		  l=sp.shortestPathLength(i,j);
-    		  if (l>lmax)
-    		  {
-    			  lmax=l;
-    		      i1=i;
-    		      i2=j;
-    		  }
-    	  }
-      cerr << "Found " << i1 << ", " << i2 << ", and length " << lmax << endl;
-
-      vector<int> listIndexVertexPathSP;
-
-      listIndexVertexPathSP = sp.shortestPathIndiceVextex(i1,i2);
-      for (i = 0; i < listIndexVertexPathSP.size(); i++)
-    	  testExt[0].item(listIndexVertexPathSP[i]) = 100;
-
-
-  //    for (; extIt!=ext1.end(); ++extIt)
-  //  	  testExt[0].item(*extIt)=10;
-
-//      for (extIt=ext2.begin(); extIt!=ext2.end(); ++extIt)
-  //        	  testExt[0].item(*extIt)=20;
-
-      Writer<TimeTexture<short> > wext("/Users/olivier/Desktop/lmax.tex");
-      wext << testExt;
-      return( 0 );*/
-      /*
-      cerr << "Looking for extremities (experimental) " << endl;
-      uint j, i1, i2;
-      GeodesicPath sp(surface,2,5);
-      TimeTexture<short> testExt(1,ns);
-      float l, lmax=0.0;
-      for (i=0; i<ns; i++)
-    	  for (j=i+1; j<ns; j++)
-    	  {
-    		  l=sp.shortestPathLength(i,j);
-    		  if (l>lmax)
-    		  {
-    			  lmax=l;
-    			  i1=i;
-    			  i2=j;
-    		  }
-    	  }
-      cerr << "Found " << i1 << ", " << i2 << ", and length " << lmax << endl;
-      cerr << "Writing texture /Users/olivier/Dekstop/lmax.tex" << endl;
-
-      vector<int> listIndexVertexPathSP;
-
-      listIndexVertexPathSP = sp.shortestPathIndiceVextex(i1,i2);
-      for (i=0; i< ns; i++)
-    	  testExt[0].item(i)=0;
-
-      for (unsigned i = 0; i < listIndexVertexPathSP.size(); i++)
-          testExt[0].item(listIndexVertexPathSP[i]) = 100;
-      Writer<TimeTexture<short> > wext("/Users/olivier/Dekstop/lmax.tex");
-      wext << testExt;
-
-      cerr << "Done" << endl;
-      */
-//--------------------------------------------------------------------
 
       //bottomDil=AimsMorphoDilation(bottom, 2.0);
       for (int z=0; z<sz; z++)
@@ -660,7 +540,7 @@ int main( int argc, const char** argv )
   
      cout << "Generating constraints" << endl;
 
-     TimeTexture<float> coord_x(1,ns), coord_y(1,ns);
+     TimeTexture<float> coord_x(1,ns), coord_y(1,ns), time_y(100, ns), time_x(100, ns);
      TimeTexture<float> init(1,ns), dist(1,ns);
      TimeTexture<short> poleCC(1,ns), topCC, botCC;
 
@@ -714,7 +594,11 @@ int main( int argc, const char** argv )
 
 
       cerr << "Diffusion of coordinates" << endl;
-
+      for (i=0; i<ns; i++)
+      {
+    	  time_y[0].item(i)=coord_y[0].item(i);
+    	  time_x[0].item(i)=coord_x[0].item(i);
+      }
 
       //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // Diffusion
@@ -746,6 +630,7 @@ int main( int argc, const char** argv )
       float lMax=0, lMaxP=0;
       int flagOut=0;
       float Lmean=0, LmeanP=-10000;
+      int time=0, prev=1;
       while (flagOut<1)
       {
            lMax=-10000.0;
@@ -779,7 +664,17 @@ int main( int argc, const char** argv )
                 }
                 lMaxP=lMax;
                 LmeanP=Lmean;
+
            }
+//           if ((((iteration % 200)==0) || (iteration==100) || (iteration==50) || (iteration==25) || (iteration==12) || (iteration==8) || (iteration==4) || (iteration==2) || (iteration==1)) && (time<100))
+//           {
+//        	   cout << "Iteration:" << iteration << " and time:" << time << endl;
+//        	   time=time+1;
+//               for (i=0; i<ns; i++)
+//               {
+//            	   time_y[time].item(i)=coord_y[0].item(i);
+//               }
+//           }
      }
 
       cout << "\nDiffusion of y coordinate stopped after " << iteration << " iterations" << endl;
@@ -944,7 +839,7 @@ int main( int argc, const char** argv )
 
 //     Writer<TimeTexture<short> >  verifsplit("/Users/olivier/Desktop/split.tex");
 //     verifsplit.write( split);
-
+     time=0; prev=1;
      while (flagOut<1)
      {
           lMax=-10000.0;
@@ -1011,6 +906,14 @@ int main( int argc, const char** argv )
                 lMaxP=lMax;
                 LmeanP=Lmean;
            }
+//           if ((((iteration % 200)==0) || (iteration==100) || (iteration==50) || (iteration==25) || (iteration==12) || (iteration==8) || (iteration==4) || (iteration==2) || (iteration==1)) && (time<100))
+//           {
+//        	   time=time+1;
+//               for (i=0; i<ns; i++)
+//               {
+//            	   time_x[time].item(i)=coord_x[0].item(i);
+//               }
+//           }
      }
 
 //     Texture1d tempBug(1,ns);
@@ -1030,10 +933,14 @@ int main( int argc, const char** argv )
       cerr << "writing texture " << texFile_x << " : " << flush;
       Writer<Texture1d>  texxW( texFile_x );
       texxW.write( coord_x);
+//      Writer<Texture1d>  textxW( "/tmp/timeX.tex" );
+//      textxW.write( time_x);
       cout << "done " << endl;
       cerr << "writing texture " << texFile_y << " : " << flush;
       Writer<Texture1d>  texyW( texFile_y );
       texyW.write( coord_y);
+//      Writer<Texture1d>  textyW( "/tmp/timeY.tex" );
+//      textyW.write( time_y);
       cerr << "done " << endl;
       return( 0 );
     }
