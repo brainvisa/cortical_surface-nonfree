@@ -300,7 +300,7 @@ for( uint i = 0; i < texTarget[0].nItem(); i++)
 
 string adr="";
 vector<float> p;
-SulcalLinesGeodesic slg(meshFileIn,adr,adr,adr,adr,adr,adr,1, 0, 3, p, adr, 0.0 );
+SulcalLinesGeodesic slg(meshFileIn,adr,adr,adr,adr,adr,adr,adr,adr,1, 0, 3, p, adr, 0.0, adr, 0,1);
 
 map<int,set<int> > mapPointSource;
 map<int,vector<int> > mapCurvSource;

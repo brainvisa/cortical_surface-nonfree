@@ -9,25 +9,26 @@
  */
 
 #include <cortical_surface/surfacereferential/sulcalLinesGeodesic.h>
-
 #include <aims/mesh/surfaceOperation.h>
 #include <aims/scalespace/meshDiffuse.h>
 #include <aims/distancemap/meshmorphomat.h>
 #include <fstream>
+#include <aims/distancemap/meshparcellation.h>
 
 using namespace std;
 
 SulcalLinesGeodesic::SulcalLinesGeodesic(string & adrMesh, string & adrCurv,
-    string & adrGeodesicDepth, string & adrRootsLon, string & adrRootsLat,string & adrRootsBottom,string & adrModelParam,
+    string & adrGeodesicDepth, string & adrRootsLon, string & adrRootsLat,string & adrRootsBottom, string & adrLabelBasins, string & adrLabelSulcalines, string & adrSulcalines,
     int extremeties_method, int constraint_type, int strain,
-    vector<float> proba, string saveFolder, float curv_thresh) :
+    vector<float> proba, string saveFolder, float curv_thresh, string side, float clean_size, int constraintValue) :
   _adrMesh(adrMesh), _adrCurv(adrCurv), _adrGeodesicDepth(adrGeodesicDepth),
-      _adrRootsLon(adrRootsLon), _adrRootsLat(adrRootsLat),_adrRootsBottom(adrRootsBottom),_adrModelParam(adrModelParam),
-      _constraint_type(constraint_type), _extremeties_method(extremeties_method), _strain(
-          strain), _proba(proba), _adrSaveFolder(saveFolder), _curv_thresh(
-          curv_thresh)
+      _adrRootsLon(adrRootsLon), _adrRootsLat(adrRootsLat),_adrRootsBottom(adrRootsBottom),_adrLabelBasins(adrLabelBasins),_adrLabelSulcalines(adrLabelSulcalines),_adrSulcalines(adrSulcalines),
+      _constraint_type(constraint_type), _extremeties_method(extremeties_method), _strain(strain),
+      _proba(proba), _adrSaveFolder(saveFolder), _curv_thresh(curv_thresh), _side(side), _clean_size(clean_size),_constraintValue(constraintValue)
+
 {
 //  std::cout << "Read mesh : ";
+
   Reader<AimsSurfaceTriangle> r(adrMesh);
   r.read(_mesh);
 //  std::cout << "done" << std::endl;
@@ -198,9 +199,8 @@ void SulcalLinesGeodesic::probaMap()
   cout << "compute probability map" << endl;
   TimeTexture<float> texProba(1, _mesh.vertex().size());
   TimeTexture<float> texProbaNorm(1, _mesh.vertex().size());
-  computeProbabiltyMap(mapContourBasins, texContourBasins, texProba);
-  normalizeProbabiltyMap(mapBasins, mapContourBasins, texContourBasins,
-      texProba, texProbaNorm);
+  computeProbabiltyMap(mapContourBasins, texContourBasins, texBasins, texProba);
+  normalizeProbabiltyMap(mapBasins, mapContourBasins, texContourBasins, texProba, texProbaNorm);
   if (_save)
   {
     TimeTexture<short> texAutoThreshold(1, _mesh.vertex().size());
@@ -350,59 +350,143 @@ TimeTexture<short> SulcalLinesGeodesic::texConnectedComponent(
   return texTemp;
 }
 
-void SulcalLinesGeodesic::constraintListOpen(set<int> & constraintListValues)
+void SulcalLinesGeodesic::computeConstraintList(map<int,int> & listValues)
 {
-  //QString filt = "(*.txt)" ;
-  //QString capt = "Open constraints file" ;
-
-  //QString filename;
-
-  //_adrModelParam
-  //filename = QFileDialog::getOpenFileName( QString::null, filt, 0, 0, capt );
-
+  //lecture labels pour l'étiquetage des bassins
   string line;
-  ifstream myfile(_adrModelParam.c_str());
-
-  cout << _adrModelParam << endl;
+  ifstream myfile(_adrLabelBasins.c_str());
 
   int value;
+  string name;
+
+  map<string,int> listBasinsValues;
+  map<string,int> listConstraintsValues;
 
   if (myfile.is_open())
   {
-    cout << "open " << _adrModelParam.c_str() << endl;
+    cout << "open " << _adrLabelBasins.c_str() << endl;
 
     while (myfile.good())
     {
       getline(myfile, line);
       if (line.length() != 0)
         {
-        //constraintListNames.insert(line);
-        //istringstream iss(line);
-        //iss >> value;
         int position = line.find_last_of('\t');
         std::istringstream strin(line.substr(position + 1));
         strin >> value;
-        //cout << value << endl;
-        constraintListValues.insert(value);
+        //cout << value;
+        name = line.substr(0,position);
+        //cout << " --" << name << "--" << endl;
+        listBasinsValues.insert(pair<string, int > (name,value));
         }
 
     }
     myfile.close();
   }
 
+  //lecture labels pour l'étiquetage des lignes sulcales
+  ifstream myfileSulcalines(_adrLabelSulcalines.c_str());
+
+  if (myfileSulcalines.is_open())
+  {
+    cout << "open " << _adrLabelSulcalines.c_str() << endl;
+
+    while (myfileSulcalines.good())
+    {
+      getline(myfileSulcalines, line);
+      if (line.length() != 0)
+        {
+        int position_last = line.find_last_of(' ');
+        std::istringstream strin(line.substr(position_last + 1));
+        strin >> value;
+        //cout << value;
+
+        int position_first = line.find_first_of(' ');
+
+        name = line.substr(position_first+1, position_last - position_first-1)+'_'+_side;
+        //cout << " -" << line << " -*" << name << "*" << endl;
+        listConstraintsValues.insert(pair<string, int > (name,value));
+        }
+
+    }
+    myfileSulcalines.close();
+  }
+
+  //affichage des correspondances entre les labels des contraintes et les labels des bassins
+
+  map<string, int >::const_iterator mit(listConstraintsValues.begin()), mend(listConstraintsValues.end());
+  //map<string, int >::const_iterator mit(listBasinsValues.begin()), mend(listBasinsValues.end());
+
+  map<string, int >::const_iterator it,ite(listBasinsValues.end());
+
+  listValues.clear();
+
+  //On parcourt les tous bassins
+  for (; mit != mend; ++mit)
+  {
+    cout << mit->first << " " << mit->second;
+    it = listBasinsValues.find(mit->first);
+
+    if (it != ite)
+      {
+      value = it->second;
+      listValues.insert(pair<int, int >(value,mit->second));
+      cout << " Label OK " << value;
+      }
+    else
+      cout << " Label not found in traduction file" ;
+
+    cout << endl;
+
+    //cout << " (tr)=> " << constraintListValuesBasins.find(mit->first)->second << endl;
+  }
 }
+//
+//void SulcalLinesGeodesic::constraintListOpen(set<int> & constraintListValues)
+//{
+//  //labels pour l'étiquetage des bassins
+//  string line;
+//  ifstream myfile(_adrLabelBasins.c_str());
+//
+//  int value;
+//
+//  if (myfile.is_open())
+//  {
+//    cout << "open " << _adrLabelBasins.c_str() << endl;
+//
+//    while (myfile.good())
+//    {
+//      getline(myfile, line);
+//      if (line.length() != 0)
+//        {
+//        //constraintListNames.insert(line);
+//        //istringstream iss(line);
+//        //iss >> value;
+//        int position = line.find_last_of('\t');
+//        std::istringstream strin(line.substr(position + 1));
+//        strin >> value;
+//        //cout << value << endl;
+//        constraintListValues.insert(value);
+//        }
+//
+//    }
+//    myfile.close();
+//  }
+//
+//}
 
 void SulcalLinesGeodesic::computeRootsBottomMap(TimeTexture<short> &texBasins,TimeTexture<short> &texRootsBottom, float dist_max)
 {
-  cout << "reading bottom volume  : " << _adrRootsBottom << flush;
+  // map basins label / latlon value
+  map<int,int> listConstraintValues;
+
+  computeConstraintList(listConstraintValues);
+
+  cout << "\nreading volume  : " << _adrRootsBottom << flush;
   AimsData<short> bottom;
   Reader<AimsData<short> > bottomR(_adrRootsBottom);
   bottomR >> bottom;
-  cout << "done" << endl;
-
-  set<int> constraintListValues;
-
-  constraintListOpen(constraintListValues);
+  cout << " done" << endl;
 
   int x,y,z,sx,sy,sz;
   float dx, dy, dz;
@@ -410,12 +494,15 @@ void SulcalLinesGeodesic::computeRootsBottomMap(TimeTexture<short> &texBasins,Ti
   sx=bottom.dimX(); sy=bottom.dimY(); sz=bottom.dimZ();
   dx=bottom.sizeX(); dy=bottom.sizeY(); dz=bottom.sizeZ();
 
+  cout << "volume size : \n";
   std::cout << "dx=" << dx << ", dy=" << dy << ", dz=" << dz << endl;
   std::cout << "sx=" << sx << ", sy=" << sy << ", sz=" << sz << endl;
 
   const vector<Point3df>      & vert = _mesh.vertex() ;
   vector<pair<Point3df,int> >  cloud;
-  set<int>::iterator it;
+
+  map<int,int>::iterator it;
+  //set<int>::iterator it;
 
   for (int z=0; z<sz; z++)
    for (int y=0; y<sy; y++)
@@ -427,24 +514,25 @@ void SulcalLinesGeodesic::computeRootsBottomMap(TimeTexture<short> &texBasins,Ti
 
   vector<pair<Point3df,int> >::const_iterator itb(cloud.begin()), ite(cloud.end());
 
-  cout << "nb bottom point = " << cloud.size() << endl;
+  cout << "bucket number = " << cloud.size() << endl;
 
   const vector<Point3df> & norm = _mesh.normal();
 
   int imin;
   float min,dist,xx,yy,zz,no;
   float vvx,vvy,vvz,angle;
+  int pourcent,old_t = 0;
 
-  float testx,testy,testz;
-
-  AimsSurfaceTriangle *tmpMeshOut,meshOut;
-  tmpMeshOut = new AimsSurfaceTriangle;
+//  AimsSurfaceTriangle *tmpMeshOut,meshOut;
+//  tmpMeshOut = new AimsSurfaceTriangle;
 
 //  for (itb = cloud.begin(); itb != cloud.end(); ++itb)
 //  {
 //    tmpMeshOut = SurfaceGenerator::sphere((itb->first), 0.05 ,10 );
 //    SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
 //  }
+
+  cout << "Label sulcal basins \n";
 
   for (uint i = 0; i < _mesh.vertex().size(); i++)
   {
@@ -487,132 +575,62 @@ void SulcalLinesGeodesic::computeRootsBottomMap(TimeTexture<short> &texBasins,Ti
           vvz = zz;
           }
         }
-//        else
-//        {
-//          if (dist < min)
-//          {
-//            no = sqrt(xx*xx + yy*yy + zz*zz);
-//            angle=acos((float)p/no)*(180./M_PI);
-//            if (angle < 120)
-//            {
-//              min = dist;
-//              imin = itb->second;
-//              vvx = xx;
-//              vvy = yy;
-//              vvz = zz;
-//            }
-//          }
-//
-//
-//        }
 
         //cout << itb->second << " " << (itb->first)[0]<< " " << (itb->first)[1]<< " " << (itb->first)[2] << endl;
       }
 
-      it=constraintListValues.find(imin);
-      if (it!=constraintListValues.end())
+      it=listConstraintValues.find(imin);
+      if (it!=listConstraintValues.end())
       {
         if (min < dist_max)
-          texRootsBottom[0].item(i) = imin;
+          {
+          // if basin label mode
+          if (_constraintValue == 1)
+            texRootsBottom[0].item(i) = imin;
+          else
+            texRootsBottom[0].item(i) = it->second;
+          }
         else
           {
           texRootsBottom[0].item(i) = -1;
 
           //cout << i << " " << min << endl;
-          tmpMeshOut = SurfaceGenerator::sphere(vert[i], 0.1 ,10 );
-          SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
-
-          tmpMeshOut = SurfaceGenerator::cylinder(vert[i], vert[i]+ norm[i],0.05, 0.05, 12, false, true);
-          SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
-
-          tmpMeshOut = SurfaceGenerator::sphere(vert[i]+ norm[i], 0.1 ,10 );
-          SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
-
-          Point3df test(vvx,vvy,vvz);
-          tmpMeshOut = SurfaceGenerator::sphere(vert[i]+ test, 0.1 ,10 );
-
-          SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
-
-          tmpMeshOut = SurfaceGenerator::cylinder(vert[i], vert[i]+ test,0.05, 0.05, 12, false, true);
-          SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
+//          tmpMeshOut = SurfaceGenerator::sphere(vert[i], 0.1 ,10 );
+//          SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
+//
+//          tmpMeshOut = SurfaceGenerator::cylinder(vert[i], vert[i]+ norm[i],0.05, 0.05, 12, false, true);
+//          SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
+//
+//          tmpMeshOut = SurfaceGenerator::sphere(vert[i]+ norm[i], 0.1 ,10 );
+//          SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
+//
+//          Point3df test(vvx,vvy,vvz);
+//          tmpMeshOut = SurfaceGenerator::sphere(vert[i]+ test, 0.1 ,10 );
+//
+//          SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
+//
+//          tmpMeshOut = SurfaceGenerator::cylinder(vert[i], vert[i]+ test,0.05, 0.05, 12, false, true);
+//          SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
 
           }
       }
 
-
-      //on calcule le produit scalaire p entre le vecteur vv [vertex,voxel] et la normale au vertex
-      //si p est négatif alors on attribue le label -1 sinon on attribue le label du voxel
-//      double p;
-//      //Point3df vv(vvx,vvy,vvz);
-//
-//      p = vvx*norm[i][0] + vvy*norm[i][1] + vvz*norm[i][2];
-
-
-
-
-//      if (i == 87440)
-//        cout << " scal = " << p << " " << norm[i][0]  << " " << norm[i][1] << " " << norm[i][2] << endl;
-//
-//      if (i == 50544)
-//        cout << " scal = " << p << " " << norm[i][0]  << " " << norm[i][1] << " " << norm[i][2] << endl;
-
-//      if (p < 0 )
-//        {
-//        no = sqrt(vvx*vvx + vvy*vvy + vvz*vvz);
-//
-//        angle=acos((float)p/no)*(180./M_PI);
-//
-////        cout << "angle = " << angle <<  endl;
-////
-////        cout << " scal = " << p << " " << norm[i][0]  << " " << norm[i][1] << " " << norm[i][2] << endl;
-////
-//        testx = vvx;
-//        testy = vvy;
-//        testz = vvz;
-//
-//        tmpMeshOut = SurfaceGenerator::sphere(vert[i], 0.1 ,10 );
-//        SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
-//
-//        tmpMeshOut = SurfaceGenerator::cylinder(vert[i], vert[i]+ norm[i],0.05, 0.05, 12, false, true);
-//        SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
-//
-//        tmpMeshOut = SurfaceGenerator::sphere(vert[i]+ norm[i], 0.1 ,10 );
-//        SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
-//
-//
-//        Point3df test(testx,testy,testz);
-//
-//        tmpMeshOut = SurfaceGenerator::sphere(vert[i]+ test, 0.1 ,10 );
-//
-//        SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
-//
-//        tmpMeshOut = SurfaceGenerator::cylinder(vert[i], vert[i]+ test,0.05, 0.05, 12, false, true);
-//        SurfaceManip::meshMerge( meshOut, *tmpMeshOut );
-//        }
-//
-//      it=constraintListValues.find(imin);
-//      if (it!=constraintListValues.end())
-//      {
-//        if (p >= 0)
-//          texRootsBottom[0].item(i) = imin;
-//        else
-//          texRootsBottom[0].item(i) = 500;
-//      }
-//
     }
-    cout << "%\r\033[K" << (int)(100*(float)i/_mesh.vertex().size());
+
+    pourcent = (int)(100*(float)i/_mesh.vertex().size());
+    if (pourcent != old_t)
+    {
+      old_t = pourcent;
+      cout << old_t << "%\n" ;
+    }
+
 
   }
 
+//  Writer<AimsSurfaceTriangle> wm("test.mesh");
+//  wm.write(meshOut);
 
-
-
-
-
-  Writer<AimsSurfaceTriangle> wm("test.mesh");
-  wm.write(meshOut);
-
-
+  cout << "done\n";
 }
 
 void SulcalLinesGeodesic::listRootsProjections(TimeTexture<short> &texBasins,
@@ -701,7 +719,7 @@ void SulcalLinesGeodesic::computeListLabelProjectionsBasins(
           }
         }
       }
-      // on insert la liste temporaire à la map lat du bassin
+
       if (!listIndexTemp.empty())
         mapConstraint.insert(pair<int, set<int> > (nbConstraint++,
             listIndexTemp));
@@ -740,6 +758,7 @@ void SulcalLinesGeodesic::computeLongestPathBasins(TimeTexture<short> &roots,
   }
 
   GeodesicPath sp(_mesh, texConstraint, method, _strain);
+  //GeodesicPath sp(_mesh, texConstraint, 1 , _strain);
 
   int source, target;
   int constraintValue;
@@ -748,7 +767,7 @@ void SulcalLinesGeodesic::computeLongestPathBasins(TimeTexture<short> &roots,
   {
     indexTemp.clear();
 
-    cout << "\nbasin " << (int) mit->first << " : \n";
+    //cout << "\nbasin " << (int) mit->first << " : \n";
     it = (mit->second).begin();
 
     //on copie la liste des index de sommets set --> vector (non nul)
@@ -765,7 +784,7 @@ void SulcalLinesGeodesic::computeLongestPathBasins(TimeTexture<short> &roots,
       //on récupère la valeur de la contrainte
       constraintValue = roots.item(*(indexTemp.begin()));
 
-      cout << "value " << constraintValue << endl;
+      //cout << "value " << constraintValue << endl;
       //on calcule le plus long chemin
       pathTemp.clear();
       double len;
@@ -789,6 +808,10 @@ void SulcalLinesGeodesic::normalizeDepthMap(TimeTexture<float> &depth,
   int n_b = 0;
   float max_depth, val;
 
+  //on initialise le background à -10000 pour empêcher les chemins de passer par là
+  for (uint i = 0; i < _mesh.vertex().size(); i++)
+    depthNorm[0].item(i) = -1000.0;
+
   //on normalise la profondeur dans chaque bassin entre 0 et 1
   for (; mit != mend; ++mit)
   {
@@ -805,11 +828,16 @@ void SulcalLinesGeodesic::normalizeDepthMap(TimeTexture<float> &depth,
     listVertexbasin = (mit->second).begin();
     for (; listVertexbasin != (mit->second).end(); listVertexbasin++)
     {
+//      if (max_depth != 0)
+//        depthNorm[0].item(*listVertexbasin) = 1.0 - (float) (depth[0].item(
+//            *listVertexbasin)) / max_depth;
+//      else
+//        depthNorm[0].item(*listVertexbasin) = 1.0;
+//
       if (max_depth != 0)
-        depthNorm[0].item(*listVertexbasin) = (float) (depth[0].item(
-            *listVertexbasin)) / max_depth;
+        depthNorm[0].item(*listVertexbasin) = (float) (depth[0].item(*listVertexbasin)) / max_depth;
       else
-        depthNorm[0].item(*listVertexbasin) = 0;
+        depthNorm[0].item(*listVertexbasin) = 0.0;
     }
   }
 }
@@ -894,46 +922,128 @@ void SulcalLinesGeodesic::interRootsDilBasins(TimeTexture<short> &texBasins,
       texInter[0].item(i) = texDil[0].item(i);
 }
 
-void SulcalLinesGeodesic::cleanBasins(map<int, set<int> > &mapBasins,
-    TimeTexture<short> &texBasins, int nbPoint)
+void SulcalLinesGeodesic::vertexmap2polygonMap(map<int, set<int> > &mapVertexSetBasins, map<int, vector<int> > &mapPolygonSetBasins)
 {
+  Point3df v1, v2, v3;
   map<int, set<int> >::iterator it;
-  set<int>::iterator its;
+  map<int, vector<int> >::iterator itv;
+  set<int>::iterator it0,it1,it2;
 
-  map<int, set<int> > mapBasinsClean;
+  mapPolygonSetBasins.clear();
 
-  for (it = mapBasins.begin(); it != mapBasins.end(); ++it)
+  for (it = mapVertexSetBasins.begin(); it != mapVertexSetBasins.end(); ++it)
+    cout << "bassin num " << (*it).first << " nb_vertex = " << (*it).second.size() << "\n";
+
+  std::vector< AimsVector<uint,3> > poly=_mesh.polygon();
+  std::vector< AimsVector<uint,3> >::iterator polyIt;
+
+  //pour chaque triangle polyIt
+  int ind_poly = 0;;
+
+  for (polyIt=poly.begin(),ind_poly = 0; polyIt!=poly.end(); ++polyIt)
   {
-
-    its = ((*it).second).begin();
-
-    //cout << "bassin " << (*it).first << " " << (*it).second.size() << "\n";
-
-    //calcul de l'aire du bassin A = 1/2||a^b||
-
-//    n.x = (a.y * b.z) - (a.z * b.y)
-//    n.y = (a.z * b.x) - (a.x * b.z)
-//    n.z = (a.x * b.y) - (a.y * b.x)
-
-    if (((*it).second).size() < nbPoint)
+    ++ind_poly;
+    //on cherche le bassin qui contient les trois sommets du triangle polyIt
+    for (it = mapVertexSetBasins.begin(); it != mapVertexSetBasins.end(); ++it)
     {
-      //on efface tous les vertex de la texture texBasins groupés dans des bassins qui contiennent moins de nbPoint
-      for (; its != ((*it).second).end(); its++)
-        texBasins[0].item(*its) = 0;
+      //cout << (*polyIt)[0] << " " << (*polyIt)[1] << " " << (*polyIt)[2] << endl;
+      it0 = (*it).second.find((*polyIt)[0]);
+      it1 = (*it).second.find((*polyIt)[1]);
+      it2 = (*it).second.find((*polyIt)[2]);
 
-      //cout << " del\n";
-      // on l'enlève ensuite de la map des bassins
-      //mapBasins.erase (it);
+//      //si les trois sont trouvés on ajoute l'indice ind_poly dans le vecteur de la map mapPolygonSetBasins
+      if (it0 != (*it).second.end() && it1 != (*it).second.end() && it2 != (*it).second.end())
+        mapPolygonSetBasins[(*it).first].push_back(ind_poly);
     }
-    else
-      mapBasinsClean.insert(*it);
   }
 
-  //cout << "cleaning\n" << endl;
-  for (it = mapBasinsClean.begin(); it != mapBasinsClean.end(); ++it)
-    cout << "bassin " << (*it).first << " " << (*it).second.size() << "\n";
+//  vector<int>::iterator it3;
+//
+//  for (itv = mapPolygonSetBasins.begin(); itv != mapPolygonSetBasins.end(); ++itv)
+//  {
+//    cout << "bassin polygon" << (*itv).first << " " << (*itv).second.size() << "\n";
+//
+//    for (it3 = (*itv).second.begin(); it3 != (*itv).second.end(); ++it3)
+//      cout << (*it3) << " ";
+//
+//  }
+
+}
+
+void SulcalLinesGeodesic::cleanBasins(map<int,set<int> > &mapBasins,TimeTexture<short> &texBasins,map<int, vector<int> > &mapPolygonSetBasins,float min_area_size)
+{
+  vector<int>::iterator itp;
+  map<int, vector<int> >::iterator it;
+  map<int, set<int> > mapBasinsClean;
+
+  map<int,set<int> >::iterator itmp;
+  set<int>::iterator its;
+
+//  map<int, set<int> >::iterator itc;
+//   map<int, set<int> >::iterator itb;
+//   set<int>::iterator its;
+//
+//   its = ((*itb).second).begin();
+
+
+  std::vector< AimsVector<uint,3> > poly=_mesh.polygon();
+  vector<Point3df> & vert = _mesh.vertex();
+
+  //for (it = mapPolygonSetBasins.begin(); it != mapPolygonSetBasins.end(); ++it)
+  for (it = mapPolygonSetBasins.begin(); it != mapPolygonSetBasins.end(); ++it)
+  {
+    cout << "bassin num " << (*it).first << " nb_poly =  " << (*it).second.size() << " ";
+    //pour tous les polygones its du bassin it
+
+    Point3df v1, v2, v3;
+    double area=0.0;
+
+    for (itp = ((*it).second).begin(); itp != ((*it).second).end(); itp++)
+    {
+      //calcul de l'aire d'un triangle A = 1/2||a^b||
+      v1=vert[poly[*itp][0]];
+      v2=vert[poly[*itp][1]];
+      v3=vert[poly[*itp][2]];
+      double aire;
+      Point3df cross=vectProduct( v2-v1, v3-v1);
+      aire=cross.dnorm()/2.0;
+      area += aire;
+    }
+
+    cout << "  A = " << area << " m²" << endl;
+
+//    if ( area < min_area_size)
+//    {
+//      //on efface tous les vertex de la texture texBasins groupés dans des bassins dont l'aire est < à max_area_size
+//      itmp = mapBasins.find((*it).first);
+//      for (its = ((*itmp).second).begin(); its != ((*itmp).second).end(); ++its)
+//        texBasins[0].item(*its) = 0;
+//    }
+    if ( area >= min_area_size)
+      {
+      //mapBasinsClean.insert(*it);
+      mapBasinsClean[(*it).first] = mapBasins[(*it).first];
+      }
+  }
+
+  map<int, set<int> >::iterator itv;
+
+  TimeTexture<short> texBasinsClean(1, _mesh.vertex().size());
+
+  for (uint i = 0; i < texBasins[0].nItem(); i++)
+    texBasinsClean[0].item(i) = 0.0;
+
+  cout << "after cleaning\n" << endl;
+  for (itv = mapBasinsClean.begin(); itv != mapBasinsClean.end(); ++itv)
+    {
+    cout << "bassin num " << (*itv).first << " nb_vertex =" << (*itv).second.size() << "\n";
+
+    for (its = ((*itv).second).begin(); its != ((*itv).second).end(); ++its)
+      texBasinsClean[0].item(*its) = texBasins[0].item(*its);
+    }
 
   mapBasins = mapBasinsClean;
+  texBasins = texBasinsClean;
 }
 
 void SulcalLinesGeodesic::contourBasins(map<int, set<int> > &mapBasins,
@@ -978,7 +1088,7 @@ void SulcalLinesGeodesic::contourBasins(map<int, set<int> > &mapBasins,
 
 void SulcalLinesGeodesic::computeProbabiltyMap(
     map<int, set<int> > &mapContourBasins,
-    TimeTexture<short> &texContourBasins, TimeTexture<float> &texProba)
+    TimeTexture<short> &texContourBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProba)
 {
   map<int, set<int> >::iterator itc;
   set<int>::iterator its;
@@ -1009,6 +1119,7 @@ void SulcalLinesGeodesic::computeProbabiltyMap(
   }
 
   GeodesicPath sp(_mesh, texConstraint, method, _strain);
+  //GeodesicPath sp(_mesh, texConstraint, 1, _strain);
 
   //pour tous les bassins
   for (itc = mapContourBasins.begin(); itc != mapContourBasins.end(); itc++)
@@ -1019,7 +1130,7 @@ void SulcalLinesGeodesic::computeProbabiltyMap(
     its = ((*itc).second).begin();
 
     value = texContourBasins[0].item(*its);
-    cout << "value = " << value << endl;
+    //cout << "value = " << value << endl;
 
     //pour tous les points its du bassin it
     for (; its != ((*itc).second).end(); its++)
@@ -1037,14 +1148,36 @@ void SulcalLinesGeodesic::computeProbabiltyMap(
       sp.shortestPath_1_N_All_ind(*its, listIndexTarget, indices);
 
       nb_v += indices.size();
-      cout << "\r\033[K" << "extremities : " << ++nb_c << "/"
-          << listIndexTarget.size() << " vertex : " << nb_v << flush;
+      cout << "\r\033[K" << "extremities : " << ++nb_c << "/" << listIndexTarget.size() << " vertex : " << nb_v << flush;
 
-      //on incrémente les valeurs de la texture proba pour chaque point ayant été parcourue
+      //on incrémente les valeurs de la texture proba pour chaque point ayant été parcouru
       for (it_vv = indices.begin(); it_vv != indices.end(); it_vv++)
         for (it_v = (*it_vv).begin(); it_v != (*it_vv).end(); it_v++)
         {
-          texProba[0].item(*it_v)++;
+          //si le point est dans le bassin, alors on incrémente
+          if (value == texBasins[0].item(*it_v))
+            texProba[0].item(*it_v)++;
+        }
+
+      //on efface toutes les frontières de bassins
+      for (uint i = 0; i < texContourBasins[0].nItem(); i++)
+        {
+        if (texContourBasins[0].item(i) == value)
+          {
+          set<uint> voisins = _neigh[i];
+          set<uint>::iterator voisIt = voisins.begin();
+          int nb_vois;
+          nb_vois = 0;
+          //on parcourt tous les voisins du sommet, si un voisin a une valeur differente de 0 et value alors le point est une frontière
+          for (; voisIt != voisins.end(); voisIt++)
+          {
+            if (texContourBasins[0].item(*voisIt) != value && texContourBasins[0].item(*voisIt)!= 0)
+              nb_vois++;
+          }
+
+          if (nb_vois > 0)
+            texProba[0].item(i) = 0.0;
+          }
         }
     }
 
@@ -1107,9 +1240,11 @@ void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapB
 
   ofstream myfile;
 
+  string filename = _adrSaveFolder + "infos.txt";
+
   if (_save)
   {
-    myfile.open("infos.txt");
+    myfile.open(filename.c_str());
   }
 
   //pour tous les bassins
@@ -1127,8 +1262,7 @@ void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapB
 
     value = texBasins[0].item(*its);
 
-    cout << "\nbassin " << (*itb).first << " --> " << value << " "
-        << (*itb).second.size() << "\n";
+    cout << "\nbassin " << (*itb).first << " --> " << value << " " << (*itb).second.size() << "\n";
 
     if (_save)
       myfile << "\nbassin " << (*itb).first << " --> " << value << " " << (*itb).second.size() << "\n";
@@ -1300,7 +1434,7 @@ void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapB
     if (_save)
     myfile << "seuil select = " << seuil << " nb_ext = " << min_ext << endl;
 
-    cout << "seuil select = " << seuil << " nb_ext = " << min_ext << endl;
+    //cout << "seuil select = " << seuil << " nb_ext = " << min_ext << endl;
 
     while (extremities[seuil] <= min_ext)
       seuil--;
@@ -1381,10 +1515,19 @@ void SulcalLinesGeodesic::sulcalLinesExtract_probability(
   }
 
   //on ne conserve que les bassins qui au plus de "clean_size" vertex
-  int clean_size = 250;
+  //int clean_size = 250;
 
-  cleanBasins(mapBasinsLat, texInterRootsBasinsLat, clean_size);
-  cleanBasins(mapBasinsLon, texInterRootsBasinsLon, clean_size);
+  map<int, vector<int> > mapPolygonListBasinsLat;
+  vertexmap2polygonMap(mapBasinsLat,mapPolygonListBasinsLat);
+  cleanBasins(mapBasinsLat, texInterRootsBasinsLat,mapPolygonListBasinsLat, _clean_size);
+
+  map<int, vector<int> > mapPolygonListBasinsLon;
+  vertexmap2polygonMap(mapBasinsLon,mapPolygonListBasinsLon);
+  cleanBasins(mapBasinsLon, texInterRootsBasinsLon,mapPolygonListBasinsLon, _clean_size);
+//  cleanBasins(mapBasinsLat, texInterRootsBasinsLat, clean_size);
+//  cleanBasins(mapBasinsLon, texInterRootsBasinsLon, clean_size);
+//
+
   cout << "after cleaning" << endl;
   cout << mapBasinsLat.size() << " Basins Lat found" << endl;
   cout << mapBasinsLon.size() << " Basins Lon found" << endl;
@@ -1413,9 +1556,8 @@ void SulcalLinesGeodesic::sulcalLinesExtract_probability(
   cout << "latitude :" << endl;
   TimeTexture<float> texProbaLat(1, _mesh.vertex().size());
   TimeTexture<float> texProbaNormLat(1, _mesh.vertex().size());
-  computeProbabiltyMap(mapContourBasinsLat, texContourBasinsLat, texProbaLat);
-  normalizeProbabiltyMap(mapBasinsLat, mapContourBasinsLat,
-      texContourBasinsLat, texProbaLat, texProbaNormLat);
+  computeProbabiltyMap(mapContourBasinsLat, texContourBasinsLat, texInterRootsBasinsLat,texProbaLat);
+  normalizeProbabiltyMap(mapBasinsLat, mapContourBasinsLat, texContourBasinsLat, texProbaLat, texProbaNormLat);
 
   if (_save)
   {
@@ -1426,7 +1568,7 @@ void SulcalLinesGeodesic::sulcalLinesExtract_probability(
   cout << "longitude :" << endl;
   TimeTexture<float> texProbaLon(1, _mesh.vertex().size());
   TimeTexture<float> texProbaNormLon(1, _mesh.vertex().size());
-  computeProbabiltyMap(mapContourBasinsLon, texContourBasinsLon, texProbaLon);
+  computeProbabiltyMap(mapContourBasinsLon, texContourBasinsLon,texInterRootsBasinsLon, texProbaLon);
   normalizeProbabiltyMap(mapBasinsLon, mapContourBasinsLon,
       texContourBasinsLon, texProbaLon, texProbaNormLon);
 
@@ -1520,22 +1662,26 @@ void SulcalLinesGeodesic::sulcalLinesExtract_density(
 
   texConnectedComponent(texRootsBottom, mapBasinsRoots, 1000);
 
-  cout << mapBasinsRoots.size() << " Basins Roots found" << endl;
+  cout << mapBasinsRoots.size() << " Sulcal Basins found" << endl;
 
   //on ne conserve que les bassins qui au plus de "clean_size" vertex
 
   //utiliser une mesure en mm2 et pas un nombre de sommets
 
-  int clean_size = 50;
+  //int clean_size = 50;
 
   TimeTexture<short> texRootsBottomClean(1, _mesh.vertex().size());
 
   for (uint i = 0; i < texRootsBottom[0].nItem(); i++)
     texRootsBottomClean[0].item(i) = texRootsBottom[0].item(i);
 
-  cleanBasins(mapBasinsRoots, texRootsBottomClean, clean_size);
+
+  map<int, vector<int> > mapPolygonListBasins;
+  vertexmap2polygonMap(mapBasinsRoots,mapPolygonListBasins);
+
+  cleanBasins(mapBasinsRoots, texRootsBottomClean,mapPolygonListBasins, _clean_size);
   cout << "after cleaning" << endl;
-  cout << mapBasinsRoots.size() << " Basins Roots found" << endl;
+  cout << mapBasinsRoots.size() << " Sulcal Basins found" << endl;
 
   if (_save)
   {
@@ -1554,89 +1700,36 @@ void SulcalLinesGeodesic::sulcalLinesExtract_density(
   cout << "compute probability map" << endl;
   TimeTexture<float> texProba(1, _mesh.vertex().size());
   TimeTexture<float> texProbaNorm(1, _mesh.vertex().size());
-  computeProbabiltyMap(mapContourBasins, texContourBasins, texProba);
-  normalizeProbabiltyMap(mapBasinsRoots, mapContourBasins,
-      texContourBasins, texProba, texProbaNorm);
+  computeProbabiltyMap(mapContourBasins, texContourBasins, texRootsBottomClean, texProba);
+  normalizeProbabiltyMap(mapBasinsRoots, mapContourBasins,texContourBasins, texProba, texProbaNorm);
+
+  TimeTexture<short> texAutoThreshold(1, _mesh.vertex().size());
+  //saveHistoProbabiltyMap(mapBasinsRoots, texRootsBottomClean,"histoRoots.txt");
+  cout << "done " << endl;
+
+  cout << "automatic threshold " << endl;
+
+  int nb_bin = 50;
+  automaticThresholdDensityMap(mapBasinsRoots,texRootsBottomClean,texProbaNorm,texAutoThreshold,nb_bin);
+
+  cout << "done " << endl;
+
+  TimeTexture<short> texSulcalines(1, _mesh.vertex().size() );
+
+  cout << "compute longest path " << endl;
+
+  computeLongestPathBasins (texAutoThreshold, texSulcalines, mapBasinsRoots);
+
+  if (_adrSulcalines != "")
+    writeShortTexture(_adrSulcalines.c_str(), texSulcalines);
 
   if (_save)
   {
     writeFloatTexture("proba_roots.tex", texProba);
     writeFloatTexture("proba_roots_norm.tex", texProbaNorm);
-
-    TimeTexture<short> texAutoThreshold(1, _mesh.vertex().size());
-    //saveHistoProbabiltyMap(mapBasinsRoots, texRootsBottomClean,"histoRoots.txt");
-    automaticThresholdDensityMap(mapBasinsRoots,texRootsBottomClean,texProbaNorm,texAutoThreshold,50);
-    if (_save)
-      writeShortTexture("threshold_auto.tex", texAutoThreshold);
-
-    TimeTexture<short> texSulcalines(1, _mesh.vertex().size() );
-    computeLongestPathBasins (texAutoThreshold, texSulcalines, mapBasinsRoots);
-    if (_save)
-      writeShortTexture("sulcalines.tex", texSulcalines);
-
-
+    writeShortTexture("threshold_auto.tex", texAutoThreshold);
   }
+
   cout << "done " << endl;
 
-
-  //
-  //  vector<float>::iterator itp;
-  //  for ( itp=_proba.begin(); itp != _proba.end(); itp++)
-  //  {
-  //    cout << "proba value = " << *itp << endl;
-  //
-  //    cout << "threshold probability map" << endl;
-  //    TimeTexture<short> texProbaThreshLat(1, _mesh.vertex().size() );
-  //    texBinarizeF2S(texProbaNormLat, texProbaThreshLat, *itp ,0 ,1);
-  //    TimeTexture<short> texProbaThreshLon(1, _mesh.vertex().size() );
-  //    texBinarizeF2S(texProbaNormLon, texProbaThreshLon, *itp ,0 ,1);
-  //    cout << "done " << endl;
-  //
-  //    std::ostringstream buff;
-  //    buff<<(*itp);
-  //    size_t found;
-  //    string convert = buff.str();
-  //    found=convert.find(".");
-  //    convert.replace(found,1,",");
-  //    string texname;
-  //
-  //    if (_save)
-  //    {
-  //      texname = "lat_proba_thresh_" + convert + ".tex";
-  //      writeShortTexture(texname.c_str(),texProbaThreshLat);
-  //
-  //      texname = "lon_proba_thresh_" + convert + ".tex";
-  //      writeShortTexture(texname.c_str(),texProbaThreshLon);
-  //    }
-  //
-  //    cout << "compute the longest path in threshold probability map" << endl;
-  //    cout << "latitude :" << endl;
-  //    TimeTexture<short> texProbaSulcalinesLat(1, _mesh.vertex().size() );
-  //    textureBin2Label(texInterRootsBasinsLat,texProbaThreshLat,texTemp);
-  //    if (_save)
-  //      {
-  //      texname = "lat_proba_thresh_" + convert + ".tex";
-  //      writeShortTexture(texname.c_str(),texTemp);
-  //      }
-  //
-  //    computeLongestPathBasins (texTemp, texProbaSulcalinesLat, mapBasinsLat);
-  //
-  //    cout << "done " << endl;
-  //    cout << "longitude :" << endl;
-  //    TimeTexture<short> texProbaSulcalinesLon(1, _mesh.vertex().size() );
-  //    textureBin2Label(texInterRootsBasinsLon,texProbaThreshLon,texTemp);
-  //    if (_save)
-  //      {
-  //      texname = "lon_proba_thresh_" + convert + ".tex";
-  //      writeShortTexture(texname.c_str(),texTemp);
-  //      }
-  //
-  //    computeLongestPathBasins (texTemp, texProbaSulcalinesLon, mapBasinsLon);
-  //    cout << "done " << endl;
-  //
-  //    texname = "lat_proba_lines_" + convert + ".tex";
-  //    writeShortTexture(texname.c_str(),texProbaSulcalinesLat);
-  //    texname = "lon_proba_lines_" + convert + ".tex";
-  //    writeShortTexture(texname.c_str(),texProbaSulcalinesLon);
-  //  }
 }

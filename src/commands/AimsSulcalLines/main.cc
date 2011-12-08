@@ -19,12 +19,14 @@ int main(int argc, const char **argv)
 {
   try
   {
-    string adrMesh;
-    string adrRootsBottom;
+    string adrMesh = "";
+    string adrRootsBottom = "";
     string adrRootsLon = "";
     string adrRootsLat = "";
+    string adrLabelBasins= "";
+    string adrLabelSulcalines= "";
 
-    string adrModelParam= "";
+    string adrSulcalines= "";
 
     string adrSaveFolder = "";
 
@@ -42,6 +44,11 @@ int main(int argc, const char **argv)
 
     float curv_threshold = 0.0;
 
+    string side;
+    float threshold_size_basin = 50.0;
+
+    int constraintValue = 1;
+
     AimsSurfaceTriangle mesh;
 
     AimsApplication     app( argc, argv, "Cortical Sulcal Lines (for cortical surface coordinate system)");
@@ -57,8 +64,14 @@ int main(int argc, const char **argv)
     app.addOption( adrRootsBottom, "-b", "sulcus bottom point volume",true );
     app.alias( "--bottom", "-b" );
 
-    app.addOption( adrModelParam, "-mp", "input model of parameterization (.txt)",true );
-    app.alias( "--inModelParam", "-mp" );
+    app.addOption( adrLabelBasins, "-lb", "input label of basins (.txt)",true );
+    app.alias( "--inLabelBasins", "-lb" );
+
+    app.addOption( adrLabelSulcalines, "-ls", "input file : label-constraint correspondances of Sulcalines (.txt)",true );
+    app.alias( "--inLabelSulcalines", "-ls" );
+
+    app.addOption( adrSulcalines, "-o", "output sulcal lines texture (.tex)",true );
+    app.alias( "--inSulcalines", "-o" );
 
     app.addOption( extremeties_method, "-m", "extraction of extremities method :\n1 : projection crop by basins (by default)\n2 : map of probability (embc11 method)\n3 : map of density (NeuroImage method)\n 4 : map of probability (basin user defined) : ",true);
     app.alias( "--inMethod", "-m" );
@@ -78,17 +91,24 @@ int main(int argc, const char **argv)
     app.addOption( curv_threshold, "-ct", "curvature threshold for basins segmentation (0.0 by default)",true );
     app.alias( "--curvthresh", "-ct" );
 
-    //app.addOption( proba, "-p", "threshold of probability (0.4 by default)",true );
-    //app.alias( "--proba", "-p" );
     app.addOptionSeries( proba_list, "-p", "threshold of probability (0.4 by default)", false) ;
-    //app.alias( "--proba", "-p" );
 
     app.addOption( adrSaveFolder, "-s", "folder path for save texture", true );
     app.alias( "--save", "-s" );
 
+    app.addOption( side, "-si", "side of hemisphere (Left, Right, Both)",true );
+    app.alias( "--side", "-si" );
+
+    app.addOption( threshold_size_basin, "-sb", "threshold of basins size",true );
+    app.alias( "--size_basins", "-sb" );
+
+    app.addOption( constraintValue, "-cv", "constraint value :\n1 Basin (by default) :\n2 LatLon value",true );
+    app.alias( "--constraintvalue", "-cv" );
+
     app.initialize();
 
-    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, adrRootsBottom, adrModelParam, extremeties_method, constraint_type, strain, proba_list, adrSaveFolder, curv_threshold);
+    SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, adrRootsBottom, adrLabelBasins,adrLabelSulcalines, adrSulcalines,
+        extremeties_method, constraint_type, strain, proba_list, adrSaveFolder, curv_threshold,side,threshold_size_basin,constraintValue);
 
     if (extremeties_method < 4)
       slg.run();

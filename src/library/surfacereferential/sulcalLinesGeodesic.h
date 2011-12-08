@@ -46,7 +46,10 @@ class SulcalLinesGeodesic
     string _adrGeodesicDepth;
     string _adrSaveFolder;
     string _adrRootsBottom;
-    string _adrModelParam;
+    string _adrLabelBasins;
+    string _adrLabelSulcalines;
+    string _adrSulcalines;
+    string _side;
 
     int _strain;
     int _extremeties_method;
@@ -54,6 +57,8 @@ class SulcalLinesGeodesic
     vector<float> _proba;
     bool _save;
     float _curv_thresh;
+    float _clean_size;
+    int _constraintValue;
 
     AimsSurfaceTriangle _mesh;
     std::vector<std::set<uint> > _neigh;
@@ -65,8 +70,10 @@ class SulcalLinesGeodesic
     TimeTexture<float> _geoDepthNorm;
 
     //Constructor
-    SulcalLinesGeodesic( string & adrMesh,string & adrCurv, string & adrGeodesicDepth,
-        string & adrRootsLon, string & adrRootsLat, string & adrRootsBottom, string & adrModelParam, int extremeties_method, int constraint_type, int strain, vector<float> proba, string saveFolder, float curv_thresh);
+    SulcalLinesGeodesic(string & adrMesh, string & adrCurv,
+    string & adrGeodesicDepth, string & adrRootsLon, string & adrRootsLat,string & adrRootsBottom, string & adrLabelBasins, string & adrLabelSulcalines, string & adrSulcalines,
+    int extremeties_method, int constraint_type, int strain,
+    vector<float> proba, string saveFolder, float curv_thresh, string side, float clean_size, int constraintValue);
 
     ~SulcalLinesGeodesic();
 
@@ -87,7 +94,8 @@ class SulcalLinesGeodesic
     void segmentationSulcalBasins (TimeTexture<float> &texIn,TimeTexture<short> &texBasins,map<int,set<int> > &mapBasins,float threshold, int close, int open);
 
     void computeRootsBottomMap(TimeTexture<short> &texBasins,TimeTexture<short> &texRootsBottom, float dist_max);
-    void constraintListOpen(set<int> & constraintListValues);
+
+    void computeConstraintList(map<int,int> & listValues);
 
     void listRootsProjections(TimeTexture<short> &texBasins,set<int> &listIndexLat,set<int> &listIndexLon);
     void computeLongestPathBasins (TimeTexture<short> &roots, TimeTexture<short> &out, map<int,set<int> > &mapConstraint);
@@ -98,9 +106,9 @@ class SulcalLinesGeodesic
 
     void dilationRoots(TimeTexture<short> &texLatDil,TimeTexture<short> &texLonDil,int size);
     void interRootsDilBasins(TimeTexture<short> &texBasins,TimeTexture<short> &texDil,TimeTexture<short> &texInter);
-    void cleanBasins(map<int,set<int> > &mapBasins,TimeTexture<short> &texBasins,int nbPoint);
+    void cleanBasins(map<int,set<int> > &mapBasins,TimeTexture<short> &texBasins,map<int, vector<int> > &mapPolygonSetBasins,float min_area_size);
     void contourBasins(map<int,set<int> > &mapBasins,TimeTexture<short> &texBasins,map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins);
-    void computeProbabiltyMap(map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins,TimeTexture<float> &texProba);
+    void computeProbabiltyMap(map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins,TimeTexture<short> &texBasins, TimeTexture<float> &texProba);
     void normalizeProbabiltyMap(map<int,set<int> > &mapBasins, map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins,TimeTexture<float> &texProba,TimeTexture<float> &texProbaNorm);
     void textureBin2Label(TimeTexture<short> &texLabel, TimeTexture<short> &texIn, TimeTexture<short> &texOut);
 
@@ -109,6 +117,9 @@ class SulcalLinesGeodesic
     //neuroimage11
     void sulcalLinesExtract_density(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins);
     void automaticThresholdDensityMap(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProbaNorm,TimeTexture<short> &texAutoThreshold,int nb_bin);
+
+    void vertexmap2polygonMap(map<int, set<int> > &mapVertexSetBasins, map<int, vector<int> > &mapPolygonSetBasins);
+
 };
 
 
