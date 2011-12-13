@@ -36,7 +36,7 @@ int main(int argc, const char **argv)
     string adrCurv = "";
     string adrGeodesicDepth = "";
 
-    int strain = 3;
+    int strain = 15;
     float proba = 0.4;
     vector<float> proba_list(0.4);
 
@@ -56,25 +56,11 @@ int main(int argc, const char **argv)
     app.addOption( adrMesh, "-i", "input Mesh");
     app.alias( "--inMesh", "-i" );
 
-    app.addOption( adrRootsLon, "-lon", "input Texture Longitude Constraints",true);
-    app.alias( "--inTexLon", "-lon" );
-    app.addOption( adrRootsLat, "-lat", "input Texture Latitude Constraints",true);
-    app.alias( "--inTexLat", "-lat" );
-
-    app.addOption( adrRootsBottom, "-b", "sulcus bottom point volume",true );
-    app.alias( "--bottom", "-b" );
-
-    app.addOption( adrLabelBasins, "-lb", "input label of basins (.txt)",true );
-    app.alias( "--inLabelBasins", "-lb" );
-
-    app.addOption( adrLabelSulcalines, "-ls", "input file : label-constraint correspondances of Sulcalines (.txt)",true );
-    app.alias( "--inLabelSulcalines", "-ls" );
+    app.addOption( extremeties_method, "-m", "extraction of extremities method :\n1 : projection crop by basins \n2 : map of probability (embc11 method)\n3 : map of density (NeuroImage method, by default)\n 4 : map of probability (basin user defined) : ",true);
+    app.alias( "--inMethod", "-m" );
 
     app.addOption( adrSulcalines, "-o", "output sulcal lines texture (.tex)",true );
     app.alias( "--inSulcalines", "-o" );
-
-    app.addOption( extremeties_method, "-m", "extraction of extremities method :\n1 : projection crop by basins (by default)\n2 : map of probability (embc11 method)\n3 : map of density (NeuroImage method)\n 4 : map of probability (basin user defined) : ",true);
-    app.alias( "--inMethod", "-m" );
 
     app.addOption( adrCurv, "-c", "input Texture Curvature (barycenter curvature by default)",true);
     app.alias( "--inTexCurv", "-c" );
@@ -85,25 +71,40 @@ int main(int argc, const char **argv)
     app.addOption( constraint_type, "-t", "constraint type (shortest path) :\n1 : on curvature map (by default)\n2 : on depth map\n",true);
     app.alias( "--inConstraint", "-t" );
 
-    app.addOption( strain, "-st", "strain parameter (3 by default)",true );
+    app.addOption( strain, "-st", "strain parameter (15 by default)",true );
     app.alias( "--strain", "-st" );
+
+    app.addOption( adrRootsBottom, "-b", "sulcus bottom point volume",true );
+    app.alias( "--bottom", "-b" );
+
+    app.addOption( adrLabelBasins, "-lb", "input label of basins (.txt)",true );
+    app.alias( "--inLabelBasins", "-lb" );
+
+    app.addOption( adrLabelSulcalines, "-ls", "input file : label-constraint correspondances of Sulcalines (.txt)",true );
+    app.alias( "--inLabelSulcalines", "-ls" );
 
     app.addOption( curv_threshold, "-ct", "curvature threshold for basins segmentation (0.0 by default)",true );
     app.alias( "--curvthresh", "-ct" );
 
-    app.addOptionSeries( proba_list, "-p", "threshold of probability (0.4 by default)", false) ;
-
     app.addOption( adrSaveFolder, "-s", "folder path for save texture", true );
     app.alias( "--save", "-s" );
 
-    app.addOption( side, "-si", "side of hemisphere (Left, Right, Both)",true );
+    app.addOption( side, "-si", "side of hemisphere (left, right, both)",true );
     app.alias( "--side", "-si" );
 
-    app.addOption( threshold_size_basin, "-sb", "threshold of basins size",true );
+    app.addOption( threshold_size_basin, "-sb", "threshold of basins size (50 by default)",true );
     app.alias( "--size_basins", "-sb" );
 
     app.addOption( constraintValue, "-cv", "constraint value :\n1 Basin (by default) :\n2 LatLon value",true );
     app.alias( "--constraintvalue", "-cv" );
+
+    app.addOptionSeries( proba_list, "-p", "threshold of probability (0.4 by default)", false) ;
+
+    app.addOption( adrRootsLon, "-lon", "input Texture Longitude Constraints",true);
+    app.alias( "--inTexLon", "-lon" );
+    app.addOption( adrRootsLat, "-lat", "input Texture Latitude Constraints",true);
+    app.alias( "--inTexLat", "-lat" );
+
 
     app.initialize();
 
