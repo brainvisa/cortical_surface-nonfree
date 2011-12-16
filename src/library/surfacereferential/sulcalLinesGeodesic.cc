@@ -20,11 +20,11 @@ using namespace std;
 SulcalLinesGeodesic::SulcalLinesGeodesic(string & adrMesh, string & adrCurv,
     string & adrGeodesicDepth, string & adrRootsLon, string & adrRootsLat,string & adrRootsBottom, string & adrLabelBasins, string & adrLabelSulcalines, string & adrSulcalines,
     int extremeties_method, int constraint_type, int strain,
-    vector<float> proba, string saveFolder, float curv_thresh, string side, float clean_size, int constraintValue) :
+    vector<float> proba, string saveFolder, float curv_thresh, string side, float clean_size, int constraintValue,int max_extremities) :
   _adrMesh(adrMesh), _adrCurv(adrCurv), _adrGeodesicDepth(adrGeodesicDepth),
       _adrRootsLon(adrRootsLon), _adrRootsLat(adrRootsLat),_adrRootsBottom(adrRootsBottom),_adrLabelBasins(adrLabelBasins),_adrLabelSulcalines(adrLabelSulcalines),_adrSulcalines(adrSulcalines),
       _constraint_type(constraint_type), _extremeties_method(extremeties_method), _strain(strain),
-      _proba(proba), _adrSaveFolder(saveFolder), _curv_thresh(curv_thresh), _side(side), _clean_size(clean_size),_constraintValue(constraintValue)
+      _proba(proba), _adrSaveFolder(saveFolder), _curv_thresh(curv_thresh), _side(side), _clean_size(clean_size),_constraintValue(constraintValue),_max_extremities(max_extremities)
 
 {
 //  std::cout << "Read mesh : ";
@@ -808,7 +808,7 @@ void SulcalLinesGeodesic::normalizeDepthMap(TimeTexture<float> &depth,
   int n_b = 0;
   float max_depth, val;
 
-  //on initialise le background à -10000 pour empêcher les chemins de passer par là
+  //on initialise le background à -1000 pour empêcher les chemins de passer par là
   for (uint i = 0; i < _mesh.vertex().size(); i++)
     depthNorm[0].item(i) = -1000.0;
 
@@ -840,6 +840,18 @@ void SulcalLinesGeodesic::normalizeDepthMap(TimeTexture<float> &depth,
         depthNorm[0].item(*listVertexbasin) = 0.0;
     }
   }
+
+  //on calcule la texture curv x depth
+  TimeTexture<float> depthxcurv(1,_mesh.vertex().size());
+
+  for (uint i = 0; i < _mesh.vertex().size(); i++)
+    if (depthNorm[0].item(i) != -1000)
+      depthxcurv[0].item(i) = depthNorm[0].item(i) * _texCurv[0].item(i);
+
+  if (_save)
+    writeFloatTexture("depth_X_curv.tex", depthxcurv);
+
+
 }
 
 void SulcalLinesGeodesic::segmentationSulcalBasins(TimeTexture<float> &texIn,
@@ -1421,14 +1433,25 @@ void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapB
 //      }
 //    }
 
+    //_max_extremities
+
     for (itlo = lo.begin(); itlo < lo.end(); itlo++)
     {
       val_ext = extremities[*itlo];
+      //on s'arrête dès que le seuil vaut moins de _max_extremities
+      if (val_ext <= _max_extremities && val_ext > 1)
+      {
+        seuil = *itlo;
+        min_ext = val_ext;
+        break;
+      }
+
       if (val_ext < min_ext && val_ext > 1)
       {
         min_ext = val_ext;
         seuil = *itlo;
       }
+
     }
 
     if (_save)

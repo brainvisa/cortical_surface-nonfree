@@ -59,6 +59,7 @@ class SulcalLinesGeodesic
     float _curv_thresh;
     float _clean_size;
     int _constraintValue;
+    int _max_extremities;
 
     AimsSurfaceTriangle _mesh;
     std::vector<std::set<uint> > _neigh;
@@ -73,7 +74,7 @@ class SulcalLinesGeodesic
     SulcalLinesGeodesic(string & adrMesh, string & adrCurv,
     string & adrGeodesicDepth, string & adrRootsLon, string & adrRootsLat,string & adrRootsBottom, string & adrLabelBasins, string & adrLabelSulcalines, string & adrSulcalines,
     int extremeties_method, int constraint_type, int strain,
-    vector<float> proba, string saveFolder, float curv_thresh, string side, float clean_size, int constraintValue);
+    vector<float> proba, string saveFolder, float curv_thresh, string side, float clean_size, int constraintValue,int max_extremities);
 
     ~SulcalLinesGeodesic();
 
