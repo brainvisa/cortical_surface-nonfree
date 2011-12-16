@@ -75,7 +75,8 @@ app.addOption( value, "-v", "texture value contour" );
 app.alias( "--inputValue", "-v" );
 
 app.addOption( method, "-c", "constraintType:\n\"0\" -> no constraint\n"
-    "\"1\" -> constrained sulci\n\"2\" -> constrained gyri\n\"3\" -> Exact geodesic path",true);
+    "\"1\" -> constrained sulci\n\"2\" -> constrained gyri\n\"3\" -> Exact geodesic path"
+    "\n\"4\" -> Euclidian distance\n\"5\" -> z value",true);
 app.alias( "--constraint", "-c" );
 
 app.initialize();
@@ -121,6 +122,8 @@ unsigned source_vertex_index;
 unsigned target_vertex_index;
 //
 double distance_temp,min_distance;
+float max_dist;
+max_dist = 0;
 
 for( uint i = 0; i < texSource[0].nItem(); i++)
 {
@@ -169,9 +172,22 @@ for( uint i = 0; i < texSource[0].nItem(); i++)
 
     }
 
-
+  if (method == 5)
+    {
+    texOut.item(i) = -vert[i][1];
+    max_dist = max(max_dist,texOut.item(i));
+    }
 
 }
+
+if (method == 5)
+  {
+  for( uint i = 0; i < texOut[0].nItem(); i++)
+  {
+    texOut.item(i) = (float)(texOut.item(i)/max_dist);
+    texOut.item(i) = texOut.item(i)*texOut.item(i)*texOut.item(i);
+  }
+  }
 
 
 Writer<TimeTexture<float> > texW(adrTexDepth);

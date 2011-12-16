@@ -49,6 +49,8 @@ int main(int argc, const char **argv)
 
     int constraintValue = 1;
 
+    int max_extremities = 2;
+
     AimsSurfaceTriangle mesh;
 
     AimsApplication     app( argc, argv, "Cortical Sulcal Lines (for cortical surface coordinate system)");
@@ -98,6 +100,9 @@ int main(int argc, const char **argv)
     app.addOption( constraintValue, "-cv", "constraint value :\n1 Basin (by default) :\n2 LatLon value",true );
     app.alias( "--constraintvalue", "-cv" );
 
+    app.addOption(max_extremities , "-e", "max number of extremities (2 by default)",true );
+    app.alias( "--max_extremities", "-e" );
+
     app.addOptionSeries( proba_list, "-p", "threshold of probability (0.4 by default)", false) ;
 
     app.addOption( adrRootsLon, "-lon", "input Texture Longitude Constraints",true);
@@ -109,7 +114,7 @@ int main(int argc, const char **argv)
     app.initialize();
 
     SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, adrRootsBottom, adrLabelBasins,adrLabelSulcalines, adrSulcalines,
-        extremeties_method, constraint_type, strain, proba_list, adrSaveFolder, curv_threshold,side,threshold_size_basin,constraintValue);
+        extremeties_method, constraint_type, strain, proba_list, adrSaveFolder, curv_threshold,side,threshold_size_basin,constraintValue,max_extremities);
 
     if (extremeties_method < 4)
       slg.run();

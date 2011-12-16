@@ -272,6 +272,8 @@ triR >> surface;
 
 //cout << "reading input texture   : " << flush;
 
+vector<unsigned> listIndexVertexSource,listIndexVertexTarget;
+
 TimeTexture<float> texSource;
 Reader < TimeTexture<float> > rits(adrTexSource);
 rits.read( texSource );
@@ -284,7 +286,10 @@ TimeTexture<short> texSourceShort(1,texSource[0].nItem());
 for( uint i = 0; i < texSource[0].nItem(); i++)
 {
   if (texSource[0].item(i)>= (float)value - 0.01 && texSource[0].item(i)<= (float)value + 0.01)
+    {
     texSourceShort[0].item(i) = 1000;
+    listIndexVertexSource.push_back(i);
+    }
   else
     texSourceShort[0].item(i) = 0;
 }
@@ -293,94 +298,81 @@ TimeTexture<short> texTargetShort(1,texTarget[0].nItem());
 for( uint i = 0; i < texTarget[0].nItem(); i++)
 {
   if (texTarget[0].item(i)>= (float)value - 0.01 && texTarget[0].item(i)<= (float)value + 0.01)
+    {
     texTargetShort[0].item(i) = 1;
+    listIndexVertexTarget.push_back(i);
+    }
   else
     texTargetShort[0].item(i) = 0;
 }
 
-string adr="";
-vector<float> p;
-SulcalLinesGeodesic slg(meshFileIn,adr,adr,adr,adr,adr,adr,adr,adr,1, 0, 3, p, adr, 0.0, adr, 0,1);
+//string adr="";
+//vector<float> p;
+//SulcalLinesGeodesic slg(meshFileIn,adr,adr,adr,adr,adr,adr,adr,adr,1, 0, 3, p, adr, 0.0, adr, 0,1);
+//
+//map<int,set<int> > mapPointSource;
+//map<int,vector<int> > mapCurvSource;
+//slg.texConnectedComponent(texSourceShort, mapPointSource,1000);
+////cout << "component number of source = " << mapPointSource.size() << endl;
+//cloud2curv (mapPointSource,mapCurvSource,surface);
+//
+//map<int,vector<int> > mapCurvTarget;
+//map<int,set<int> > mapPointTarget;
+//slg.texConnectedComponent(texTargetShort, mapPointTarget,1000);
+////cout << "component number of target = " << mapPointTarget.size() << endl;
+//cloud2curv (mapPointTarget,mapCurvTarget,surface);
+//
+////cout << "source --> target\n";
+//cout << value << " ";
+//compareCurves (mapCurvSource,mapCurvTarget,surface);
+//
+////cout << "target --> source\n";
+//compareCurves (mapCurvTarget,mapCurvSource,surface);
+//
+//cout << endl;
 
-map<int,set<int> > mapPointSource;
-map<int,vector<int> > mapCurvSource;
-slg.texConnectedComponent(texSourceShort, mapPointSource,1000);
-//cout << "component number of source = " << mapPointSource.size() << endl;
-cloud2curv (mapPointSource,mapCurvSource,surface);
+cout << value ;
 
-map<int,vector<int> > mapCurvTarget;
-map<int,set<int> > mapPointTarget;
-slg.texConnectedComponent(texTargetShort, mapPointTarget,1000);
-//cout << "component number of target = " << mapPointTarget.size() << endl;
-cloud2curv (mapPointTarget,mapCurvTarget,surface);
+GeodesicPath gp(surface,0,0);
 
-//cout << "source --> target\n";
-cout << value << " ";
-compareCurves (mapCurvSource,mapCurvTarget,surface);
+unsigned source_vertex_index;
+unsigned target_vertex_index;
 
-//cout << "target --> source\n";
-compareCurves (mapCurvTarget,mapCurvSource,surface);
+double distance_temp;
+std::vector<double> min_distance_source_target(listIndexVertexSource.size(), 0.0);
+double max_distance_s_t = 0;
+double moy_distance_s_t = 0;
 
-cout << endl;
+for (unsigned i = 0; i < listIndexVertexSource.size(); i++)
+{
+  source_vertex_index = listIndexVertexSource[i];
+  gp.shortestPath_1_N_ind(source_vertex_index,listIndexVertexTarget,&target_vertex_index,&distance_temp);
+  min_distance_source_target[i] = distance_temp;
+  max_distance_s_t = std::max(max_distance_s_t,distance_temp);
+  moy_distance_s_t += distance_temp;
+}
 
+moy_distance_s_t = (float)(moy_distance_s_t)/listIndexVertexSource.size();
 
-//unsigned source_vertex_index;
-//unsigned target_vertex_index;
-//
-//double distance_temp;
-//std::vector<double> min_distance_source_target(listIndexVertexSource.size(), 0.0);
-//double max_distance_s_t = 0;
-//double moy_distance_s_t = 0;
-//double ecart_type_distance = 0;
-//
-//cout << "\nsource -> target : " << endl;
-//
-//for (unsigned i = 0; i < listIndexVertexSource.size(); i++)
-//{
-//  source_vertex_index = listIndexVertexSource[i];
-//  gp.shortestPath_1_N_ind(source_vertex_index,listIndexVertexTarget,&target_vertex_index,&distance_temp);
-//
-//  cout << source_vertex_index << " " << target_vertex_index << " " << distance_temp << endl ;
-//  min_distance_source_target[i] = distance_temp;
-//  max_distance_s_t = std::max(max_distance_s_t,distance_temp);
-//  moy_distance_s_t += distance_temp;
-//}
-//
-//cout << "\ntarget -> source : " << endl;
-//double max_distance_t_s = 0;
-//double moy_distance_t_s = 0;
-//ecart_type_distance = 0;
-//std::vector<double> min_distance_target_source(listIndexVertexTarget.size(), 0.0);
-//
-//for (unsigned i = 0; i < listIndexVertexTarget.size(); i++)
-//{
-//  source_vertex_index = listIndexVertexTarget[i];
-//  gp.shortestPath_1_N_ind(source_vertex_index,listIndexVertexSource,&target_vertex_index,&distance_temp);
-//
-//  cout << source_vertex_index << " " << target_vertex_index << " " << distance_temp << endl ;
-//
-//  min_distance_target_source[i] = distance_temp;
-//  max_distance_t_s = std::max(max_distance_t_s,distance_temp);
-//  moy_distance_t_s += distance_temp;
-//}
-//
-//moy_distance_s_t = (float)(moy_distance_s_t)/listIndexVertexSource.size();
-//
-//for (unsigned i = 0; i < listIndexVertexSource.size(); i++)
-//  ecart_type_distance += pow(min_distance_source_target[i]-moy_distance_s_t,2);
-//
-//ecart_type_distance =  sqrt((float)(ecart_type_distance)/listIndexVertexSource.size());
-//
-//moy_distance_t_s = (float)(moy_distance_t_s)/listIndexVertexTarget.size();
-//for (unsigned i = 0; i < listIndexVertexTarget.size(); i++)
-//  ecart_type_distance += pow(min_distance_target_source[i]-moy_distance_t_s,2);
-//
-//ecart_type_distance =  sqrt((float)(ecart_type_distance)/listIndexVertexTarget.size());
-//
-////cout << "distance hausdorff " << endl;
-//cout << max(max_distance_s_t,max_distance_t_s) << endl;
+cout << " Hav(S,T) " << moy_distance_s_t << " Hwor(S,T) " << max_distance_s_t ;
 
-//cout << " done\n";
+std::vector<double> min_distance_target_source(listIndexVertexTarget.size(), 0.0);
+double max_distance_t_s = 0;
+double moy_distance_t_s = 0;
+
+for (unsigned i = 0; i < listIndexVertexTarget.size(); i++)
+{
+  source_vertex_index = listIndexVertexTarget[i];
+  gp.shortestPath_1_N_ind(source_vertex_index,listIndexVertexSource,&target_vertex_index,&distance_temp);
+  min_distance_target_source[i] = distance_temp;
+  max_distance_t_s = std::max(max_distance_t_s,distance_temp);
+  moy_distance_t_s += distance_temp;
+}
+
+moy_distance_t_s = (float)(moy_distance_t_s)/listIndexVertexTarget.size();
+
+cout << " Hav(T,S) " << moy_distance_t_s << " Hwor(T,S) " << max_distance_t_s << endl;
+
 
 return( 0 );
 }
