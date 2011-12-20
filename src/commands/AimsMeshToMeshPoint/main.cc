@@ -37,58 +37,69 @@ int main( int argc, const char** argv )
   app.alias( "--mesh2", "-m2" );
   app.addOption( point, "-p", "point index on source mesh" );
   app.alias( "--point", "-p" );
-  app.initialize();
-  
-  cout << "reading source triangulation   : " << flush;
-  AimsSurfaceTriangle surface1;
-  Reader<AimsSurfaceTriangle> surf1R( fileMesh1 );
-  surf1R >> surface1;
-  cout << "done" << endl;
-  cout << "reading target triangulation   : " << flush;
-  AimsSurfaceTriangle surface2;
-  Reader<AimsSurfaceTriangle> surf2R( fileMesh2 );
-  surf2R >> surface2;
-  cout << "done" << endl;
-
-  Point3df point1, pointTemp;
-  std::vector<Point3df> vert1=surface1.vertex();
-  std::vector<Point3df> vert2=surface2.vertex();
-
-  point1=vert1[point];
-  uint ind2;
-  uint nv1=vert1.size();
-  uint nv2=vert2.size();
-
-  float distMin=10000.0, dist;
-
-  cout << "Looking for the target point" <<endl;
-  for (uint i=0; i<nv2; i++)
+  try
   {
-    pointTemp=vert2[i];
-    dist=(pointTemp-point1).norm();
-    if (dist < distMin)
+    app.initialize();
+
+    cout << "reading source triangulation   : " << flush;
+    AimsSurfaceTriangle surface1;
+    Reader<AimsSurfaceTriangle> surf1R( fileMesh1 );
+    surf1R >> surface1;
+    cout << "done" << endl;
+    cout << "reading target triangulation   : " << flush;
+    AimsSurfaceTriangle surface2;
+    Reader<AimsSurfaceTriangle> surf2R( fileMesh2 );
+    surf2R >> surface2;
+    cout << "done" << endl;
+
+    Point3df point1, pointTemp;
+    std::vector<Point3df> vert1=surface1.vertex();
+    std::vector<Point3df> vert2=surface2.vertex();
+
+    point1=vert1[point];
+    uint ind2;
+    uint nv1=vert1.size();
+    uint nv2=vert2.size();
+
+    float distMin=10000.0, dist;
+
+    cout << "Looking for the target point" <<endl;
+    for (uint i=0; i<nv2; i++)
     {
-      distMin=dist;
-      ind2=i;
+      pointTemp=vert2[i];
+      dist=(pointTemp-point1).norm();
+      if (dist < distMin)
+      {
+        distMin=dist;
+        ind2=i;
+      }
     }
+    cout << "Generating textrues" <<endl;
+    TimeTexture<short> tex1(1,nv1), tex2(1,nv2);
+    for (uint i=0; i<nv1; i++)
+    {
+      if (i==point) tex1[0].item(i)=100;
+      else tex1[0].item(i)=0;
+    }
+    for (uint i=0; i<nv2; i++)
+    {
+      if (i==ind2) tex2[0].item(i)=100;
+      else tex2[0].item(i)=0;
+    }
+    std::cout << "Point index on target surface: " << ind2 << std::endl;
+    Writer<TimeTexture<short> > texW1("texSource.tex");
+    Writer<TimeTexture<short> > texW2("textarget.tex");
+    texW1.write(tex1);
+    texW2.write(tex2);
   }
-  cout << "Generating textrues" <<endl;
-  TimeTexture<short> tex1(1,nv1), tex2(1,nv2);
-  for (uint i=0; i<nv1; i++)
+  catch( user_interruption & )
   {
-    if (i==point) tex1[0].item(i)=100;
-    else tex1[0].item(i)=0;
   }
-  for (uint i=0; i<nv2; i++)
+  catch( exception & e )
   {
-    if (i==ind2) tex2[0].item(i)=100;
-    else tex2[0].item(i)=0;
+    cerr << argv[ 0 ] << ": " << e.what() << endl;
+    return EXIT_FAILURE;
   }
-  std::cout << "Point index on target surface: " << ind2 << std::endl; 
-  Writer<TimeTexture<short> > texW1("texSource.tex");
-  Writer<TimeTexture<short> > texW2("textarget.tex");
-  texW1.write(tex1);
-  texW2.write(tex2);
   return EXIT_SUCCESS;
 }
 
