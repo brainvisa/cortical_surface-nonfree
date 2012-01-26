@@ -110,6 +110,7 @@ class SulcalLinesGeodesic
     void cleanBasins(map<int,set<int> > &mapBasins,TimeTexture<short> &texBasins,map<int, vector<int> > &mapPolygonSetBasins,float min_area_size);
     void contourBasins(map<int,set<int> > &mapBasins,TimeTexture<short> &texBasins,map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins);
     void computeProbabiltyMap(map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins,TimeTexture<short> &texBasins, TimeTexture<float> &texProba);
+    void computeMaximalProbabiltyMap(map<int, set<int> > &mapContourBasins, TimeTexture<short> &texContourBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProba);
     void normalizeProbabiltyMap(map<int,set<int> > &mapBasins, map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins,TimeTexture<float> &texProba,TimeTexture<float> &texProbaNorm);
     void textureBin2Label(TimeTexture<short> &texLabel, TimeTexture<short> &texIn, TimeTexture<short> &texOut);
 

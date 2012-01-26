@@ -1197,6 +1197,110 @@ void SulcalLinesGeodesic::computeProbabiltyMap(
   }
 }
 
+void SulcalLinesGeodesic::computeMaximalProbabiltyMap(
+    map<int, set<int> > &mapContourBasins,
+    TimeTexture<short> &texContourBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProba)
+{
+  map<int, set<int> >::iterator itc;
+  set<int>::iterator its;
+  int value, nb_c, nb_v;
+  vector<unsigned> listIndexTarget;
+  vector<vector<unsigned> > indices;
+  vector<vector<unsigned> >::iterator it_vv;
+  vector<unsigned>::iterator it_v;
+
+
+  for (uint i = 0; i < texProba[0].nItem(); i++)
+    texProba[0].item(i) = 1.0;
+
+  TimeTexture<float> texConstraint(1, _mesh.vertex().size());
+  int method;
+
+  // contrainte sur la courbure
+  if (_constraint_type == 1)
+  {
+    texConstraint = _texCurv;
+    method = 1; // valeur pour les sulci
+  }
+
+  // contrainte sur la profondeur normalisée (par les bassins décrits sur les infos de courbures)
+  if (_constraint_type == 2)
+  {
+    texConstraint = _geoDepthNorm;
+    method = 2; // valeur pour les gyri (car la depth map est inversé : les maxima sont dans les vallées)
+  }
+
+  GeodesicPath sp(_mesh, texConstraint, method, _strain);
+  //GeodesicPath sp(_mesh, texConstraint, 1, _strain);
+
+  //pour tous les bassins
+  for (itc = mapContourBasins.begin(); itc != mapContourBasins.end(); itc++)
+  {
+    listIndexTarget.clear();
+
+    //on récupère l'étiquette du bassin (avec le premier point)
+    its = ((*itc).second).begin();
+
+    value = texContourBasins[0].item(*its);
+    //cout << "value = " << value << endl;
+
+    //pour tous les points its du bassin it
+    for (; its != ((*itc).second).end(); its++)
+      listIndexTarget.push_back(*its);
+
+    //nombre de points de contours
+    nb_c = 0;
+    //nombre de sommets parcourus
+    nb_v = 0;
+
+    for (its = ((*itc).second).begin(); its != ((*itc).second).end(); its++)
+    {
+      indices.clear();
+
+      //sp.shortestPath_1_N_All_ind(*its, listIndexTarget, indices);
+      uint targ;
+      double length;
+      sp.longestPath_1_N_ind(*its, listIndexTarget,  &targ,  &length, 0); // only the longest path is kept
+      vector<unsigned> chemin = sp.shortestPath_1_1_ind(*its,targ);
+
+
+//      nb_v += indices.size();
+//      cout << "\r\033[K" << "extremities : " << ++nb_c << "/" << listIndexTarget.size() << " vertex : " << nb_v << flush;
+
+      //on incrémente les valeurs de la texture proba pour chaque point ayant été parcouru
+      for (it_v = chemin.begin(); it_v != chemin.end(); it_v++)
+        {
+          //si le point est dans le bassin, alors on incrémente
+          if (value == texBasins[0].item(*it_v))
+            texProba[0].item(*it_v)++;
+        }
+
+      //on efface toutes les frontières de bassins
+      for (uint i = 0; i < texContourBasins[0].nItem(); i++)
+        {
+        if (texContourBasins[0].item(i) == value)
+          {
+          set<uint> voisins = _neigh[i];
+          set<uint>::iterator voisIt = voisins.begin();
+          int nb_vois;
+          nb_vois = 0;
+          //on parcourt tous les voisins du sommet, si un voisin a une valeur differente de 0 et value alors le point est une frontière
+          for (; voisIt != voisins.end(); voisIt++)
+          {
+            if (texContourBasins[0].item(*voisIt) != value && texContourBasins[0].item(*voisIt)!= 0)
+              nb_vois++;
+          }
+
+          if (nb_vois > 0)
+            texProba[0].item(i) = 0.0;
+          }
+        }
+    }
+
+    cout << endl;
+  }
+}
+
 void SulcalLinesGeodesic::normalizeProbabiltyMap(
     map<int, set<int> > &mapBasins, map<int, set<int> > &mapContourBasins,
     TimeTexture<short> &texContourBasins, TimeTexture<float> &texProba,
