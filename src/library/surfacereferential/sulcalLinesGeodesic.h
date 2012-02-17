@@ -24,7 +24,6 @@
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
 #include <aims/geodesicpath/geodesicPath.h>
-
 #include <iostream>
 #include <fstream>
 #include <queue>
