@@ -1913,7 +1913,7 @@ void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> 
 
     TimeTexture<short> texProbaThresh2(1, _mesh.vertex().size());
     //on conserve les points dont la densité est > 0.5
-    texBinarizeF2S(texProbaNorm, texProbaThresh2, (float)2*seuil/100. , 0, 1);
+    texBinarizeF2S(texProbaNorm, texProbaThresh2, (float)(seuil)/(float)nb_bin , 0, 1);
 
     //pour tous les points its du bassin it
     for (its = ((*itb).second).begin(); its != ((*itb).second).end(); its++)
