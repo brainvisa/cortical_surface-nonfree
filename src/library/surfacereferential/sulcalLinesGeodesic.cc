@@ -1901,7 +1901,7 @@ void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> 
 
     for (itlo = li.begin(); itlo < li.end(); itlo++)
 	{
-    	if (*itlo > seuil && *itlo > 10)
+    	if (*itlo > seuil && *itlo > 6)
     		{
     		seuil = *itlo;
     		break;
