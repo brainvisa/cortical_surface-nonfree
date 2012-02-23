@@ -58,7 +58,8 @@ int main(int argc, const char **argv)
     app.addOption( adrMesh, "-i", "input Mesh");
     app.alias( "--inMesh", "-i" );
 
-    app.addOption( extremeties_method, "-m", "extraction of extremities method :\n1 : projection crop by basins \n2 : map of probability (embc11 method)\n3 : map of density (NeuroImage method, by default)\n 4 : map of probability (basin user defined) : ",true);
+    app.addOption( extremeties_method, "-m", "extraction of extremities method :\n1 : projection crop by basins \n2 : map of probability (embc11 method)\n3 : "
+    		"	map of density (NeuroImage method, by default) \n 4 : mGPDM (miccai) \n 5 : map of probability (basin user defined) : ",true);
     app.alias( "--inMethod", "-m" );
 
     app.addOption( adrSulcalines, "-o", "output sulcal lines texture (.tex)",true );
@@ -116,10 +117,10 @@ int main(int argc, const char **argv)
     SulcalLinesGeodesic slg( adrMesh, adrCurv, adrGeodesicDepth, adrRootsLon, adrRootsLat, adrRootsBottom, adrLabelBasins,adrLabelSulcalines, adrSulcalines,
         extremeties_method, constraint_type, strain, proba_list, adrSaveFolder, curv_threshold,side,threshold_size_basin,constraintValue,max_extremities);
 
-    if (extremeties_method < 4)
+    if (extremeties_method < 5 )
       slg.run();
 
-    if (extremeties_method == 4)
+    if (extremeties_method == 5)
       slg.probaMap();
 
 

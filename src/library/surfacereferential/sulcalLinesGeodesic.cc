@@ -140,6 +140,11 @@ void SulcalLinesGeodesic::run()
     sulcalLinesExtract_density(mapBasins, texBasins);
     break;
 
+  case 4:
+
+    cout << "extraction of extremities method (MICCAI): maximal geodesic map of density" << endl;
+    sulcalLinesExtract_maximal_density(mapBasins, texBasins);
+    break;
 
   }
 
@@ -199,12 +204,24 @@ void SulcalLinesGeodesic::probaMap()
   cout << "compute probability map" << endl;
   TimeTexture<float> texProba(1, _mesh.vertex().size());
   TimeTexture<float> texProbaNorm(1, _mesh.vertex().size());
+
+  /*
   computeProbabiltyMap(mapContourBasins, texContourBasins, texBasins, texProba);
   normalizeProbabiltyMap(mapBasins, mapContourBasins, texContourBasins, texProba, texProbaNorm);
+  */
+  computeMaximalProbabiltyMap(mapContourBasins, texContourBasins, texBasins, texProba);
+  normalizeMaximalProbabiltyMap(mapBasins, mapContourBasins, texContourBasins, texProba, texProbaNorm);
+
+
   if (_save)
   {
     TimeTexture<short> texAutoThreshold(1, _mesh.vertex().size());
-    automaticThresholdDensityMap(mapBasins,texBasins,texProbaNorm,texAutoThreshold,50);
+
+    //automaticThresholdDensityMap(mapBasins,texBasins,texProbaNorm,texAutoThreshold,50);
+
+    automaticThresholdMaximalDensityMap(mapBasins,texBasins,texProbaNorm,texAutoThreshold,20);
+
+
     if (_save)
       writeShortTexture("threshold_auto_ud.tex", texAutoThreshold);
 
@@ -1260,12 +1277,13 @@ void SulcalLinesGeodesic::computeMaximalProbabiltyMap(
       //sp.shortestPath_1_N_All_ind(*its, listIndexTarget, indices);
       uint targ;
       double length;
-      sp.longestPath_1_N_ind(*its, listIndexTarget,  &targ,  &length, 0); // only the longest path is kept
+      sp.longestPath_1_N_ind(*its, listIndexTarget,  &targ,  &length, 1); // only the longest path is kept
       vector<unsigned> chemin = sp.shortestPath_1_1_ind(*its,targ);
 
+      cout << *its << endl;
 
-//      nb_v += indices.size();
-//      cout << "\r\033[K" << "extremities : " << ++nb_c << "/" << listIndexTarget.size() << " vertex : " << nb_v << flush;
+      nb_v += indices.size();
+      cout << "\r\033[K" << "extremities : " << ++nb_c << "/" << listIndexTarget.size() << " vertex : " << nb_v << flush;
 
       //on incrémente les valeurs de la texture proba pour chaque point ayant été parcouru
       for (it_v = chemin.begin(); it_v != chemin.end(); it_v++)
@@ -1299,6 +1317,10 @@ void SulcalLinesGeodesic::computeMaximalProbabiltyMap(
 
     cout << endl;
   }
+
+  if (_save)
+      writeFloatTexture("test.tex", texProba);
+
 }
 
 void SulcalLinesGeodesic::normalizeProbabiltyMap(
@@ -1343,6 +1365,54 @@ void SulcalLinesGeodesic::normalizeProbabiltyMap(
   }
 }
 
+void SulcalLinesGeodesic::normalizeMaximalProbabiltyMap(
+    map<int, set<int> > &mapBasins, map<int, set<int> > &mapContourBasins,
+    TimeTexture<short> &texContourBasins, TimeTexture<float> &texProba,
+    TimeTexture<float> &texProbaNorm)
+{
+  map<int, set<int> >::iterator itc;
+  map<int, set<int> >::iterator itb;
+  set<int>::iterator its;
+
+  int value;
+  float accu, accu_max, nb_contour;
+
+  for (uint i = 0; i < texProba[0].nItem(); i++)
+    texProbaNorm[0].item(i) = 0.0;
+
+  //pour tous les bassins
+  for (itc = mapContourBasins.begin(), itb = mapBasins.begin(); itc
+      != mapContourBasins.end(), itb != mapBasins.end(); itc++, itb++)
+  {
+    accu_max = 0;
+
+    //on récupère l'étiquette du bassin (avec le premier point)
+    its = ((*itb).second).begin();
+
+    value = texContourBasins[0].item(*its);
+
+    nb_contour = ((*itc).second).size() ;
+
+    cout << "nb_contour = " << nb_contour << endl;
+
+    //pour tous les points its du bassin it
+    /*
+    for (; its != ((*itb).second).end(); its++)
+      accu_max = max(accu_max, texProba[0].item(*its));
+     */
+    //on normalise sur le nombre de point de contour
+
+    for (its = ((*itb).second).begin(); its != ((*itb).second).end(); its++)
+      texProbaNorm[0].item(*its) = (float) (texProba[0].item(*its) / (float)nb_contour);
+
+    //on met tous les points de contour du bassins à 0
+    //      for (its = ((*itc).second).begin() ; its != ((*itc).second).end(); its++ )
+    //        texProbaNorm[0].item(*its) = 0;
+
+
+  }
+}
+
 void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins,
     TimeTexture<float> &texProbaNorm, TimeTexture<short> &texAutoThreshold,int nb_bin)
 {
@@ -1373,6 +1443,7 @@ void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapB
       sig[i] = 0.0;
     }
 
+
     //on récupère l'étiquette du bassin (avec le premier point)
     its = ((*itb).second).begin();
 
@@ -1390,8 +1461,13 @@ void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapB
       histo[(texProbaNorm[0].item(*its)) * nb_bin]++;
     }
 
+
     map<uint, float>::iterator ith;
 
+    myfile << "histo" << "\n";
+    if (_save)
+    	  for (ith = histo.begin(); ith != histo.end(); ith++)
+    		myfile << ith->first << "\t" << ith->second << endl;
 
     //cout << "smoothing histo" << "\n";
 
@@ -1403,6 +1479,7 @@ void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapB
     }
 
     float lapl;
+    //for (uint t = 0; t < 50; t++)
     for (uint t = 0; t < 10; t++)
     {
       for (i = 0; i <= nb_bin; i++)
@@ -1417,10 +1494,11 @@ void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapB
         else
           lapl = sig[i - 1] - 2 * sig[i] + sig[i + 1];
 
-        smooth[i] = sig[i] + 0.20 * lapl * 0.5;
+        smooth[i] = sig[i] + 0.1 * lapl * 0.5;
+        //smooth[i] = sig[i] + 0.20 * lapl * 0.5;
       }
     }
-
+    myfile << "histo smooth" << "\n";
     if (_save)
       for (ith = smooth.begin(); ith != smooth.end(); ith++)
         myfile << ith->first << "\t" << ith->second << endl;
@@ -1574,6 +1652,8 @@ void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapB
     cout << "descente seuil auto = " << (float)2*seuil/100. << "\n";
 
     TimeTexture<short> texProbaThresh2(1, _mesh.vertex().size());
+    //on conserve les points dont la densité est > 0.5
+
     texBinarizeF2S(texProbaNorm, texProbaThresh2, (float)2*seuil/100. , 0, 1);
 
     //pour tous les points its du bassin it
@@ -1581,7 +1661,265 @@ void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapB
     //for (uint i = 0; i < texProbaThresh2[0].nItem(); i++)
       if (texProbaThresh2[0].item(*its) == 1)
         texAutoThreshold[0].item(*its) = value;
+  }
 
+  if (_save)
+    myfile.close();
+}
+
+void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins,
+    TimeTexture<float> &texProbaNorm, TimeTexture<short> &texAutoThreshold,int nb_bin)
+{
+  map<int, set<int> >::iterator itb;
+  set<int>::iterator its;
+
+  int value;
+  map<uint, float> histo, smooth, sig;
+
+  int i;
+
+  ofstream myfile;
+
+  string filename = _adrSaveFolder + "infos.txt";
+
+  if (_save)
+  {
+    myfile.open(filename.c_str());
+  }
+
+  //pour tous les bassins
+  for (itb = mapBasins.begin(); itb != mapBasins.end(); itb++)
+  {
+    for (i = 0; i <= nb_bin; i++)
+    {
+      histo[i] = 0.0;
+      smooth[i] = 0.0;
+      sig[i] = 0.0;
+    }
+
+
+    //on récupère l'étiquette du bassin (avec le premier point)
+    its = ((*itb).second).begin();
+
+    value = texBasins[0].item(*its);
+
+    cout << "\nbassin " << (*itb).first << " --> " << value << " " << (*itb).second.size() << "\n";
+
+    if (_save)
+      myfile << "\nbassin " << (*itb).first << " --> " << value << " " << (*itb).second.size() << "\n";
+    //pour tous les points its du bassin it
+    for (; its != ((*itb).second).end(); its++)
+    {
+      //cout << " " << texProbaNorm[0].item(*its);
+      //myfile << texProbaNorm[0].item(*its) << "\n";
+      histo[(texProbaNorm[0].item(*its)) * nb_bin]++;
+    }
+
+
+    map<uint, float>::iterator ith;
+
+    myfile << "histo" << "\n";
+    if (_save)
+    	  for (ith = histo.begin(); ith != histo.end(); ith++)
+    		myfile << ith->first << "\t" << ith->second << endl;
+
+    //cout << "smoothing histo" << "\n";
+
+    for (i = 0; i <= nb_bin; i++)
+    {
+      smooth[i] = histo[i];
+      //smooth.insert(std::pair<uint, float>(i, curvM[i]));
+      //sig.insert(std::pair<uint, float>(i, curvM[i]));
+    }
+
+    float lapl;
+    //for (uint t = 0; t < 50; t++)
+    for (uint t = 0; t < 10; t++)
+    {
+      for (i = 0; i <= nb_bin; i++)
+        sig[i] = smooth[i];
+
+      for (i = 0; i <= nb_bin; i++)
+      {
+        if (i == 0)
+          lapl = sig[1] - sig[0];
+        else if (i == nb_bin)
+          lapl = sig[nb_bin - 1] - sig[nb_bin];
+        else
+          lapl = sig[i - 1] - 2 * sig[i] + sig[i + 1];
+
+        smooth[i] = sig[i] + 0.1 * lapl * 0.5;
+        //smooth[i] = sig[i] + 0.20 * lapl * 0.5;
+      }
+    }
+    myfile << "histo smooth" << "\n";
+    if (_save)
+      for (ith = smooth.begin(); ith != smooth.end(); ith++)
+        myfile << ith->first << "\t" << ith->second << endl;
+
+    if (_save)
+      myfile << "proba" << "\t" << "nb points" << "\t" << "nb extremites" << "\n";
+
+    // histo pour déterminer le seuil automatique
+    // on compte le nombre de vertex "point extrémité" (un seul voisin)
+    vector<float>::iterator itp;
+    vector<int> extremities;
+
+    for (int j = 0 ; j <= 100 ; j+=(100/nb_bin))
+    {
+      if (_save)
+        myfile << (float)j/100. << "\t";
+
+      TimeTexture<short> texProbaThresh(1, _mesh.vertex().size());
+      texBinarizeF2S(texProbaNorm, texProbaThresh, (float)j/100. , 0, 1);
+
+      int nb_points;
+      nb_points = 0;
+      int nb_ext;
+      nb_ext = 0;
+
+      set<int>::iterator its;
+
+      //pour tous les points its du bassin it
+      for (its = ((*itb).second).begin(); its != ((*itb).second).end(); its++)
+      {
+        //on récupère l'étiquette du bassin
+        int value_thresh = texProbaThresh[0].item(*its);
+
+        if (value_thresh == 1)
+        {
+          nb_points++;
+
+          set<uint> voisins = _neigh[*its];
+          set<uint>::iterator voisIt = voisins.begin();
+          int nb_vois;
+          nb_vois = 0;
+          //on parcourt tous les voisins du sommet, si un voisin a une valeur differente alors le point est un contour
+          for (; voisIt != voisins.end(); voisIt++)
+          {
+            if (texProbaThresh[0].item(*voisIt) == value_thresh)
+              nb_vois++;
+          }
+
+          if (nb_vois <= 1)
+            nb_ext++;
+        }
+      }
+
+      extremities.push_back(nb_ext);
+
+      if (_save)
+      myfile << nb_points << "\t" << nb_ext << endl;
+    }
+
+    vector<float> dx;
+    vector<uint> gz, lz, lo,li;
+    //recherche des maxima locaux
+    for (i = 0; i < nb_bin; i++)
+    {
+      dx.push_back(histo[i + 1] - histo[i]);
+      if (dx[i] < 0)
+      {
+        gz.push_back(1);
+        lz.push_back(0);
+      }
+      else
+      {
+        gz.push_back(0);
+        lz.push_back(1);
+      }
+
+    }
+
+    for (i = 0; i < nb_bin - 1; i++)
+    {
+      if (gz[i + 1] && lz[i])
+        lo.push_back(i + 1);
+
+      if (gz[i + 1]==0 && lz[i]==0)
+         li.push_back(i + 1);
+    }
+
+    if (_save)
+    myfile << "maxima locaux\n" << endl;
+
+    vector<uint>::iterator itlo;
+
+    if (_save)
+      {
+      for (itlo = lo.begin(); itlo < lo.end(); itlo++)
+        myfile << *itlo << " ";
+      myfile << endl;
+      }
+
+    if (_save)
+	myfile << "minima locaux\n" << endl;
+
+	if (_save)
+	  {
+	  for (itlo = li.begin(); itlo < li.end(); itlo++)
+		myfile << *itlo << " ";
+	  myfile << endl;
+	  }
+
+    // extraction automatique du seuil
+    int val_ext;
+    int max_ext;
+    int seuil = 10000;
+    max_ext = 0;
+
+    //_max_extremities
+/*
+    for (itlo = lo.begin(); itlo < lo.end(); itlo++)
+    {
+      val_ext = extremities[*itlo];
+      //on s'arrête au premier max
+      if (val_ext >= _max_extremities && val_ext > 1)
+      {
+        seuil = *itlo;
+        min_ext = val_ext;
+        break;
+      }
+
+      if (val_ext < min_ext && val_ext > 1)
+      {
+        min_ext = val_ext;
+        seuil = *itlo;
+      }
+
+    }
+
+
+*/
+    itlo = lo.begin();
+    //itlo++;
+
+    seuil  = *itlo;
+
+    if (_save)
+         myfile << "seuil select 1 = " << seuil << endl;
+
+    for (itlo = li.begin(); itlo < li.end(); itlo++)
+	{
+    	if (*itlo > seuil && *itlo > 10)
+    		{
+    		seuil = *itlo;
+    		break;
+    		}
+   	}
+
+    if (_save)
+        myfile << "seuil select = " << seuil << endl;
+
+    TimeTexture<short> texProbaThresh2(1, _mesh.vertex().size());
+    //on conserve les points dont la densité est > 0.5
+    texBinarizeF2S(texProbaNorm, texProbaThresh2, (float)2*seuil/100. , 0, 1);
+
+    //pour tous les points its du bassin it
+    for (its = ((*itb).second).begin(); its != ((*itb).second).end(); its++)
+    //for (uint i = 0; i < texProbaThresh2[0].nItem(); i++)
+      if (texProbaThresh2[0].item(*its) == 1)
+        texAutoThreshold[0].item(*its) = value;
   }
 
   if (_save)
@@ -1854,6 +2192,104 @@ void SulcalLinesGeodesic::sulcalLinesExtract_density(
   {
     writeFloatTexture("proba_roots.tex", texProba);
     writeFloatTexture("proba_roots_norm.tex", texProbaNorm);
+    writeShortTexture("threshold_auto.tex", texAutoThreshold);
+  }
+
+  cout << "done " << endl;
+
+}
+
+
+void SulcalLinesGeodesic::sulcalLinesExtract_maximal_density(
+    map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins)
+{
+
+  TimeTexture<short> texRootsBottom(1, _mesh.vertex().size());
+
+  // carré de la distance max (entre un vertex et le plus proche voxel) pour l'attribution du label du voxel au vertex
+  float dist_max = 100;
+  computeRootsBottomMap(texBasins,texRootsBottom,dist_max);
+
+  if (_save)
+    {
+      cout << "Save Roots Bottom texture : ";
+      writeShortTexture("roots_bottom.tex", texRootsBottom);
+    }
+
+  map<int, set<int> > mapBasinsRoots;
+
+  texConnectedComponent(texRootsBottom, mapBasinsRoots, 1000);
+
+  cout << mapBasinsRoots.size() << " Sulcal Basins found" << endl;
+
+  //on ne conserve que les bassins qui au plus de "clean_size" vertex
+
+  //utiliser une mesure en mm2 et pas un nombre de sommets
+
+  //int clean_size = 50;
+
+  TimeTexture<short> texRootsBottomClean(1, _mesh.vertex().size());
+
+  for (uint i = 0; i < texRootsBottom[0].nItem(); i++)
+    texRootsBottomClean[0].item(i) = texRootsBottom[0].item(i);
+
+
+  map<int, vector<int> > mapPolygonListBasins;
+  vertexmap2polygonMap(mapBasinsRoots,mapPolygonListBasins);
+
+  cleanBasins(mapBasinsRoots, texRootsBottomClean,mapPolygonListBasins, _clean_size);
+  cout << "after cleaning" << endl;
+  cout << mapBasinsRoots.size() << " Sulcal Basins found" << endl;
+
+  if (_save)
+  {
+    writeShortTexture("roots_bottom_clean.tex", texRootsBottomClean);
+  }
+
+  TimeTexture<short> texContourBasins(1, _mesh.vertex().size());
+
+  map<int, set<int> > mapContourBasins;
+  contourBasins(mapBasinsRoots, texRootsBottomClean, mapContourBasins,texContourBasins);
+  if (_save)
+  {
+    writeShortTexture("contour_basins_roots.tex", texContourBasins);
+  }
+
+  cout << "compute maximal probability map" << endl;
+  TimeTexture<float> texProba(1, _mesh.vertex().size());
+  TimeTexture<float> texProbaNorm(1, _mesh.vertex().size());
+  computeMaximalProbabiltyMap(mapContourBasins, texContourBasins, texRootsBottomClean, texProba);
+  normalizeMaximalProbabiltyMap(mapBasinsRoots, mapContourBasins,texContourBasins, texProba, texProbaNorm);
+
+  if (_save)
+    {
+      writeFloatTexture("proba_roots.tex", texProba);
+      writeFloatTexture("proba_roots_norm.tex", texProbaNorm);
+    }
+
+  TimeTexture<short> texAutoThreshold(1, _mesh.vertex().size());
+  //saveHistoProbabiltyMap(mapBasinsRoots, texRootsBottomClean,"histoRoots.txt");
+  cout << "done " << endl;
+
+  cout << "automatic threshold " << endl;
+
+  int nb_bin = 20;
+
+  automaticThresholdMaximalDensityMap(mapBasinsRoots,texRootsBottomClean,texProbaNorm,texAutoThreshold,nb_bin);
+
+  cout << "done " << endl;
+
+  TimeTexture<short> texSulcalines(1, _mesh.vertex().size() );
+
+  cout << "compute longest path " << endl;
+
+  computeLongestPathBasins (texAutoThreshold, texSulcalines, mapBasinsRoots);
+
+  if (_adrSulcalines != "")
+    writeShortTexture(_adrSulcalines.c_str(), texSulcalines);
+
+  if (_save)
+  {
     writeShortTexture("threshold_auto.tex", texAutoThreshold);
   }
 

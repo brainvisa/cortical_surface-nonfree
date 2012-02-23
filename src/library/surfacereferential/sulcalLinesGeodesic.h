@@ -111,13 +111,18 @@ class SulcalLinesGeodesic
     void computeProbabiltyMap(map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins,TimeTexture<short> &texBasins, TimeTexture<float> &texProba);
     void computeMaximalProbabiltyMap(map<int, set<int> > &mapContourBasins, TimeTexture<short> &texContourBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProba);
     void normalizeProbabiltyMap(map<int,set<int> > &mapBasins, map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins,TimeTexture<float> &texProba,TimeTexture<float> &texProbaNorm);
+    void normalizeMaximalProbabiltyMap(map<int,set<int> > &mapBasins, map<int,set<int> > &mapContourBasins,TimeTexture<short> &texContourBasins,TimeTexture<float> &texProba,TimeTexture<float> &texProbaNorm);
     void textureBin2Label(TimeTexture<short> &texLabel, TimeTexture<short> &texIn, TimeTexture<short> &texOut);
 
     //embc11
     void sulcalLinesExtract_probability(map<int,set<int> > &mapBasins, TimeTexture<short> &texBasins);
     //neuroimage11
     void sulcalLinesExtract_density(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins);
+    //miccai12
+    void sulcalLinesExtract_maximal_density(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins);
+
     void automaticThresholdDensityMap(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProbaNorm,TimeTexture<short> &texAutoThreshold,int nb_bin);
+    void automaticThresholdMaximalDensityMap(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProbaNorm,TimeTexture<short> &texAutoThreshold,int nb_bin);
 
     void vertexmap2polygonMap(map<int, set<int> > &mapVertexSetBasins, map<int, vector<int> > &mapPolygonSetBasins);
 
