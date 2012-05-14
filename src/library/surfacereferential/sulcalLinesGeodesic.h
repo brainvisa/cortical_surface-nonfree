@@ -68,6 +68,7 @@ class SulcalLinesGeodesic
     TimeTexture<float> _texCurv;
     TimeTexture<float> _geoDepth;
     TimeTexture<float> _geoDepthNorm;
+    TimeTexture<float> _geoCurvDepthNorm;
 
     //Constructor
     SulcalLinesGeodesic(string & adrMesh, string & adrCurv,

@@ -114,6 +114,7 @@ void SulcalLinesGeodesic::run()
   {
     cout << "Normalize Geodesic Depth Texture with sulcal basins " << endl;
     _geoDepthNorm = TimeTexture<float> (1, _mesh.vertex().size());
+    _geoCurvDepthNorm = TimeTexture<float> (1, _mesh.vertex().size());
     normalizeDepthMap(_geoDepth, _geoDepthNorm, mapBasins);
 
     if (_save)
@@ -178,6 +179,8 @@ void SulcalLinesGeodesic::probaMap()
   {
     cout << "Normalize Geodesic Depth Texture with sulcal basins " << endl;
     _geoDepthNorm = TimeTexture<float> (1, _mesh.vertex().size());
+    _geoCurvDepthNorm = TimeTexture<float> (1, _mesh.vertex().size());
+
     normalizeDepthMap(_geoDepth, _geoDepthNorm, mapBasins);
 
     if (_save)
@@ -556,7 +559,6 @@ void SulcalLinesGeodesic::computeRootsBottomMap(TimeTexture<short> &texBasins,Ti
     texRootsBottom[0].item(i) = 0;
     min = 10000000.;
 
-
     if (texBasins[0].item(i) > 0)
     {
       for (itb = cloud.begin(); itb != cloud.end(); ++itb)
@@ -774,6 +776,13 @@ void SulcalLinesGeodesic::computeLongestPathBasins(TimeTexture<short> &roots,
     method = 2; // valeur pour les gyri (car la depth map est inversé : les maxima sont dans les vallées)
   }
 
+  // contrainte sur la profondeur normalisée (par les bassins décrits sur les infos de courbures)
+  if (_constraint_type == 3)
+  {
+    texConstraint = _geoCurvDepthNorm;
+    method = 2; // valeur pour les gyri (car la depth map est inversé : les maxima sont dans les vallées)
+  }
+
   GeodesicPath sp(_mesh, texConstraint, method, _strain);
   //GeodesicPath sp(_mesh, texConstraint, 1 , _strain);
 
@@ -859,15 +868,43 @@ void SulcalLinesGeodesic::normalizeDepthMap(TimeTexture<float> &depth,
   }
 
   //on calcule la texture curv x depth
-  TimeTexture<float> depthxcurv(1,_mesh.vertex().size());
+  //TimeTexture<float> depthxcurv(1,_mesh.vertex().size());
 
   for (uint i = 0; i < _mesh.vertex().size(); i++)
     if (depthNorm[0].item(i) != -1000)
-      depthxcurv[0].item(i) = depthNorm[0].item(i) * _texCurv[0].item(i);
+      _geoCurvDepthNorm[0].item(i) = depthNorm[0].item(i) * _texCurv[0].item(i);
+
+  float min_depth_curv = 10000.;
+  float max_depth_curv = 0.;
+  //normalisation de depth_X_curv
+  for (uint i = 0; i < _mesh.vertex().size(); i++)
+  {
+	val = _geoCurvDepthNorm[0].item(i);
+	if (val < min_depth_curv)
+	  min_depth_curv = val;
+
+	if (val > max_depth_curv)
+	  max_depth_curv = val;
+  }
+
+  for (uint i = 0; i < _mesh.vertex().size(); i++)
+    {
+  	val = (_geoCurvDepthNorm[0].item(i) - min_depth_curv)/ (max_depth_curv - min_depth_curv);
+  	_geoCurvDepthNorm[0].item(i) = 1. - val;
+    }
 
   if (_save)
-    writeFloatTexture("depth_X_curv.tex", depthxcurv);
+    writeFloatTexture("depth_X_curv.tex", _geoCurvDepthNorm);
 
+  //on sauve la texture depth norm avec background à 0
+  for (uint i = 0; i < _mesh.vertex().size(); i++)
+      if (depthNorm[0].item(i) != -1000)
+        _geoCurvDepthNorm[0].item(i) = depthNorm[0].item(i);
+      else
+        _geoCurvDepthNorm[0].item(i) = 0;
+
+  if (_save)
+      writeFloatTexture("depth_norm_back0.tex", _geoCurvDepthNorm);
 
 }
 
@@ -1147,6 +1184,12 @@ void SulcalLinesGeodesic::computeProbabiltyMap(
     method = 2; // valeur pour les gyri (car la depth map est inversé : les maxima sont dans les vallées)
   }
 
+  if (_constraint_type == 3)
+  {
+    texConstraint = _geoCurvDepthNorm;
+    method = 2; // valeur pour les gyri (car la depth map est inversé : les maxima sont dans les vallées)
+  }
+
   GeodesicPath sp(_mesh, texConstraint, method, _strain);
   //GeodesicPath sp(_mesh, texConstraint, 1, _strain);
 
@@ -1244,6 +1287,12 @@ void SulcalLinesGeodesic::computeMaximalProbabiltyMap(
   if (_constraint_type == 2)
   {
     texConstraint = _geoDepthNorm;
+    method = 2; // valeur pour les gyri (car la depth map est inversé : les maxima sont dans les vallées)
+  }
+
+  if (_constraint_type == 3)
+  {
+    texConstraint = _geoCurvDepthNorm;
     method = 2; // valeur pour les gyri (car la depth map est inversé : les maxima sont dans les vallées)
   }
 
@@ -1891,35 +1940,95 @@ void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> 
 
 
 */
-    itlo = lo.begin();
-    //itlo++;
+    //itlo = lo.begin();
+    seuil = 0;
 
-    seuil  = *itlo;
-
-    if (_save)
-         myfile << "seuil select 1 = " << seuil << endl;
-
-    for (itlo = li.begin(); itlo < li.end(); itlo++)
-	{
-    	if (*itlo > seuil && *itlo > 6)
-    		{
-    		seuil = *itlo;
-    		break;
-    		}
-   	}
+    for (itlo = lo.begin(); itlo < lo.end(); itlo++)
+    {
+      if (*itlo > seuil && *itlo > 6 )
+      {
+        seuil = *itlo;
+        break;
+      }
+    }
 
     if (_save)
-        myfile << "seuil select = " << seuil << endl;
+      myfile << "first max (begin) = " << seuil << endl;
 
-    TimeTexture<short> texProbaThresh2(1, _mesh.vertex().size());
-    //on conserve les points dont la densité est > 0.5
-    texBinarizeF2S(texProbaNorm, texProbaThresh2, (float)(seuil)/(float)nb_bin , 0, 1);
+    TimeTexture<short> texProbaThresh_begin(1, _mesh.vertex().size());
+    texBinarizeF2S(texProbaNorm, texProbaThresh_begin, (float)(seuil)/(float)nb_bin , 0, 1);
+
+    for (uint i = 0; i < texAutoThreshold[0].nItem(); i++)
+      texAutoThreshold[0].item(i) = 0;
 
     //pour tous les points its du bassin it
     for (its = ((*itb).second).begin(); its != ((*itb).second).end(); its++)
     //for (uint i = 0; i < texProbaThresh2[0].nItem(); i++)
-      if (texProbaThresh2[0].item(*its) == 1)
+      if (texProbaThresh_begin[0].item(*its) == 1)
         texAutoThreshold[0].item(*its) = value;
+
+    TimeTexture<short> texSulcalines_begin(1, _mesh.vertex().size() );
+    cout << "compute longest path begin" << endl;
+    computeLongestPathBasins (texAutoThreshold, texSulcalines_begin, mapBasins);
+
+    writeShortTexture("sulcalines_begin.tex", texSulcalines_begin);
+
+    int seuil_begin = seuil;
+
+    for (itlo = li.begin(); itlo < li.end(); itlo++)
+    {
+      if (*itlo > seuil && *itlo > 6 )
+      {
+        seuil = *itlo;
+        break;
+      }
+    }
+
+    if (_save)
+        myfile << "first min (end) = " << seuil << endl;
+
+    TimeTexture<short> texProbaThresh_end(1, _mesh.vertex().size());
+    texBinarizeF2S(texProbaNorm, texProbaThresh_end, (float)(seuil)/(float)nb_bin , 0, 1);
+
+    for (uint i = 0; i < texAutoThreshold[0].nItem(); i++)
+      texAutoThreshold[0].item(i) = 0;
+
+    //pour tous les points its du bassin it
+    for (its = ((*itb).second).begin(); its != ((*itb).second).end(); its++)
+    //for (uint i = 0; i < texProbaThresh2[0].nItem(); i++)
+      if (texProbaThresh_end[0].item(*its) == 1)
+        texAutoThreshold[0].item(*its) = value;
+
+    TimeTexture<short> texSulcalines_end(1, _mesh.vertex().size() );
+    cout << "compute longest path end" << endl;
+    computeLongestPathBasins (texAutoThreshold, texSulcalines_end, mapBasins);
+
+    writeShortTexture("sulcalines_end.tex", texSulcalines_end);
+
+    float seuil_middle = (float)seuil_begin + (float)(seuil - seuil_begin)/2.;
+
+    if (_save)
+      myfile << "middle = " << seuil_middle << endl;
+
+    TimeTexture<short> texProbaThresh_middle(1, _mesh.vertex().size());
+    texBinarizeF2S(texProbaNorm, texProbaThresh_middle, (float)(seuil_middle)/(float)nb_bin , 0, 1);
+
+    for (uint i = 0; i < texAutoThreshold[0].nItem(); i++)
+      texAutoThreshold[0].item(i) = 0;
+
+    //pour tous les points its du bassin it
+    for (its = ((*itb).second).begin(); its != ((*itb).second).end(); its++)
+    //for (uint i = 0; i < texProbaThresh2[0].nItem(); i++)
+      if (texProbaThresh_middle[0].item(*its) == 1)
+        texAutoThreshold[0].item(*its) = value;
+
+    TimeTexture<short> texSulcalines_middle(1, _mesh.vertex().size() );
+    cout << "compute longest path middle" << endl;
+    computeLongestPathBasins (texAutoThreshold, texSulcalines_middle, mapBasins);
+
+    writeShortTexture("sulcalines_middle.tex", texSulcalines_middle);
+
+
   }
 
   if (_save)
@@ -2279,6 +2388,7 @@ void SulcalLinesGeodesic::sulcalLinesExtract_maximal_density(
 
   cout << "done " << endl;
 
+  /*
   TimeTexture<short> texSulcalines(1, _mesh.vertex().size() );
 
   cout << "compute longest path " << endl;
@@ -2287,6 +2397,7 @@ void SulcalLinesGeodesic::sulcalLinesExtract_maximal_density(
 
   if (_adrSulcalines != "")
     writeShortTexture(_adrSulcalines.c_str(), texSulcalines);
+ */
 
   if (_save)
   {
