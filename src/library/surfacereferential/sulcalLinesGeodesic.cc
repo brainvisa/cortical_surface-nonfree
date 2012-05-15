@@ -92,6 +92,18 @@ SulcalLinesGeodesic::~SulcalLinesGeodesic()
 
 }
 
+void SulcalLinesGeodesic::texBinarizeF2S(TimeTexture<float> &texIn,
+    TimeTexture<short> &texOut, float threshold, int inf, int sup)
+{
+  for (uint i = 0; i < texIn[0].nItem(); i++)
+  {
+    if (texIn[0].item(i) <= threshold)
+      texOut[0].item(i) = inf;
+    else
+      texOut[0].item(i) = sup;
+  }
+}
+
 void SulcalLinesGeodesic::run()
 {
   std::cout << "START : ";
@@ -323,18 +335,6 @@ void SulcalLinesGeodesic::floodFillIter(int indexVertex, float newTextureValue,
 
   mapBasins.insert(pair<int, set<int> > (newTextureValue, listIndexVertexFill));
 
-}
-
-void SulcalLinesGeodesic::texBinarizeF2S(TimeTexture<float> &texIn,
-    TimeTexture<short> &texOut, float threshold, int inf, int sup)
-{
-  for (uint i = 0; i < texIn[0].nItem(); i++)
-  {
-    if (texIn[0].item(i) <= threshold)
-      texOut[0].item(i) = inf;
-    else
-      texOut[0].item(i) = sup;
-  }
 }
 
 void SulcalLinesGeodesic::texBinarizeS2S(TimeTexture<short> &texIn,
@@ -1265,10 +1265,10 @@ void SulcalLinesGeodesic::computeMaximalProbabiltyMap(
   set<int>::iterator its;
   int value, nb_c, nb_v;
   vector<unsigned> listIndexTarget;
-  vector<vector<unsigned> > indices;
   vector<vector<unsigned> >::iterator it_vv;
   vector<unsigned>::iterator it_v;
 
+  vector<vector<unsigned> > indices;
 
   for (uint i = 0; i < texProba[0].nItem(); i++)
     texProba[0].item(i) = 1.0;
@@ -1326,42 +1326,96 @@ void SulcalLinesGeodesic::computeMaximalProbabiltyMap(
       //sp.shortestPath_1_N_All_ind(*its, listIndexTarget, indices);
       uint targ;
       double length;
-      sp.longestPath_1_N_ind(*its, listIndexTarget,  &targ,  &length, 1); // only the longest path is kept
-      vector<unsigned> chemin = sp.shortestPath_1_1_ind(*its,targ);
 
-      cout << *its << endl;
+      vector<double> lengthN;
+      vector<int> index_len;
 
-      nb_v += indices.size();
-      cout << "\r\033[K" << "extremities : " << ++nb_c << "/" << listIndexTarget.size() << " vertex : " << nb_v << flush;
+      indices = sp.longestPath_1_N_len(*its, listIndexTarget, lengthN, 1); // only the longest path is kept
 
-      //on incrémente les valeurs de la texture proba pour chaque point ayant été parcouru
-      for (it_v = chemin.begin(); it_v != chemin.end(); it_v++)
+      vector<double >::iterator ite_len = lengthN.begin();
+
+      cout << endl;
+
+      int myind;
+
+      myind = 0;
+
+      for (; ite_len != lengthN.end(); ++ite_len)
         {
-          //si le point est dans le bassin, alors on incrémente
-          if (value == texBasins[0].item(*it_v))
-            texProba[0].item(*it_v)++;
+          //cout << *ite_len << " ";
+          index_len.push_back(myind++);
         }
 
-      //on efface toutes les frontières de bassins
-      for (uint i = 0; i < texContourBasins[0].nItem(); i++)
-        {
-        if (texContourBasins[0].item(i) == value)
+      //cout << "fin des length" << endl;
+
+      vector<int >::iterator ite_ind;
+
+      //cout << "deb des index " << lengthN.size() << " " << index_len.size() << endl;
+
+//      for (ite_ind = index_len.begin(); ite_ind != index_len.end(); ++ite_ind)
+//              cout << *ite_ind << " ";
+
+      //cout << "fin des index " << lengthN.size() << " " << index_len.size()  << " pathsize" << indices.size() << endl;
+
+      std::sort(index_len.begin(), index_len.end(), Comp(lengthN));
+
+
+      int pourcentage_contour = 3;
+
+      int nb_target = (int) ((float)(pourcentage_contour*lengthN.size())/100.);
+
+
+      for (int j = 0; j < nb_target ; j++)
+      {
+        //cout << j << " -- " << listIndexTarget[index_len[lengthN.size() - j - 1]] << " -- " << index_len[lengthN.size() - j - 1] << " -- " << lengthN[index_len[lengthN.size() - j - 1]] << endl;
+
+        vector<unsigned> chemin;
+
+        chemin = indices[index_len[lengthN.size() - j - 1]];
+
+        //= sp.shortestPath_1_1_ind(listIndexTarget[index_len[lengthN.size() - j - 1]],targ);
+
+        cout << *its << endl;
+
+        //nb_v += indices.size();
+        nb_v += chemin.size();
+        cout << "extremities : " << ++nb_c << "/" << listIndexTarget.size()*nb_target << " vertex : " << nb_v << endl;
+
+        //on incrémente les valeurs de la texture proba pour chaque point ayant été parcouru
+        for (it_v = chemin.begin(); it_v != chemin.end(); it_v++)
           {
-          set<uint> voisins = _neigh[i];
-          set<uint>::iterator voisIt = voisins.begin();
-          int nb_vois;
-          nb_vois = 0;
-          //on parcourt tous les voisins du sommet, si un voisin a une valeur differente de 0 et value alors le point est une frontière
-          for (; voisIt != voisins.end(); voisIt++)
-          {
-            if (texContourBasins[0].item(*voisIt) != value && texContourBasins[0].item(*voisIt)!= 0)
-              nb_vois++;
+            //si le point est dans le bassin, alors on incrémente
+            if (value == texBasins[0].item(*it_v))
+              texProba[0].item(*it_v)++;
           }
 
-          if (nb_vois > 0)
-            texProba[0].item(i) = 0.0;
+        //on efface toutes les frontières de bassins
+        for (uint i = 0; i < texContourBasins[0].nItem(); i++)
+          {
+          if (texContourBasins[0].item(i) == value)
+            {
+            set<uint> voisins = _neigh[i];
+            set<uint>::iterator voisIt = voisins.begin();
+            int nb_vois;
+            nb_vois = 0;
+            //on parcourt tous les voisins du sommet, si un voisin a une valeur differente de 0 et value alors le point est une frontière
+            for (; voisIt != voisins.end(); voisIt++)
+            {
+              if (texContourBasins[0].item(*voisIt) != value && texContourBasins[0].item(*voisIt)!= 0)
+                nb_vois++;
+            }
+
+            if (nb_vois > 0)
+              texProba[0].item(i) = 0.0;
+            }
           }
+
         }
+
+      //sp.longestPath_1_N_ind(*its, listIndexTarget,  &targ,  &length, 1); // only the longest path is kept
+
+
+
     }
 
     cout << endl;
@@ -1442,23 +1496,18 @@ void SulcalLinesGeodesic::normalizeMaximalProbabiltyMap(
 
     nb_contour = ((*itc).second).size() ;
 
-    cout << "nb_contour = " << nb_contour << endl;
+    //on met tous les points de contour du bassins à 0
+    for (its = ((*itc).second).begin() ; its != ((*itc).second).end(); its++ )
+      texProbaNorm[0].item(*its) = 0;
 
     //pour tous les points its du bassin it
-    /*
     for (; its != ((*itb).second).end(); its++)
       accu_max = max(accu_max, texProba[0].item(*its));
-     */
-    //on normalise sur le nombre de point de contour
+
+    cout << "max = " << accu_max << endl;
 
     for (its = ((*itb).second).begin(); its != ((*itb).second).end(); its++)
-      texProbaNorm[0].item(*its) = (float) (texProba[0].item(*its) / (float)nb_contour);
-
-    //on met tous les points de contour du bassins à 0
-    //      for (its = ((*itc).second).begin() ; its != ((*itc).second).end(); its++ )
-    //        texProbaNorm[0].item(*its) = 0;
-
-
+      texProbaNorm[0].item(*its) = (float) (texProba[0].item(*its) / (float)accu_max);
   }
 }
 
@@ -1779,8 +1828,8 @@ void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> 
 
     myfile << "histo" << "\n";
     if (_save)
-    	  for (ith = histo.begin(); ith != histo.end(); ith++)
-    		myfile << ith->first << "\t" << ith->second << endl;
+    for (ith = histo.begin(); ith != histo.end(); ith++)
+          myfile << ith->first << "\t" << ith->second << endl;
 
     //cout << "smoothing histo" << "\n";
 
@@ -1927,30 +1976,6 @@ void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> 
     int seuil = 10000;
     max_ext = 0;
 
-    //_max_extremities
-/*
-    for (itlo = lo.begin(); itlo < lo.end(); itlo++)
-    {
-      val_ext = extremities[*itlo];
-      //on s'arrête au premier max
-      if (val_ext >= _max_extremities && val_ext > 1)
-      {
-        seuil = *itlo;
-        min_ext = val_ext;
-        break;
-      }
-
-      if (val_ext < min_ext && val_ext > 1)
-      {
-        min_ext = val_ext;
-        seuil = *itlo;
-      }
-
-    }
-
-
-*/
-    //itlo = lo.begin();
     seuil = 0;
 
     for (itlo = lo.begin(); itlo < lo.end(); itlo++)
@@ -1975,17 +2000,19 @@ void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> 
 
     int seuil_begin = seuil;
 
-    for (itlo = li.begin(); itlo < li.end(); itlo++)
-    {
-      if (*itlo > seuil && *itlo > 6 )
-      {
-        seuil = *itlo;
-        break;
-      }
-    }
+//    for (itlo = lo.begin(); itlo < lo.end(); itlo++)
+//    {
+//      if (*itlo > seuil)
+//      {
+//        seuil = *itlo;
+//        break;
+//      }
+//    }
+
+    seuil = *itlo++;
 
     if (_save)
-        myfile << "first min (end) = " << seuil << endl;
+        myfile << "second max (end) = " << seuil << endl;
 
     texBinarizeF2S(texProbaNorm, texProbaThresh_end, (float)(seuil)/(float)nb_bin , 0, 1);
 
@@ -2347,7 +2374,7 @@ void SulcalLinesGeodesic::sulcalLinesExtract_maximal_density(
   TimeTexture<float> texProba(1, _mesh.vertex().size());
   TimeTexture<float> texProbaNorm(1, _mesh.vertex().size());
   computeMaximalProbabiltyMap(mapContourBasins, texContourBasins, texRootsBottomClean, texProba);
-  normalizeMaximalProbabiltyMap(mapBasinsRoots, mapContourBasins,texContourBasins, texProba, texProbaNorm);
+  normalizeProbabiltyMap(mapBasinsRoots, mapContourBasins,texContourBasins, texProba, texProbaNorm);
 
   if (_save)
     {

@@ -33,6 +33,19 @@ using namespace aims;
 using namespace aims::meshdistance;
 using namespace std;
 
+typedef std::vector<double> double_vec_t;
+
+class Comp
+{
+
+  double_vec_t& _v;
+ public:
+   Comp(double_vec_t& v) : _v(v) {}
+   bool operator()(double i, double j){
+         return _v[i] < _v[j];
+   }
+};
+
 class SulcalLinesGeodesic
 {
   public:
