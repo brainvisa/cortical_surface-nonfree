@@ -123,7 +123,7 @@ class SulcalLinesGeodesic
     void sulcalLinesExtract_maximal_density(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins);
 
     void automaticThresholdDensityMap(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProbaNorm,TimeTexture<short> &texAutoThreshold,int nb_bin);
-    void automaticThresholdMaximalDensityMap(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProbaNorm,TimeTexture<short> &texAutoThreshold,int nb_bin);
+    void automaticThresholdMaximalDensityMap(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProbaNorm,TimeTexture<short> &texAutoThreshold_begin,TimeTexture<short> &texAutoThreshold_middle,TimeTexture<short> &texAutoThreshold_end,int nb_bin);
 
     void vertexmap2polygonMap(map<int, set<int> > &mapVertexSetBasins, map<int, vector<int> > &mapPolygonSetBasins);
 

@@ -222,7 +222,7 @@ void SulcalLinesGeodesic::probaMap()
 
     //automaticThresholdDensityMap(mapBasins,texBasins,texProbaNorm,texAutoThreshold,50);
 
-    automaticThresholdMaximalDensityMap(mapBasins,texBasins,texProbaNorm,texAutoThreshold,20);
+    //automaticThresholdMaximalDensityMap(mapBasins,texBasins,texProbaNorm,texAutoThreshold,20);
 
 
     if (_save)
@@ -1716,8 +1716,7 @@ void SulcalLinesGeodesic::automaticThresholdDensityMap(map<int, set<int> > &mapB
     myfile.close();
 }
 
-void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins,
-    TimeTexture<float> &texProbaNorm, TimeTexture<short> &texAutoThreshold,int nb_bin)
+void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> > &mapBasins, TimeTexture<short> &texBasins, TimeTexture<float> &texProbaNorm,TimeTexture<short> &texAutoThreshold_begin,TimeTexture<short> &texAutoThreshold_middle,TimeTexture<short> &texAutoThreshold_end,int nb_bin)
 {
   map<int, set<int> >::iterator itb;
   set<int>::iterator its;
@@ -1730,6 +1729,17 @@ void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> 
   ofstream myfile;
 
   string filename = _adrSaveFolder + "infos.txt";
+
+  TimeTexture<short> texProbaThresh_begin(1, _mesh.vertex().size());
+  TimeTexture<short> texProbaThresh_end(1, _mesh.vertex().size());
+  TimeTexture<short> texProbaThresh_middle(1, _mesh.vertex().size());
+
+  for (uint i = 0; i < texProbaThresh_begin[0].nItem(); i++)
+  {
+    texProbaThresh_begin[0].item(i) = 0;
+    texProbaThresh_end[0].item(i) = 0;
+    texProbaThresh_middle[0].item(i) = 0;
+  }
 
   if (_save)
   {
@@ -1955,23 +1965,13 @@ void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> 
     if (_save)
       myfile << "first max (begin) = " << seuil << endl;
 
-    TimeTexture<short> texProbaThresh_begin(1, _mesh.vertex().size());
     texBinarizeF2S(texProbaNorm, texProbaThresh_begin, (float)(seuil)/(float)nb_bin , 0, 1);
-
-    for (uint i = 0; i < texAutoThreshold[0].nItem(); i++)
-      texAutoThreshold[0].item(i) = 0;
 
     //pour tous les points its du bassin it
     for (its = ((*itb).second).begin(); its != ((*itb).second).end(); its++)
     //for (uint i = 0; i < texProbaThresh2[0].nItem(); i++)
       if (texProbaThresh_begin[0].item(*its) == 1)
-        texAutoThreshold[0].item(*its) = value;
-
-    TimeTexture<short> texSulcalines_begin(1, _mesh.vertex().size() );
-    cout << "compute longest path begin" << endl;
-    computeLongestPathBasins (texAutoThreshold, texSulcalines_begin, mapBasins);
-
-    writeShortTexture("sulcalines_begin.tex", texSulcalines_begin);
+        texAutoThreshold_begin[0].item(*its) = value;
 
     int seuil_begin = seuil;
 
@@ -1987,47 +1987,26 @@ void SulcalLinesGeodesic::automaticThresholdMaximalDensityMap(map<int, set<int> 
     if (_save)
         myfile << "first min (end) = " << seuil << endl;
 
-    TimeTexture<short> texProbaThresh_end(1, _mesh.vertex().size());
     texBinarizeF2S(texProbaNorm, texProbaThresh_end, (float)(seuil)/(float)nb_bin , 0, 1);
-
-    for (uint i = 0; i < texAutoThreshold[0].nItem(); i++)
-      texAutoThreshold[0].item(i) = 0;
 
     //pour tous les points its du bassin it
     for (its = ((*itb).second).begin(); its != ((*itb).second).end(); its++)
     //for (uint i = 0; i < texProbaThresh2[0].nItem(); i++)
       if (texProbaThresh_end[0].item(*its) == 1)
-        texAutoThreshold[0].item(*its) = value;
-
-    TimeTexture<short> texSulcalines_end(1, _mesh.vertex().size() );
-    cout << "compute longest path end" << endl;
-    computeLongestPathBasins (texAutoThreshold, texSulcalines_end, mapBasins);
-
-    writeShortTexture("sulcalines_end.tex", texSulcalines_end);
+        texAutoThreshold_end[0].item(*its) = value;
 
     float seuil_middle = (float)seuil_begin + (float)(seuil - seuil_begin)/2.;
 
     if (_save)
       myfile << "middle = " << seuil_middle << endl;
 
-    TimeTexture<short> texProbaThresh_middle(1, _mesh.vertex().size());
     texBinarizeF2S(texProbaNorm, texProbaThresh_middle, (float)(seuil_middle)/(float)nb_bin , 0, 1);
-
-    for (uint i = 0; i < texAutoThreshold[0].nItem(); i++)
-      texAutoThreshold[0].item(i) = 0;
 
     //pour tous les points its du bassin it
     for (its = ((*itb).second).begin(); its != ((*itb).second).end(); its++)
     //for (uint i = 0; i < texProbaThresh2[0].nItem(); i++)
       if (texProbaThresh_middle[0].item(*its) == 1)
-        texAutoThreshold[0].item(*its) = value;
-
-    TimeTexture<short> texSulcalines_middle(1, _mesh.vertex().size() );
-    cout << "compute longest path middle" << endl;
-    computeLongestPathBasins (texAutoThreshold, texSulcalines_middle, mapBasins);
-
-    writeShortTexture("sulcalines_middle.tex", texSulcalines_middle);
-
+        texAutoThreshold_middle[0].item(*its) = value;
 
   }
 
@@ -2376,7 +2355,10 @@ void SulcalLinesGeodesic::sulcalLinesExtract_maximal_density(
       writeFloatTexture("proba_roots_norm.tex", texProbaNorm);
     }
 
-  TimeTexture<short> texAutoThreshold(1, _mesh.vertex().size());
+  TimeTexture<short> texAutoThreshold_begin(1, _mesh.vertex().size());
+  TimeTexture<short> texAutoThreshold_middle(1, _mesh.vertex().size());
+  TimeTexture<short> texAutoThreshold_end(1, _mesh.vertex().size());
+
   //saveHistoProbabiltyMap(mapBasinsRoots, texRootsBottomClean,"histoRoots.txt");
   cout << "done " << endl;
 
@@ -2384,24 +2366,33 @@ void SulcalLinesGeodesic::sulcalLinesExtract_maximal_density(
 
   int nb_bin = 20;
 
-  automaticThresholdMaximalDensityMap(mapBasinsRoots,texRootsBottomClean,texProbaNorm,texAutoThreshold,nb_bin);
+  automaticThresholdMaximalDensityMap(mapBasinsRoots,texRootsBottomClean,texProbaNorm,texAutoThreshold_begin,texAutoThreshold_middle,texAutoThreshold_end,nb_bin);
 
   cout << "done " << endl;
 
-  /*
-  TimeTexture<short> texSulcalines(1, _mesh.vertex().size() );
-
-  cout << "compute longest path " << endl;
-
-  computeLongestPathBasins (texAutoThreshold, texSulcalines, mapBasinsRoots);
-
+  TimeTexture<short> texSulcalines_begin(1, _mesh.vertex().size() );
+  cout << "compute longest path begin " << endl;
+  computeLongestPathBasins (texAutoThreshold_begin, texSulcalines_begin, mapBasinsRoots);
   if (_adrSulcalines != "")
-    writeShortTexture(_adrSulcalines.c_str(), texSulcalines);
- */
+    writeShortTexture("./sulcalines_begin.tex", texSulcalines_begin);
+
+  TimeTexture<short> texSulcalines_middle(1, _mesh.vertex().size() );
+  cout << "compute longest path middle" << endl;
+  computeLongestPathBasins (texAutoThreshold_middle, texSulcalines_middle, mapBasinsRoots);
+  if (_adrSulcalines != "")
+    writeShortTexture("./sulcalines_middle.tex", texSulcalines_middle);
+
+  TimeTexture<short> texSulcalines_end(1, _mesh.vertex().size() );
+  cout << "compute longest path end" << endl;
+  computeLongestPathBasins (texAutoThreshold_end, texSulcalines_end, mapBasinsRoots);
+  if (_adrSulcalines != "")
+    writeShortTexture("./sulcalines_end.tex", texSulcalines_end);
 
   if (_save)
   {
-    writeShortTexture("threshold_auto.tex", texAutoThreshold);
+    writeShortTexture("threshold_auto_begin.tex", texAutoThreshold_begin);
+    writeShortTexture("threshold_auto_middle.tex", texAutoThreshold_middle);
+    writeShortTexture("threshold_auto_end.tex", texAutoThreshold_end);
   }
 
   cout << "done " << endl;
