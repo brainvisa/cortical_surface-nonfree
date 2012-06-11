@@ -18,7 +18,7 @@ void GyriRegularization::compute2ndOrderCliquesAndNodes()
 	std::cout << "Building 2nd order cliques and node list" << std::endl;
 	_2ndOrderCliques=std::vector<std::pair<uint, uint> >();
 	uint cliqueNb=0;
-	float likeliT=0.1; // threshold on likelihood (P=-log(likeliT))
+	float likeliT=0.1 ; //  threshold on likelihood (P=-log(likeliT))
 							// below this, nodes are not included in the optimization loop
 
 	// construire le labelMap pour connaitre les relations de voisinage entre gyri
@@ -55,11 +55,16 @@ void GyriRegularization::compute2ndOrderCliquesAndNodes()
 	//--------------------------
 
 
-
+     int gotIn=0;
+     std::cout << "SIZE: " <<  _size << std::endl; 
+     
 	for (uint i=0; i<_size; i++)
 	{
 		if ((_gyriTexture[0].item(i) > 1) && (_gyriTexture[0].item(i) < 50) && (_seeds.find(i)==_seeds.end()) && (_gyriProba[_gyriTexture[0].item(i)].item(i)>likeliT))
 		{
+		     // debug 
+		     gotIn++;
+		     
 			if (_nodes.find(i) == _nodes.end())
 			{
 				_nodes[i]=std::set<uint>(); // if node does not exist yet it is created
@@ -83,12 +88,19 @@ void GyriRegularization::compute2ndOrderCliquesAndNodes()
 			} // next neighbour
 		}
 	} // next node
+	
+	// DEBUG 
+	std::cout << "GOT IN THE LOOP " << gotIn << " TIMES" << endl; 
+	
+	
+	
+	
 //	// test
 //	for (uint i=0; i<_cliques.size(); i++)
 //	{
 //		std::cout << "Clique " << i << " : (" << _cliques[i].first << ", " << _cliques[i].second << ")" << std::endl;
 //	}
-	std::cout << "OK" << std::endl;
+	std::cout << "OK, found " << cliqueNb << " 2nd order cliques" << std::endl;
 }
 
 void GyriRegularization::computeRingCliquesAndNodes()
@@ -577,33 +589,39 @@ void GyriRegularization::computeGyriProba()
 	for (i=0; i<_size; i++)
 			tempProba[_gyriTexture[0].item(i)].item(i)=100.0;
 
-//	Writer<TimeTexture<float > > prob1W("probaInit");
-//	prob1W << tempProba;
+	Writer<TimeTexture<float > > prob1W("probaInit");
+	prob1W << tempProba;
 
 	// dilation of the gyri to extend their possible localization a bit
 	std::cout << "Dilating likelihood maps before smoothing" << std::endl;
 	for (j=0; j<=lmax; j++)
 	{
-		tempProbaDil[j]=MeshDilation<float>( _mesh[0], tempProba[j], 0.0, -1, 1.0, true);
+		tempProbaDil[j]=MeshDilation<float>( _mesh[0], tempProba[j], 0.0, -1, 3.0, true);
 	}
 
-//	Writer<TimeTexture<float > > prob2W("probaDil");
-//	prob2W << tempProbaDil;
+	Writer<TimeTexture<float > > prob2W("probaDil");
+	prob2W << tempProbaDil;
 
 	//Smoothing of the textures
 	FiniteElementSmoother<3, float> *smooth;
-	smooth=new FiniteElementSmoother<3, float>(float(0.1), &_mesh[0]);
-	std::cout << "Smoothing probability maps" << std::endl;
+	smooth=new FiniteElementSmoother<3, float>(float(0.01), &_mesh[0]);
+	std::cout << "Smoothing probability maps with mean filtering up to number " << lmax << " with 90 iterations each" << std::endl;
 	for (j=0; j<=lmax; j++)
 	{
-		_gyriProba[j]=smooth->doSmoothing(tempProbaDil[j], _smooth, false);
+	    std::cout << j << " // " ;
+	    _gyriProba[j]=meanFiltering(tempProbaDil[j], 90);
+		//_gyriProba[j]=smooth->doSmoothing(tempProbaDil[j], _smooth, false);
 	}
-//	Writer<TimeTexture<float > > prob3W("probaSmooth");
-//	prob3W << _gyriProba;
+	Writer<TimeTexture<float > > prob3W("probaSmooth");
+	prob3W << _gyriProba;
 
+     cout << endl;
 
 	std::vector<float> max;
 	for (j=0; j<=lmax; j++) max.push_back(0.0);
+
+     float probaMax=-1000;
+     cout << "DEBUG: iterating i on size " << _size << " and j on lmax=" << lmax << endl;
 
 	for (i=0; i<_size; i++)
 	{
@@ -616,11 +634,19 @@ void GyriRegularization::computeGyriProba()
 			float p=_gyriProba[j].item(i)/float(sum);
 			if (p>max[j]) {max[j]=p; seedsV[j]=i;}
 			if (p<0.0000000001)
-				_gyriProba[j].item(i)=-log(0.0000000001);
+				_gyriProba[j].item(i)=23; //-log(0.0000000001);
 			else
 				_gyriProba[j].item(i)=-log(p);
+				
+		     if (_gyriProba[j].item(i)>probaMax) probaMax=_gyriProba[j].item(i);
 		}
 	}
+	
+	Writer<TimeTexture<float > > likeW("probaFinal.tex");
+	likeW << _gyriProba;
+	
+	
+	std::cout << "probaMax=" << probaMax << std::endl;
 
 
 	// Here we are keeping seeds for each region.
@@ -635,8 +661,9 @@ void GyriRegularization::computeGyriProba()
 			_seeds.insert(*vIt);
 	}
 
+
 	//debug
-	TimeTexture<short> deb(lmax+1, _size);
+/*	TimeTexture<short> deb(lmax+1, _size);
 	for (j=0; j<=lmax; j++)
 		for (i=0; i<_size; i++)
 			deb[j].item(i)=0;
@@ -652,7 +679,7 @@ void GyriRegularization::computeGyriProba()
 	}
 
 	Writer<TimeTexture<short > > seedsW("seedsAndGyri");
-	seedsW << deb;
+	seedsW << deb;*/
 
 
 
@@ -727,6 +754,10 @@ void GyriRegularization::runICM()
 	int iter=1;
 
 	uint size_cliques=_2ndOrderCliques.size();
+	
+	// debug
+     std::cout << "Number of second order cliques: " << size_cliques << std::endl;
+
 
 	std::cout << "Running ICM..." << std::endl;
 	double dEG=0.0;
@@ -915,7 +946,7 @@ void GyriRegularization::runAnnealing(float T, float kT)
 //		}
 		std::cout << "nb changes : " << nbCh << "; Energy =" << _currentE << "; Global change =" << dEG << std::endl;
 		_evolutionE.push_back(_currentE);
-		if (nbCh==0)
+		if (float(nbCh) < 0.01*float(size_nodes) )// CHANGE OF STOPPING CRITERION (nbCh==0)
 			nbZero++;
 		if (nbZero == 10)
 		{
@@ -961,7 +992,6 @@ void GyriRegularization::writeGyri(string fileOut)
 	Writer<TimeTexture<int> > texResultW( fileOut );
 	texResultW << _gyriTexture ;
 }
-
 
 void GyriRegularization::runICMdebug(uint node)
 {
@@ -1078,8 +1108,6 @@ double GyriRegularization::computeLocalEnergyChangeDebug(uint node, int label)
 			std::cout << "\t(" << k << ", " << l << ")" << std::endl;
 	}
 
-
-
 	// then the list of cliques the node is involved in
 	std::cout << "Testing relevant cliques" << std::endl;
 
@@ -1101,7 +1129,6 @@ double GyriRegularization::computeLocalEnergyChangeDebug(uint node, int label)
 		}
 		else
 			std::cerr << "WARNING : node " <<  node << " not into its own cliques !" << std::endl;
-
 	}
 	change=localEnergy - oldLocalEnergy;
 	return(change);
@@ -1156,9 +1183,46 @@ void GyriRegularization::debugCliques()
 	exit(EXIT_SUCCESS);
 }
 
+Texture<float> GyriRegularization::meanFiltering(Texture<float> input, int nbIt)
+{
+     int t;
+     uint i;
+     int size=input.nItem();
+     Texture<float> out(size);
+     
+     // cout << "Starting " << nbIt << "iterations of mean filtering" << endl;
+     
+     for (i=0; i<size; i++)
+          out.item(i)=input.item(i);
 
+     for (t=0; t<nbIt; t++)
+          out=meanFilteringIteration(out);
+          
+      return(out);
+}
 
+Texture<float> GyriRegularization::meanFilteringIteration(Texture<float> input)
+{
+     int size=input.nItem();
+     Texture<float> out(size);
+     float mean;
+     uint i;
+     
+     std::set<uint>  neigh;
+     std::set<uint>::iterator nIt;
+     
+     for (i=0; i<size; i++)
+     {
+          mean=0.0;
+          neigh=_neigh[i];
+          for (nIt=neigh.begin(); nIt!=neigh.end(); nIt++)
+               mean+=input.item(*nIt);
+          mean = mean/float(neigh.size());
+          out.item(i)=mean;
+     }
 
+     return(out);
+}
 
 
 

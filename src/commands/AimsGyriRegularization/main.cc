@@ -39,9 +39,9 @@ int main( int argc, const char** argv )
   string fileOut, fileMesh, gyriIn;
   float weight=1.0;
   int opti=1;
-  int smooth=80;
+  int smooth=2; // was 80
 
-  AimsApplication    app( argc, argv, "Build a regularized version of gyri from the 2D coordinate system" );
+  AimsApplication    app( argc, argv, "Build a regularized version of gyri from the 2D coordinate system. TEXTURE MUST BE IN FLOAT !!!" );
   try
   {
      app.addOption( fileMesh, "-m", "input mesh" );
@@ -75,6 +75,9 @@ int main( int argc, const char** argv )
      float kT=0.999;
 
      uint size=surface.vertex().size();
+     
+     // debug
+     cout << "size vertices: " << size << endl; 
 
      // Somebody tell me why gyri are in float textures !!!
      TimeTexture<int> texGyri(1, size);

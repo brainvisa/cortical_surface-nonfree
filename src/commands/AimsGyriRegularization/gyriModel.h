@@ -93,6 +93,8 @@ private:
      void computeGyriProba();
      void initializeGyriEvolution();
 
+     Texture<float> meanFiltering(Texture<float> input, int t);
+     Texture<float> meanFilteringIteration(Texture<float> input);
      double computeLocalEnergyChangeDebug(uint node, int label);
 };
 
