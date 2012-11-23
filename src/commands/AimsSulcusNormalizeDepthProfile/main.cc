@@ -45,7 +45,7 @@ int main( int argc, const char** argv )
 
           app.initialize();
           
-          cout << "reading triangulation   : " << flush;
+          cout << "reading triangulation " << fileMesh << ": " << flush;
           AimsSurfaceTriangle surface;
           Reader<AimsSurfaceTriangle> triR( fileMesh );
           triR >> surface;
@@ -78,7 +78,7 @@ int main( int argc, const char** argv )
           for (i=1; i<=100; i++)
           {
                AimsSegments parallele;
-               cout <<  i << std::endl;
+               // cout <<  i << std::endl;
                parallele=par.makeLine( i );
 /*               isoseg[i]=parallele;*/
                float d1=0.0, d2=0.0;
@@ -175,9 +175,9 @@ int main( int argc, const char** argv )
 
           cout << "looking for extrema" << endl;
 
-          for (i=0; i<=66; i++)
+          for (i=0; i<=50; i++)
           {
-        	  if (smooth[i] < minC)
+        	  if ((smooth[i] < minC) && (smooth[i] < smooth[i+1]) && (smooth[i] < smooth[i-1]))
         	  {
         		  imin=i;
         		  minC=smooth[i];
@@ -195,6 +195,7 @@ int main( int argc, const char** argv )
           }
           cout << "Landmark L1: " << imin << endl;
           cout << "Landmark L2: " << imax << endl;
+          cout << "\n\n\n" << endl;
           return EXIT_SUCCESS;
      }
      catch( user_interruption & )
