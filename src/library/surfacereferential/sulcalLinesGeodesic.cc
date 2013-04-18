@@ -108,7 +108,7 @@ void SulcalLinesGeodesic::run()
 {
   std::cout << "START : ";
 
-  std::cout << "Sulcal basins segmentation " << endl;
+  std::cout << "Sulcal basins segmentation 2013" << endl;
 
   TimeTexture<short> texBasins(1, _mesh.vertex().size());
 
@@ -2263,6 +2263,20 @@ void SulcalLinesGeodesic::sulcalLinesExtract_density(
   cout << "after cleaning" << endl;
   cout << mapBasinsRoots.size() << " Sulcal Basins found" << endl;
 
+  cout << "re-compute depthmap" << endl;
+
+	//on recalcule les cartes de profondeur sur les bassins root clean
+	if (_adrGeodesicDepth != "")
+	{
+	  normalizeDepthMap(_geoDepth, _geoDepthNorm, mapBasinsRoots);
+
+	  if (_save)
+	  {
+			cout << "Save Normalize Geodesic Depth texture : ";
+			writeFloatTexture("depth_norm_clean.tex", _geoDepthNorm);
+		}
+	}
+
   if (_save)
   {
     writeShortTexture("roots_bottom_clean.tex", texRootsBottomClean);
@@ -2360,6 +2374,21 @@ void SulcalLinesGeodesic::sulcalLinesExtract_maximal_density(
   {
     writeShortTexture("roots_bottom_clean.tex", texRootsBottomClean);
   }
+
+  cout << "re-compute depthmap" << endl;
+
+  //on recalcule les cartes de profondeur sur les bassins root clean
+  if (_adrGeodesicDepth != "")
+  {
+    normalizeDepthMap(_geoDepth, _geoDepthNorm, mapBasinsRoots);
+
+    if (_save)
+    {
+      cout << "Save Normalize Geodesic Depth texture : ";
+      writeFloatTexture("depth_norm_clean.tex", _geoDepthNorm);
+    }
+  }
+
 
   TimeTexture<short> texContourBasins(1, _mesh.vertex().size());
 
