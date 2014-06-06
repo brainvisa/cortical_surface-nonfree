@@ -311,6 +311,21 @@ int main( int argc, const char** argv )
                     }
                }
 
+               
+// DEBUG SECTION
+
+//cerr << "DEBUG: writing ridge textures : " << flush;
+//Writer<TimeTexture<short> >  bug1W( "/tmp/texBot.tex" );
+//bug1W.write( texBot );
+//Writer<TimeTexture<short> >  bug2W( "/tmp/texHull.tex" );
+//bug2W.write( texHull );
+
+// END DEBUG SECTION
+               
+               
+               
+               
+               
      cout << "Done... moving on to postprocessing of ridges" << endl;
      cout << "Done " << count << " texBot points" << endl;
 
@@ -326,7 +341,17 @@ int main( int argc, const char** argv )
       topClosing[0]=MeshErosion<short>( surface[0], topDilation[0], short(0), -1, 6.0-offset, true);// was 6.0
       botClosing[0]=MeshErosion<short>( surface[0], botDilation[0], short(0), -1, 6.0-offset, true);
 
-
+      // DEBUG SECTION
+      
+ //     cerr << "DEBUG: writing ridge textures : " << flush;
+ //     Writer<TimeTexture<short> >  bug3W( "/tmp/topClosing.tex" );
+ //     bug3W.write( topClosing);
+ //     Writer<TimeTexture<short> >  bug4W( "/tmp/botClosing.tex" );
+ //     bug4W.write( botClosing);
+      
+      // END DEBUG SECTION
+          
+      
       // New Stuff: direct pole computation:
 
       cerr << "Detecting extremities" << endl;

@@ -87,8 +87,32 @@ int main( int argc, const char** argv )
                std::vector<AimsVector<uint,2> >::iterator polyIt=poly.begin();
                float curv=0.0, c;
                float curv2=0.0, c2;
-
-               int ncurv2=0;
+               int ncurv=0;
+               for ( ; polyIt!=poly.end(); ++polyIt)
+               {
+                    uint v1=(*polyIt)[0];
+                    uint v2=(*polyIt)[1];
+                    Point3df p1=vert[v1];
+                    Point3df p2=vert[v2];
+                    uint i1=closer(surface, p1);
+                    uint i2=closer(surface, p2);
+                    float d=norm(p1-p2);
+                    c=texC.item(i1);
+                    curv += c;
+                    d1 += d;
+                    ncurv++;
+               }
+               curv=curv/float(ncurv);
+               d1=d1/2.0;
+               
+               depth.insert(std::pair<uint, float>(i, d1));
+               curvM.insert(std::pair<uint, float>(i, curv));
+                              
+               // L'ancienne version ci-dessous calculait, pour la profondeur, le min des deux longueurs
+               // calculée de chaque côté du sillon
+               // pour ça il y avait besoin de la texture X, on ne s'en sert plus ici.
+               
+/*               int ncurv2=0;
                int ncurv=0;
                for ( ; polyIt!=poly.end(); ++polyIt)
                {
@@ -107,7 +131,7 @@ int main( int argc, const char** argv )
                          else {d1+=d; d2+=d;}
                          if ((x1>=0) && (x1<=100))
                          {
-                        	 curv2+=c;
+                        	     curv2+=c;
                              ncurv2++;
                          }
                     }
@@ -133,6 +157,7 @@ int main( int argc, const char** argv )
                else depth.insert(std::pair<uint, float>(i, d2));
                curvM.insert(std::pair<uint, float>(i, curv));
                curvM2.insert(std::pair<uint, float>(i, curv2));
+*/
           }
 
           cout << "done" << endl;
@@ -142,7 +167,7 @@ int main( int argc, const char** argv )
           uint imin=0, imax;
           for (i=0; i<=100; i++)
           {
-              fout << i << "\t" << depth[i] << "\t" << (curvM[i]+curvM2[i])/2.0 << std::endl;
+              fout << i << "\t" << depth[i] << "\t" << curvM[i] << std::endl;
           }
           fout.close();
 
