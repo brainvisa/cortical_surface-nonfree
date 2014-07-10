@@ -365,7 +365,7 @@ pair<vector<uint>, vector<uint> > getOppositeSides(pair<vector<uint>, vector<uin
    }
    if (compConn.size()==2) return *new pair<vector<uint>, vector<uint> >(compConn[0],compConn[1]);
    else {
-      printf("getOppositeSides renvoit %d composantes connexes.\n", compConn.size());
+      printf("getOppositeSides renvoit %lu composantes connexes.\n", (unsigned long)compConn.size());
       return *new pair<vector<uint>, vector<uint> >;
    }
 }

@@ -1207,7 +1207,7 @@ void TextureToBlobs::buildBlobsFromClustersLists ( std::vector< surf::GreyLevelB
         if ( outputTextFile != "" ) {
             fprintf(f1, "charac_clusters[\'%s\'][%.3f][%d] = {\n", it->first.data(), clustering_distance_threshold, color);
             fprintf(f1, "\'dist_moy\' : %lf,\n ", (double)(distance_moyenne) );
-            fprintf(f1, "\'nb_total_blob\' : %d,\n ", cluster_blobs.size() );
+            fprintf(f1, "\'nb_total_blob\' : %lu,\n ", (unsigned long)cluster_blobs.size() );
             fprintf(f1, "\'map_count_scales\' : {");
             std::map< float, uint >::iterator ite3;
             for ( ite3 = mapCountScales.begin() ; ite3 != mapCountScales.end() ; ite3++ )
