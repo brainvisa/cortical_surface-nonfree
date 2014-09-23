@@ -15,6 +15,8 @@ using namespace std;
 using namespace carto;
 
 int main(int argc, const char **argv){
+  try
+  {
     string  graphFile, output, atlaspath= "", recuitpath="", energypath="";
     int verbose=1;
     Graph primal;
@@ -64,6 +66,14 @@ int main(int argc, const char **argv){
 //    if (save) SauvegarderGraphes(primal, graphFile, output);
 
     return(0);
-
+  }
+  catch( user_interruption & )
+  {
+  }
+  catch( exception & e )
+  {
+    cerr << e.what() << endl;
+  }
+  return 1;
 }
 
