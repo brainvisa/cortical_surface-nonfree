@@ -10,7 +10,8 @@
 #include <aims/primalsketch/finiteElementSmoother_d.h>
 #include <aims/primalsketch/primalSketchUtil.h>
 
-namespace TextureToBlobs {
+namespace TextureToBlobs
+{
 
     void PrimalSketchRegionMode ( //std::vector<surf::GreyLevelBlob *> &blobs,
             std::vector<surf::ScaleSpaceBlob *> &ssblobs,
@@ -73,7 +74,7 @@ namespace TextureToBlobs {
     void PrimalSketch ( SubjectData &subject,
                         //std::vector<surf::GreyLevelBlob *> &blobs,
                         std::vector<surf::ScaleSpaceBlob *> &ssblobs,
-                        ScaleSpace<AimsSurface<3, Void>, Texture<float> > *ss,
+                        aims::ScaleSpace<AimsSurface<3, Void>, Texture<float> > *ss,
                         TimeTexture<float> &blobs_texture,
                         float scale_max = -1.0);
 

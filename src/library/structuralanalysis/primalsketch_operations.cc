@@ -2,6 +2,8 @@
 
 #include <cortical_surface/structuralanalysis/primalsketch_operations.h>
 
+using namespace aims;
+using namespace std;
 
 void storeCoordinatesInScaleSpace ( SubjectData &regionData, ScaleSpace<AimsSurface<3, Void>, Texture<float> >  &ss ) 
 {
