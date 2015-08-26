@@ -263,7 +263,9 @@ std::map< int, std::map<int, std::string> > aims::createCorrespMap( std::string 
 	while (!feof(file))
 	{
 		char c[40];
-		fscanf(file, "%s %i\n", c, &val_projection);
+		int n = fscanf(file, "%s %i\n", c, &val_projection);
+                if( n != 3 )
+                  throw runtime_error( "expected 3 items" );
 		arg2=c;
 		map_local2[val_projection]=arg2;
 	}
@@ -273,7 +275,9 @@ std::map< int, std::map<int, std::string> > aims::createCorrespMap( std::string 
 	{
 		char c[40];
 		char a[5];
-		fscanf(corres, "%s %s %i\n", a, c, &val_contraint);
+		int n = fscanf(corres, "%s %s %i\n", a, c, &val_contraint);
+                if( n != 3 )
+                  throw runtime_error( "expected 3 items" );
 		arg1=c + side;
 		map_local1[val_contraint].push_back(arg1);
 	}
