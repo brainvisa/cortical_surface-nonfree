@@ -82,7 +82,9 @@ void Anneal::Step ( std::vector<int> &random, double temp, uint &mod ) {
             total[k] = ( nbips1 - nclsim1 - (nbips2 - nclsim2) );
 
             somme += exp ( - globalenergieslabels[k] / temp );
-            assert ( !isnan(somme) || ( std::cout << globalenergieslabels[k] << "/" << temp << std::endl && false ) );
+            assert ( !std::isnan(somme)
+              || ( std::cout << globalenergieslabels[k] << "/" << temp
+                   << std::endl && false ) );
         }
 
         double somme2 = 0.0;
