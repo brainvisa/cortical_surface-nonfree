@@ -106,7 +106,7 @@ int getRealSize(const vector<set<uint> > &v){
 
 bool valueOf(const std::string &s, uint &obj){
    std::istringstream is(s);
-   return is >> obj;
+   return ( is >> obj ).good();
 }
 
 string f2str(float f){
