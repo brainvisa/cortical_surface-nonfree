@@ -1008,7 +1008,9 @@ void SulcalLinesGeodesic::vertexmap2polygonMap(map<int, set<int> > &mapVertexSet
 
   for (polyIt=poly.begin(),ind_poly = 0; polyIt!=poly.end(); ++polyIt)
   {
-    ++ind_poly;
+    //bug ARN
+    //++ind_poly;
+    
     //on cherche le bassin qui contient les trois sommets du triangle polyIt
     for (it = mapVertexSetBasins.begin(); it != mapVertexSetBasins.end(); ++it)
     {
@@ -1019,7 +1021,7 @@ void SulcalLinesGeodesic::vertexmap2polygonMap(map<int, set<int> > &mapVertexSet
 
 //      //si les trois sont trouvés on ajoute l'indice ind_poly dans le vecteur de la map mapPolygonSetBasins
       if (it0 != (*it).second.end() && it1 != (*it).second.end() && it2 != (*it).second.end())
-        mapPolygonSetBasins[(*it).first].push_back(ind_poly);
+        mapPolygonSetBasins[(*it).first].push_back(ind_poly++);
     }
   }
 
