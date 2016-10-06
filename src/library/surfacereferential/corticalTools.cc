@@ -256,7 +256,10 @@ void aims::drawGyri(std::string & adLong, std::string & adLat, std::string & adO
 	{
 		char c[40];
 		char a[5];
-		fscanf ( corres, "%s %s %i\n", a, c, &val_projection );
+		if( fscanf( corres, "%s %s %i\n", a, c, &val_projection )
+                    != 3 )
+                  cout << "warning in drawGyri: val_projection not correctly "
+                          "read\n";
 		arg1 = a;
 		map_global[a].insert ( val_projection );
 	}
