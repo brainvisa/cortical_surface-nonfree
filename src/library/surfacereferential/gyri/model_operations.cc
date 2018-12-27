@@ -3,7 +3,6 @@
 #include <aims/vector/vector.h>
 #include <cortical_surface/surfacereferential/gyri/vector_operations.h>
 
-using namespace aims;
 using namespace std;
 
 
