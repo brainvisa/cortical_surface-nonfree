@@ -24,14 +24,14 @@ int main(int argc, const char **argv)
 	std::string adress_vol;
 	int type=0;
 
-	AimsApplication     app( argc, argv, "Projection d'un volume sur une surface par interpolation des noeuds de la surface dans le volume ");
+	AimsApplication     app( argc, argv, "Projection of a volume onto a surface bny interpolating surface vertices in the volume");
 	app.addOption( adress_mesh, "-im", "input Mesh");
 	app.alias( "--inMesh", "-im" );
 	app.addOption( adress_vol, "-iv", "input Volume");
 	app.alias( "--inVol", "-iv" );
 	app.addOption( adress_texOut, "-o", "output Texture");
 	app.alias( "--outTex", "-o" );
-	app.addOption( type, "-t", "type d'interpolation (default: 0=trilinéaire, 1=plus proche voisin", 0);
+	app.addOption( type, "-t", "interpolation type (default: 0=trilinear, 1=nearest neighbor", 0);
 	app.alias( "--type", "-t");
 
 	app.initialize();
