@@ -14,7 +14,8 @@ int main ( int argc, const char **argv ) {
         std::string outpath, 
                     meshpath, 
                     datapath, 
-                    datapath1;
+                    datapath1,
+                    mixtype;
         int operation, 
             size = 7, 
             type = 0, 
@@ -40,6 +41,7 @@ int main ( int argc, const char **argv ) {
         app.addOption( type , "-t", "For computing convolution kernels (-op=0), selects the cortical thickness evaluation method : 0 for 3mm constant (only for now) ", 1); //; 1 for cortical mask-based evaluation ; 2 if using thickness texture\n  For projecting volumes onto the surface (-op=1), sets the output type : 0 for single volume projection ; 1 for several volumes -> several textures ; 2 for several volumes -> one timetexture", 0 );
         app.addOption( outpath , "-o", "Output file : convolution kernels (-op=0) or projection texture (-op=1)" );
         app.addOption( index, "-I", "[DEBUG] Index of a precise kernel to be computed", 1);
+        app.addOption( mixtype , "-mt", "Mix type : label (majority) or level (default), used only in projection mode (-op=1)", true );
         app.initialize();
 
         if ( operation == 0 ) {
@@ -77,18 +79,23 @@ int main ( int argc, const char **argv ) {
             AimsSurfaceTriangle mesh;
             Reader < AimsSurfaceTriangle > r1 ( meshpath );
             r1.read ( mesh );
-            std::vector< AimsData<float> > kernel = load_kernel ( datapath );
+            std::vector< AimsData<float> > kernel = load_kernel( datapath );
          
-            Reader < AimsData<float> > r ( datapath1 );
-            AimsData<float> funcdata;
-            r.read ( funcdata );
+            Reader < Volume<float> > r ( datapath1 );
+            VolumeRef<float> funcdata;
+            funcdata = r.read();
 
             std::cout << "kernel resolution : " << kernel[0].sizeX() << ";" << kernel[0].sizeY() << ";" << kernel[0].sizeZ() << std::endl;
             std::cout << "kernel size : " << kernel[0].dimX() << std::endl;
-            std::cout << "volume resolution : " << funcdata.sizeX() << ";" << funcdata.sizeY() << ";" << funcdata.sizeZ() << std::endl;
-	    std::cout << "number of scans : " << funcdata.dimT() << std::endl;
+            std::cout << "volume resolution : " << funcdata->getVoxelSize()[0] << ";" << funcdata->getVoxelSize()[1] << ";" << funcdata->getVoxelSize()[2] << std::endl;
+	    std::cout << "number of scans : " << funcdata.getSizeT() << std::endl;
 	    
-            TimeTexture<float> tex ( deconvolve ( funcdata, kernel, mesh ) );
+            TimeTexture<float> tex;
+
+            if( mixtype == "label" )
+              tex = deconvolve<Label>( funcdata, kernel, mesh );
+            else
+              tex = deconvolve<Level>( funcdata, kernel, mesh );
             //TimeTexture<float> ttex;
             //ttex[0] = tex;
             Writer < TimeTexture<float> > w ( outpath );
