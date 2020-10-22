@@ -7,6 +7,7 @@
 
 using namespace aims;
 using namespace carto;
+using namespace std;
 
 
 inline float calcule_distance ( const Point3df &p, const Point3df &t ) {
@@ -117,8 +118,10 @@ void compute_kernel ( AimsData<float> &kernels,
                       const float &geod_decay,
                       const float &norm_decay,
                       Point3df &vsize,
-                      int size){
+                      int size)
+{
 
+    // cout << "compute_kernel " << node << endl;
     std::map< uint, float >::iterator hit, ite;
     std::set< Point3d, ltstr >::iterator it;
     std::set< Point3d, ltstr> neighbours;
@@ -154,12 +157,14 @@ void compute_kernel ( AimsData<float> &kernels,
     Point3d cour = nv;
     uint totalsize = size * size * size;
 
-    while ( ! ( (*current.begin()).first == 1.0 ) && processed != (uint) totalsize ) {   // tant que le nombre des voxels trait� est diff�ent du nombre de voxels total
+    while ( !current.empty() && current.begin()->first != 1.0 && processed != totalsize )
+    {   // tant que le nombre des voxels trait� est diff�ent du nombre de voxels total
                                                                         // si le poids maximal dans le front courant est �al �z�o alors c'est fini !
         //       if (processed.size()%1000 == 0) cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << processed.size() << "/" << size*size*size << ";" << current.size() << " " << (*current.begin()).first << flush ; //<< endl;
         // 1�e �ape on voit quel voxel du front courant est le plus pr� de la surface
         aux = current.begin();
         processed++;
+//         std::cout << "processed: " << processed << " / " << totalsize << ", " << current.begin()->first << ", n: " << current.size() << std::endl;
         Point3d curr = (*aux).second;
         current.erase(aux);
         cour = curr;
@@ -189,7 +194,9 @@ void compute_kernel ( AimsData<float> &kernels,
         //3�e �ape on prend chaque voisin et on cherche dans les alentours de son surfacepoint correspondant le point le plus proche
         // le vecteur voxelcenter.surfacepoint est le plus grand.
         // ensuite on met �jour le voisin en question et on le passe dans current
-        for ( it = neighbours.begin() ; it != neighbours.end() ; it++ ) {
+//         cout << "neighbours: " << neighbours.size() << endl;
+        for ( it = neighbours.begin() ; it != neighbours.end() ; it++ )
+        {
             distance = 1000.0, min = 1000.0;
             a1 = (*it)[0]-c[0];
             a2 = (*it)[1]-c[1];
@@ -233,7 +240,7 @@ void compute_kernel ( AimsData<float> &kernels,
 
         }
     }
-    //std::cout << "SUM:" << sum << std::endl;
+    std::cout << "SUM:" << sum << std::endl;
     // 5�e �ape : normalisation au sein d'un seul noyau
     if ( ! ( sum > 0.0) ) {
         std::cout << "sum: " << sum << std::endl;
@@ -330,7 +337,8 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
                                         int size,
                                         Point3df vsize,
                                         float geod_decay,
-                                        float norm_decay ) {
+                                        float norm_decay )
+{
     assert( geod_decay > 0.0 );
     assert( norm_decay > 0.0 );
     Reader<AimsSurfaceTriangle> r ( meshpath );
@@ -400,7 +408,8 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
                 vertex ( x, y, z, 0 ) = 0;
             }
 
-    for ( uint i = 0 ; i < nb_nodes ; i++ ) {
+    for ( uint i = 0 ; i < nb_nodes ; i++ )
+    {
         if ( i%100 == 0 )
             std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << i << "/" << nb_nodes << std::flush ;
         for ( int x = 0 ; x < size ; x++ )
@@ -410,13 +419,17 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
                     kernel ( x, y, z, i ) = 0.0;
                 }
         if ( kernel_index != -1 )
+        {
+          if( i == kernel_index )
             compute_kernel( kernel, i, mesh, kernel_index, voisins2, vertex, classe, geod_decay, norm_decay, vsize, kernel.dimX() );
+        }
         else
             compute_kernel( kernel, i, mesh, i, voisins2, vertex, classe, geod_decay, norm_decay, vsize, kernel.dimX() );
     }
 
     std::cout << "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b" << nb_nodes << "/" << nb_nodes << std::endl;
 
+    /*
     float mini = 5.0, maxi = -5.0;
     for ( uint x = 0 ; x < size ; x++ )
         for ( uint y = 0 ; y < size ; y++ )
@@ -426,8 +439,10 @@ AimsData<float> fast_marching_kernels ( std::string meshpath,
                 if ( kernel ( x, y, z, 3114 ) > maxi )
                     maxi = kernel ( x, y, z, 3114 );
             }
+    */
 
-    if ( kernel_index != -1 ) {
+    if ( kernel_index != -1 )
+    {
         std::cout << " node coordinates : (index = " << kernel_index << ") " << mesh[0].vertex()[kernel_index] << std::endl;
         Point3df &p = mesh[0].vertex()[kernel_index];     // le noeud dont on calcule le noyau de convolution
         Point3d nv( (int) ( (p[0] + vsize[0]/2.0) / vsize[0]),
