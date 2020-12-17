@@ -4,7 +4,6 @@
 #include <aims/io/reader.h>
 #include <aims/io/writer.h>
 #include <cortical_surface/mesh/isoLine.h>
-#include <aims/getopt/getopt.h>
 #include <aims/utility/utility_g.h>
 #include <aims/mesh/mesh_g.h>
 #include <aims/io/io_g.h>
