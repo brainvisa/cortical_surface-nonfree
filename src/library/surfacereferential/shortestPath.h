@@ -13,10 +13,6 @@
 #include <aims/io/writer.h>
 #include <limits>
 
-// #include "cathier/aims_wrap.h"
-// #include "cathier/triangle_mesh_geodesic_map.h"
-// #include "cathier/math_functions.h"
-
 namespace aims
 {
 
@@ -54,50 +50,8 @@ TimeTexture<Val> GraphPath<Val>::process(TimeTexture<Val> & tex, AimsSurfaceTria
 
 //     std::cerr << "Shortest Path In" << std::endl;
 
-     // ici on construit la carte de distance avec le fast marching à la cathier
-//      typedef std::vector<std::vector<std::size_t> > CNeighborhoods;
-//      til::Mesh_N meshCathier;
-//      til::Mesh1 mesh0;
-//      til::convert(mesh0, initmesh);
-//      meshCathier = addNeighborsToMesh(mesh0);
-// 
-//      shared_ptr<CNeighborhoods> pneighc = til::circular_neighborhoods(getVertices(meshCathier), getFaceIndices(meshCathier));
-
-// /*     til::Triangle_mesh_geodesic_map<til::Mesh_N::VertexCollection, CNeighborhoods, double> geomap(getVertices(meshCathier), *pneighc);*/
-//      til::Graph_distance_map<til::Mesh_N::VertexCollection, CNeighborhoods, double> geomap(getVertices(meshCathier), *pneighc);
-// 
-//      std::cerr << "Shortest Path In" << std::endl;
-// 
-//      std::vector<std::size_t> startPoints;
-//      std::vector<double> dist;
-//      startPoints.push_back(dep);
-//      dist.push_back(0.0);*/
-
-     // la boucle ci dessous intitialise la carte de distance à 0 pour le départ
-     // et l'infini pour les points hors de l'ensemble de recherche, pour avoir une distance
-     // limitée à cet ensemble.
-     
-//      for (uint l=0; l<ns; l++)
-//      {
-//           if (tex[0].item(l) != value)
-//           {
-//                startPoints.push_back(l);
-//                dist.push_back( std::numeric_limits<double>::infinity() );
-//           }
-//      }
-// 
-//      geomap.init(startPoints, dist);
-//      geomap.process();
-//      shared_ptr<til::sparse_vector<double> > sres = geomap.distanceMap(); 
-//      std::map<uint,float> res;
-//      til::sparse_vector<double>::const_iterator iRes2 = sres->begin();
-//      uint i=0;
-// 
-//      for (; iRes2 != sres->end();++iRes2,i++)
-//      {
-//           res[i] = (float) *iRes2;
-//      }
-
+     // ici on construit la carte de distance avec le fast marching
+     // [...]
 
      // ici on utilise finalement le bon vieil algo de distanceMap d'aimsalgo
 
