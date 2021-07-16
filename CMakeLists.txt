@@ -9,6 +9,10 @@ include( "${AIMS-FREE_USE_FILE}" )
 math( EXPR result "${aims-free_VERSION_MINOR}+1" )
 BRAINVISA_DEPENDENCY( RUN DEPENDS "aims-free" RUN ">= ${aims-free_VERSION};<< ${aims-free_VERSION_MAJOR}.${result}" )
 
+# don't warn on obsolete classes within this library: we still provide obsolete
+# features so we have to build them without warnings
+add_definitions( "-DAIMSDATA_CLASS_NO_DEPREC_WARNING=1" )
+
 add_subdirectory( src )
 
 find_package( Doxygen )
