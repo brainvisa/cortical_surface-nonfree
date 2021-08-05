@@ -5,6 +5,7 @@
 #include <aims/mesh/texture.h>
 #include <aims/getopt/getopt2.h>
 #include <cartodata/volume/volume.h>
+#include <aims/data/data.h>
 
 
 enum MixType
