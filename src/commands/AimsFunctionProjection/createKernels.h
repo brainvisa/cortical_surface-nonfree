@@ -1,6 +1,9 @@
 #ifndef AIMS_CREATE_KERNELS_H
 #define AIMS_CREATE_KERNELS_H
 
+#include <aims/data/data.h>
+#include <aims/mesh/surface.h>
+#include <aims/mesh/texture.h>
 
 template<class T>
       Texture<float> distance_map ( const AimsSurface<3,Void> &  mesh,
