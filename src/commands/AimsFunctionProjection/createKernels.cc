@@ -2,6 +2,7 @@
 #include <aims/getopt/getopt2.h>
 #include <aims/mesh/surfaceOperation.h>
 #include <aims/primalsketch/finiteElementSmoother_d.h>
+#include <aims/data/data.h>
 
 
 
