@@ -12,9 +12,10 @@
 #include <aims/mesh/surfaceOperation.h>
 #include <aims/scalespace/meshDiffuse.h>
 #include <aims/distancemap/meshmorphomat.h>
-#include <fstream>
 #include <aims/distancemap/meshparcellation.h>
+#include <fstream>
 
+using namespace carto;
 using namespace std;
 
 SulcalLinesGeodesic::SulcalLinesGeodesic(string & adrMesh, string & adrCurv,
@@ -503,16 +504,17 @@ void SulcalLinesGeodesic::computeRootsBottomMap(TimeTexture<short> &texBasins,Ti
   computeConstraintList(listConstraintValues);
 
   cout << "\nreading volume  : " << _adrRootsBottom << flush;
-  AimsData<short> bottom;
-  Reader<AimsData<short> > bottomR(_adrRootsBottom);
+  VolumeRef<short> bottom;
+  Reader<VolumeRef<short> > bottomR(_adrRootsBottom);
   bottomR >> bottom;
   cout << " done" << endl;
 
   int x,y,z,sx,sy,sz;
   float dx, dy, dz;
 
-  sx=bottom.dimX(); sy=bottom.dimY(); sz=bottom.dimZ();
-  dx=bottom.sizeX(); dy=bottom.sizeY(); dz=bottom.sizeZ();
+  sx=bottom.getSizeX(); sy=bottom.getSizeY(); sz=bottom.getSizeZ();
+  dx=bottom.getVoxelSize()[0]; dy=bottom.getVoxelSize()[1];
+  dz=bottom.getVoxelSize()[2];
 
   cout << "volume size : \n";
   std::cout << "dx=" << dx << ", dy=" << dy << ", dz=" << dz << endl;
