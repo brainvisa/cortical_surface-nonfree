@@ -38,8 +38,8 @@ int main(int argc, const char **argv)
 
 	std::cout << "Reading volume and mesh" << std::endl;
 
-	AimsData<short> func;
-	Reader<AimsData<short> > fR(adress_vol);
+	VolumeRef<short> func;
+	Reader<VolumeRef<short> > fR(adress_vol);
 	fR.read(func);
 	AimsSurfaceTriangle surface;
 	Reader<AimsSurfaceTriangle > sR(adress_mesh);
@@ -51,8 +51,10 @@ int main(int argc, const char **argv)
 
 	std::cout << "Reading input" << std::endl;
 
-	sx=func.sizeX(); sy=func.sizeY(); sz=func.sizeZ();
-	nx=func.dimX(); ny=func.dimY(); nz=func.dimZ();
+	sx=func.getVoxelSize()[0];
+    sy=func.getVoxelSize()[1];
+    sz=func.getVoxelSize()[2];
+	nx=func.getSizeX(); ny=func.getSizeY(); nz=func.getSizeZ();
 
 	std::vector< Point3df > vert=surface.vertex();
 	nv=vert.size();
