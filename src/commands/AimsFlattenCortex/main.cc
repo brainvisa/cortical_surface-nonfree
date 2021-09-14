@@ -18,6 +18,7 @@
 #include <aims/io/io_g.h>
 #include <aims/mesh/surfaceOperation.h>
 #include <aims/mesh/surfacegen.h>
+#include <aims/data/data.h>
 
 using namespace aims;
 using namespace carto;
