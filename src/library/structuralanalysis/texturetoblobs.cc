@@ -566,7 +566,7 @@ void addBlobsToGraph ( Graph *graph,
         //   its properties and store a link between the created vertex and the blob index
         std::cout << "\b\b\b\b\b\b\b\b\b\b\b" << graph->order() << std::flush ;
         vert = graph->addVertex("glb");
-        vert->setProperty( "subject", blobs[i]->subject.data() );
+        vert->setProperty( "subject", blobs[i]->subject );
         vert->setProperty( "t", blobs[i]->t );
         std::stringstream out;
         out << blobs[i]->t;
